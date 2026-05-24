@@ -1,0 +1,145 @@
+import { motion } from "framer-motion"
+import { Download, CreditCard, AlertCircle, CheckCircle, Clock } from "lucide-react"
+
+const metrics = [
+  { label: "Ingresos del mes",    value: "$4,820", trend: "+18%", up: true,  icon: "💰", color: "var(--success)" },
+  { label: "MRR",                 value: "$6,240", trend: "+9%",  up: true,  icon: "📅", color: "var(--accent)" },
+  { label: "ARR proyectado",      value: "$74.8k", trend: "+12%", up: true,  icon: "📈", color: "var(--warning)" },
+  { label: "Pagos fallidos",      value: "2",      trend: "-1",   up: false, icon: "⚠️", color: "var(--danger)" },
+]
+
+const plans = [
+  { name: "Starter", price: "$29", tenants: 4, featured: false, features: ["Hasta 100 miembros","1 sede","Soporte email","Reportes básicos"] },
+  { name: "Pro",     price: "$79", tenants: 5, featured: true,  features: ["Hasta 500 miembros","3 sedes","Soporte prioritario","Reportes avanzados","App móvil"] },
+  { name: "Enterprise", price: "$199", tenants: 3, featured: false, features: ["Miembros ilimitados","Sedes ilimitadas","Soporte 24/7","API acceso","SLA 99.9%","Personalización"] },
+]
+
+const invoices = [
+  { id: "#INV-2026-042", tenant: "FitZone Elite",   plan: "ENTERPRISE", amount: "$199.00", status: "PAID",    date: "01 May 2026" },
+  { id: "#INV-2026-041", tenant: "Body Factory",    plan: "ENTERPRISE", amount: "$199.00", status: "PAID",    date: "01 May 2026" },
+  { id: "#INV-2026-040", tenant: "Iron Temple",     plan: "PRO",        amount: "$79.00",  status: "PAID",    date: "01 May 2026" },
+  { id: "#INV-2026-039", tenant: "Zeus Gym",        plan: "PRO",        amount: "$79.00",  status: "PENDING", date: "01 May 2026" },
+  { id: "#INV-2026-038", tenant: "Alpha Fitness",   plan: "STARTER",    amount: "$29.00",  status: "FAILED",  date: "01 May 2026" },
+  { id: "#INV-2026-037", tenant: "PowerGym MX",    plan: "STARTER",    amount: "$0.00",   status: "PENDING", date: "15 Abr 2026" },
+]
+
+const statusConfig: Record<string, any> = {
+  PAID:    { color: "var(--success)", icon: CheckCircle, label: "Pagado" },
+  PENDING: { color: "var(--warning)", icon: Clock,       label: "Pendiente" },
+  FAILED:  { color: "var(--danger)",  icon: AlertCircle, label: "Fallido" },
+}
+const planColors: Record<string, string> = { STARTER:"#60a5fa", PRO:"var(--accent)", ENTERPRISE:"var(--warning)" }
+
+const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }
+const fadeUp = { hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }
+
+export default function PlatformBilling() {
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>Facturación & Planes</h1>
+          <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>Control de ingresos y suscripciones de la plataforma</p>
+        </div>
+        <button
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all"
+          style={{ background: "rgba(255,255,255,0.08)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
+        >
+          <Download size={16} /> Exportar
+        </button>
+      </div>
+
+      {/* Metrics */}
+      <motion.div initial="hidden" animate="visible" variants={stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {metrics.map((m, i) => (
+          <motion.div key={i} variants={fadeUp} className="p-5 rounded-2xl relative overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+            <div className="absolute top-0 left-0 w-full h-1" style={{ background: m.color }} />
+            <div className="flex items-center gap-4">
+              <div className="text-3xl">{m.icon}</div>
+              <div className="flex-1">
+                <p className="text-2xl font-black leading-none mb-1" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>{m.value}</p>
+                <div className="flex justify-between items-center">
+                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>{m.label}</p>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: `${m.up ? "var(--success)" : "var(--danger)"}20`, color: m.up ? "var(--success)" : "var(--danger)" }}>
+                    {m.trend}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* Plans */}
+      <div>
+        <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--text-secondary)" }}>Planes Disponibles</h3>
+        <motion.div initial="hidden" animate="visible" variants={stagger} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {plans.map((p, i) => (
+            <motion.div key={i} variants={fadeUp} className="p-6 rounded-2xl relative transition-transform hover:-translate-y-1"
+              style={{
+                background: p.featured ? "rgba(0,0,255,0.05)" : "var(--surface)",
+                border: `1px solid ${p.featured ? "var(--accent)" : "var(--border)"}`,
+                boxShadow: p.featured ? "0 10px 30px rgba(0,0,255,0.15)" : "none",
+              }}
+            >
+              {p.featured && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
+                  style={{ background: "linear-gradient(90deg, var(--accent), var(--detail))", color: "#fff" }}>
+                  Más Popular
+                </div>
+              )}
+              <h4 className="text-sm font-bold uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>{p.name}</h4>
+              <div className="mt-2 mb-1">
+                <span className="text-3xl font-black" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>{p.price}</span>
+                <span className="text-sm" style={{ color: "var(--text-muted)" }}>/mes</span>
+              </div>
+              <p className="text-xs mb-5" style={{ color: "var(--text-muted)" }}>{p.tenants} gimnasios activos</p>
+              <ul className="space-y-2.5">
+                {p.features.map((f, j) => (
+                  <li key={j} className="flex items-center gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+                    <CheckCircle size={14} style={{ color: "var(--success)" }} /> {f}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+
+      {/* Invoices Table */}
+      <div>
+        <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: "var(--text-secondary)" }}>Facturas Recientes</h3>
+        <div className="rounded-2xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+          <table className="w-full">
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                {["ID","Gimnasio","Plan","Monto","Estado","Fecha"].map(h => (
+                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {invoices.map((inv, i) => {
+                const sc = statusConfig[inv.status]
+                return (
+                  <motion.tr key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }}
+                    className="border-b last:border-b-0 transition-colors hover:bg-white/5" style={{ borderColor: "var(--border)" }}>
+                    <td className="px-4 py-3"><span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{inv.id}</span></td>
+                    <td className="px-4 py-3"><span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{inv.tenant}</span></td>
+                    <td className="px-4 py-3"><span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${planColors[inv.plan]}18`, color: planColors[inv.plan] }}>{inv.plan}</span></td>
+                    <td className="px-4 py-3"><span className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{inv.amount}</span></td>
+                    <td className="px-4 py-3"><span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: sc.color }}><sc.icon size={12}/>{sc.label}</span></td>
+                    <td className="px-4 py-3"><span className="text-xs" style={{ color: "var(--text-muted)" }}>{inv.date}</span></td>
+                  </motion.tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
