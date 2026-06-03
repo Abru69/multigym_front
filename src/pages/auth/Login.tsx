@@ -7,6 +7,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react"
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [tenantId, setTenantId] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const { login, loginAs, isLoading } = useAuthStore()
@@ -15,12 +16,12 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    const ok = await login(email, password)
+    const ok = await login(email, password, tenantId)
     if (ok) {
       const user = useAuthStore.getState().user
       navigate(user?.role === "admin" ? "/admin" : "/")
     } else {
-      setError("Credenciales inválidas. Usa los accesos rápidos.")
+      setError("Credenciales inválidas o gimnasio incorrecto.")
     }
   }
 
@@ -52,6 +53,20 @@ export default function Login() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+            Código de Gimnasio
+          </label>
+          <input
+            type="text"
+            value={tenantId}
+            onChange={(e) => setTenantId(e.target.value)}
+            placeholder="ej. gym-central"
+            className="w-full px-4 py-3 text-sm outline-none focus:ring-2 transition-all"
+            style={{ ...inputStyle, "--tw-ring-color": "var(--accent)" } as React.CSSProperties}
+            required
+          />
+        </div>
         <div>
           <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
             Correo electrónico
