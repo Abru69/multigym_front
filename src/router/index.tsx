@@ -10,29 +10,31 @@ import { AuthLayout } from "@/layouts/AuthLayout"
 import { PlatformLayout } from "@/layouts/PlatformLayout"
 
 // Pages
-import Landing from "@/pages/Landing"
-import Login from "@/pages/auth/Login"
-import Register from "@/pages/auth/Register"
-import AdminDashboard from "@/pages/admin/Dashboard"
-import Inventory from "@/pages/admin/Inventory"
-import Users from "@/pages/admin/Users"
-import RoutineBuilder from "@/pages/admin/RoutineBuilder"
-import MyRoutines from "@/pages/client/MyRoutines"
-import Progress from "@/pages/client/Progress"
-import Nutrition from "@/pages/client/Nutrition"
-import Catalog from "@/pages/shop/Catalog"
-import ProductDetail from "@/pages/shop/ProductDetail"
-import Cart from "@/pages/shop/Cart"
-import Checkout from "@/pages/shop/Checkout"
+import Landing from "@/features/client/pages/Landing"
+import Login from "@/features/auth/pages/Login"
+import Register from "@/features/auth/pages/Register"
+import ForgotPassword from "@/features/auth/pages/ForgotPassword"
+import ResetPassword from "@/features/auth/pages/ResetPassword"
+import AdminDashboard from "@/features/admin/pages/Dashboard"
+import Inventory from "@/features/admin/pages/Inventory"
+import Users from "@/features/admin/pages/Users"
+import RoutineBuilder from "@/features/admin/pages/RoutineBuilder"
+import MyRoutines from "@/features/client/pages/MyRoutines"
+import Progress from "@/features/client/pages/Progress"
+import Nutrition from "@/features/client/pages/Nutrition"
+import Catalog from "@/features/shop/pages/Catalog"
+import ProductDetail from "@/features/shop/pages/ProductDetail"
+import Cart from "@/features/shop/pages/Cart"
+import Checkout from "@/features/shop/pages/Checkout"
 
 // Platform Pages
-import PlatformLogin from "@/pages/platform/PlatformLogin"
-import PlatformDashboard from "@/pages/platform/PlatformDashboard"
-import PlatformTenants from "@/pages/platform/PlatformTenants"
-import PlatformUsers from "@/pages/platform/PlatformUsers"
-import PlatformBilling from "@/pages/platform/PlatformBilling"
-import PlatformLogs from "@/pages/platform/PlatformLogs"
-import PlatformSettings from "@/pages/platform/PlatformSettings"
+import PlatformLogin from "@/features/platform/pages/PlatformLogin"
+import PlatformDashboard from "@/features/platform/pages/PlatformDashboard"
+import PlatformTenants from "@/features/platform/pages/PlatformTenants"
+import PlatformUsers from "@/features/platform/pages/PlatformUsers"
+import PlatformBilling from "@/features/platform/pages/PlatformBilling"
+import PlatformLogs from "@/features/platform/pages/PlatformLogs"
+import PlatformSettings from "@/features/platform/pages/PlatformSettings"
 
 export const router = createBrowserRouter([
   // --- Platform Routes ---
@@ -66,6 +68,8 @@ export const router = createBrowserRouter([
     children: [
       { path: "/login", element: <Login /> },
       { path: "/registro", element: <Register /> },
+      { path: "/forgot-password", element: <ForgotPassword /> },
+      { path: "/reset-password", element: <ResetPassword /> },
     ],
   },
   {

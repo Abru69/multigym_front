@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { Outlet, NavLink, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { useAuthStore } from "@/store/authStore"
+import { useAuthStore } from "@/features/auth/store/authStore"
+import { getTenantUrl } from "@/lib/tenant"
 import {
   LayoutDashboard,
   Package,
@@ -22,12 +23,17 @@ const navItems = [
 
 export function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { user, logout } = useAuthStore()
+  const { user, logout, tenantId } = useAuthStore()
   const navigate = useNavigate()
 
   const handleLogout = () => {
+    const currentTenantId = tenantId || user?.tenantId
     logout()
-    navigate("/")
+    if (currentTenantId) {
+      window.location.href = getTenantUrl(currentTenantId)
+    } else {
+      window.location.href = "/"
+    }
   }
 
   return (

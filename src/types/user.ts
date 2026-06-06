@@ -8,6 +8,7 @@ export interface User {
   joinDate: string
   isActive: boolean
   currentPlan?: string
+  tenantId?: string
 }
 
 export interface AuthState {

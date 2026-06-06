@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Outlet, NavLink, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { usePlatformAuthStore } from "@/store/platformAuthStore"
+import { usePlatformAuthStore } from "@/features/platform/store/platformAuthStore"
 import {
   Zap, LayoutDashboard, Building2, Users, CreditCard,
   FileText, Settings, Menu, X, LogOut, Bell, ChevronRight,

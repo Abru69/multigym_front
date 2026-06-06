@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import type { Product } from "@/types"
 import { formatCurrency } from "@/lib/utils"
-import { useCartStore } from "@/store/cartStore"
+import { useCartStore } from "@/features/shop/store/cartStore"
 import { ShoppingCart, Star } from "lucide-react"
 
 interface ProductCardProps {

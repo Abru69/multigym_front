@@ -1,8 +1,10 @@
-import { Outlet, NavLink, Link, useLocation } from "react-router-dom"
+import { useState } from "react"
+import { Outlet, NavLink, Link, useLocation, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { useCartStore } from "@/store/cartStore"
-import { useAuthStore } from "@/store/authStore"
-import { Dumbbell, TrendingUp, ShoppingBag, User, ShoppingCart, Utensils } from "lucide-react"
+import { useCartStore } from "@/features/shop/store/cartStore"
+import { useAuthStore } from "@/features/auth/store/authStore"
+import { Dumbbell, TrendingUp, ShoppingBag, User, ShoppingCart, Utensils, LogOut } from "lucide-react"
+import { getTenantUrl } from "@/lib/tenant"
 
 const clientNav = [
   { to: "/app/rutinas", icon: Dumbbell, label: "Rutinas" },
@@ -13,8 +15,23 @@ const clientNav = [
 
 export function ClientLayout() {
   const cartCount = useCartStore((s) => s.itemCount())
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, user, logout, tenantId } = useAuthStore()
   const location = useLocation()
+  const navigate = useNavigate()
+  const [showMenu, setShowMenu] = useState(false)
+
+  const portalLink = user?.role === "admin" ? "/admin" : "/app/rutinas"
+
+  const handleLogout = () => {
+    const currentTenantId = tenantId || user?.tenantId
+    logout()
+    setShowMenu(false)
+    if (currentTenantId) {
+      window.location.href = getTenantUrl(currentTenantId)
+    } else {
+      window.location.href = "/"
+    }
+  }
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: "var(--background)" }}>
@@ -27,17 +44,37 @@ export function ClientLayout() {
           borderBottom: "1px solid var(--border)",
         }}
       >
-        <Link to="/" className="flex items-center gap-2.5">
-          <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center font-black text-xs"
-            style={{ background: "var(--accent)", color: "var(--accent-text)" }}
-          >
-            R4
-          </div>
-          <span className="font-bold text-sm hidden sm:block" style={{ color: "var(--text-primary)" }}>
-            Reto 4 Gym
-          </span>
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div
+              className="w-9 h-9 rounded-lg flex items-center justify-center font-black text-xs"
+              style={{ background: "var(--accent)", color: "var(--accent-text)" }}
+            >
+              R4
+            </div>
+            <span className="font-bold text-sm hidden sm:block" style={{ color: "var(--text-primary)" }}>
+              Reto 4 Gym
+            </span>
+          </Link>
+
+          {isAuthenticated && (
+            <nav className="hidden lg:flex items-center gap-1">
+              {clientNav.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                  style={({ isActive }) => ({
+                    color: isActive ? "var(--accent)" : "var(--text-secondary)",
+                    background: isActive ? "var(--surface)" : "transparent",
+                  })}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
+          )}
+        </div>
 
         <div className="flex items-center gap-3">
           <Link
@@ -57,7 +94,47 @@ export function ClientLayout() {
               </span>
             )}
           </Link>
-          {!isAuthenticated && (
+          {isAuthenticated ? (
+            <div className="relative">
+              <button 
+                onClick={() => setShowMenu(!showMenu)}
+                className="flex items-center gap-2 text-xs font-bold pl-2.5 pr-3.5 py-1.5 rounded-lg bg-surface border border-border text-white hover:border-accent transition-colors"
+              >
+                <div className="w-5 h-5 rounded-full bg-accent/20 text-accent flex items-center justify-center overflow-hidden">
+                  {user?.avatar ? <img src={user.avatar} className="w-full h-full object-cover" alt={user.name} /> : <User size={12} />}
+                </div>
+                <span className="hidden sm:block truncate">Bienvenido, {user?.name.split(" ")[0]}</span>
+              </button>
+              
+              <AnimatePresence>
+                {showMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl overflow-hidden py-1 z-50"
+                  >
+                    <button 
+                      onClick={() => {
+                        setShowMenu(false)
+                        navigate(portalLink)
+                      }}
+                      className="w-full text-left block px-4 py-2 text-sm text-white hover:bg-background transition-colors"
+                    >
+                      Mi Portal
+                    </button>
+                    <div className="h-px bg-border my-1" />
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-danger hover:bg-background transition-colors flex items-center gap-2"
+                    >
+                      <LogOut size={14} /> Cerrar Sesión
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
             <Link
               to="/login"
               className="text-sm font-medium px-4 py-1.5 rounded-lg transition-all"
