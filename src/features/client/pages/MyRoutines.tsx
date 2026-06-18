@@ -145,10 +145,10 @@ function ExerciseCard({
       transition={{ delay: index * 0.07, duration: 0.35 }}
       className="rounded-2xl overflow-hidden transition-shadow"
       style={{
-        background: isExpanded ? "rgba(26,26,26,0.75)" : "var(--surface)",
-        border: `1px solid ${allDone ? "var(--success)" : isExpanded ? "rgba(0,0,255,0.25)" : "var(--border)"}`,
+        background: isExpanded ? "var(--surface-hover)" : "var(--surface)",
+        border: `1px solid ${allDone ? "var(--success)" : isExpanded ? "var(--accent)" : "var(--border)"}`,
         backdropFilter: isExpanded ? "blur(16px)" : "none",
-        boxShadow: isExpanded ? "0 0 30px rgba(0,0,255,0.08)" : allDone ? "0 0 20px rgba(0,204,136,0.1)" : "none",
+        boxShadow: isExpanded ? "var(--shadow-glow)" : allDone ? "var(--shadow-md)" : "none",
         animation: allDone ? "celebrate 0.5s ease-out" : "none",
       }}
     >
@@ -173,8 +173,8 @@ function ExerciseCard({
           )}
           {allDone && (
             <div className="absolute inset-0 flex items-center justify-center"
-              style={{ background: "rgba(0,204,136,0.4)" }}>
-              <CheckCircle2 size={20} color="white" />
+              style={{ background: "var(--accent-muted)" }}>
+              <CheckCircle2 size={20} style={{ color: "var(--text-on-primary)" }} />
             </div>
           )}
         </div>
@@ -219,7 +219,7 @@ function ExerciseCard({
           {!isExpanded && hasActiveTimer && restTimer && (
             <motion.span
               className="text-[10px] font-bold tabular-nums px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(0,0,255,0.15)", color: "var(--accent)" }}
+              style={{ background: "var(--accent-muted)", color: "var(--accent)" }}
               animate={{ opacity: [1, 0.5, 1] }}
               transition={{ duration: 1, repeat: Infinity }}>
               {restTimer.seconds}s
@@ -255,8 +255,8 @@ function ExerciseCard({
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                   className="mt-3.5 p-4 rounded-xl text-center"
                   style={{
-                    background: "linear-gradient(135deg, rgba(0,0,255,0.06), rgba(0,204,136,0.06))",
-                    border: "1px solid rgba(0,0,255,0.15)",
+                    background: "var(--surface-hover)",
+                    border: "1px solid var(--accent)",
                   }}>
                   <p className="text-[9px] font-bold uppercase tracking-widest mb-2"
                     style={{ color: "var(--text-muted)" }}>⏱ Descanso</p>
@@ -333,7 +333,7 @@ function ExerciseCard({
                         onClick={(e: React.MouseEvent) => { e.stopPropagation(); onToggleSet(exercise, i) }}
                         className="flex items-center justify-center gap-1.5 py-2.5 h-auto rounded-xl text-xs font-bold"
                         style={{
-                          background: done ? "rgba(0,204,136,0.12)" : "var(--background)",
+                          background: done ? "var(--accent-muted)" : "var(--bg-primary)",
                           border: `1.5px solid ${done ? "var(--success)" : "var(--border)"}`,
                           color: done ? "var(--success)" : "var(--text-secondary)",
                         }}
@@ -655,7 +655,7 @@ export default function MyRoutines() {
                 className="flex flex-col items-center py-2.5 px-0 h-auto rounded-2xl gap-1.5 relative"
                 style={{
                   background: isSelected ? "var(--accent)" : "transparent",
-                  boxShadow: isSelected ? "0 0 24px 4px rgba(0,0,255,0.25)" : "none",
+                  boxShadow: isSelected ? "var(--shadow-glow)" : "none",
                 }}>
                 <span className="text-[10px] font-black tracking-wider"
                   style={{ color: isSelected ? "var(--accent-text)" : "var(--text-muted)" }}>
@@ -670,7 +670,7 @@ export default function MyRoutines() {
                 </span>
                 <div className="w-1.5 h-1.5 rounded-full" style={{
                   background: dayAllDone ? "var(--success)"
-                    : isRest ? (isSelected ? "rgba(255,255,255,0.4)" : "var(--text-muted)")
+                    : isRest ? (isSelected ? "var(--text-secondary)" : "var(--text-muted)")
                     : (isSelected ? "var(--accent-text)" : "var(--accent)"),
                   opacity: isRest && !isSelected ? 0.3 : 0.85,
                 }} />
@@ -757,11 +757,11 @@ export default function MyRoutines() {
           {todayRoutine?.isRestDay ? (
             <motion.div className="text-center py-16 rounded-2xl relative overflow-hidden"
               style={{
-                background: "linear-gradient(145deg, var(--surface) 0%, rgba(26,26,26,0.5) 100%)",
+                background: "var(--surface)",
                 border: "1px solid var(--border)",
               }}>
               <div className="absolute inset-0 pointer-events-none" style={{
-                background: "radial-gradient(circle at 50% 30%, rgba(0,0,255,0.06) 0%, transparent 60%)",
+                background: "radial-gradient(circle at 50% 30%, var(--accent-muted) 0%, transparent 60%)",
               }} />
               <motion.p className="text-6xl mb-5 relative z-10"
                 animate={{ y: [0, -8, 0] }}
@@ -806,8 +806,8 @@ export default function MyRoutines() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-8 rounded-2xl"
                   style={{
-                    background: "linear-gradient(145deg, rgba(0,204,136,0.1) 0%, rgba(0,204,136,0.03) 100%)",
-                    border: "1px solid rgba(0,204,136,0.25)",
+                    background: "var(--accent-muted)",
+                    border: "1px solid var(--success)",
                   }}>
                   <motion.div animate={{ scale: [1, 1.15, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}>
@@ -838,7 +838,7 @@ export default function MyRoutines() {
             transition={{ delay: 0.4, type: "spring", damping: 22, stiffness: 260 }}
             className="fixed left-0 right-0 z-40 bottom-[72px] lg:bottom-0"
             style={{
-              background: "rgba(16,16,16,0.9)",
+              background: "var(--overlay)",
               backdropFilter: "blur(24px)",
               WebkitBackdropFilter: "blur(24px)",
               borderTop: "1px solid var(--border)",
@@ -885,8 +885,8 @@ export default function MyRoutines() {
                   background: progress >= 100 ? "var(--success)" : workoutStarted ? "var(--surface)" : "var(--accent)",
                   color: progress >= 100 ? "white" : workoutStarted ? "var(--text-primary)" : "var(--accent-text)",
                   border: workoutStarted && progress < 100 ? "1px solid var(--border)" : "1px solid transparent",
-                  boxShadow: progress >= 100 ? "0 0 20px rgba(0,204,136,0.25)"
-                    : !workoutStarted ? "0 0 20px rgba(0,0,255,0.25)" : "none",
+                  boxShadow: progress >= 100 ? "var(--shadow-md)"
+                    : !workoutStarted ? "var(--shadow-glow)" : "none",
                 }}>
                 {progress >= 100 ? (
                   <><Trophy size={14} /> ¡Hecho!</>
@@ -909,7 +909,7 @@ export default function MyRoutines() {
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.9)" }}
+            style={{ background: "var(--overlay)" }}
             onClick={() => setShowCelebration(false)}
           >
             {/* Floating emoji particles */}
@@ -976,7 +976,7 @@ export default function MyRoutines() {
 
               <MotionButton whileTap={{ scale: 0.95 }}
                 onClick={() => setShowCelebration(false)}
-                className="px-8 py-3 h-12 rounded-xl text-sm font-bold shadow-[0_0_30px_rgba(0,0,255,0.3)]">
+                className="px-8 py-3 h-12 rounded-xl text-sm font-bold accent-glow">
                 ¡Vamos! 🚀
               </MotionButton>
             </motion.div>

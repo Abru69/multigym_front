@@ -21,7 +21,7 @@ const logs: LogEntry[] = [
 
 const typeConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
   create:  { icon: Plus,   color: "var(--success)", label: "Creación" },
-  update:  { icon: Edit2,  color: "#60a5fa",        label: "Actualización" },
+  update:  { icon: Edit2,  color: "var(--info)",        label: "Actualización" },
   login:   { icon: Key,    color: "var(--accent)",  label: "Accesos" },
   suspend: { icon: Pause,  color: "var(--warning)", label: "Suspensión" },
   delete:  { icon: Trash2, color: "var(--danger)",  label: "Eliminación" },
@@ -47,9 +47,9 @@ export default function PlatformLogs() {
         </div>
         <button
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all"
-          style={{ background: "rgba(255,255,255,0.08)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
+          style={{ background: "var(--input-bg)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-hover)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--input-bg)")}
         >
           <Download size={16} /> Exportar CSV
         </button>
@@ -70,9 +70,9 @@ export default function PlatformLogs() {
             onClick={() => setActiveType("ALL")}
             className="px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5"
             style={{
-              background: activeType === "ALL" ? "rgba(0,0,255,0.12)" : "var(--surface)",
+              background: activeType === "ALL" ? "var(--accent-muted)" : "var(--surface)",
               color: activeType === "ALL" ? "var(--accent)" : "var(--text-secondary)",
-              border: activeType === "ALL" ? "1px solid rgba(0,0,255,0.25)" : "1px solid var(--border)"
+              border: activeType === "ALL" ? "1px solid var(--accent)" : "1px solid var(--border)"
             }}
           >
             <ShieldAlert size={14} /> Todos
@@ -125,12 +125,12 @@ export default function PlatformLogs() {
 
                     <div className="flex flex-wrap items-center gap-3 mt-3">
                       <span className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-secondary)" }}>
-                        <div className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ background: "var(--text-muted)", color: "#fff" }}>
+                        <div className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ background: "var(--text-muted)", color: "var(--text-on-primary)" }}>
                           {log.user[0]}
                         </div>
                         {log.user}
                       </span>
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider" style={{ background: "rgba(0,0,255,0.15)", color: "var(--accent)" }}>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider" style={{ background: "var(--accent-muted)", color: "var(--accent)" }}>
                         {log.userType}
                       </span>
                       <span className="flex items-center gap-1 text-[10px] font-mono" style={{ color: "var(--text-muted)" }}>

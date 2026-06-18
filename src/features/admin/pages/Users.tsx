@@ -164,7 +164,7 @@ export default function UsersPage() {
           <h1 className="text-2xl font-black uppercase tracking-tight" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>Clientes</h1>
           <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>{clients.length} usuarios registrados en el gimnasio</p>
         </div>
-        <Button onClick={openCreate} className="gap-2 shadow-[0_0_20px_rgba(0,0,255,0.3)]">
+        <Button onClick={openCreate} className="gap-2 accent-glow">
           <UserPlus size={16} />
           Nuevo Usuario
         </Button>
@@ -172,10 +172,10 @@ export default function UsersPage() {
 
       {/* Error banner */}
       {error && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: "rgba(255,77,77,0.1)", border: "1px solid rgba(255,77,77,0.2)" }}>
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: "var(--error-muted)", border: "1px solid var(--error)" }}>
           <AlertCircle size={16} style={{ color: "var(--danger)" }} />
           <span className="text-sm" style={{ color: "var(--danger)" }}>{error}</span>
-          <button onClick={loadUsers} className="ml-auto text-xs font-bold px-3 py-1 rounded-lg" style={{ background: "rgba(255,255,255,0.1)", color: "var(--text-primary)" }}>Reintentar</button>
+          <button onClick={loadUsers} className="ml-auto text-xs font-bold px-3 py-1 rounded-lg" style={{ background: "var(--input-bg)", color: "var(--text-primary)" }}>Reintentar</button>
         </div>
       )}
 
@@ -209,7 +209,7 @@ export default function UsersPage() {
             <motion.div
               key={user.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
               className="p-5 rounded-2xl relative transition-all group"
-              style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
+              style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}
             >
               {/* Header / Avatar */}
               <div className="flex items-start justify-between mb-4">
@@ -217,16 +217,16 @@ export default function UsersPage() {
                   {getInitials(getName(user))}
                 </div>
                 <div className="relative">
-                  <button onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all" style={{ color: "var(--text-muted)", background: "rgba(255,255,255,0.05)" }}>
+                  <button onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all" style={{ color: "var(--text-muted)", background: "var(--input-bg)" }}>
                     <MoreVertical size={16} />
                   </button>
                   <AnimatePresence>
                     {openMenuId === user.id && (
                       <motion.div initial={{ opacity: 0, scale: 0.9, y: 5 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} className="absolute right-0 top-full mt-2 z-10 w-48 py-1 rounded-xl shadow-lg overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-                        <button onClick={() => openEdit(user)} className="w-full text-left px-4 py-2 text-sm transition-colors hover:bg-white/5" style={{ color: "var(--text-primary)" }}>✏️ Editar Perfil</button>
-                        <button onClick={() => navigate(`/admin/rutinas?userId=${user.id}`)} className="w-full flex items-center gap-2 text-left px-4 py-2 text-sm transition-colors hover:bg-white/5" style={{ color: "var(--accent)" }}><PlusCircle size={14} /> Rutina Personalizada</button>
-                        <button onClick={() => toggleStatus(user)} className="w-full text-left px-4 py-2 text-sm transition-colors hover:bg-white/5" style={{ color: "var(--text-primary)" }}>{user.isActive ? "⏸ Desactivar" : "▶ Activar"}</button>
-                        <button onClick={() => deleteUser(user)} className="w-full flex items-center gap-2 text-left px-4 py-2 text-sm transition-colors hover:bg-white/5" style={{ color: "var(--danger)" }}><Trash2 size={14} /> Eliminar</button>
+                        <button onClick={() => openEdit(user)} className="w-full text-left px-4 py-2 text-sm transition-colors hover:bg-[var(--surface-hover)]" style={{ color: "var(--text-primary)" }}>✏️ Editar Perfil</button>
+                        <button onClick={() => navigate(`/admin/rutinas?userId=${user.id}`)} className="w-full flex items-center gap-2 text-left px-4 py-2 text-sm transition-colors hover:bg-[var(--surface-hover)]" style={{ color: "var(--accent)" }}><PlusCircle size={14} /> Rutina Personalizada</button>
+                        <button onClick={() => toggleStatus(user)} className="w-full text-left px-4 py-2 text-sm transition-colors hover:bg-[var(--surface-hover)]" style={{ color: "var(--text-primary)" }}>{user.isActive ? "⏸ Desactivar" : "▶ Activar"}</button>
+                        <button onClick={() => deleteUser(user)} className="w-full flex items-center gap-2 text-left px-4 py-2 text-sm transition-colors hover:bg-[var(--surface-hover)]" style={{ color: "var(--danger)" }}><Trash2 size={14} /> Eliminar</button>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -237,10 +237,10 @@ export default function UsersPage() {
               <div>
                 <p className="font-bold text-base leading-tight truncate" style={{ color: "var(--text-primary)" }}>{getName(user)}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider" style={{ background: user.isActive ? "rgba(0,204,136,0.15)" : "rgba(255,77,77,0.15)", color: user.isActive ? "var(--success)" : "var(--danger)" }}>
+                  <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider" style={{ background: user.isActive ? "var(--accent-muted)" : "var(--error-muted)", color: user.isActive ? "var(--success)" : "var(--danger)" }}>
                     {user.isActive ? "Activo" : "Inactivo"}
                   </span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider" style={{ background: "rgba(0,0,255,0.1)", color: "var(--accent)" }}>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider" style={{ background: "var(--accent-muted)", color: "var(--accent)" }}>
                     {user.role}
                   </span>
                 </div>
@@ -258,7 +258,7 @@ export default function UsersPage() {
               </div>
 
               {/* Action Button */}
-              <motion.button onClick={() => navigate(`/admin/rutinas?userId=${user.id}`)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all" style={{ background: "rgba(0,0,255,0.1)", color: "var(--accent)", border: "1px solid rgba(0,0,255,0.2)" }}>
+              <motion.button onClick={() => navigate(`/admin/rutinas?userId=${user.id}`)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all" style={{ background: "var(--accent-muted)", color: "var(--accent)", border: "1px solid var(--accent)" }}>
                 <Dumbbell size={14} /> Crear Rutina
               </motion.button>
             </motion.div>
@@ -276,11 +276,11 @@ export default function UsersPage() {
       {/* User Modal */}
       <AnimatePresence>
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)" }} onClick={() => setShowModal(false)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-md rounded-3xl p-6" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }} onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "var(--overlay)", backdropFilter: "blur(8px)" }} onClick={() => setShowModal(false)}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-md rounded-3xl p-6" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-lg)" }} onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-black uppercase tracking-tight" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>{selectedUser ? "Editar Usuario" : "Nuevo Usuario"}</h2>
-                <button onClick={() => setShowModal(false)} className="p-1 rounded-full hover:bg-white/10" style={{ color: "var(--text-muted)" }}><X size={20} /></button>
+                <button onClick={() => setShowModal(false)} className="p-1 rounded-full hover:bg-[var(--surface-hover)]" style={{ color: "var(--text-muted)" }}><X size={20} /></button>
               </div>
 
               <div className="space-y-4">
@@ -311,7 +311,7 @@ export default function UsersPage() {
 
               <div className="flex gap-3 mt-8">
                 <Button variant="outline" onClick={() => setShowModal(false)} className="flex-1 text-sm font-bold border-none bg-background text-text-secondary">Cancelar</Button>
-                <Button onClick={handleSaveUser} disabled={isSaving} className="flex-1 gap-2 shadow-[0_0_20px_rgba(0,0,255,0.3)]">
+                <Button onClick={handleSaveUser} disabled={isSaving} className="flex-1 gap-2 accent-glow">
                   {isSaving && <Loader2 size={16} className="animate-spin" />}
                   Guardar
                 </Button>
@@ -324,9 +324,9 @@ export default function UsersPage() {
       {/* Assign Routine Modal */}
       <AnimatePresence>
         {showAssignModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)" }} onClick={() => setShowAssignModal(false)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-md rounded-3xl p-6 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 25px 50px -12px rgba(0,0,255,0.15)" }} onClick={(e) => e.stopPropagation()}>
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "rgba(0,0,255,0.1)", color: "var(--accent)" }}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "var(--overlay)", backdropFilter: "blur(8px)" }} onClick={() => setShowAssignModal(false)}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-md rounded-3xl p-6 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-lg)" }} onClick={(e) => e.stopPropagation()}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "var(--accent-muted)", color: "var(--accent)" }}>
                 <Zap size={32} />
               </div>
               <h2 className="text-xl font-black uppercase tracking-tight mb-2" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>Asignar Rutina</h2>
@@ -353,7 +353,7 @@ export default function UsersPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-6 right-6 px-4 py-3 rounded-xl text-sm font-semibold z-50"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-primary)", boxShadow: "0 10px 30px rgba(0,0,0,0.4)" }}
+            style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-primary)", boxShadow: "var(--shadow-md)" }}
           >
             {toast}
           </motion.div>

@@ -30,7 +30,7 @@ const statusConfig = {
   CANCELLED: { label:"Cancelado",  color:"var(--text-muted)", icon: XCircle },
 }
 
-const planColors = { STARTER:"#60a5fa", PRO:"var(--accent)", ENTERPRISE:"var(--warning)" }
+const planColors = { STARTER:"var(--info)", PRO:"var(--accent)", ENTERPRISE:"var(--warning)" }
 
 export default function PlatformTenants() {
   const [tenants, setTenants] = useState<Tenant[]>(initialTenants)
@@ -122,7 +122,7 @@ export default function PlatformTenants() {
           <h1 className="text-2xl font-black" style={{ color:"var(--text-primary)", fontFamily:"var(--font-heading)" }}>Gimnasios</h1>
           <p className="text-sm mt-0.5" style={{ color:"var(--text-muted)" }}>Gestiona todos los tenants de la plataforma</p>
         </div>
-        <Button onClick={openCreate} className="shadow-[0_0_20px_rgba(0,0,255,0.3)] gap-2">
+        <Button onClick={openCreate} className="accent-glow gap-2">
           <Plus size={16} /> Nuevo Gimnasio
         </Button>
       </div>
@@ -162,9 +162,9 @@ export default function PlatformTenants() {
               onClick={() => setFilter(f)}
               className="px-3 py-2 rounded-xl text-xs font-semibold transition-all"
               style={{
-                background: filter === f ? "rgba(0,0,255,0.12)" : "var(--surface)",
+                background: filter === f ? "var(--accent-muted)" : "var(--surface)",
                 color: filter === f ? "var(--accent)" : "var(--text-secondary)",
-                border: filter === f ? "1px solid rgba(0,0,255,0.25)" : "1px solid var(--border)",
+                border: filter === f ? "1px solid var(--accent)" : "1px solid var(--border)",
               }}
             >
               {f === "ALL" ? "Todos" : f.charAt(0) + f.slice(1).toLowerCase()}
@@ -202,7 +202,7 @@ export default function PlatformTenants() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0"
-                        style={{ background:"rgba(0,0,255,0.1)", color:"var(--accent)" }}>
+                        style={{ background:"var(--accent-muted)", color:"var(--accent)" }}>
                         {t.name[0]}
                       </div>
                       <div>
@@ -245,7 +245,7 @@ export default function PlatformTenants() {
                         <motion.div
                           initial={{ opacity:0, scale:0.9, y:-5 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0, scale:0.9 }}
                           className="absolute right-0 z-10 py-1 rounded-xl w-44 shadow-lg"
-                          style={{ background:"#222", border:"1px solid var(--border)", top:"100%" }}
+                          style={{ background:"var(--surface)", border:"1px solid var(--border)", top:"100%" }}
                         >
                           {[
                             { label:"✏️ Editar", fn:() => openEdit(t) },
@@ -289,7 +289,7 @@ export default function PlatformTenants() {
           <motion.div
             initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background:"rgba(0,0,0,0.7)", backdropFilter:"blur(6px)" }}
+            style={{ background:"var(--overlay)", backdropFilter:"blur(6px)" }}
             onClick={() => setShowModal(false)}
           >
             <motion.div
@@ -348,7 +348,7 @@ export default function PlatformTenants() {
                   <select
                     value={form.plan} onChange={e => setForm({ ...form, plan: e.target.value })}
                     className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ background:"rgba(255,255,255,0.05)", border:"1px solid var(--border)", color:"var(--text-primary)" }}
+                    style={{ background:"var(--input-bg)", border:"1px solid var(--border)", color:"var(--text-primary)" }}
                   >
                     <option value="STARTER">Starter — $29/mes</option>
                     <option value="PRO">Pro — $79/mes</option>
@@ -360,7 +360,7 @@ export default function PlatformTenants() {
                   <select
                     value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}
                     className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ background:"rgba(255,255,255,0.05)", border:"1px solid var(--border)", color:"var(--text-primary)" }}
+                    style={{ background:"var(--input-bg)", border:"1px solid var(--border)", color:"var(--text-primary)" }}
                   >
                     <option value="TRIAL">Trial</option>
                     <option value="ACTIVE">Activo</option>

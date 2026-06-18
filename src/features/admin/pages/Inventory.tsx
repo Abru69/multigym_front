@@ -1,6 +1,7 @@
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { mockProducts, productCategories } from "@/data/products"
+import { productCategories } from "@/data/products"
+import { getProducts } from "@/lib/api"
 import { formatCurrency } from "@/lib/utils"
 import { Search, Plus, Edit2, Trash2, Package, UploadCloud, AlertCircle, X, Image as ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/Button"
@@ -10,8 +11,24 @@ export default function Inventory() {
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState("all")
   const [showModal, setShowModal] = useState(false)
-  const [productsList, setProductsList] = useState(mockProducts)
+  const [productsList, setProductsList] = useState<any[]>([])
   const [editingProduct, setEditingProduct] = useState<any>(null)
+
+  useEffect(() => {
+    getProducts().then(apiProducts => {
+      setProductsList(apiProducts.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        stock: p.stock,
+        isAvailable: p.stock > 0,
+        slug: p.name.toLowerCase().replace(/ /g, '-'),
+        brand: 'MultiGym',
+        category: 'proteins',
+        image: 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=400&h=400&fit=crop'
+      })))
+    }).catch(e => console.error(e))
+  }, [])
   
   // Form state
   const [form, setForm] = useState({ name: "", price: "", stock: "", category: "proteinas", brand: "", description: "" })
@@ -87,7 +104,7 @@ export default function Inventory() {
           <h1 className="text-2xl font-black uppercase tracking-tight" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>Inventario</h1>
           <p className="text-sm mt-0.5" style={{ color: "var(--text-muted)" }}>{productsList.length} productos en la tienda</p>
         </div>
-        <Button onClick={openCreate} className="gap-2 shadow-[0_0_20px_rgba(0,0,255,0.3)]">
+        <Button onClick={openCreate} className="gap-2 accent-glow">
           <Plus size={16} /> Nuevo Producto
         </Button>
       </div>
@@ -104,7 +121,7 @@ export default function Inventory() {
       </div>
 
       {/* Table Card */}
-      <div className="rounded-3xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
+      <div className="rounded-3xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -130,7 +147,7 @@ export default function Inventory() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider" style={{ background: "rgba(255,255,255,0.05)", color: "var(--text-secondary)" }}>{product.category}</span>
+                      <span className="text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider" style={{ background: "var(--input-bg)", color: "var(--text-secondary)" }}>{product.category}</span>
                     </td>
                     <td className="px-6 py-4 text-sm font-black" style={{ color: "var(--text-primary)" }}>{formatCurrency(product.price)}</td>
                     <td className="px-6 py-4">
@@ -140,13 +157,13 @@ export default function Inventory() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider" style={{ background: product.isAvailable ? "rgba(0,204,136,0.15)" : "rgba(255,77,77,0.15)", color: product.isAvailable ? "var(--success)" : "var(--danger)" }}>
+                      <span className="text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider" style={{ background: product.isAvailable ? "var(--accent-muted)" : "var(--error-muted)", color: product.isAvailable ? "var(--success)" : "var(--danger)" }}>
                         {product.isAvailable ? "Activo" : "Inactivo"}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEdit(product)} className="p-2 rounded-lg transition-colors hover:bg-white/10" style={{ color: "var(--text-primary)" }}><Edit2 size={16} /></button>
+                        <button onClick={() => openEdit(product)} className="p-2 rounded-lg transition-colors hover:bg-[var(--surface-hover)]" style={{ color: "var(--text-primary)" }}><Edit2 size={16} /></button>
                         <button onClick={() => handleDelete(product.id, product.name)} className="p-2 rounded-lg transition-colors hover:bg-red-500/10" style={{ color: "var(--danger)" }}><Trash2 size={16} /></button>
                       </div>
                     </td>
@@ -168,12 +185,12 @@ export default function Inventory() {
       {/* Modal */}
       <AnimatePresence>
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)" }} onClick={() => setShowModal(false)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "var(--overlay)", backdropFilter: "blur(8px)" }} onClick={() => setShowModal(false)}>
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-2xl flex flex-col rounded-3xl overflow-hidden shadow-2xl" style={{ background: "var(--surface)", border: "1px solid var(--border)", maxHeight: "90vh" }} onClick={(e) => e.stopPropagation()}>
               
               <div className="p-6 border-b border-[var(--border)] flex items-center justify-between shrink-0">
                 <h2 className="text-xl font-black uppercase tracking-tight" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>{editingProduct ? "Editar Producto" : "Nuevo Producto"}</h2>
-                <button onClick={() => setShowModal(false)} className="p-2 rounded-full hover:bg-white/10" style={{ color: "var(--text-muted)" }}><X size={20} /></button>
+                <button onClick={() => setShowModal(false)} className="p-2 rounded-full hover:bg-[var(--surface-hover)]" style={{ color: "var(--text-muted)" }}><X size={20} /></button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-6">
@@ -181,7 +198,7 @@ export default function Inventory() {
                   {/* Image Upload Area */}
                   <div className="md:col-span-2">
                     <label className="block text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>Imagen del Producto</label>
-                    <div className="w-full aspect-square rounded-2xl flex flex-col items-center justify-center relative overflow-hidden transition-all cursor-pointer" style={{ border: `2px dashed ${dragActive ? "var(--accent)" : "var(--border)"}`, background: dragActive ? "rgba(0,0,255,0.05)" : "var(--background)" }} onDragOver={(e) => { e.preventDefault(); setDragActive(true) }} onDragLeave={() => setDragActive(false)} onDrop={(e) => { e.preventDefault(); setDragActive(false); if (e.dataTransfer.files?.[0]) handleFileChange({ target: { files: e.dataTransfer.files } }) }} onClick={() => fileInputRef.current?.click()}>
+                    <div className="w-full aspect-square rounded-2xl flex flex-col items-center justify-center relative overflow-hidden transition-all cursor-pointer" style={{ border: `2px dashed ${dragActive ? "var(--accent)" : "var(--border)"}`, background: dragActive ? "var(--accent-muted)" : "var(--bg-primary)" }} onDragOver={(e) => { e.preventDefault(); setDragActive(true) }} onDragLeave={() => setDragActive(false)} onDrop={(e) => { e.preventDefault(); setDragActive(false); if (e.dataTransfer.files?.[0]) handleFileChange({ target: { files: e.dataTransfer.files } }) }} onClick={() => fileInputRef.current?.click()}>
                       {imagePreview ? (
                         <>
                           <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
@@ -238,7 +255,7 @@ export default function Inventory() {
 
               <div className="p-6 border-t border-[var(--border)] shrink-0 flex gap-3 bg-[var(--surface)]">
                 <Button variant="outline" onClick={() => setShowModal(false)} className="flex-1 text-sm font-bold border-none bg-background text-text-secondary">Cancelar</Button>
-                <Button onClick={handleSave} className="flex-1 shadow-[0_0_20px_rgba(0,0,255,0.3)]">
+                <Button onClick={handleSave} className="flex-1 accent-glow">
                   {editingProduct ? "Guardar Cambios" : "Crear Producto"}
                 </Button>
               </div>

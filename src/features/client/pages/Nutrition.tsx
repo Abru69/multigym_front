@@ -61,14 +61,14 @@ export default function Nutrition() {
     <div className="space-y-6 pb-20 md:pb-0">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-heading font-black text-white uppercase tracking-tight">
+          <h1 className="text-3xl font-heading font-black text-[var(--text-primary)] uppercase tracking-tight">
             Plan Nutricional
           </h1>
           <p className="text-text-secondary text-sm">
             Controla tus macros y construye tu físico desde la cocina.
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-lg text-sm font-bold text-white shadow-sm">
+        <div className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-lg text-sm font-bold text-[var(--text-primary)] shadow-sm">
           <Flame size={16} className="text-accent" />
           <span>Fase: Volumen Limpio</span>
         </div>
@@ -87,7 +87,7 @@ export default function Nutrition() {
           </div>
           <div>
             <div className="flex items-end gap-1 mb-1">
-              <span className="text-3xl font-heading font-black text-white leading-none">{dailyMacros.calories.current}</span>
+              <span className="text-3xl font-heading font-black text-[var(--text-primary)] leading-none">{dailyMacros.calories.current}</span>
               <span className="text-sm font-medium text-text-secondary pb-1">/ {dailyMacros.calories.target}</span>
             </div>
             <p className="text-xs text-text-secondary">kcal consumidas</p>
@@ -114,7 +114,7 @@ export default function Nutrition() {
           >
             <span className="text-xs font-bold text-text-muted uppercase tracking-wider block mb-4">{macro.label}</span>
             <div className="flex items-end gap-1 mb-4">
-              <span className="text-2xl font-heading font-black text-white leading-none">{macro.current}</span>
+              <span className="text-2xl font-heading font-black text-[var(--text-primary)] leading-none">{macro.current}</span>
               <span className="text-xs font-medium text-text-secondary pb-1">/ {macro.target}g</span>
             </div>
             <div className="h-2 bg-background rounded-full overflow-hidden relative">
@@ -133,8 +133,8 @@ export default function Nutrition() {
         {/* Meal Plan */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center gap-2 mb-2">
-            <Utensils size={18} className="text-white" />
-            <h2 className="text-lg font-heading font-bold text-white uppercase tracking-tight">Comidas de Hoy</h2>
+            <Utensils size={18} style={{ color: "var(--text-primary)" }} />
+            <h2 className="text-lg font-heading font-bold text-[var(--text-primary)] uppercase tracking-tight">Comidas de Hoy</h2>
           </div>
           
           <div className="space-y-3">
@@ -159,7 +159,7 @@ export default function Nutrition() {
                   
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                      <h3 className={`font-bold ${meal.completed ? 'text-text-secondary line-through' : 'text-white'}`}>
+                      <h3 className={`font-bold ${meal.completed ? 'text-[var(--text-secondary)] line-through' : 'text-[var(--text-primary)]'}`}>
                         {meal.name}
                       </h3>
                       <div className="flex items-center gap-1 text-xs font-medium bg-background px-2 py-1 rounded-md text-text-secondary border border-border">
@@ -198,7 +198,7 @@ export default function Nutrition() {
             className="bg-surface border border-border rounded-2xl p-5"
           >
             <div className="flex justify-between items-start mb-6">
-              <h3 className="font-heading font-bold text-white uppercase tracking-tight">Hidratación</h3>
+              <h3 className="font-heading font-bold text-[var(--text-primary)] uppercase tracking-tight">Hidratación</h3>
               <Droplets size={18} className="text-blue-400" />
             </div>
             
@@ -232,7 +232,7 @@ export default function Nutrition() {
               <Info size={20} className="text-accent shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-sm font-bold text-accent uppercase tracking-wider mb-2">Nota del Coach</h4>
-                <p className="text-sm text-white/90 leading-relaxed">
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                   Recuerda pesar tus alimentos en crudo y priorizar el descanso. Hoy toca pierna, asegúrate de consumir todos tus carbohidratos en la comida pre y post entreno.
                 </p>
               </div>

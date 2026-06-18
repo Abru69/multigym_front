@@ -4,12 +4,14 @@ import { motion } from "framer-motion"
 import { useAuthStore } from "@/features/auth/store/authStore"
 import { Eye, EyeOff, Loader2, Building2 } from "lucide-react"
 import { getTenantFromSubdomain, getPlatformUrl } from "@/lib/tenant"
+import { resolveBranding } from "@/lib/tenantConfig"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 
 export default function Login() {
   const autoTenant = getTenantFromSubdomain()
+  const branding = autoTenant ? resolveBranding(autoTenant) : null
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [tenantId, setTenantId] = useState(autoTenant || "")
@@ -50,13 +52,13 @@ export default function Login() {
       </h2>
       <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
         {autoTenant
-          ? <>Conectado a <strong style={{ color: "var(--accent)" }}>{autoTenant}</strong></>
+          ? <>Conectado a <strong style={{ color: "var(--accent)" }}>{branding?.name || autoTenant}</strong></>
           : "Ingresa tus credenciales para continuar"
         }
       </p>
 
       {error && (
-        <div className="text-sm px-4 py-3 rounded-lg mb-4" style={{ background: "rgba(255,77,77,0.1)", color: "var(--danger)", border: "1px solid rgba(255,77,77,0.2)" }}>
+        <div className="text-sm px-4 py-3 rounded-lg mb-4" style={{ background: "var(--error-muted)", color: "var(--danger)", border: "1px solid var(--error)" }}>
           {error}
         </div>
       )}

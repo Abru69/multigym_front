@@ -1,18 +1,27 @@
 import { Outlet, Link } from "react-router-dom"
 import { motion } from "framer-motion"
+import { useTenantBranding } from "@/hooks/useTenantBranding"
+import { ThemeToggle } from "@/components/ui/ThemeToggle"
 
 export function AuthLayout() {
+  const { branding } = useTenantBranding()
+
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4"
+      className="min-h-screen flex items-center justify-center p-4 relative"
       style={{
         background: `
-          radial-gradient(ellipse at 20% 50%, rgba(204, 255, 0, 0.06) 0%, transparent 50%),
-          radial-gradient(ellipse at 80% 20%, rgba(204, 255, 0, 0.04) 0%, transparent 50%),
-          var(--background)
+          radial-gradient(ellipse at 20% 50%, var(--accent-muted) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 20%, var(--accent-muted) 0%, transparent 50%),
+          var(--bg-primary)
         `,
       }}
     >
+      {/* Theme toggle in corner */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -25,14 +34,14 @@ export function AuthLayout() {
             className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg"
             style={{ background: "var(--accent)", color: "var(--accent-text)" }}
           >
-            R4
+            {branding.logoAbbr}
           </div>
           <div>
             <h1 className="font-bold text-xl" style={{ color: "var(--text-primary)" }}>
-              Reto 4 Gym
+              {branding.name}
             </h1>
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              Nutrición & Entrenamiento
+              {branding.tagline}
             </p>
           </div>
         </Link>

@@ -77,7 +77,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           </div>
         </div>
 
-        <h3 className="text-base font-heading font-bold mb-1 line-clamp-2 text-white tracking-tight group-hover:text-accent transition-colors">
+        <h3 className="text-base font-heading font-bold mb-1 line-clamp-2 text-[var(--text-primary)] tracking-tight group-hover:text-[var(--accent)] transition-colors">
           {product.name}
         </h3>
         
@@ -92,7 +92,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               {formatCurrency(product.originalPrice)}
             </span>
           )}
-          <span className="text-lg font-black text-white">
+          <span className="text-lg font-black text-[var(--text-primary)]">
             {formatCurrency(product.price)}
           </span>
         </div>

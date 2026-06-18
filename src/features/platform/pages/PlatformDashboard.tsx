@@ -12,7 +12,7 @@ const metrics = [
   { label: "Gymnasios Activos",  value: "12",    change: "+3",    up: true,  icon: Building2,    color: "var(--accent)" },
   { label: "Total Miembros",     value: "1,427", change: "+18%",  up: true,  icon: Users,        color: "var(--success)" },
   { label: "MRR",                value: "$6,240",change: "+12%",  up: true,  icon: DollarSign,   color: "var(--warning)" },
-  { label: "Tasa Retención",     value: "94.2%", change: "+1.3%", up: true,  icon: TrendingUp,   color: "#8B5CF6" },
+  { label: "Tasa Retención",     value: "94.2%", change: "+1.3%", up: true,  icon: TrendingUp,   color: "var(--info)" },
 ]
 
 const growthData = [
@@ -27,7 +27,7 @@ const growthData = [
 ]
 
 const planDist = [
-  { name: "Starter",    value: 4, color: "#60a5fa" },
+  { name: "Starter",    value: 4, color: "var(--info)" },
   { name: "Pro",        value: 5, color: "var(--accent)" },
   { name: "Enterprise", value: 3, color: "var(--warning)" },
 ]
@@ -56,7 +56,7 @@ const statusColor: Record<string, string> = {
 }
 
 const planColor: Record<string, string> = {
-  STARTER:    "#60a5fa",
+  STARTER:    "var(--info)",
   PRO:        "var(--accent)",
   ENTERPRISE: "var(--warning)",
 }
@@ -191,7 +191,7 @@ export default function PlatformDashboard() {
               <div key={t.name} className="flex items-center gap-3">
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0"
-                  style={{ background: "rgba(0,0,255,0.1)", color: "var(--accent)" }}
+                  style={{ background: "var(--accent-muted)", color: "var(--accent)" }}
                 >
                   {t.name[0]}
                 </div>

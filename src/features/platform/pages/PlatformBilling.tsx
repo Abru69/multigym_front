@@ -28,7 +28,7 @@ const statusConfig: Record<string, any> = {
   PENDING: { color: "var(--warning)", icon: Clock,       label: "Pendiente" },
   FAILED:  { color: "var(--danger)",  icon: AlertCircle, label: "Fallido" },
 }
-const planColors: Record<string, string> = { STARTER:"#60a5fa", PRO:"var(--accent)", ENTERPRISE:"var(--warning)" }
+const planColors: Record<string, string> = { STARTER:"var(--info)", PRO:"var(--accent)", ENTERPRISE:"var(--warning)" }
 
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }
 const fadeUp = { hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }
@@ -44,9 +44,9 @@ export default function PlatformBilling() {
         </div>
         <button
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all"
-          style={{ background: "rgba(255,255,255,0.08)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
+          style={{ background: "var(--input-bg)", color: "var(--text-primary)", border: "1px solid var(--border)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-hover)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "var(--input-bg)")}
         >
           <Download size={16} /> Exportar
         </button>
@@ -80,14 +80,14 @@ export default function PlatformBilling() {
           {plans.map((p, i) => (
             <motion.div key={i} variants={fadeUp} className="p-6 rounded-2xl relative transition-transform hover:-translate-y-1"
               style={{
-                background: p.featured ? "rgba(0,0,255,0.05)" : "var(--surface)",
+                background: p.featured ? "var(--accent-muted)" : "var(--surface)",
                 border: `1px solid ${p.featured ? "var(--accent)" : "var(--border)"}`,
-                boxShadow: p.featured ? "0 10px 30px rgba(0,0,255,0.15)" : "none",
+                boxShadow: p.featured ? "var(--shadow-glow)" : "none",
               }}
             >
               {p.featured && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider"
-                  style={{ background: "linear-gradient(90deg, var(--accent), var(--detail))", color: "#fff" }}>
+                  style={{ background: "linear-gradient(90deg, var(--accent), var(--detail))", color: "var(--text-on-primary)" }}>
                   Más Popular
                 </div>
               )}
@@ -126,7 +126,7 @@ export default function PlatformBilling() {
                 const sc = statusConfig[inv.status]
                 return (
                   <motion.tr key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }}
-                    className="border-b last:border-b-0 transition-colors hover:bg-white/5" style={{ borderColor: "var(--border)" }}>
+                    className="border-b last:border-b-0 transition-colors hover:bg-[var(--surface-hover)]" style={{ borderColor: "var(--border)" }}>
                     <td className="px-4 py-3"><span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{inv.id}</span></td>
                     <td className="px-4 py-3"><span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{inv.tenant}</span></td>
                     <td className="px-4 py-3"><span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${planColors[inv.plan]}18`, color: planColors[inv.plan] }}>{inv.plan}</span></td>

@@ -86,3 +86,29 @@ export async function fetchApi<T>(
 
   return null as T;
 }
+
+// --- Typed Endpoints ---
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+}
+
+export interface Exercise {
+  id: string;
+  name: string;
+  muscleGroup: string;
+}
+
+export interface Workout {
+  id: string;
+  title: string;
+  startsAt: string;
+  endsAt: string;
+}
+
+export const getProducts = () => fetchApi<Product[]>("/api/products");
+export const getExercises = () => fetchApi<Exercise[]>("/api/exercises");
+export const getWorkouts = () => fetchApi<Workout[]>("/api/workouts");

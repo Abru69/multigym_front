@@ -25,7 +25,7 @@ export default function PlatformSettings() {
       <button
         onClick={onChange}
         className="w-11 h-6 rounded-full relative transition-colors"
-        style={{ background: checked ? "var(--accent)" : "rgba(255,255,255,0.1)" }}
+        style={{ background: checked ? "var(--accent)" : "var(--border)" }}
       >
         <div
           className="absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform"
@@ -57,7 +57,7 @@ export default function PlatformSettings() {
   const Card = ({ icon: Icon, title, children }: any) => (
     <UICard>
       <CardHeader className="flex flex-row items-center gap-3 border-b border-border pb-4">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 text-text-secondary">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary" style={{ background: "var(--input-bg)" }}>
           <Icon size={16} />
         </div>
         <CardTitle>{title}</CardTitle>
@@ -118,7 +118,7 @@ export default function PlatformSettings() {
       </div>
 
       {/* Danger Zone */}
-      <div className="p-6 rounded-2xl border" style={{ background: "rgba(239,68,68,0.03)", borderColor: "rgba(239,68,68,0.2)" }}>
+      <div className="p-6 rounded-2xl border" style={{ background: "var(--error-muted)", borderColor: "var(--error)" }}>
         <div className="flex items-center gap-3 mb-6">
           <AlertTriangle size={20} style={{ color: "var(--danger)" }} />
           <div>
@@ -127,10 +127,10 @@ export default function PlatformSettings() {
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors hover:bg-white/5" style={{ color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
+          <button className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors" style={{ color: "var(--text-secondary)", border: "1px solid var(--border)" }} onMouseEnter={e => e.currentTarget.style.background = "var(--surface-hover)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
             <RefreshCw size={14} /> Resetear Configuración
           </button>
-          <button className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors hover:bg-red-500/10" style={{ color: "var(--danger)", border: "1px solid rgba(239,68,68,0.3)" }}>
+          <button className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors" style={{ color: "var(--error)", border: "1px solid var(--error)" }} onMouseEnter={e => e.currentTarget.style.background = "var(--error-muted)"} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
             <AlertTriangle size={14} /> Poner plataforma en mantenimiento
           </button>
         </div>

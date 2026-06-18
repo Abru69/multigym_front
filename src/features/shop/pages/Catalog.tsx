@@ -1,5 +1,7 @@
-import { useState } from "react"
-import { mockProducts, productCategories } from "@/data/products"
+import { useState, useEffect } from "react"
+import { productCategories } from "@/data/products"
+import { getProducts } from "@/lib/api"
+import type { Product } from "@/types"
 import { ProductCard } from "@/components/molecules/ProductCard"
 import { Search, SlidersHorizontal, PackageX } from "lucide-react"
 import { Button } from "@/components/ui/Button"
@@ -8,8 +10,30 @@ import { Input } from "@/components/ui/Input"
 export default function Catalog() {
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState("all")
+  const [products, setProducts] = useState<Product[]>([])
 
-  const filtered = mockProducts.filter((p) => {
+  useEffect(() => {
+    getProducts().then(apiProducts => {
+      const mapped: Product[] = apiProducts.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        stock: p.stock,
+        isAvailable: p.stock > 0,
+        slug: p.name.toLowerCase().replace(/ /g, '-'),
+        brand: 'MultiGym',
+        rating: 5.0,
+        image: 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&q=80&w=800',
+        category: 'proteins',
+        description: 'Producto premium cargado desde backend.',
+        features: [],
+        nutritionalInfo: {}
+      }));
+      setProducts(mapped);
+    }).catch(e => console.error("Error fetching products", e));
+  }, []);
+
+  const filtered = products.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.brand.toLowerCase().includes(search.toLowerCase())
     const matchCategory = category === "all" || p.category === category
     return matchSearch && matchCategory

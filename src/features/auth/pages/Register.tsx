@@ -17,7 +17,7 @@ export default function Register() {
       <div className="text-center">
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
-          style={{ background: "rgba(0,0,255,0.1)" }}
+          style={{ background: "var(--accent-muted)" }}
         >
           <Building2 size={32} style={{ color: "var(--accent)" }} />
         </div>
@@ -32,7 +32,7 @@ export default function Register() {
 
         <div
           className="rounded-2xl p-5 mb-6 text-left space-y-3"
-          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}
+          style={{ background: "var(--input-bg)", border: "1px solid var(--border)" }}
         >
           <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
             ¿Cómo obtener acceso?
@@ -47,7 +47,7 @@ export default function Register() {
               <div key={i} className="flex items-start gap-3">
                 <span
                   className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5"
-                  style={{ background: "rgba(0,0,255,0.15)", color: "var(--accent)" }}
+                  style={{ background: "var(--accent-muted)", color: "var(--accent)" }}
                 >
                   {i + 1}
                 </span>

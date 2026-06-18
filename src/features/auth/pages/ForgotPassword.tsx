@@ -3,12 +3,14 @@ import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Mail, ArrowLeft, Loader2, CheckCircle, Building2 } from "lucide-react"
 import { getTenantFromSubdomain } from "@/lib/tenant"
+import { resolveBranding } from "@/lib/tenantConfig"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 
 export default function ForgotPassword() {
   const autoTenant = getTenantFromSubdomain()
+  const branding = autoTenant ? resolveBranding(autoTenant) : null
   const [email, setEmail] = useState("")
   const [tenantId, setTenantId] = useState(autoTenant || "")
   const [isLoading, setIsLoading] = useState(false)
@@ -53,7 +55,7 @@ export default function ForgotPassword() {
   if (sent) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "rgba(0,204,136,0.12)" }}>
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "var(--accent-muted)" }}>
           <CheckCircle size={32} style={{ color: "var(--success)" }} />
         </div>
         <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>Revisa tu correo</h2>
@@ -76,13 +78,13 @@ export default function ForgotPassword() {
       <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>Recuperar contraseña</h2>
       <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
         {autoTenant
-          ? <>Conectado a <strong style={{ color: "var(--accent)" }}>{autoTenant}</strong>. Ingresa tu correo para recibir el enlace de recuperación.</>
+          ? <>Conectado a <strong style={{ color: "var(--accent)" }}>{branding?.name || autoTenant}</strong>. Ingresa tu correo para recibir el enlace de recuperación.</>
           : "Ingresa tu código de gimnasio y correo electrónico."
         }
       </p>
 
       {error && (
-        <div className="text-sm px-4 py-3 rounded-lg mb-4" style={{ background: "rgba(255,77,77,0.1)", color: "var(--danger)", border: "1px solid rgba(255,77,77,0.2)" }}>
+        <div className="text-sm px-4 py-3 rounded-lg mb-4" style={{ background: "var(--error-muted)", color: "var(--danger)", border: "1px solid var(--error)" }}>
           {error}
         </div>
       )}

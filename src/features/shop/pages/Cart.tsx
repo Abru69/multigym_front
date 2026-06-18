@@ -42,7 +42,7 @@ export default function Cart() {
         <button
           onClick={clearCart}
           className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-          style={{ color: "var(--danger)", background: "rgba(255,77,77,0.1)" }}
+          style={{ color: "var(--danger)", background: "var(--error-muted)" }}
         >
           Vaciar carrito
         </button>
@@ -113,7 +113,7 @@ export default function Cart() {
                       onClick={() => removeItem(product.id)}
                       className="p-2 rounded-lg transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100"
                       style={{ color: "var(--danger)" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,77,77,0.1)")}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--error-muted)")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     >
                       <Trash2 size={16} />
@@ -142,7 +142,7 @@ export default function Cart() {
                 </span>
               </div>
               {shipping > 0 && (
-                <div className="text-[11px] p-2 rounded-lg" style={{ background: "rgba(204,255,0,0.1)", color: "var(--accent)" }}>
+                <div className="text-[11px] p-2 rounded-lg" style={{ background: "var(--accent-muted)", color: "var(--accent)" }}>
                   ¡Agrega {formatCurrency(1500 - subtotal)} más para obtener envío gratis!
                 </div>
               )}

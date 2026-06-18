@@ -62,14 +62,14 @@ export default function RoutineBuilder() {
               <ArrowLeft size={16} className="mr-2" /> Volver a Usuarios
             </Button>
           )}
-          <input type="text" value={routineName} onChange={(e) => setRoutineName(e.target.value)} className="text-2xl font-black uppercase tracking-tight bg-transparent outline-none w-full max-w-xl transition-colors hover:bg-white/5 focus:bg-white/5 rounded-lg px-2 -ml-2" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }} />
+          <input type="text" value={routineName} onChange={(e) => setRoutineName(e.target.value)} className="text-2xl font-black uppercase tracking-tight bg-transparent outline-none w-full max-w-xl transition-colors hover:bg-[var(--surface-hover)] focus:bg-[var(--surface-hover)] rounded-lg px-2 -ml-2" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }} />
           <p className="text-sm mt-1 ml-2 text-text-muted">
             {personalizedUser ? `Personalizando para: ${personalizedUser.name}` : "Constructor de Plantillas"} · {Object.values(dayExercises).reduce((acc, day) => acc + day.length, 0)} ejercicios
           </p>
         </div>
         <div className="flex items-center gap-3">
           {personalizedUser ? (
-            <Button onClick={() => { alert(`Rutina personalizada guardada y asignada a ${personalizedUser.name}`); navigate("/admin/usuarios") }} className="gap-2 shadow-[0_0_20px_rgba(0,0,255,0.3)]">
+            <Button onClick={() => { alert(`Rutina personalizada guardada y asignada a ${personalizedUser.name}`); navigate("/admin/usuarios") }} className="gap-2 accent-glow">
               <Check size={16} />
               Guardar y Asignar a {personalizedUser.name.split(" ")[0]}
             </Button>
@@ -78,7 +78,7 @@ export default function RoutineBuilder() {
               <Button variant="outline" onClick={() => alert("Rutina guardada en la biblioteca general.")}>
                 Guardar Plantilla
               </Button>
-              <Button onClick={() => setShowAssignModal(true)} className="gap-2 shadow-[0_0_20px_rgba(0,0,255,0.3)]">
+              <Button onClick={() => setShowAssignModal(true)} className="gap-2 accent-glow">
                 <Users size={16} />
                 Guardar y Asignar
               </Button>
@@ -92,7 +92,7 @@ export default function RoutineBuilder() {
         {DAYS.map((d) => (
           <button key={d.key} onClick={() => setSelectedDay(d.key)} className="px-5 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2" style={{ background: selectedDay === d.key ? "var(--accent)" : "var(--surface)", color: selectedDay === d.key ? "var(--accent-text)" : "var(--text-secondary)", border: selectedDay === d.key ? "none" : "1px solid var(--border)", transform: selectedDay === d.key ? "scale(1.05)" : "scale(1)" }}>
             {d.label}
-            <span className="flex items-center justify-center w-5 h-5 rounded-md text-[10px]" style={{ background: selectedDay === d.key ? "rgba(255,255,255,0.2)" : "var(--background)", color: selectedDay === d.key ? "inherit" : "var(--text-muted)" }}>{dayExercises[d.key].length}</span>
+            <span className="flex items-center justify-center w-5 h-5 rounded-md text-[10px]" style={{ background: selectedDay === d.key ? "var(--accent-muted)" : "var(--bg-primary)", color: selectedDay === d.key ? "var(--accent)" : "var(--text-muted)" }}>{dayExercises[d.key].length}</span>
           </button>
         ))}
       </div>
@@ -101,8 +101,8 @@ export default function RoutineBuilder() {
       <div className="space-y-4">
         <AnimatePresence>
           {currentExercises.map((exercise, index) => (
-            <motion.div key={exercise.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: index * 0.05 }} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl group relative" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
-              <div className="cursor-grab sm:mt-0 mt-2 p-2 hover:bg-white/5 rounded-lg transition-colors" style={{ color: "var(--text-muted)" }}>
+            <motion.div key={exercise.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: index * 0.05 }} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl group relative" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}>
+              <div className="cursor-grab sm:mt-0 mt-2 p-2 hover:bg-[var(--surface-hover)] rounded-lg transition-colors" style={{ color: "var(--text-muted)" }}>
                 <GripVertical size={18} />
               </div>
 
@@ -148,7 +148,7 @@ export default function RoutineBuilder() {
         </AnimatePresence>
 
         {/* Add button */}
-        <Button variant="outline" onClick={addExercise} className="w-full h-14 border-dashed gap-3 text-text-secondary bg-transparent hover:bg-white/5 hover:border-accent hover:text-accent border-2">
+        <Button variant="outline" onClick={addExercise} className="w-full h-14 border-dashed gap-3 text-text-secondary bg-transparent hover:bg-[var(--surface-hover)] hover:border-accent hover:text-accent border-2">
           <Plus size={18} /> Agregar Ejercicio a {DAYS.find(d => d.key === selectedDay)?.label}
         </Button>
 
@@ -164,15 +164,15 @@ export default function RoutineBuilder() {
       {/* Assign Modal */}
       <AnimatePresence>
         {showAssignModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)" }} onClick={() => setShowAssignModal(false)}>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-lg flex flex-col rounded-3xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)", maxHeight: "85vh" }} onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "var(--overlay)", backdropFilter: "blur(8px)" }} onClick={() => setShowAssignModal(false)}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-lg flex flex-col rounded-3xl overflow-hidden" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-lg)", maxHeight: "85vh" }} onClick={(e) => e.stopPropagation()}>
               
               <div className="p-6 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface)] shrink-0">
                 <div>
                   <h2 className="text-xl font-black uppercase tracking-tight" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>Asignar Rutina</h2>
                   <p className="text-xs mt-1" style={{ color: "var(--accent)" }}>{routineName}</p>
                 </div>
-                <button onClick={() => setShowAssignModal(false)} className="p-2 rounded-full hover:bg-white/10" style={{ color: "var(--text-muted)" }}><X size={20} /></button>
+                <button onClick={() => setShowAssignModal(false)} className="p-2 rounded-full hover:bg-[var(--surface-hover)]" style={{ color: "var(--text-muted)" }}><X size={20} /></button>
               </div>
 
               <div className="p-4 shrink-0 bg-[var(--background)]">
@@ -190,7 +190,7 @@ export default function RoutineBuilder() {
                       const next = new Set(selectedUsers)
                       isSelected ? next.delete(user.id) : next.add(user.id)
                       setSelectedUsers(next)
-                    }} className="flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all border" style={{ background: isSelected ? "rgba(0,0,255,0.08)" : "var(--surface)", borderColor: isSelected ? "var(--accent)" : "var(--border)" }}>
+                    }} className="flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all border" style={{ background: isSelected ? "var(--accent-muted)" : "var(--surface)", borderColor: isSelected ? "var(--accent)" : "var(--border)" }}>
                       <div className="w-5 h-5 rounded flex items-center justify-center shrink-0 transition-colors" style={{ border: `1px solid ${isSelected ? "var(--accent)" : "var(--border)"}`, background: isSelected ? "var(--accent)" : "transparent" }}>
                         {isSelected && <Check size={12} color="white" strokeWidth={3} />}
                       </div>

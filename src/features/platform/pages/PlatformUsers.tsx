@@ -9,9 +9,9 @@ interface PUser { id:string; name:string; email:string; role:Role; status:Status
 
 const roleConfig: Record<Role, { icon: React.ElementType; color: string; label: string }> = {
   SUPER_ADMIN: { icon: Shield,      color:"var(--warning)",  label:"Super Admin" },
-  SUPPORT:     { icon: Headphones,  color:"#60a5fa",         label:"Soporte" },
+  SUPPORT:     { icon: Headphones,  color:"var(--info)",         label:"Soporte" },
   DEVOPS:      { icon: Code,        color:"var(--success)",  label:"DevOps" },
-  SALES:       { icon: TrendingUp,  color:"#fb923c",         label:"Ventas" },
+  SALES:       { icon: TrendingUp,  color:"var(--warning)",         label:"Ventas" },
 }
 
 const initialUsers: PUser[] = [
@@ -67,7 +67,7 @@ export default function PlatformUsers() {
           <h1 className="text-2xl font-black" style={{color:"var(--text-primary)",fontFamily:"var(--font-heading)"}}>Usuarios de Plataforma</h1>
           <p className="text-sm mt-0.5" style={{color:"var(--text-muted)"}}>Administra los accesos al panel de gestión</p>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm" style={{background:"var(--accent)",color:"#fff",boxShadow:"0 0 20px rgba(0,0,255,0.3)"}}>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm" style={{background:"var(--accent)",color:"var(--text-on-primary)",boxShadow:"var(--shadow-glow)"}}>
           <Plus size={16}/> Nuevo Usuario
         </button>
       </div>
@@ -114,7 +114,7 @@ export default function PlatformUsers() {
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0" style={{background:"linear-gradient(135deg,var(--accent),var(--detail))",color:"#fff"}}>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0" style={{background:"linear-gradient(135deg,var(--accent),var(--detail))",color:"var(--text-on-primary)"}}>
                         {u.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
                       </div>
                       <div>
@@ -140,7 +140,7 @@ export default function PlatformUsers() {
                     <AnimatePresence>
                       {openMenu===u.id&&(
                         <motion.div initial={{opacity:0,scale:0.9}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.9}}
-                          className="absolute right-0 z-10 py-1 rounded-xl w-40 shadow-lg" style={{background:"#222",border:"1px solid var(--border)",top:"100%"}}>
+                          className="absolute right-0 z-10 py-1 rounded-xl w-40 shadow-lg" style={{background:"var(--surface)",border:"1px solid var(--border)",top:"100%"}}>
                           {[{label:"✏️ Editar",fn:()=>openEdit(u)},{label:u.status==="ACTIVE"?"⏸ Desactivar":"▶ Activar",fn:()=>toggleStatus(u)},{label:"🗑 Eliminar",fn:()=>deleteUser(u),danger:true}].map(item=>(
                             <button key={item.label} onClick={item.fn} className="block w-full text-left px-4 py-2 text-sm transition-colors" style={{color:item.danger?"var(--danger)":"var(--text-secondary)"}}
                               onMouseEnter={e=>(e.currentTarget.style.background="var(--surface-hover)")} onMouseLeave={e=>(e.currentTarget.style.background="transparent")}>
@@ -163,7 +163,7 @@ export default function PlatformUsers() {
         {showModal&&(
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{background:"rgba(0,0,0,0.7)",backdropFilter:"blur(6px)"}} onClick={()=>setShowModal(false)}>
+            style={{background:"var(--overlay)",backdropFilter:"blur(6px)"}} onClick={()=>setShowModal(false)}>
             <motion.div initial={{scale:0.9}} animate={{scale:1}} exit={{scale:0.9}}
               className="w-full max-w-md rounded-2xl p-6" onClick={e=>e.stopPropagation()}
               style={{background:"var(--surface)",border:"1px solid var(--border)"}}>
@@ -177,7 +177,7 @@ export default function PlatformUsers() {
                     <label className="block text-xs font-semibold mb-1.5" style={{color:"var(--text-secondary)"}}>{f.label}</label>
                     <input type={f.type??"text"} value={(form as any)[f.key]} onChange={e=>setForm({...form,[f.key]:e.target.value})} placeholder={f.placeholder}
                       className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                      style={{background:"rgba(255,255,255,0.05)",border:"1px solid var(--border)",color:"var(--text-primary)"}}
+                      style={{background:"var(--input-bg)",border:"1px solid var(--border)",color:"var(--text-primary)"}}
                       onFocus={e=>(e.target.style.borderColor="var(--accent)")} onBlur={e=>(e.target.style.borderColor="var(--border)")}/>
                   </div>
                 ))}
@@ -185,7 +185,7 @@ export default function PlatformUsers() {
                   <label className="block text-xs font-semibold mb-1.5" style={{color:"var(--text-secondary)"}}>Rol</label>
                   <select value={form.role} onChange={e=>setForm({...form,role:e.target.value as Role})}
                     className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{background:"rgba(255,255,255,0.05)",border:"1px solid var(--border)",color:"var(--text-primary)"}}>
+                    style={{background:"var(--input-bg)",border:"1px solid var(--border)",color:"var(--text-primary)"}}>
                     <option value="SUPER_ADMIN">Super Admin</option>
                     <option value="SUPPORT">Soporte</option>
                     <option value="DEVOPS">DevOps</option>
@@ -195,7 +195,7 @@ export default function PlatformUsers() {
               </div>
               <div className="flex justify-end gap-3 mt-6">
                 <button onClick={()=>setShowModal(false)} className="px-4 py-2 rounded-xl text-sm font-semibold" style={{background:"var(--surface-hover)",color:"var(--text-secondary)"}}>Cancelar</button>
-                <button onClick={save} className="px-4 py-2 rounded-xl text-sm font-semibold" style={{background:"var(--accent)",color:"#fff"}}>{editing?"Guardar":"Crear"}</button>
+                <button onClick={save} className="px-4 py-2 rounded-xl text-sm font-semibold" style={{background:"var(--accent)",color:"var(--text-on-primary)"}}>{editing?"Guardar":"Crear"}</button>
               </div>
             </motion.div>
           </motion.div>

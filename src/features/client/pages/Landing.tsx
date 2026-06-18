@@ -5,6 +5,8 @@ import { Dumbbell, ShoppingBag, TrendingUp, ChevronRight, Zap, Shield, Users, Lo
 import { Button } from "@/components/ui/Button"
 import { useAuthStore } from "@/features/auth/store/authStore"
 import { getTenantUrl } from "@/lib/tenant"
+import { useTenantBranding } from "@/hooks/useTenantBranding"
+import SaaSLanding from "./SaaSLanding"
 
 
 const features = [
@@ -53,17 +55,24 @@ const heroItem = {
 export default function Landing() {
   const featuresRef = useRef(null)
   const isFeaturesInView = useInView(featuresRef, { once: true, margin: "-100px" })
-  const { user, isAuthenticated, logout, tenantId } = useAuthStore()
+  const { user, isAuthenticated, logout, tenantId: authTenantId } = useAuthStore()
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
 
+  // ─── Tenant Branding ───────────────────────────────────────────
+  const { branding, isTenantContext } = useTenantBranding()
+
+  if (!isTenantContext) {
+    return <SaaSLanding />
+  }
+
   const portalLink = user?.role === "admin" ? "/admin" : "/app/rutinas"
   const ctaText = isAuthenticated 
-    ? user?.role === "admin" ? "Ir al Panel de Control" : "Ir a mis Rutinas"
-    : "Comenzar Ahora"
+    ? user?.role === "admin" ? branding.hero.ctaAuthenticatedAdmin : branding.hero.ctaAuthenticatedClient
+    : branding.hero.ctaText
 
   const handleLogout = () => {
-    const currentTenantId = tenantId || user?.tenantId
+    const currentTenantId = authTenantId || user?.tenantId
     logout()
     setShowMenu(false)
     if (currentTenantId) {
@@ -77,36 +86,46 @@ export default function Landing() {
     <div className="min-h-screen bg-background font-sans">
       {/* Hero Section */}
       <section className="relative min-h-screen flex flex-col overflow-hidden">
-        {/* Video Background */}
+        {/* Video / Image Background */}
         <div className="absolute inset-0 z-0">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-            src="/vid_sup.mp4"
-          />
+          {branding.heroVideo ? (
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+              src={branding.heroVideo}
+            />
+          ) : branding.heroImage ? (
+            <img
+              src={branding.heroImage}
+              alt={branding.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-background" />
+          )}
           {/* Overlay to darken the video for contrast */}
           <div className="absolute inset-0 bg-black/60 z-10" />
           {/* Subtle gradient from bottom to blend into the next section */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#101010] via-transparent to-transparent z-10" />
+          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[var(--surface)] to-transparent z-10 pointer-events-none" />
         </div>
 
         {/* Nav */}
-        <nav className="relative z-20 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto w-full">
+        <nav className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center font-black text-sm bg-accent text-accent-text">
-              R4
+              {branding.logoAbbr}
             </div>
             <span className="font-heading font-bold text-xl tracking-tight text-white">
-              RETO 4
+              {branding.name.toUpperCase()}
             </span>
           </div>
           <div className="flex items-center gap-4">
             <Link
               to="/tienda"
-              className="hidden sm:block text-sm font-semibold px-4 py-2 text-text-secondary hover:text-white transition-colors"
+              className="hidden sm:block text-sm font-semibold px-4 py-2 text-white/80 hover:text-white transition-colors"
             >
               Tienda
             </Link>
@@ -135,22 +154,22 @@ export default function Landing() {
                       <Link 
                         to={portalLink} 
                         onClick={() => setShowMenu(false)}
-                        className="block px-4 py-2 text-sm text-white hover:bg-background transition-colors"
+                        className="block px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
                       >
                         Mi Portal
                       </Link>
                       <Link 
                         to="/tienda" 
                         onClick={() => setShowMenu(false)}
-                        className="block px-4 py-2 text-sm text-white hover:bg-background transition-colors sm:hidden"
+                        className="block px-4 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors sm:hidden"
                       >
                         Tienda
                       </Link>
-                      <div className="h-px bg-border my-1" />
+                      <div className="h-px bg-[var(--border)] my-1" />
                       <Button 
                         variant="ghost"
                         onClick={handleLogout} 
-                        className="w-full justify-start rounded-none px-4 py-2 text-danger hover:bg-background"
+                        className="w-full justify-start rounded-none px-4 py-2 text-[var(--error)] hover:bg-[var(--error-muted)]"
                       >
                         <LogOut size={14} /> Cerrar Sesión
                       </Button>
@@ -183,7 +202,7 @@ export default function Landing() {
             <motion.div variants={heroItem} className="mb-6">
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold bg-detail/15 text-detail tracking-widest uppercase">
                 <Zap size={14} />
-                Alto Rendimiento
+                {branding.hero.badge}
               </span>
             </motion.div>
 
@@ -191,15 +210,15 @@ export default function Landing() {
               variants={heroItem}
               className="font-heading font-black text-5xl sm:text-7xl lg:text-8xl leading-[1.1] mb-8 text-white uppercase tracking-tight"
             >
-              TU TRANSFORMACIÓN <br />
-              <span className="text-accent">EMPIEZA AQUÍ</span>
+              {branding.hero.title} <br />
+              <span className="text-accent">{branding.hero.titleAccent}</span>
             </motion.h1>
 
             <motion.p
               variants={heroItem}
-              className="text-lg sm:text-xl text-text-secondary max-w-2xl mx-auto mb-12 font-medium leading-relaxed"
+              className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-12 font-medium leading-relaxed"
             >
-              Entrenamientos inteligentes, nutrición experta y la suplementación que necesitas. Todo en un solo lugar.
+              {branding.hero.subtitle}
             </motion.p>
 
             <motion.div variants={heroItem} className="flex flex-col sm:flex-row items-center gap-5 w-full sm:w-auto">
@@ -217,9 +236,9 @@ export default function Landing() {
                 <Button
                   variant="outline"
                   onClick={() => navigate("/tienda")}
-                  className="px-10 h-14 w-full sm:w-auto uppercase tracking-wider backdrop-blur-md bg-surface/50 text-white text-sm font-bold"
+                  className="px-10 h-14 w-full sm:w-auto uppercase tracking-wider backdrop-blur-md bg-white/10 hover:bg-white/20 text-white text-sm font-bold border-none"
                 >
-                  Comprar Suplementos
+                  {branding.hero.secondaryCta}
                 </Button>
               </motion.div>
             </motion.div>
@@ -230,11 +249,7 @@ export default function Landing() {
       {/* Stats Section */}
       <section className="bg-surface border-y border-border">
         <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col sm:flex-row items-center justify-center gap-12 sm:gap-24">
-          {[
-            ["500+", "Atletas"],
-            ["1200+", "Rutinas Completadas"],
-            ["98%", "Retención"],
-          ].map(([val, label]) => (
+          {branding.stats.map(([val, label]) => (
             <div key={label} className="text-center">
               <p className="font-heading font-black text-4xl sm:text-5xl text-accent mb-1">{val}</p>
               <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">{label}</p>
@@ -246,11 +261,11 @@ export default function Landing() {
       {/* Features Section */}
       <section className="px-6 py-24 sm:py-32 max-w-7xl mx-auto" ref={featuresRef}>
         <div className="text-center mb-20">
-          <h2 className="font-heading font-black text-3xl sm:text-5xl text-white uppercase tracking-tight mb-4">
-            Todo en una <span className="text-accent">sola plataforma</span>
+          <h2 className="font-heading font-black text-3xl sm:text-5xl text-[var(--text-primary)] uppercase tracking-tight mb-4">
+            {branding.featuresHeading} <span className="text-accent">{branding.featuresHeadingAccent}</span>
           </h2>
           <p className="text-text-secondary text-lg max-w-2xl mx-auto">
-            La disciplina requiere las herramientas adecuadas. Diseñado para maximizar tus resultados sin distracciones.
+            {branding.featuresSubtitle}
           </p>
         </div>
 
@@ -269,7 +284,7 @@ export default function Landing() {
               <div className="w-14 h-14 rounded-xl bg-background border border-border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <f.icon size={28} className="text-accent" strokeWidth={1.5} />
               </div>
-              <h3 className="font-heading font-bold text-xl text-white mb-3 tracking-tight">
+              <h3 className="font-heading font-bold text-xl text-[var(--text-primary)] mb-3 tracking-tight">
                 {f.title}
               </h3>
               <p className="text-text-secondary text-sm leading-relaxed">
@@ -286,22 +301,23 @@ export default function Landing() {
           {/* Glow effect behind */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent/20 blur-[100px] pointer-events-none" />
           
-          <h2 className="font-heading font-black text-4xl sm:text-6xl text-white uppercase tracking-tight mb-6 relative z-10">
-            {isAuthenticated ? "¿LISTO PARA ENTRENAR?" : "¿LISTO PARA EL RETO?"}
+          <h2 className="font-heading font-black text-4xl sm:text-6xl text-[var(--text-primary)] uppercase tracking-tight mb-6 relative z-10">
+            {isAuthenticated ? branding.ctaHeadingAuth : branding.ctaHeadingGuest}
           </h2>
           <p className="text-text-secondary text-lg mb-10 max-w-xl mx-auto relative z-10">
-            {isAuthenticated 
-              ? "Tu transformación no espera. Accede a tus rutinas y sigue superando tus límites."
-              : "Únete a la plataforma definitiva de entrenamiento. Rompe tus límites y construye tu mejor versión."}
+            {isAuthenticated ? branding.ctaSubAuth : branding.ctaSubGuest}
           </p>
           
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block relative z-10">
             <Button
               variant="outline"
               onClick={() => navigate(isAuthenticated ? portalLink : "/registro")}
-              className="px-10 h-14 text-sm font-bold bg-white text-black hover:bg-accent hover:text-accent-text uppercase tracking-wider gap-3 border-none"
+              className="px-10 h-14 text-sm font-bold uppercase tracking-wider gap-3 border-none transition-colors"
+              style={{ background: "var(--text-primary)", color: "var(--bg-primary)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--accent)"; e.currentTarget.style.color = "var(--accent-text)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "var(--text-primary)"; e.currentTarget.style.color = "var(--bg-primary)"; }}
             >
-              {isAuthenticated ? "Ir a mi Portal" : "Crear Cuenta Gratis"}
+              {isAuthenticated ? branding.ctaButtonAuth : branding.ctaButtonGuest}
               <ChevronRight size={18} strokeWidth={3} />
             </Button>
           </motion.div>
@@ -313,18 +329,20 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded flex items-center justify-center font-black text-xs bg-accent text-accent-text">
-              R4
+              {branding.logoAbbr}
             </div>
-            <span className="font-heading font-bold tracking-tight text-white">
-              RETO 4 GYM
+            <span className="font-heading font-bold tracking-tight text-[var(--text-primary)]">
+              {branding.name.toUpperCase()}
             </span>
           </div>
           <div className="flex items-center gap-6">
-            <Link to="/platform/login" className="text-xs font-semibold text-text-muted hover:text-accent transition-colors">
-              Panel SaaS (Propietario)
-            </Link>
+            {!isTenantContext && (
+              <Link to="/platform/login" className="text-xs font-semibold text-text-muted hover:text-accent transition-colors">
+                Panel SaaS (Propietario)
+              </Link>
+            )}
             <p className="text-xs font-medium text-text-muted">
-              © {new Date().getFullYear()} Reto 4 Gym. Alto Rendimiento.
+              © {new Date().getFullYear()} {branding.name}. {branding.tagline}.
             </p>
           </div>
         </div>

@@ -3,6 +3,8 @@ import { Outlet, NavLink, Link, useLocation, useNavigate } from "react-router-do
 import { motion, AnimatePresence } from "framer-motion"
 import { useCartStore } from "@/features/shop/store/cartStore"
 import { useAuthStore } from "@/features/auth/store/authStore"
+import { useTenantBranding } from "@/hooks/useTenantBranding"
+import { ThemeToggle } from "@/components/ui/ThemeToggle"
 import { Dumbbell, TrendingUp, ShoppingBag, User, ShoppingCart, Utensils, LogOut } from "lucide-react"
 import { getTenantUrl } from "@/lib/tenant"
 
@@ -16,6 +18,7 @@ const clientNav = [
 export function ClientLayout() {
   const cartCount = useCartStore((s) => s.itemCount())
   const { isAuthenticated, user, logout, tenantId } = useAuthStore()
+  const { branding } = useTenantBranding()
   const location = useLocation()
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
@@ -34,12 +37,12 @@ export function ClientLayout() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "var(--background)" }}>
+    <div className="flex flex-col min-h-screen" style={{ background: "var(--bg-primary)" }}>
       {/* Header */}
       <header
         className="sticky top-0 z-30 flex items-center justify-between px-4 py-3"
         style={{
-          background: "rgba(10,10,10,0.85)",
+          background: "var(--header-bg)",
           backdropFilter: "blur(12px)",
           borderBottom: "1px solid var(--border)",
         }}
@@ -50,10 +53,10 @@ export function ClientLayout() {
               className="w-9 h-9 rounded-lg flex items-center justify-center font-black text-xs"
               style={{ background: "var(--accent)", color: "var(--accent-text)" }}
             >
-              R4
+              {branding.logoAbbr}
             </div>
             <span className="font-bold text-sm hidden sm:block" style={{ color: "var(--text-primary)" }}>
-              Reto 4 Gym
+              {branding.name}
             </span>
           </Link>
 
@@ -65,8 +68,9 @@ export function ClientLayout() {
                   to={item.to}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
                   style={({ isActive }) => ({
-                    color: isActive ? "var(--accent)" : "var(--text-secondary)",
-                    background: isActive ? "var(--surface)" : "transparent",
+                    color: isActive ? "var(--accent-text)" : "var(--text-secondary)",
+                    background: isActive ? "var(--accent)" : "transparent",
+                    boxShadow: isActive ? "var(--shadow-md)" : "none",
                   })}
                 >
                   {item.label}
@@ -77,6 +81,7 @@ export function ClientLayout() {
         </div>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <Link
             to="/tienda/carrito"
             className="relative p-2 rounded-lg transition-colors"
@@ -98,9 +103,10 @@ export function ClientLayout() {
             <div className="relative">
               <button 
                 onClick={() => setShowMenu(!showMenu)}
-                className="flex items-center gap-2 text-xs font-bold pl-2.5 pr-3.5 py-1.5 rounded-lg bg-surface border border-border text-white hover:border-accent transition-colors"
+                className="flex items-center gap-2 text-xs font-bold pl-2.5 pr-3.5 py-1.5 rounded-lg transition-colors"
+                style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
               >
-                <div className="w-5 h-5 rounded-full bg-accent/20 text-accent flex items-center justify-center overflow-hidden">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "var(--accent-muted)", color: "var(--accent)" }}>
                   {user?.avatar ? <img src={user.avatar} className="w-full h-full object-cover" alt={user.name} /> : <User size={12} />}
                 </div>
                 <span className="hidden sm:block truncate">Bienvenido, {user?.name.split(" ")[0]}</span>
@@ -112,21 +118,28 @@ export function ClientLayout() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl overflow-hidden py-1 z-50"
+                    className="absolute right-0 mt-2 w-48 rounded-xl shadow-xl overflow-hidden py-1 z-50"
+                    style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
                   >
                     <button 
                       onClick={() => {
                         setShowMenu(false)
                         navigate(portalLink)
                       }}
-                      className="w-full text-left block px-4 py-2 text-sm text-white hover:bg-background transition-colors"
+                      className="w-full text-left block px-4 py-2 text-sm transition-colors"
+                      style={{ color: "var(--text-primary)" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-hover)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     >
                       Mi Portal
                     </button>
-                    <div className="h-px bg-border my-1" />
+                    <div className="h-px" style={{ background: "var(--border)" }} />
                     <button 
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-danger hover:bg-background transition-colors flex items-center gap-2"
+                      className="w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2"
+                      style={{ color: "var(--error)" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--error-muted)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     >
                       <LogOut size={14} /> Cerrar Sesión
                     </button>
@@ -166,7 +179,7 @@ export function ClientLayout() {
         <nav
           className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around px-2 py-2 lg:hidden"
           style={{
-            background: "rgba(14,14,14,0.95)",
+            background: "var(--header-bg)",
             backdropFilter: "blur(12px)",
             borderTop: "1px solid var(--border)",
           }}
@@ -177,7 +190,8 @@ export function ClientLayout() {
               to={item.to}
               className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors"
               style={({ isActive }) => ({
-                color: isActive ? "var(--accent)" : "var(--text-muted)",
+                color: isActive ? "var(--accent-text)" : "var(--text-muted)",
+                background: isActive ? "var(--accent)" : "transparent",
               })}
             >
               <item.icon size={20} />

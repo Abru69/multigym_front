@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="w-16 h-16 bg-danger/10 text-danger rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle size={32} />
             </div>
-            <h1 className="text-xl font-bold text-white mb-3">Algo salió mal</h1>
+            <h1 className="text-xl font-bold text-[var(--text-primary)] mb-3">Algo salió mal</h1>
             <p className="text-sm text-text-secondary mb-6">
               Ha ocurrido un error inesperado en la aplicación. Nuestro equipo técnico ha sido notificado.
             </p>

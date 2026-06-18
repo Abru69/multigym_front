@@ -146,7 +146,7 @@ export default function Checkout() {
             <h2 className="text-xl font-bold mb-6 text-[var(--text-primary)]">Información de Pago</h2>
             
             <form onSubmit={handleSimulatePayment} className="space-y-4">
-              <div className="p-4 rounded-xl border border-[var(--accent)] bg-[rgba(204,255,0,0.05)] relative overflow-hidden mb-6">
+              <div className="p-4 rounded-xl border border-[var(--accent)] relative overflow-hidden mb-6" style={{ background: "var(--accent-muted)" }}>
                 <div className="flex items-center gap-3 mb-4">
                   <CreditCard size={20} className="text-[var(--accent)]" />
                   <span className="font-semibold text-[var(--text-primary)]">Tarjeta de Crédito / Débito</span>
@@ -189,7 +189,7 @@ export default function Checkout() {
             animate={{ opacity: 1, scale: 1 }}
             className="max-w-md mx-auto text-center py-10"
           >
-            <div className="w-20 h-20 rounded-full bg-[rgba(0,204,136,0.1)] flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: "var(--accent-muted)" }}>
               <CheckCircle2 size={40} className="text-[var(--success)]" />
             </div>
             <h2 className="text-2xl font-bold mb-2 text-[var(--text-primary)]">¡Pago Exitoso!</h2>

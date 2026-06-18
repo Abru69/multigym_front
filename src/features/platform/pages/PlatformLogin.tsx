@@ -23,7 +23,7 @@ export default function PlatformLogin() {
     <div
       className="min-h-screen flex items-center justify-center p-4"
       style={{
-        background: "linear-gradient(135deg, #080812 0%, #0d0d1f 50%, #080812 100%)",
+        background: "linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%)",
       }}
     >
       {/* Animated background orbs */}
@@ -55,9 +55,9 @@ export default function PlatformLogin() {
         <div
           className="p-8 rounded-2xl"
           style={{
-            background: "rgba(26,26,26,0.85)",
+            background: "var(--glass-bg)",
             backdropFilter: "blur(24px)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            border: "1px solid var(--border)",
             boxShadow: "0 32px 64px rgba(0,0,0,0.6)",
           }}
         >
@@ -67,10 +67,10 @@ export default function PlatformLogin() {
               className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
               style={{
                 background: "linear-gradient(135deg, var(--accent), var(--detail))",
-                boxShadow: "0 0 30px rgba(0,0,255,0.4)",
+                boxShadow: "var(--shadow-glow)",
               }}
             >
-              <Zap size={28} color="#fff" />
+              <Zap size={28} style={{ color: "var(--text-on-primary)" }} />
             </div>
             <h1 className="text-2xl font-black mb-1" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>
               MultiGym{" "}
@@ -100,7 +100,7 @@ export default function PlatformLogin() {
                   required
                   className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none transition-all"
                   style={{
-                    background: "rgba(255,255,255,0.05)",
+                    background: "var(--input-bg)",
                     border: "1px solid var(--border)",
                     color: "var(--text-primary)",
                   }}
@@ -125,7 +125,7 @@ export default function PlatformLogin() {
                   required
                   className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none transition-all"
                   style={{
-                    background: "rgba(255,255,255,0.05)",
+                    background: "var(--input-bg)",
                     border: "1px solid var(--border)",
                     color: "var(--text-primary)",
                   }}
@@ -141,7 +141,7 @@ export default function PlatformLogin() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="flex items-center gap-2 p-3 rounded-xl text-sm"
-                style={{ background: "rgba(255,77,77,0.1)", border: "1px solid rgba(255,77,77,0.2)", color: "var(--danger)" }}
+                style={{ background: "var(--error-muted)", border: "1px solid var(--error)", color: "var(--error)" }}
               >
                 <AlertCircle size={14} />
                 {error}
@@ -154,9 +154,9 @@ export default function PlatformLogin() {
               disabled={isLoading}
               className="w-full py-3 rounded-xl font-bold text-sm transition-all"
               style={{
-                background: isLoading ? "var(--border)" : "linear-gradient(135deg, var(--accent), #3333ff)",
+                background: isLoading ? "var(--border)" : "linear-gradient(135deg, var(--accent), var(--accent-hover))",
                 color: "var(--accent-text)",
-                boxShadow: isLoading ? "none" : "0 0 20px rgba(0,0,255,0.3)",
+                boxShadow: isLoading ? "none" : "var(--shadow-glow)",
                 cursor: isLoading ? "not-allowed" : "pointer",
               }}
             >
@@ -174,7 +174,7 @@ export default function PlatformLogin() {
           {/* Hint */}
           <div
             className="mt-6 p-3 rounded-xl text-center text-xs"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)", color: "var(--text-muted)" }}
+            style={{ background: "var(--input-bg)", border: "1px solid var(--border)", color: "var(--text-muted)" }}
           >
             <span style={{ color: "var(--text-secondary)", fontWeight: 600 }}>Demo: </span>
             admin@saas.com / admin123

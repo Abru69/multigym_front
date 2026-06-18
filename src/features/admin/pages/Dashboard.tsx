@@ -45,7 +45,7 @@ export default function AdminDashboard() {
           <Button variant="outline" onClick={() => navigate("/admin/rutinas")} className="gap-2 text-warning border-warning/20 bg-warning/10 hover:bg-warning/20">
             <Dumbbell size={14} /> Crear Rutina
           </Button>
-          <Button onClick={() => navigate("/admin/inventario")} className="gap-2 shadow-[0_0_20px_rgba(0,0,255,0.3)]">
+          <Button onClick={() => navigate("/admin/inventario")} className="gap-2 accent-glow">
             <Package size={14} /> Agregar Producto
           </Button>
         </div>
@@ -54,7 +54,7 @@ export default function AdminDashboard() {
       {/* Stats */}
       <motion.div initial="hidden" animate="visible" variants={stagger} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <motion.div key={s.label} variants={fadeUp} className="p-5 rounded-3xl relative overflow-hidden group" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
+          <motion.div key={s.label} variants={fadeUp} className="p-5 rounded-3xl relative overflow-hidden group" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}>
             <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
               <s.icon size={100} style={{ color: s.color }} />
             </div>
@@ -62,7 +62,7 @@ export default function AdminDashboard() {
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: `${s.color}15`, color: s.color }}>
                 <s.icon size={24} />
               </div>
-              <span className="flex items-center gap-0.5 text-xs font-bold px-2 py-1 rounded-full" style={{ background: "rgba(0,204,136,0.1)", color: "var(--success)" }}>
+              <span className="flex items-center gap-0.5 text-xs font-bold px-2 py-1 rounded-full" style={{ background: "var(--accent-muted)", color: "var(--success)" }}>
                 {s.change} <ArrowUpRight size={12} />
               </span>
             </div>
@@ -74,7 +74,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Chart */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="xl:col-span-2 p-6 rounded-3xl flex flex-col" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="xl:col-span-2 p-6 rounded-3xl flex flex-col" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}>
           <div className="flex items-center justify-between mb-6 shrink-0">
             <h3 className="font-black uppercase tracking-tight text-lg" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>Ingresos Mensuales</h3>
             <Activity size={18} style={{ color: "var(--text-muted)" }} />
@@ -86,7 +86,7 @@ export default function AdminDashboard() {
                 <XAxis dataKey="month" tick={{ fill: "var(--text-muted)", fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
                 <YAxis tick={{ fill: "var(--text-muted)", fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v / 1000}k`} />
                 <Tooltip
-                  contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", color: "var(--text-primary)", fontSize: 13, fontWeight: "bold", boxShadow: "0 10px 25px rgba(0,0,0,0.5)" }}
+                  contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", color: "var(--text-primary)", fontSize: 13, fontWeight: "bold", boxShadow: "var(--shadow-lg)" }}
                   itemStyle={{ color: "var(--accent)" }}
                   formatter={(value: any) => [`$${Number(value).toLocaleString()} MXN`, "Ventas"]}
                 />
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
         </motion.div>
 
         {/* Recent */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="p-6 rounded-3xl" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="p-6 rounded-3xl" style={{ background: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}>
           <h3 className="font-black uppercase tracking-tight text-lg mb-6" style={{ color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>Actividad en Vivo</h3>
           <div className="space-y-5">
             {recentActivity.map((a, i) => (
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
               </div>
             ))}
           </div>
-          <Button variant="outline" className="w-full mt-6 border-dashed text-accent border-border hover:bg-white/5">
+          <Button variant="outline" className="w-full mt-6 border-dashed text-accent border-border hover:bg-[var(--surface-hover)]">
             Ver Historial Completo
           </Button>
         </motion.div>

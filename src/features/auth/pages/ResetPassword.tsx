@@ -75,7 +75,7 @@ export default function ResetPassword() {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-          style={{ background: "rgba(0,204,136,0.12)" }}
+          style={{ background: "var(--accent-muted)" }}
         >
           <CheckCircle size={32} style={{ color: "var(--success)" }} />
         </div>
@@ -117,7 +117,7 @@ export default function ResetPassword() {
       {error && (
         <div
           className="text-sm px-4 py-3 rounded-lg mb-4"
-          style={{ background: "rgba(255,77,77,0.1)", color: "var(--danger)", border: "1px solid rgba(255,77,77,0.2)" }}
+          style={{ background: "var(--error-muted)", color: "var(--danger)", border: "1px solid var(--error)" }}
         >
           {error}
         </div>
