@@ -7,6 +7,7 @@ import { resolveBranding } from "@/lib/tenantConfig"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
+import "./styles/AuthShared.css"
 
 export default function ForgotPassword() {
   const autoTenant = getTenantFromSubdomain()
@@ -55,14 +56,14 @@ export default function ForgotPassword() {
   if (sent) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "var(--accent-muted)" }}>
-          <CheckCircle size={32} style={{ color: "var(--success)" }} />
+        <div className="auth-icon-box">
+          <CheckCircle size={32} />
         </div>
-        <h2 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>Revisa tu correo</h2>
-        <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
-          Si existe una cuenta con <strong style={{ color: "var(--text-secondary)" }}>{email}</strong>, recibirás un enlace para restablecer tu contraseña.
+        <h2 className="auth-title">Revisa tu correo</h2>
+        <p className="auth-subtitle">
+          Si existe una cuenta con <strong className="text-[var(--text-secondary)]">{email}</strong>, recibirás un enlace para restablecer tu contraseña.
         </p>
-        <Link to="/login" className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: "var(--accent)" }}>
+        <Link to="/login" className="auth-link-small inline-flex items-center gap-2">
           <ArrowLeft size={14} /> Volver al inicio de sesión
         </Link>
       </motion.div>
@@ -71,20 +72,20 @@ export default function ForgotPassword() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-      <Link to="/login" className="inline-flex items-center gap-1.5 text-xs font-semibold mb-6" style={{ color: "var(--text-muted)" }}>
+      <Link to="/login" className="auth-link-back">
         <ArrowLeft size={14} /> Volver
       </Link>
 
-      <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>Recuperar contraseña</h2>
-      <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
+      <h2 className="auth-title">Recuperar contraseña</h2>
+      <p className="auth-subtitle">
         {autoTenant
-          ? <>Conectado a <strong style={{ color: "var(--accent)" }}>{branding?.name || autoTenant}</strong>. Ingresa tu correo para recibir el enlace de recuperación.</>
+          ? <>Conectado a <strong className="text-accent">{branding?.name || autoTenant}</strong>. Ingresa tu correo para recibir el enlace de recuperación.</>
           : "Ingresa tu código de gimnasio y correo electrónico."
         }
       </p>
 
       {error && (
-        <div className="text-sm px-4 py-3 rounded-lg mb-4" style={{ background: "var(--error-muted)", color: "var(--danger)", border: "1px solid var(--error)" }}>
+        <div className="auth-error-banner">
           {error}
         </div>
       )}

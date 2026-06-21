@@ -15,9 +15,11 @@ import Login from "@/features/auth/pages/Login"
 import Register from "@/features/auth/pages/Register"
 import ForgotPassword from "@/features/auth/pages/ForgotPassword"
 import ResetPassword from "@/features/auth/pages/ResetPassword"
+import ActivateAccount from "@/features/auth/pages/ActivateAccount"
 import AdminDashboard from "@/features/admin/pages/Dashboard"
 import Inventory from "@/features/admin/pages/Inventory"
 import Users from "@/features/admin/pages/Users"
+import Exercises from "@/features/admin/pages/Exercises"
 import RoutineBuilder from "@/features/admin/pages/RoutineBuilder"
 import MyRoutines from "@/features/client/pages/MyRoutines"
 import Progress from "@/features/client/pages/Progress"
@@ -70,6 +72,7 @@ export const router = createBrowserRouter([
       { path: "/registro", element: <Register /> },
       { path: "/forgot-password", element: <ForgotPassword /> },
       { path: "/reset-password", element: <ResetPassword /> },
+      { path: "/activate-account", element: <ActivateAccount /> },
     ],
   },
   {
@@ -83,7 +86,7 @@ export const router = createBrowserRouter([
       { index: true, element: <AdminDashboard /> },
       { path: "inventario", element: <Inventory /> },
       { path: "usuarios", element: <Users /> },
-      { path: "rutinas", element: <RoutineBuilder /> },
+      { path: "ejercicios", element: <Exercises /> },
     ],
   },
   {

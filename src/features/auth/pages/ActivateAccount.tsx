@@ -1,21 +1,18 @@
 import { useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Lock, ArrowLeft, Loader2, CheckCircle, Eye, EyeOff, Building2 } from "lucide-react"
+import { Lock, ArrowLeft, Loader2, CheckCircle, Eye, EyeOff, UserCheck } from "lucide-react"
 
-import { getTenantFromSubdomain } from "@/lib/tenant"
+import { activateAccount } from "@/lib/api"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
 import "./styles/AuthShared.css"
 
-export default function ResetPassword() {
+export default function ActivateAccount() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get("token") || ""
-  const tenantParam = searchParams.get("tenantId") || ""
-  const autoTenant = getTenantFromSubdomain()
 
-  const [tenantId, setTenantId] = useState(autoTenant || tenantParam)
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -27,7 +24,7 @@ export default function ResetPassword() {
     e.preventDefault()
     setError("")
 
-    if (newPassword.length < 6) {
+    if (newPassword && newPassword.length < 6) {
       setError("La contraseña debe tener al menos 6 caracteres.")
       return
     }
@@ -38,30 +35,21 @@ export default function ResetPassword() {
     }
 
     if (!token) {
-      setError("Token de recuperación no válido. Solicita un nuevo enlace.")
+      setError("Enlace de activación no válido.")
       return
     }
 
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/auth/reset-password/confirm", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Tenant-ID": tenantId,
-        },
-        body: JSON.stringify({ token, newPassword }),
-      })
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null)
-        throw new Error(data?.mensaje || "No se pudo restablecer la contraseña")
+      const payload = {
+        token,
+        ...(newPassword ? { newPassword } : {})
       }
-
+      await activateAccount(payload)
       setSuccess(true)
     } catch (err: any) {
-      setError(err.message || "El enlace ha expirado o no es válido. Solicita uno nuevo.")
+      setError(err.message || "El enlace ha expirado o no es válido.")
     } finally {
       setIsLoading(false)
     }
@@ -74,10 +62,10 @@ export default function ResetPassword() {
           <CheckCircle size={32} />
         </div>
         <h2 className="auth-title">
-          Contraseña actualizada
+          ¡Cuenta Activada!
         </h2>
         <p className="auth-subtitle">
-          Tu contraseña ha sido restablecida correctamente. Ya puedes iniciar sesión con tu nueva contraseña.
+          Tu cuenta ha sido activada correctamente. Ya puedes iniciar sesión en la plataforma.
         </p>
         <Link
           to="/login"
@@ -99,11 +87,16 @@ export default function ResetPassword() {
         Volver al login
       </Link>
 
-      <h2 className="auth-title">
-        Nueva contraseña
-      </h2>
-      <p className="auth-subtitle">
-        Ingresa tu nueva contraseña para restablecer el acceso a tu cuenta.
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--accent-muted)] text-[var(--accent)]">
+          <UserCheck size={20} />
+        </div>
+        <h2 className="text-xl font-bold text-text-primary">
+          Activa tu cuenta
+        </h2>
+      </div>
+      <p className="auth-subtitle mt-2">
+        Establece una contraseña segura para terminar de activar tu cuenta.
       </p>
 
       {error && (
@@ -113,25 +106,8 @@ export default function ResetPassword() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {!(autoTenant || tenantParam) && (
-          <div>
-            <Label>Código de Gimnasio</Label>
-            <div className="relative">
-              <Building2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
-              <Input
-                type="text"
-                value={tenantId}
-                onChange={(e) => setTenantId(e.target.value)}
-                placeholder="ej. reto4"
-                className="pl-10"
-                required
-              />
-            </div>
-          </div>
-        )}
-
         <div>
-          <Label>Nueva contraseña</Label>
+          <Label>Contraseña</Label>
           <div className="relative">
             <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
             <Input
@@ -172,10 +148,10 @@ export default function ResetPassword() {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full gap-2 mt-4"
+          className="w-full gap-2 mt-6"
         >
           {isLoading && <Loader2 size={16} className="animate-spin" />}
-          Restablecer contraseña
+          Activar Cuenta
         </Button>
       </form>
     </motion.div>

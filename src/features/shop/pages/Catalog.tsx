@@ -13,7 +13,8 @@ export default function Catalog() {
   const [products, setProducts] = useState<Product[]>([])
 
   useEffect(() => {
-    getProducts().then(apiProducts => {
+    getProducts().then(response => {
+      const apiProducts = response.lista || [];
       const mapped: Product[] = apiProducts.map(p => ({
         id: p.id,
         name: p.name,

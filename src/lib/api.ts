@@ -87,6 +87,14 @@ export async function fetchApi<T>(
   return null as T;
 }
 
+export interface ResponseDTO<T> {
+  estatus: string;
+  mensaje: string;
+  lista?: T[];
+  dto?: T;
+  codError?: string;
+}
+
 // --- Typed Endpoints ---
 
 export interface Product {
@@ -109,6 +117,14 @@ export interface Workout {
   endsAt: string;
 }
 
-export const getProducts = () => fetchApi<Product[]>("/api/products");
-export const getExercises = () => fetchApi<Exercise[]>("/api/exercises");
-export const getWorkouts = () => fetchApi<Workout[]>("/api/workouts");
+export const getProducts = () => fetchApi<ResponseDTO<Product>>("/api/products");
+export const createProduct = (data: Partial<Product>) => fetchApi<ResponseDTO<Product>>("/api/products", { method: "POST", body: JSON.stringify(data) });
+
+export const getExercises = () => fetchApi<ResponseDTO<Exercise>>("/api/exercises");
+export const createExercise = (data: Partial<Exercise>) => fetchApi<ResponseDTO<Exercise>>("/api/exercises", { method: "POST", body: JSON.stringify(data) });
+
+export const getWorkouts = () => fetchApi<ResponseDTO<Workout>>("/api/workouts");
+export const createWorkout = (data: Partial<Workout>) => fetchApi<ResponseDTO<Workout>>("/api/workouts", { method: "POST", body: JSON.stringify(data) });
+export const deleteWorkout = (id: string) => fetchApi<ResponseDTO<any>>(`/api/workouts/${id}`, { method: "DELETE" });
+
+export const activateAccount = (data: { token: string; newPassword?: string }) => fetchApi<ResponseDTO<any>>("/api/tenant/user/activate-account", { method: "POST", body: JSON.stringify(data) });

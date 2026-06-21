@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Outlet, NavLink, useNavigate, Link } from "react-router-dom"
+import "@/features/admin/pages/styles/AdminShared.css"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuthStore } from "@/features/auth/store/authStore"
 import { getTenantUrl } from "@/lib/tenant"
@@ -10,6 +11,7 @@ import {
   Package,
   Users,
   Dumbbell,
+  Activity,
   Menu,
   X,
   LogOut,
@@ -20,7 +22,7 @@ const navItems = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/admin/inventario", icon: Package, label: "Inventario" },
   { to: "/admin/usuarios", icon: Users, label: "Usuarios" },
-  { to: "/admin/rutinas", icon: Dumbbell, label: "Rutinas" },
+  { to: "/admin/ejercicios", icon: Dumbbell, label: "Ejercicios y Rutinas" },
 ]
 
 export function AdminLayout() {

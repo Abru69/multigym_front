@@ -8,6 +8,7 @@ import { resolveBranding } from "@/lib/tenantConfig"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Label } from "@/components/ui/Label"
+import "./styles/AuthShared.css"
 
 export default function Login() {
   const autoTenant = getTenantFromSubdomain()
@@ -47,18 +48,18 @@ export default function Login() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-      <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>
+      <h2 className="auth-title">
         Bienvenido de vuelta
       </h2>
-      <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
+      <p className="auth-subtitle">
         {autoTenant
-          ? <>Conectado a <strong style={{ color: "var(--accent)" }}>{branding?.name || autoTenant}</strong></>
+          ? <>Conectado a <strong className="text-accent">{branding?.name || autoTenant}</strong></>
           : "Ingresa tus credenciales para continuar"
         }
       </p>
 
       {error && (
-        <div className="text-sm px-4 py-3 rounded-lg mb-4" style={{ background: "var(--error-muted)", color: "var(--danger)", border: "1px solid var(--error)" }}>
+        <div className="auth-error-banner">
           {error}
         </div>
       )}
@@ -125,25 +126,22 @@ export default function Login() {
       <div className="text-center mt-4">
         <Link
           to="/forgot-password"
-          className="text-xs font-semibold transition-colors"
-          style={{ color: "var(--text-muted)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted)")}
+          className="auth-link-small"
         >
           ¿Olvidaste tu contraseña?
         </Link>
       </div>
 
       {!autoTenant && (
-        <p className="text-xs text-center mt-6" style={{ color: "var(--text-muted)" }}>
+        <p className="auth-footer-text mt-6">
           ¿Eres administrador de plataforma?{" "}
-          <a href={`${getPlatformUrl()}/platform/login`} className="font-semibold" style={{ color: "var(--accent)" }}>
+          <a href={`${getPlatformUrl()}/platform/login`} className="auth-footer-link">
             Ir al panel SaaS
           </a>
         </p>
       )}
 
-      <p className="text-xs text-center mt-3" style={{ color: "var(--text-muted)" }}>
+      <p className="auth-footer-text">
         ¿No tienes cuenta? Contacta al administrador de tu gimnasio.
       </p>
     </motion.div>
