@@ -1,14 +1,14 @@
-import { Outlet, Link } from "react-router-dom"
-import { motion } from "framer-motion"
-import { useTenantBranding } from "@/hooks/useTenantBranding"
-import { ThemeToggle } from "@/components/ui/ThemeToggle"
+import { Outlet, Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { useTenantBranding } from '@/hooks/useTenantBranding'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 export function AuthLayout() {
   const { branding } = useTenantBranding()
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 relative"
+      className="relative flex min-h-screen items-center justify-center p-4"
       style={{
         background: `
           radial-gradient(ellipse at 20% 50%, var(--accent-muted) 0%, transparent 50%),
@@ -29,18 +29,18 @@ export function AuthLayout() {
         className="w-full max-w-md"
       >
         {/* Logo */}
-        <Link to="/" className="flex items-center justify-center gap-3 mb-8">
+        <Link to="/" className="mb-8 flex items-center justify-center gap-3">
           <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg"
-            style={{ background: "var(--accent)", color: "var(--accent-text)" }}
+            className="flex h-12 w-12 items-center justify-center rounded-xl text-lg font-black"
+            style={{ background: 'var(--accent)', color: 'var(--accent-text)' }}
           >
             {branding.logoAbbr}
           </div>
           <div>
-            <h1 className="font-bold text-xl" style={{ color: "var(--text-primary)" }}>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
               {branding.name}
             </h1>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
               {branding.tagline}
             </p>
           </div>
@@ -50,9 +50,9 @@ export function AuthLayout() {
         <div
           className="rounded-2xl p-6 sm:p-8"
           style={{
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            boxShadow: "var(--shadow-lg)",
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-lg)',
           }}
         >
           <Outlet />

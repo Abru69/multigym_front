@@ -1,10 +1,10 @@
 /**
  * Tenant Branding Configuration
- * 
+ *
  * Since we don't modify the backend, each gym's branding is configured
  * here on the frontend. When a gym is accessed via subdomain (e.g. reto4.localhost),
  * we look up its visual identity from this registry.
- * 
+ *
  * To add a new gym's branding, simply add a new entry to TENANT_CONFIGS.
  */
 
@@ -63,47 +63,50 @@ export interface TenantBranding {
  * Also used as the fallback for any missing fields.
  */
 export const DEFAULT_BRANDING: TenantBranding = {
-  name: "MultiGym",
-  logoAbbr: "MG",
-  tagline: "Plataforma de Gimnasios",
+  name: 'MultiGym',
+  logoAbbr: 'MG',
+  tagline: 'Plataforma de Gimnasios',
 
   hero: {
-    badge: "Alto Rendimiento",
-    title: "TU TRANSFORMACIÓN",
-    titleAccent: "EMPIEZA AQUÍ",
-    subtitle: "Entrenamientos inteligentes, nutrición experta y la suplementación que necesitas. Todo en un solo lugar.",
-    ctaText: "Comenzar Ahora",
-    ctaAuthenticatedAdmin: "Ir al Panel de Control",
-    ctaAuthenticatedClient: "Ir a mis Rutinas",
-    secondaryCta: "Comprar Suplementos",
+    badge: 'Alto Rendimiento',
+    title: 'TU TRANSFORMACIÓN',
+    titleAccent: 'EMPIEZA AQUÍ',
+    subtitle:
+      'Entrenamientos inteligentes, nutrición experta y la suplementación que necesitas. Todo en un solo lugar.',
+    ctaText: 'Comenzar Ahora',
+    ctaAuthenticatedAdmin: 'Ir al Panel de Control',
+    ctaAuthenticatedClient: 'Ir a mis Rutinas',
+    secondaryCta: 'Comprar Suplementos',
   },
 
   stats: [
-    ["500+", "Atletas"],
-    ["1200+", "Rutinas Completadas"],
-    ["98%", "Retención"],
+    ['500+', 'Atletas'],
+    ['1200+', 'Rutinas Completadas'],
+    ['98%', 'Retención'],
   ],
 
-  featuresHeading: "Todo en una",
-  featuresHeadingAccent: "sola plataforma",
-  featuresSubtitle: "La disciplina requiere las herramientas adecuadas. Diseñado para maximizar tus resultados sin distracciones.",
+  featuresHeading: 'Todo en una',
+  featuresHeadingAccent: 'sola plataforma',
+  featuresSubtitle:
+    'La disciplina requiere las herramientas adecuadas. Diseñado para maximizar tus resultados sin distracciones.',
 
-  ctaHeadingAuth: "¿LISTO PARA ENTRENAR?",
-  ctaHeadingGuest: "¿LISTO PARA EL RETO?",
-  ctaSubAuth: "Tu transformación no espera. Accede a tus rutinas y sigue superando tus límites.",
-  ctaSubGuest: "Únete a la plataforma definitiva de entrenamiento. Rompe tus límites y construye tu mejor versión.",
-  ctaButtonAuth: "Ir a mi Portal",
-  ctaButtonGuest: "Crear Cuenta Gratis",
+  ctaHeadingAuth: '¿LISTO PARA ENTRENAR?',
+  ctaHeadingGuest: '¿LISTO PARA EL RETO?',
+  ctaSubAuth: 'Tu transformación no espera. Accede a tus rutinas y sigue superando tus límites.',
+  ctaSubGuest:
+    'Únete a la plataforma definitiva de entrenamiento. Rompe tus límites y construye tu mejor versión.',
+  ctaButtonAuth: 'Ir a mi Portal',
+  ctaButtonGuest: 'Crear Cuenta Gratis',
 
   colors: {
-    accent: "#0000ff",
-    accentHover: "#0000cc",
-    accentMuted: "rgba(0, 0, 255, 0.15)",
-    accentText: "#ffffff",
-    detail: "#ffff00",
+    accent: '#0000ff',
+    accentHover: '#0000cc',
+    accentMuted: 'rgba(0, 0, 255, 0.15)',
+    accentText: '#ffffff',
+    detail: '#ffff00',
   },
 
-  heroVideo: "/vid_sup.mp4",
+  heroVideo: '/vid_sup.mp4',
 }
 
 /**
@@ -112,121 +115,126 @@ export const DEFAULT_BRANDING: TenantBranding = {
  */
 export const TENANT_CONFIGS: Record<string, Partial<TenantBranding>> = {
   reto4: {
-    name: "Reto 4 Gym",
-    logoAbbr: "R4",
-    tagline: "Nutrición & Entrenamiento",
+    name: 'Reto 4 Gym',
+    logoAbbr: 'R4',
+    tagline: 'Nutrición & Entrenamiento',
 
     hero: {
-      badge: "Alto Rendimiento",
-      title: "TU TRANSFORMACIÓN",
-      titleAccent: "EMPIEZA AQUÍ",
-      subtitle: "Entrenamientos inteligentes, nutrición experta y la suplementación que necesitas. Todo en un solo lugar.",
-      ctaText: "Comenzar Ahora",
-      ctaAuthenticatedAdmin: "Ir al Panel de Control",
-      ctaAuthenticatedClient: "Ir a mis Rutinas",
-      secondaryCta: "Comprar Suplementos",
+      badge: 'Alto Rendimiento',
+      title: 'TU TRANSFORMACIÓN',
+      titleAccent: 'EMPIEZA AQUÍ',
+      subtitle:
+        'Entrenamientos inteligentes, nutrición experta y la suplementación que necesitas. Todo en un solo lugar.',
+      ctaText: 'Comenzar Ahora',
+      ctaAuthenticatedAdmin: 'Ir al Panel de Control',
+      ctaAuthenticatedClient: 'Ir a mis Rutinas',
+      secondaryCta: 'Comprar Suplementos',
     },
 
     stats: [
-      ["500+", "Atletas"],
-      ["1200+", "Rutinas Completadas"],
-      ["98%", "Retención"],
+      ['500+', 'Atletas'],
+      ['1200+', 'Rutinas Completadas'],
+      ['98%', 'Retención'],
     ],
 
-    ctaHeadingGuest: "¿LISTO PARA EL RETO?",
+    ctaHeadingGuest: '¿LISTO PARA EL RETO?',
 
     colors: {
-      accent: "#0000ff",
-      accentHover: "#0000cc",
-      accentMuted: "rgba(0, 0, 255, 0.15)",
-      accentText: "#ffffff",
-      detail: "#ffff00",
+      accent: '#0000ff',
+      accentHover: '#0000cc',
+      accentMuted: 'rgba(0, 0, 255, 0.15)',
+      accentText: '#ffffff',
+      detail: '#ffff00',
     },
 
-    heroVideo: "/vid_sup.mp4",
+    heroVideo: '/vid_sup.mp4',
   },
 
   gym1: {
-    name: "Gym Central",
-    logoAbbr: "GC",
-    tagline: "Fuerza & Disciplina",
+    name: 'Gym Central',
+    logoAbbr: 'GC',
+    tagline: 'Fuerza & Disciplina',
 
     hero: {
-      badge: "Fuerza Total",
-      title: "ENTRENA CON",
-      titleAccent: "PROPÓSITO",
-      subtitle: "El gimnasio más completo de la ciudad. Equipamiento de clase mundial, entrenadores certificados y una comunidad que te impulsa.",
-      ctaText: "Únete Ahora",
-      ctaAuthenticatedAdmin: "Ir al Panel de Control",
-      ctaAuthenticatedClient: "Ir a mis Rutinas",
-      secondaryCta: "Ver Suplementos",
+      badge: 'Fuerza Total',
+      title: 'ENTRENA CON',
+      titleAccent: 'PROPÓSITO',
+      subtitle:
+        'El gimnasio más completo de la ciudad. Equipamiento de clase mundial, entrenadores certificados y una comunidad que te impulsa.',
+      ctaText: 'Únete Ahora',
+      ctaAuthenticatedAdmin: 'Ir al Panel de Control',
+      ctaAuthenticatedClient: 'Ir a mis Rutinas',
+      secondaryCta: 'Ver Suplementos',
     },
 
     stats: [
-      ["300+", "Miembros"],
-      ["50+", "Clases Semanales"],
-      ["95%", "Satisfacción"],
+      ['300+', 'Miembros'],
+      ['50+', 'Clases Semanales'],
+      ['95%', 'Satisfacción'],
     ],
 
-    featuresHeading: "Todo lo que necesitas en",
-    featuresHeadingAccent: "un solo lugar",
-    featuresSubtitle: "Equipamiento profesional, asesoría personalizada y seguimiento continuo para que alcances tus metas.",
+    featuresHeading: 'Todo lo que necesitas en',
+    featuresHeadingAccent: 'un solo lugar',
+    featuresSubtitle:
+      'Equipamiento profesional, asesoría personalizada y seguimiento continuo para que alcances tus metas.',
 
-    ctaHeadingAuth: "¿LISTO PARA ENTRENAR?",
-    ctaHeadingGuest: "¿LISTO PARA TRANSFORMARTE?",
-    ctaSubAuth: "Tu progreso no para. Accede a tus rutinas y supera tus marcas.",
-    ctaSubGuest: "Únete a Gym Central y comienza tu transformación hoy.",
-    ctaButtonAuth: "Ir a mi Portal",
-    ctaButtonGuest: "Registrarme Gratis",
+    ctaHeadingAuth: '¿LISTO PARA ENTRENAR?',
+    ctaHeadingGuest: '¿LISTO PARA TRANSFORMARTE?',
+    ctaSubAuth: 'Tu progreso no para. Accede a tus rutinas y supera tus marcas.',
+    ctaSubGuest: 'Únete a Gym Central y comienza tu transformación hoy.',
+    ctaButtonAuth: 'Ir a mi Portal',
+    ctaButtonGuest: 'Registrarme Gratis',
 
     colors: {
-      accent: "#e53e3e",
-      accentHover: "#c53030",
-      accentMuted: "rgba(229, 62, 62, 0.15)",
-      accentText: "#ffffff",
-      detail: "#fc8181",
+      accent: '#e53e3e',
+      accentHover: '#c53030',
+      accentMuted: 'rgba(229, 62, 62, 0.15)',
+      accentText: '#ffffff',
+      detail: '#fc8181',
     },
   },
 
   gymh: {
-    name: "Gym Huanda",
-    logoAbbr: "GH",
-    tagline: "Potencia & Resistencia",
+    name: 'Gym Huanda',
+    logoAbbr: 'GH',
+    tagline: 'Potencia & Resistencia',
 
     hero: {
-      badge: "Energía Pura",
-      title: "SUPERA TUS",
-      titleAccent: "LÍMITES",
-      subtitle: "Entrenamiento funcional, crossfit y musculación con los mejores coaches de la región.",
-      ctaText: "Empieza Hoy",
-      ctaAuthenticatedAdmin: "Ir al Panel de Control",
-      ctaAuthenticatedClient: "Ir a mis Rutinas",
-      secondaryCta: "Tienda de Suplementos",
+      badge: 'Energía Pura',
+      title: 'SUPERA TUS',
+      titleAccent: 'LÍMITES',
+      subtitle:
+        'Entrenamiento funcional, crossfit y musculación con los mejores coaches de la región.',
+      ctaText: 'Empieza Hoy',
+      ctaAuthenticatedAdmin: 'Ir al Panel de Control',
+      ctaAuthenticatedClient: 'Ir a mis Rutinas',
+      secondaryCta: 'Tienda de Suplementos',
     },
 
     stats: [
-      ["200+", "Deportistas"],
-      ["800+", "Sesiones al Mes"],
-      ["4.9★", "Valoración"],
+      ['200+', 'Deportistas'],
+      ['800+', 'Sesiones al Mes'],
+      ['4.9★', 'Valoración'],
     ],
 
-    featuresHeading: "Entrena con las",
-    featuresHeadingAccent: "mejores herramientas",
-    featuresSubtitle: "Tecnología de punta y planes adaptados a tu nivel para resultados que se ven y se sienten.",
+    featuresHeading: 'Entrena con las',
+    featuresHeadingAccent: 'mejores herramientas',
+    featuresSubtitle:
+      'Tecnología de punta y planes adaptados a tu nivel para resultados que se ven y se sienten.',
 
-    ctaHeadingAuth: "¡A DARLE CON TODO!",
-    ctaHeadingGuest: "¿LISTO PARA EL DESAFÍO?",
-    ctaSubAuth: "Tus rutinas te esperan. Cada repetición cuenta.",
-    ctaSubGuest: "Únete a la comunidad de Gym Huanda y descubre tu potencial real.",
-    ctaButtonAuth: "Ir a mis Rutinas",
-    ctaButtonGuest: "Unirme Ahora",
+    ctaHeadingAuth: '¡A DARLE CON TODO!',
+    ctaHeadingGuest: '¿LISTO PARA EL DESAFÍO?',
+    ctaSubAuth: 'Tus rutinas te esperan. Cada repetición cuenta.',
+    ctaSubGuest: 'Únete a la comunidad de Gym Huanda y descubre tu potencial real.',
+    ctaButtonAuth: 'Ir a mis Rutinas',
+    ctaButtonGuest: 'Unirme Ahora',
 
     colors: {
-      accent: "#38b2ac",
-      accentHover: "#2c9a94",
-      accentMuted: "rgba(56, 178, 172, 0.15)",
-      accentText: "#ffffff",
-      detail: "#81e6d9",
+      accent: '#38b2ac',
+      accentHover: '#2c9a94',
+      accentMuted: 'rgba(56, 178, 172, 0.15)',
+      accentText: '#ffffff',
+      detail: '#81e6d9',
     },
   },
 }

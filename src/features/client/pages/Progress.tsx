@@ -1,8 +1,20 @@
-import { motion } from "framer-motion"
-import { mockProgress } from "@/data/routines"
-import { formatDateShort } from "@/lib/utils"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts"
-import { TrendingDown, Target, Activity } from "lucide-react"
+import { motion } from 'framer-motion'
+import { mockProgress } from '@/data/routines'
+import { formatDateShort } from '@/lib/utils'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  Radar,
+} from 'recharts'
+import { TrendingDown, Target, Activity } from 'lucide-react'
 
 const weightData = mockProgress.map((p) => ({
   date: formatDateShort(p.date),
@@ -13,11 +25,11 @@ const weightData = mockProgress.map((p) => ({
 const latestMeasurements = mockProgress[mockProgress.length - 1]?.measurements
 const radarData = latestMeasurements
   ? [
-      { subject: "Pecho", value: latestMeasurements.chest ?? 0 },
-      { subject: "Cintura", value: latestMeasurements.waist ?? 0 },
-      { subject: "Cadera", value: latestMeasurements.hips ?? 0 },
-      { subject: "Brazos", value: latestMeasurements.arms ? latestMeasurements.arms * 2 : 0 },
-      { subject: "Piernas", value: latestMeasurements.legs ?? 0 },
+      { subject: 'Pecho', value: latestMeasurements.chest ?? 0 },
+      { subject: 'Cintura', value: latestMeasurements.waist ?? 0 },
+      { subject: 'Cadera', value: latestMeasurements.hips ?? 0 },
+      { subject: 'Brazos', value: latestMeasurements.arms ? latestMeasurements.arms * 2 : 0 },
+      { subject: 'Piernas', value: latestMeasurements.legs ?? 0 },
     ]
   : []
 
@@ -28,30 +40,58 @@ const fatChange = first && last && first.bodyFat && last.bodyFat ? last.bodyFat 
 
 export default function Progress() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6 px-4 py-6">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Mi Progreso</h1>
-        <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>Seguimiento de tu transformación</p>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+          Mi Progreso
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+          Seguimiento de tu transformación
+        </p>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { icon: TrendingDown, label: "Peso", value: `${last?.weight ?? 0} kg`, change: `${weightChange > 0 ? "+" : ""}${weightChange.toFixed(1)} kg`, color: "var(--accent)" },
-          { icon: Target, label: "% Grasa", value: `${last?.bodyFat ?? 0}%`, change: `${fatChange > 0 ? "+" : ""}${fatChange.toFixed(1)}%`, color: "var(--success)" },
-          { icon: Activity, label: "Registros", value: String(mockProgress.length), change: "últimos 5 meses", color: "var(--warning)" },
+          {
+            icon: TrendingDown,
+            label: 'Peso',
+            value: `${last?.weight ?? 0} kg`,
+            change: `${weightChange > 0 ? '+' : ''}${weightChange.toFixed(1)} kg`,
+            color: 'var(--accent)',
+          },
+          {
+            icon: Target,
+            label: '% Grasa',
+            value: `${last?.bodyFat ?? 0}%`,
+            change: `${fatChange > 0 ? '+' : ''}${fatChange.toFixed(1)}%`,
+            color: 'var(--success)',
+          },
+          {
+            icon: Activity,
+            label: 'Registros',
+            value: String(mockProgress.length),
+            change: 'últimos 5 meses',
+            color: 'var(--warning)',
+          },
         ].map((s) => (
           <motion.div
             key={s.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-2xl text-center"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            className="rounded-2xl p-4 text-center"
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
           >
             <s.icon size={20} className="mx-auto mb-2" style={{ color: s.color }} />
-            <p className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>{s.value}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>{s.label}</p>
-            <p className="text-[10px] font-medium mt-1" style={{ color: s.color }}>{s.change}</p>
+            <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+              {s.value}
+            </p>
+            <p className="mt-0.5 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+              {s.label}
+            </p>
+            <p className="mt-1 text-[10px] font-medium" style={{ color: s.color }}>
+              {s.change}
+            </p>
           </motion.div>
         ))}
       </div>
@@ -61,21 +101,51 @@ export default function Progress() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="p-5 rounded-2xl"
-        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+        className="rounded-2xl p-5"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
       >
-        <h3 className="font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Evolución de Peso</h3>
+        <h3 className="mb-4 font-semibold" style={{ color: 'var(--text-primary)' }}>
+          Evolución de Peso
+        </h3>
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={weightData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="date" tick={{ fill: "var(--text-muted)", fontSize: 11 }} axisLine={false} />
-              <YAxis domain={["auto", "auto"]} tick={{ fill: "var(--text-muted)", fontSize: 11 }} axisLine={false} />
-              <Tooltip
-                contentStyle={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", color: "var(--text-primary)", fontSize: 12 }}
+              <XAxis
+                dataKey="date"
+                tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                axisLine={false}
               />
-              <Line type="monotone" dataKey="peso" stroke="var(--accent)" strokeWidth={2.5} dot={{ fill: "var(--accent)", r: 4 }} name="Peso (kg)" />
-              <Line type="monotone" dataKey="grasa" stroke="var(--warning)" strokeWidth={2} dot={{ fill: "var(--warning)", r: 3 }} name="% Grasa" />
+              <YAxis
+                domain={['auto', 'auto']}
+                tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                axisLine={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-lg)',
+                  color: 'var(--text-primary)',
+                  fontSize: 12,
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="peso"
+                stroke="var(--accent)"
+                strokeWidth={2.5}
+                dot={{ fill: 'var(--accent)', r: 4 }}
+                name="Peso (kg)"
+              />
+              <Line
+                type="monotone"
+                dataKey="grasa"
+                stroke="var(--warning)"
+                strokeWidth={2}
+                dot={{ fill: 'var(--warning)', r: 3 }}
+                name="% Grasa"
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -87,16 +157,28 @@ export default function Progress() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="p-5 rounded-2xl"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          className="rounded-2xl p-5"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
         >
-          <h3 className="font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Medidas Corporales (cm)</h3>
+          <h3 className="mb-4 font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Medidas Corporales (cm)
+          </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData}>
                 <PolarGrid stroke="var(--border)" />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: "var(--text-secondary)", fontSize: 11 }} />
-                <Radar name="Medidas" dataKey="value" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.2} strokeWidth={2} />
+                <PolarAngleAxis
+                  dataKey="subject"
+                  tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
+                />
+                <Radar
+                  name="Medidas"
+                  dataKey="value"
+                  stroke="var(--accent)"
+                  fill="var(--accent)"
+                  fillOpacity={0.2}
+                  strokeWidth={2}
+                />
               </RadarChart>
             </ResponsiveContainer>
           </div>
@@ -108,28 +190,48 @@ export default function Progress() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="p-5 rounded-2xl"
-        style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+        className="rounded-2xl p-5"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
       >
-        <h3 className="font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Historial</h3>
+        <h3 className="mb-4 font-semibold" style={{ color: 'var(--text-primary)' }}>
+          Historial
+        </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                {["Fecha", "Peso", "% Grasa", "Pecho", "Cintura", "Cadera"].map((h) => (
-                  <th key={h} className="text-left pb-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>{h}</th>
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                {['Fecha', 'Peso', '% Grasa', 'Pecho', 'Cintura', 'Cadera'].map((h) => (
+                  <th
+                    key={h}
+                    className="pb-3 text-left text-xs font-medium"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {mockProgress.map((p) => (
-                <tr key={p.id} style={{ borderBottom: "1px solid var(--border)" }}>
-                  <td className="py-3" style={{ color: "var(--text-secondary)" }}>{formatDateShort(p.date)}</td>
-                  <td className="py-3 font-medium" style={{ color: "var(--text-primary)" }}>{p.weight} kg</td>
-                  <td className="py-3" style={{ color: "var(--text-secondary)" }}>{p.bodyFat}%</td>
-                  <td className="py-3" style={{ color: "var(--text-secondary)" }}>{p.measurements?.chest} cm</td>
-                  <td className="py-3" style={{ color: "var(--text-secondary)" }}>{p.measurements?.waist} cm</td>
-                  <td className="py-3" style={{ color: "var(--text-secondary)" }}>{p.measurements?.hips} cm</td>
+                <tr key={p.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td className="py-3" style={{ color: 'var(--text-secondary)' }}>
+                    {formatDateShort(p.date)}
+                  </td>
+                  <td className="py-3 font-medium" style={{ color: 'var(--text-primary)' }}>
+                    {p.weight} kg
+                  </td>
+                  <td className="py-3" style={{ color: 'var(--text-secondary)' }}>
+                    {p.bodyFat}%
+                  </td>
+                  <td className="py-3" style={{ color: 'var(--text-secondary)' }}>
+                    {p.measurements?.chest} cm
+                  </td>
+                  <td className="py-3" style={{ color: 'var(--text-secondary)' }}>
+                    {p.measurements?.waist} cm
+                  </td>
+                  <td className="py-3" style={{ color: 'var(--text-secondary)' }}>
+                    {p.measurements?.hips} cm
+                  </td>
                 </tr>
               ))}
             </tbody>

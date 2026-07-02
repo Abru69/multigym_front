@@ -47,35 +47,35 @@
   color-scheme: dark;
 
   --bg-primary: #081520;
-  --bg-secondary: #0D1E2B;
+  --bg-secondary: #0d1e2b;
   --surface: #122738;
   --surface-hover: #1a3347;
   --surface-active: #1f3b52;
 
-  --text-primary: #F8FAFC;
-  --text-secondary: #B8C7D1;
-  --text-muted: #6B8399;
+  --text-primary: #f8fafc;
+  --text-secondary: #b8c7d1;
+  --text-muted: #6b8399;
   --text-on-primary: #ffffff;
 
-  --primary: #1E5B8A;
-  --primary-hover: #2871AB;
+  --primary: #1e5b8a;
+  --primary-hover: #2871ab;
 
-  --secondary: #0C2D40;
+  --secondary: #0c2d40;
 
-  --accent: #42CC63;
-  --accent-hover: #58D976;
+  --accent: #42cc63;
+  --accent-hover: #58d976;
   --accent-muted: rgba(66, 204, 99, 0.15);
   --accent-text: #ffffff;
-  --detail: #58D976;
+  --detail: #58d976;
 
   --border: #244154;
   --border-hover: #2e5468;
 
-  --success: #42CC63;
-  --success-hover: #58D976;
-  --warning: #FBBF24;
+  --success: #42cc63;
+  --success-hover: #58d976;
+  --warning: #fbbf24;
   --warning-hover: #f0b000;
-  --error: #F87171;
+  --error: #f87171;
   --error-hover: #ef4444;
   --error-muted: rgba(248, 113, 113, 0.12);
 
@@ -106,40 +106,40 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  --bg-primary: #F7FAFC;
-  --bg-secondary: #EDF2F7;
-  --surface: #FFFFFF;
-  --surface-hover: #F1F5F9;
-  --surface-active: #E8EDF2;
+  --bg-primary: #f7fafc;
+  --bg-secondary: #edf2f7;
+  --surface: #ffffff;
+  --surface-hover: #f1f5f9;
+  --surface-active: #e8edf2;
 
-  --text-primary: #0C2D40;
-  --text-secondary: #4A6473;
-  --text-muted: #8196A6;
+  --text-primary: #0c2d40;
+  --text-secondary: #4a6473;
+  --text-muted: #8196a6;
   --text-on-primary: #ffffff;
 
   --primary: #012742;
-  --primary-hover: #023A63;
+  --primary-hover: #023a63;
 
-  --secondary: #0C2D40;
+  --secondary: #0c2d40;
 
-  --accent: #42CC63;
-  --accent-hover: #36B854;
+  --accent: #42cc63;
+  --accent-hover: #36b854;
   --accent-muted: rgba(66, 204, 99, 0.12);
   --accent-text: #ffffff;
-  --detail: #36B854;
+  --detail: #36b854;
 
-  --border: #D6E0E7;
-  --border-hover: #BCC8D3;
+  --border: #d6e0e7;
+  --border-hover: #bcc8d3;
 
-  --success: #42CC63;
-  --success-hover: #36B854;
-  --warning: #F59E0B;
-  --warning-hover: #D97706;
-  --error: #EF4444;
-  --error-hover: #DC2626;
+  --success: #42cc63;
+  --success-hover: #36b854;
+  --warning: #f59e0b;
+  --warning-hover: #d97706;
+  --error: #ef4444;
+  --error-hover: #dc2626;
   --error-muted: rgba(239, 68, 68, 0.08);
 
-  --info: #3B82F6;
+  --info: #3b82f6;
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -157,40 +157,40 @@
   :root:not([data-theme]) {
     color-scheme: light;
 
-    --bg-primary: #F7FAFC;
-    --bg-secondary: #0D1E2B;
-    --surface: #FFFFFF;
-    --surface-hover: #F1F5F9;
-    --surface-active: #E8EDF2;
+    --bg-primary: #f7fafc;
+    --bg-secondary: #edf2f7;
+    --surface: #ffffff;
+    --surface-hover: #f1f5f9;
+    --surface-active: #e8edf2;
 
-    --text-primary: #0C2D40;
-    --text-secondary: #4A6473;
-    --text-muted: #8196A6;
+    --text-primary: #0c2d40;
+    --text-secondary: #4a6473;
+    --text-muted: #8196a6;
     --text-on-primary: #ffffff;
 
     --primary: #012742;
-    --primary-hover: #023A63;
+    --primary-hover: #023a63;
 
-    --secondary: #0C2D40;
+    --secondary: #0c2d40;
 
-    --accent: #42CC63;
-    --accent-hover: #36B854;
+    --accent: #42cc63;
+    --accent-hover: #36b854;
     --accent-muted: rgba(66, 204, 99, 0.12);
     --accent-text: #ffffff;
-    --detail: #36B854;
+    --detail: #36b854;
 
-    --border: #D6E0E7;
-    --border-hover: #BCC8D3;
+    --border: #d6e0e7;
+    --border-hover: #bcc8d3;
 
-    --success: #42CC63;
-    --success-hover: #36B854;
-    --warning: #F59E0B;
-    --warning-hover: #D97706;
-    --error: #EF4444;
-    --error-hover: #DC2626;
+    --success: #42cc63;
+    --success-hover: #36b854;
+    --warning: #f59e0b;
+    --warning-hover: #d97706;
+    --error: #ef4444;
+    --error-hover: #dc2626;
     --error-muted: rgba(239, 68, 68, 0.08);
 
-    --info: #3B82F6;
+    --info: #3b82f6;
 
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -218,7 +218,9 @@ body {
   min-height: 100vh;
   line-height: 1.6;
   overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 #root {
@@ -228,14 +230,20 @@ body {
 }
 
 /* Smooth transition for theme-aware elements */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   transition-property: background-color, border-color, box-shadow;
   transition-duration: 0.2s;
   transition-timing-function: ease;
 }
 
 /* Exclude elements that need instant transitions (animations, transforms) */
-[class*="animate-"], [class*="transition-"], video, img, svg {
+[class*="animate-"],
+[class*="transition-"],
+video,
+img,
+svg {
   transition-property: none;
 }
 
@@ -265,7 +273,9 @@ body {
 }
 
 /* ===== FORM ELEMENTS (theme-aware) ===== */
-select, input, textarea {
+select,
+input,
+textarea {
   color-scheme: inherit;
 }
 
@@ -303,24 +313,44 @@ select option {
 
 /* ===== ANIMATIONS ===== */
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 var(--accent-muted); }
-  50% { box-shadow: 0 0 24px 6px var(--accent-muted); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--accent-muted);
+  }
+  50% {
+    box-shadow: 0 0 24px 6px var(--accent-muted);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes celebrate {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.06); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @utility glass-card {

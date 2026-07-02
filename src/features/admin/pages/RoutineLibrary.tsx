@@ -1,25 +1,37 @@
-import { useState, useEffect } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
-import { Plus, Dumbbell, Calendar, Search, Edit2, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/Button"
-import { Input } from "@/components/ui/Input"
+import { Plus, Dumbbell, Calendar, Edit2, Trash2 } from "lucide-react"
+import { useToastStore } from "@/components/ui/Toast"
 import { getWorkouts, deleteWorkout } from "@/lib/api"
+import { AdminHeader } from "../components/AdminHeader"
+import { SearchBar } from "../components/SearchBar"
+import { LoadingState } from "../components/LoadingState"
+import { EmptyState } from "../components/EmptyState"
+import { ConfirmDialog } from "../components/ConfirmDialog"
+import { useDebounce } from "@/hooks/useDebounce"
 import RoutineBuilder from "./RoutineBuilder"
 
+interface WorkoutTemplate {
+  id: string
+  title: string
+  member?: { id: string } | null
+  createdAt?: string
+}
+
 export default function RoutineLibrary() {
-  const [searchParams] = useSearchParams()
-  const userId = searchParams.get("userId")
-  
-  const [templates, setTemplates] = useState<any[]>([])
+  const addToast = useToastStore((s) => s.addToast)
+  const [templates, setTemplates] = useState<WorkoutTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState("")
-  const [editingRoutine, setEditingRoutine] = useState<any>(null)
-  const [isBuilding, setIsBuilding] = useState(!!userId) // If there's a userId, open builder immediately
+  const debouncedSearch = useDebounce(search)
+  const [editingRoutine, setEditingRoutine] = useState<WorkoutTemplate | null>(null)
+  const [isBuilding, setIsBuilding] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<WorkoutTemplate | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const fetchTemplates = async () => {
-    setIsLoading(true)
+  const fetchTemplates = useCallback(async () => {
     try {
+      setIsLoading(true)
       const res = await getWorkouts()
       setTemplates(res.lista || [])
     } catch (e) {
@@ -27,102 +39,151 @@ export default function RoutineLibrary() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     if (!isBuilding && !editingRoutine) {
       fetchTemplates()
     }
-  }, [isBuilding, editingRoutine])
+  }, [isBuilding, editingRoutine, fetchTemplates])
 
-  const handleDelete = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation()
-    if (!window.confirm("¿Estás seguro de que quieres eliminar esta plantilla?")) return
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setIsDeleting(true)
     try {
-      await deleteWorkout(id)
+      await deleteWorkout(deleteTarget.id)
+      addToast("Plantilla eliminada correctamente", "success")
       fetchTemplates()
-    } catch (e: any) {
-      alert("Error eliminando: " + e.message)
+    } catch (e: unknown) {
+      addToast(e instanceof Error ? e.message : "Error al eliminar", "error")
+    } finally {
+      setIsDeleting(false)
+      setDeleteTarget(null)
     }
   }
 
-  const handleEdit = (e: React.MouseEvent, template: any) => {
-    e.stopPropagation()
-    setEditingRoutine(template)
-  }
-
-  const filteredTemplates = templates.filter(t => t.title?.toLowerCase().includes(search.toLowerCase()) && !t.member) // Solo mostrar si no es de cliente
+  const filteredTemplates = templates.filter(
+    (t) =>
+      t.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) && !t.member
+  )
 
   if (isBuilding || editingRoutine) {
-    return <RoutineBuilder editingRoutine={editingRoutine} onBack={() => { setIsBuilding(false); setEditingRoutine(null) }} />
+    return (
+      <RoutineBuilder
+        editingRoutine={editingRoutine}
+        onBack={() => {
+          setIsBuilding(false)
+          setEditingRoutine(null)
+        }}
+      />
+    )
   }
 
   return (
-    <div className="w-full">
-      <div className="admin-page-header">
-        <div>
-          <h1 className="admin-page-title">Plantillas de Rutinas</h1>
-          <p className="admin-page-subtitle">Gestiona tus rutinas base para asignar rápidamente</p>
-        </div>
-        <Button onClick={() => setIsBuilding(true)} className="accent-glow gap-2">
-          <Plus size={18} /> Crear Nueva Plantilla
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <AdminHeader
+        title="Plantillas de Rutinas"
+        subtitle="Gestiona tus rutinas base para asignar rápidamente"
+        icon={Dumbbell}
+        action={
+          <button
+            onClick={() => setIsBuilding(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-lg shadow-[var(--accent)]/25 transition-all hover:brightness-110"
+          >
+            <Plus size={16} /> Crear Nueva Plantilla
+          </button>
+        }
+      />
 
-      <div className="flex gap-2 mt-2 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
-          <Input 
-            type="text" 
-            value={search} 
-            onChange={(e) => setSearch(e.target.value)} 
-            placeholder="Buscar plantilla por nombre..." 
-            className="pl-10" 
-          />
-        </div>
-      </div>
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Buscar plantilla por nombre..."
+        className="max-w-md"
+      />
 
       {isLoading ? (
-        <div className="py-20 flex justify-center"><div className="w-8 h-8 rounded-full border-4 border-t-accent border-r-accent border-b-border border-l-border animate-spin" /></div>
+        <LoadingState text="Cargando plantillas..." />
       ) : filteredTemplates.length === 0 ? (
-        <div className="text-center py-20 px-4 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)]">
-          <Dumbbell size={48} className="mx-auto mb-4 text-text-muted opacity-50" />
-          <h3 className="text-lg font-bold text-text-primary mb-2">No hay plantillas guardadas</h3>
-          <p className="text-sm text-text-muted mb-6 max-w-sm mx-auto">Crea rutinas predeterminadas (ej. "Hipertrofia 4 Días") para asignarlas rápidamente a tus clientes.</p>
-          <Button onClick={() => setIsBuilding(true)} variant="outline">Comenzar a crear</Button>
-        </div>
+        <EmptyState
+          icon={Dumbbell}
+          title="No hay plantillas guardadas"
+          description="Crea rutinas predeterminadas (ej. 'Hipertrofia 4 Días') para asignarlas rápidamente a tus clientes."
+          action={
+            <button
+              onClick={() => setIsBuilding(true)}
+              className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-transparent px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+            >
+              Comenzar a crear
+            </button>
+          }
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredTemplates.map((template, idx) => (
-            <motion.div 
+            <motion.div
               key={template.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
-              className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)] transition-all cursor-pointer group"
-              onClick={(e) => handleEdit(e, template)}
+              className="group cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 transition-all hover:border-[var(--accent)]"
+              onClick={() => setEditingRoutine(template)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  setEditingRoutine(template)
+                }
+              }}
+              aria-label={`Editar plantilla ${template.title}`}
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="p-3 rounded-xl bg-[var(--background)] text-accent group-hover:scale-110 transition-transform">
-                  <Dumbbell size={24} />
+              <div className="mb-4 flex items-start justify-between">
+                <div className="rounded-xl bg-[var(--accent)]/10 p-3 transition-transform group-hover:scale-110">
+                  <Dumbbell size={24} className="text-[var(--accent)]" aria-hidden="true" />
                 </div>
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={(e) => handleEdit(e, template)} className="p-2 text-text-muted hover:text-accent hover:bg-[var(--surface-hover)] rounded-lg transition-colors">
+                <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setEditingRoutine(template)
+                    }}
+                    className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]"
+                    aria-label={`Editar ${template.title}`}
+                  >
                     <Edit2 size={16} />
                   </button>
-                  <button onClick={(e) => handleDelete(e, template.id)} className="p-2 text-text-muted hover:text-danger hover:bg-danger/10 rounded-lg transition-colors">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setDeleteTarget(template)
+                    }}
+                    className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+                    aria-label={`Eliminar ${template.title}`}
+                  >
                     <Trash2 size={16} />
                   </button>
                 </div>
               </div>
-              <h3 className="font-bold text-lg text-text-primary mb-1">{template.title}</h3>
-              <div className="flex items-center gap-4 mt-4 text-sm text-text-muted">
-                <span className="flex items-center gap-1.5"><Calendar size={14}/> Plantilla Base</span>
+              <h3 className="text-lg font-bold text-[var(--text-primary)]">{template.title}</h3>
+              <div className="mt-4 flex items-center gap-4 text-sm text-[var(--text-muted)]">
+                <span className="flex items-center gap-1.5">
+                  <Calendar size={14} /> Plantilla Base
+                </span>
               </div>
             </motion.div>
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Eliminar plantilla"
+        message={`¿Estás seguro de eliminar "${deleteTarget?.title}"? Esta acción no se puede deshacer.`}
+        confirmLabel={isDeleting ? "Eliminando..." : "Eliminar"}
+      />
     </div>
   )
 }

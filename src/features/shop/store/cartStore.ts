@@ -1,6 +1,6 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import type { Product, CartItem } from "@/types"
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import type { Product, CartItem } from '@/types'
 
 interface CartStore {
   items: CartItem[]
@@ -23,9 +23,7 @@ export const useCartStore = create<CartStore>()(
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i.product.id === product.id
-                  ? { ...i, quantity: i.quantity + 1 }
-                  : i
+                i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
               ),
             }
           }
@@ -45,9 +43,7 @@ export const useCartStore = create<CartStore>()(
           return
         }
         set((state) => ({
-          items: state.items.map((i) =>
-            i.product.id === productId ? { ...i, quantity } : i
-          ),
+          items: state.items.map((i) => (i.product.id === productId ? { ...i, quantity } : i)),
         }))
       },
 
@@ -55,9 +51,8 @@ export const useCartStore = create<CartStore>()(
 
       itemCount: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
 
-      total: () =>
-        get().items.reduce((sum, i) => sum + i.product.price * i.quantity, 0),
+      total: () => get().items.reduce((sum, i) => sum + i.product.price * i.quantity, 0),
     }),
-    { name: "reto4-cart" }
+    { name: 'reto4-cart' }
   )
 )

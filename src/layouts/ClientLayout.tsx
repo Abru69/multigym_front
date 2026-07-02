@@ -1,18 +1,26 @@
-import { useState } from "react"
-import { Outlet, NavLink, Link, useLocation, useNavigate } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
-import { useCartStore } from "@/features/shop/store/cartStore"
-import { useAuthStore } from "@/features/auth/store/authStore"
-import { useTenantBranding } from "@/hooks/useTenantBranding"
-import { ThemeToggle } from "@/components/ui/ThemeToggle"
-import { Dumbbell, TrendingUp, ShoppingBag, User, ShoppingCart, Utensils, LogOut } from "lucide-react"
-import { getTenantUrl } from "@/lib/tenant"
+import { useState } from 'react'
+import { Outlet, NavLink, Link, useLocation, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useCartStore } from '@/features/shop/store/cartStore'
+import { useAuthStore } from '@/features/auth/store/authStore'
+import { useTenantBranding } from '@/hooks/useTenantBranding'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import {
+  Dumbbell,
+  TrendingUp,
+  ShoppingBag,
+  User,
+  ShoppingCart,
+  Utensils,
+  LogOut,
+} from 'lucide-react'
+import { getTenantUrl } from '@/lib/tenant'
 
 const clientNav = [
-  { to: "/app/rutinas", icon: Dumbbell, label: "Rutinas" },
-  { to: "/app/nutricion", icon: Utensils, label: "Nutrición" },
-  { to: "/app/progreso", icon: TrendingUp, label: "Progreso" },
-  { to: "/tienda", icon: ShoppingBag, label: "Tienda" },
+  { to: '/app/rutinas', icon: Dumbbell, label: 'Rutinas' },
+  { to: '/app/nutricion', icon: Utensils, label: 'Nutrición' },
+  { to: '/app/progreso', icon: TrendingUp, label: 'Progreso' },
+  { to: '/tienda', icon: ShoppingBag, label: 'Tienda' },
 ]
 
 export function ClientLayout() {
@@ -23,7 +31,7 @@ export function ClientLayout() {
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
 
-  const portalLink = user?.role === "admin" ? "/admin" : "/app/rutinas"
+  const portalLink = user?.role === 'admin' ? '/admin' : '/app/rutinas'
 
   const handleLogout = () => {
     const currentTenantId = tenantId || user?.tenantId
@@ -32,45 +40,48 @@ export function ClientLayout() {
     if (currentTenantId) {
       window.location.href = getTenantUrl(currentTenantId)
     } else {
-      window.location.href = "/"
+      window.location.href = '/'
     }
   }
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "var(--bg-primary)" }}>
+    <div className="flex min-h-screen flex-col" style={{ background: 'var(--bg-primary)' }}>
       {/* Header */}
       <header
         className="sticky top-0 z-30 flex items-center justify-between px-4 py-3"
         style={{
-          background: "var(--header-bg)",
-          backdropFilter: "blur(12px)",
-          borderBottom: "1px solid var(--border)",
+          background: 'var(--header-bg)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid var(--border)',
         }}
       >
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center gap-2.5">
             <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center font-black text-xs"
-              style={{ background: "var(--accent)", color: "var(--accent-text)" }}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-xs font-black"
+              style={{ background: 'var(--accent)', color: 'var(--accent-text)' }}
             >
               {branding.logoAbbr}
             </div>
-            <span className="font-bold text-sm hidden sm:block" style={{ color: "var(--text-primary)" }}>
+            <span
+              className="hidden text-sm font-bold sm:block"
+              style={{ color: 'var(--text-primary)' }}
+            >
               {branding.name}
             </span>
           </Link>
 
           {isAuthenticated && (
-            <nav className="hidden lg:flex items-center gap-1">
+            <nav className="hidden items-center gap-1 lg:flex">
               {clientNav.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                  className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
                   style={({ isActive }) => ({
-                    color: isActive ? "var(--accent-text)" : "var(--text-secondary)",
-                    background: isActive ? "var(--accent)" : "transparent",
-                    boxShadow: isActive ? "var(--shadow-md)" : "none",
+                    color: isActive ? 'var(--accent-text)' : 'var(--text-secondary)',
+                    background: isActive ? 'var(--accent)' : 'transparent',
+                    boxShadow: isActive ? 'var(--shadow-md)' : 'none',
                   })}
                 >
                   {item.label}
@@ -84,62 +95,79 @@ export function ClientLayout() {
           <ThemeToggle />
           <Link
             to="/tienda/carrito"
-            className="relative p-2 rounded-lg transition-colors"
-            style={{ color: "var(--text-secondary)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface)")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            className="relative rounded-lg p-2 transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
           >
             <ShoppingCart size={20} />
             {cartCount > 0 && (
               <span
-                className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
-                style={{ background: "var(--accent)", color: "var(--accent-text)" }}
+                className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold"
+                style={{ background: 'var(--accent)', color: 'var(--accent-text)' }}
               >
-                {cartCount > 9 ? "9+" : cartCount}
+                {cartCount > 9 ? '9+' : cartCount}
               </span>
             )}
           </Link>
           {isAuthenticated ? (
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="flex items-center gap-2 text-xs font-bold pl-2.5 pr-3.5 py-1.5 rounded-lg transition-colors"
-                style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                className="flex items-center gap-2 rounded-lg py-1.5 pr-3.5 pl-2.5 text-xs font-bold transition-colors"
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-primary)',
+                }}
               >
-                <div className="w-5 h-5 rounded-full flex items-center justify-center overflow-hidden" style={{ background: "var(--accent-muted)", color: "var(--accent)" }}>
-                  {user?.avatar ? <img src={user.avatar} className="w-full h-full object-cover" alt={user.name} /> : <User size={12} />}
+                <div
+                  className="flex h-5 w-5 items-center justify-center overflow-hidden rounded-full"
+                  style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}
+                >
+                  {user?.avatar ? (
+                    <img src={user.avatar} className="h-full w-full object-cover" alt={user.name} />
+                  ) : (
+                    <User size={12} />
+                  )}
                 </div>
-                <span className="hidden sm:block truncate">Bienvenido, {user?.name.split(" ")[0]}</span>
+                <span className="hidden truncate sm:block">
+                  Bienvenido, {user?.name.split(' ')[0]}
+                </span>
               </button>
-              
+
               <AnimatePresence>
                 {showMenu && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-2 w-48 rounded-xl shadow-xl overflow-hidden py-1 z-50"
-                    style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+                    className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl py-1 shadow-xl"
+                    style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                   >
-                    <button 
+                    <button
                       onClick={() => {
                         setShowMenu(false)
                         navigate(portalLink)
                       }}
-                      className="w-full text-left block px-4 py-2 text-sm transition-colors"
-                      style={{ color: "var(--text-primary)" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--surface-hover)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      className="block w-full px-4 py-2 text-left text-sm transition-colors"
+                      style={{ color: 'var(--text-primary)' }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = 'var(--surface-hover)')
+                      }
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                     >
                       Mi Portal
                     </button>
-                    <div className="h-px" style={{ background: "var(--border)" }} />
-                    <button 
+                    <div className="h-px" style={{ background: 'var(--border)' }} />
+                    <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2"
-                      style={{ color: "var(--error)" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--error-muted)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors"
+                      style={{ color: 'var(--error)' }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = 'var(--error-muted)')
+                      }
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                     >
                       <LogOut size={14} /> Cerrar Sesión
                     </button>
@@ -150,8 +178,8 @@ export function ClientLayout() {
           ) : (
             <Link
               to="/login"
-              className="text-sm font-medium px-4 py-1.5 rounded-lg transition-all"
-              style={{ background: "var(--accent)", color: "var(--accent-text)" }}
+              className="rounded-lg px-4 py-1.5 text-sm font-medium transition-all"
+              style={{ background: 'var(--accent)', color: 'var(--accent-text)' }}
             >
               Entrar
             </Link>
@@ -177,21 +205,21 @@ export function ClientLayout() {
       {/* Mobile Bottom Nav */}
       {isAuthenticated && (
         <nav
-          className="fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around px-2 py-2 lg:hidden"
+          className="fixed right-0 bottom-0 left-0 z-30 flex items-center justify-around px-2 py-2 lg:hidden"
           style={{
-            background: "var(--header-bg)",
-            backdropFilter: "blur(12px)",
-            borderTop: "1px solid var(--border)",
+            background: 'var(--header-bg)',
+            backdropFilter: 'blur(12px)',
+            borderTop: '1px solid var(--border)',
           }}
         >
           {clientNav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors"
+              className="flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 transition-colors"
               style={({ isActive }) => ({
-                color: isActive ? "var(--accent-text)" : "var(--text-muted)",
-                background: isActive ? "var(--accent)" : "transparent",
+                color: isActive ? 'var(--accent-text)' : 'var(--text-muted)',
+                background: isActive ? 'var(--accent)' : 'transparent',
               })}
             >
               <item.icon size={20} />

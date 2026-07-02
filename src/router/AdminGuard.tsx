@@ -1,6 +1,6 @@
-import { Navigate } from "react-router-dom"
-import { useAuthStore } from "@/features/auth/store/authStore"
-import type { ReactNode } from "react"
+import { Navigate } from 'react-router-dom'
+import { useAuthStore } from '@/features/auth/store/authStore'
+import type { ReactNode } from 'react'
 
 export function AdminGuard({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuthStore()
@@ -9,7 +9,7 @@ export function AdminGuard({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace />
   }
 
-  if (user?.role !== "admin") {
+  if (user?.role !== 'admin') {
     return <Navigate to="/app/rutinas" replace />
   }
 

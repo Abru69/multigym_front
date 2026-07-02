@@ -22,13 +22,7 @@ export interface Product {
 }
 
 export type ProductCategory =
-  | "proteinas"
-  | "pre-entrenos"
-  | "creatina"
-  | "aminoacidos"
-  | "vitaminas"
-  | "barras"
-  | "accesorios"
+  'proteinas' | 'pre-entrenos' | 'creatina' | 'aminoacidos' | 'vitaminas' | 'barras' | 'accesorios'
 
 export interface NutritionFact {
   label: string
@@ -45,7 +39,7 @@ export interface Order {
   id: string
   items: CartItem[]
   total: number
-  status: "pendiente" | "procesando" | "enviado" | "entregado"
+  status: 'pendiente' | 'procesando' | 'enviado' | 'entregado'
   date: string
   shippingAddress?: string
 }

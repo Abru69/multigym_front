@@ -1,31 +1,7 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import type { User } from "@/types"
-import { fetchApi } from "@/lib/api"
-
-interface LoginResponse {
-  accessToken: string;
-  type: string;
-  expiresIn: number;
-  tenantId: string;
-  role: string;
-}
-
-interface UserDTO {
-  id: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-  memberDTO: { id: string; name: string; phone: string } | null;
-}
-
-interface ResponseDTO<T> {
-  estatus: string;
-  mensaje: string;
-  lista: any[];
-  dto: T;
-  codError: string;
-}
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import type { User, ResponseDTO, LoginResponse, UserDTO } from '@/types'
+import { fetchApi } from '@/lib/api'
 
 interface AuthStore {
   user: User | null
@@ -49,27 +25,28 @@ export const useAuthStore = create<AuthStore>()(
 
       login: async (email: string, password: string, tenantId: string) => {
         set({ isLoading: true })
-        
+
         try {
-          const response = await fetchApi<ResponseDTO<LoginResponse>>("/api/auth/login", {
-            method: "POST",
+          const response = await fetchApi<ResponseDTO<LoginResponse>>('/api/auth/login', {
+            method: 'POST',
             body: JSON.stringify({ email, password, tenantId }),
           })
 
           if (response && response.dto && response.dto.accessToken) {
-            const role = response.dto.role.toLowerCase() === "admin" ? "admin" : "client";
-            
+            const role = response.dto.role.toLowerCase() === 'admin' ? 'admin' : 'client'
+
             // Extract real user data from response.lista[0] if available
-            const userDTO: UserDTO | null = response.lista && response.lista.length > 0 
-              ? response.lista[0] as UserDTO 
-              : null;
+            const userDTO =
+              response.lista && response.lista.length > 0
+                ? (response.lista[0] as unknown as UserDTO)
+                : null
 
             const loggedUser: User = {
               id: userDTO?.id || email,
-              name: userDTO?.memberDTO?.name || email.split("@")[0],
+              name: userDTO?.memberDTO?.name || email.split('@')[0],
               email: userDTO?.email || email,
               phone: userDTO?.memberDTO?.phone || undefined,
-              role: role as "admin" | "client",
+              role: role as 'admin' | 'client',
               joinDate: new Date().toISOString(),
               isActive: userDTO?.isActive ?? true,
             }
@@ -84,7 +61,7 @@ export const useAuthStore = create<AuthStore>()(
             return true
           }
         } catch (error) {
-          console.error("Login failed:", error)
+          console.error('Login failed:', error)
         }
 
         set({ isLoading: false })
@@ -104,6 +81,6 @@ export const useAuthStore = create<AuthStore>()(
         return false
       },
     }),
-    { name: "auth-storage" }
+    { name: 'auth-storage' }
   )
 )
