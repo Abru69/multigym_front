@@ -34,7 +34,10 @@ export default function Register() {
           className="mb-6 flex flex-col gap-3 rounded-2xl border p-5 text-left"
           style={{ background: 'var(--input-bg)', borderColor: 'var(--border)' }}
         >
-          <p className="text-xs font-bold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>
+          <p
+            className="text-xs font-bold tracking-wider uppercase"
+            style={{ color: 'var(--text-muted)' }}
+          >
             ¿Cómo obtener acceso?
           </p>
           <div className="space-y-2">

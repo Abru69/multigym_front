@@ -38,15 +38,15 @@ src/
 
 ## Documentación
 
-| Archivo | Contenido |
-|---------|-----------|
-| `.ai/RULES.md` | Reglas obligatorias |
-| `.ai/BOOTSTRAP_PROMPT.md` | Prompt para nueva sesión |
-| `.ai/UPDATE_DOCS.md` | Cómo mantener los docs |
-| `docs/AI_CONTEXT.md` | Contexto profundo del proyecto |
-| `docs/PROJECT_STATUS.md` | Estado actual |
-| `docs/NEXT_SESSION.md` | Próximos pasos |
-| `docs/CHANGELOG.md` | Historial de cambios |
+| Archivo                   | Contenido                      |
+| ------------------------- | ------------------------------ |
+| `.ai/RULES.md`            | Reglas obligatorias            |
+| `.ai/BOOTSTRAP_PROMPT.md` | Prompt para nueva sesión       |
+| `.ai/UPDATE_DOCS.md`      | Cómo mantener los docs         |
+| `docs/AI_CONTEXT.md`      | Contexto profundo del proyecto |
+| `docs/PROJECT_STATUS.md`  | Estado actual                  |
+| `docs/NEXT_SESSION.md`    | Próximos pasos                 |
+| `docs/CHANGELOG.md`       | Historial de cambios           |
 
 ## Estado actual
 
@@ -56,4 +56,5 @@ src/
 - ⚠️ Lint: 134 problemas (88 errors, 46 warnings)
 
 ---
-*Última actualización: 2026-07-02*
+
+_Última actualización: 2026-07-02_

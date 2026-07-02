@@ -1,15 +1,15 @@
-import { useState, useEffect, useCallback } from "react"
-import { motion } from "framer-motion"
-import { Plus, Dumbbell, Calendar, Edit2, Trash2 } from "lucide-react"
-import { useToastStore } from "@/components/ui/Toast"
-import { getWorkouts, deleteWorkout } from "@/lib/api"
-import { AdminHeader } from "../components/AdminHeader"
-import { SearchBar } from "../components/SearchBar"
-import { LoadingState } from "../components/LoadingState"
-import { EmptyState } from "../components/EmptyState"
-import { ConfirmDialog } from "../components/ConfirmDialog"
-import { useDebounce } from "@/hooks/useDebounce"
-import RoutineBuilder from "./RoutineBuilder"
+import { useState, useEffect, useCallback } from 'react'
+import { motion } from 'framer-motion'
+import { Plus, Dumbbell, Calendar, Edit2, Trash2 } from 'lucide-react'
+import { useToastStore } from '@/components/ui/Toast'
+import { getWorkouts, deleteWorkout } from '@/lib/api'
+import { AdminHeader } from '../components/AdminHeader'
+import { SearchBar } from '../components/SearchBar'
+import { LoadingState } from '../components/LoadingState'
+import { EmptyState } from '../components/EmptyState'
+import { ConfirmDialog } from '../components/ConfirmDialog'
+import { useDebounce } from '@/hooks/useDebounce'
+import RoutineBuilder from './RoutineBuilder'
 
 interface WorkoutTemplate {
   id: string
@@ -22,7 +22,7 @@ export default function RoutineLibrary() {
   const addToast = useToastStore((s) => s.addToast)
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search)
   const [editingRoutine, setEditingRoutine] = useState<WorkoutTemplate | null>(null)
   const [isBuilding, setIsBuilding] = useState(false)
@@ -35,7 +35,7 @@ export default function RoutineLibrary() {
       const res = await getWorkouts()
       setTemplates(res.lista || [])
     } catch (e) {
-      console.error("Error fetching templates", e)
+      console.error('Error fetching templates', e)
     } finally {
       setIsLoading(false)
     }
@@ -52,10 +52,10 @@ export default function RoutineLibrary() {
     setIsDeleting(true)
     try {
       await deleteWorkout(deleteTarget.id)
-      addToast("Plantilla eliminada correctamente", "success")
+      addToast('Plantilla eliminada correctamente', 'success')
       fetchTemplates()
     } catch (e: unknown) {
-      addToast(e instanceof Error ? e.message : "Error al eliminar", "error")
+      addToast(e instanceof Error ? e.message : 'Error al eliminar', 'error')
     } finally {
       setIsDeleting(false)
       setDeleteTarget(null)
@@ -63,8 +63,7 @@ export default function RoutineLibrary() {
   }
 
   const filteredTemplates = templates.filter(
-    (t) =>
-      t.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) && !t.member
+    (t) => t.title?.toLowerCase().includes(debouncedSearch.toLowerCase()) && !t.member
   )
 
   if (isBuilding || editingRoutine) {
@@ -88,7 +87,7 @@ export default function RoutineLibrary() {
         action={
           <button
             onClick={() => setIsBuilding(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-lg shadow-[var(--accent)]/25 transition-all hover:brightness-110"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
           >
             <Plus size={16} /> Crear Nueva Plantilla
           </button>
@@ -131,7 +130,7 @@ export default function RoutineLibrary() {
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
+                if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault()
                   setEditingRoutine(template)
                 }
@@ -182,7 +181,7 @@ export default function RoutineLibrary() {
         onConfirm={handleDelete}
         title="Eliminar plantilla"
         message={`¿Estás seguro de eliminar "${deleteTarget?.title}"? Esta acción no se puede deshacer.`}
-        confirmLabel={isDeleting ? "Eliminando..." : "Eliminar"}
+        confirmLabel={isDeleting ? 'Eliminando...' : 'Eliminar'}
       />
     </div>
   )

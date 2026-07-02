@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import type { DayOfWeek } from "@/types"
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import type { DayOfWeek } from '@/types'
 import {
   Plus,
   Trash2,
@@ -15,17 +15,17 @@ import {
   Dumbbell,
   Edit2,
   Activity,
-} from "lucide-react"
-import { Modal } from "@/components/ui/Modal"
-import { useToastStore } from "@/components/ui/Toast"
-import { useSearchParams, useNavigate } from "react-router-dom"
-import { getExercises, createExercise, createWorkout, fetchApi } from "@/lib/api"
-import { MUSCLE_GROUPS } from "@/data/constants"
-import { AdminHeader } from "../components/AdminHeader"
-import { SearchBar } from "../components/SearchBar"
-import { FormField } from "../components/FormField"
-import { useDebounce } from "@/hooks/useDebounce"
-import type { ResponseDTO } from "@/types"
+} from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
+import { useToastStore } from '@/components/ui/Toast'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import { getExercises, createExercise, createWorkout, fetchApi } from '@/lib/api'
+import { MUSCLE_GROUPS } from '@/data/constants'
+import { AdminHeader } from '../components/AdminHeader'
+import { SearchBar } from '../components/SearchBar'
+import { FormField } from '../components/FormField'
+import { useDebounce } from '@/hooks/useDebounce'
+import type { ResponseDTO } from '@/types'
 
 interface ExerciseData {
   id: string
@@ -64,24 +64,24 @@ interface UserData {
 type DayExercises = Record<DayOfWeek, DayExercise[]>
 
 const DAYS: { key: DayOfWeek; label: string }[] = [
-  { key: "lunes", label: "Lunes" },
-  { key: "martes", label: "Martes" },
-  { key: "miercoles", label: "Miércoles" },
-  { key: "jueves", label: "Jueves" },
-  { key: "viernes", label: "Viernes" },
-  { key: "sabado", label: "Sábado" },
-  { key: "domingo", label: "Domingo" },
+  { key: 'lunes', label: 'Lunes' },
+  { key: 'martes', label: 'Martes' },
+  { key: 'miercoles', label: 'Miércoles' },
+  { key: 'jueves', label: 'Jueves' },
+  { key: 'viernes', label: 'Viernes' },
+  { key: 'sabado', label: 'Sábado' },
+  { key: 'domingo', label: 'Domingo' },
 ]
 
 const ALL_GROUPS_LIST = [
-  "Pecho",
-  "Espalda",
-  "Piernas",
-  "Brazos",
-  "Hombros",
-  "Core",
-  "Cardio",
-  "Cuerpo Completo",
+  'Pecho',
+  'Espalda',
+  'Piernas',
+  'Brazos',
+  'Hombros',
+  'Core',
+  'Cardio',
+  'Cuerpo Completo',
 ]
 
 export default function RoutineBuilder({
@@ -100,8 +100,8 @@ export default function RoutineBuilder({
 
   const customGroups = useMemo(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem("customMuscleGroups") || "[]")
-      return stored.map((g: unknown) => (typeof g === "string" ? g : (g as UserData).name || ""))
+      const stored = JSON.parse(localStorage.getItem('customMuscleGroups') || '[]')
+      return stored.map((g: unknown) => (typeof g === 'string' ? g : (g as UserData).name || ''))
     } catch {
       return []
     }
@@ -117,7 +117,7 @@ export default function RoutineBuilder({
         id: e.id,
         name: e.name,
         muscleGroup: e.muscleGroup,
-        imageUrl: "",
+        imageUrl: '',
       }))
       setDbExercises(mapped)
     } catch (e) {
@@ -127,19 +127,19 @@ export default function RoutineBuilder({
 
   useEffect(() => {
     loadExercises()
-    fetchApi<ResponseDTO<UserData>>("/api/tenant/user/getAll")
+    fetchApi<ResponseDTO<UserData>>('/api/tenant/user/getAll')
       .then((res) => setDbUsers(res.lista || []))
       .catch((e) => console.error(e))
   }, [loadExercises])
 
-  const personalizedUserId = searchParams.get("userId")
+  const personalizedUserId = searchParams.get('userId')
   const personalizedUser = personalizedUserId
     ? dbUsers.find((u) => u.id === personalizedUserId)
     : null
 
-  const [selectedDay, setSelectedDay] = useState<DayOfWeek>("lunes")
+  const [selectedDay, setSelectedDay] = useState<DayOfWeek>('lunes')
   const [routineName, setRoutineName] = useState(
-    editingRoutine?.title || "Nueva Rutina de Hipertrofia"
+    editingRoutine?.title || 'Nueva Rutina de Hipertrofia'
   )
 
   useEffect(() => {
@@ -166,7 +166,7 @@ export default function RoutineBuilder({
             ...we.exercise!,
             uniqueId: Math.random().toString(36).substring(2, 9),
             sets: we.sets || 4,
-            reps: we.reps || "10-12",
+            reps: we.reps || '10-12',
             restSeconds: we.restTimeSeconds || 60,
           })
         }
@@ -177,26 +177,26 @@ export default function RoutineBuilder({
 
   // Exercise Modal State
   const [showExerciseModal, setShowExerciseModal] = useState(false)
-  const [exerciseSearch, setExerciseSearch] = useState("")
+  const [exerciseSearch, setExerciseSearch] = useState('')
   const debouncedExerciseSearch = useDebounce(exerciseSearch)
   const [selectedGroupForModal, setSelectedGroupForModal] = useState<string | null>(null)
 
   // New Exercise State
   const [isCreatingExercise, setIsCreatingExercise] = useState(false)
-  const [newExerciseForm, setNewExerciseForm] = useState({ name: "", muscleGroup: "" })
+  const [newExerciseForm, setNewExerciseForm] = useState({ name: '', muscleGroup: '' })
   const [newExerciseErrors, setNewExerciseErrors] = useState<Record<string, string>>({})
   const [isSavingExercise, setIsSavingExercise] = useState(false)
 
   // Assign Modal State
   const [showAssignModal, setShowAssignModal] = useState(false)
-  const [searchUser, setSearchUser] = useState("")
+  const [searchUser, setSearchUser] = useState('')
   const debouncedUserSearch = useDebounce(searchUser)
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set())
 
   const filteredClients = useMemo(
     () =>
       dbUsers.filter((u) =>
-        (u.name || u.email || "").toLowerCase().includes(debouncedUserSearch.toLowerCase())
+        (u.name || u.email || '').toLowerCase().includes(debouncedUserSearch.toLowerCase())
       ),
     [dbUsers, debouncedUserSearch]
   )
@@ -211,32 +211,32 @@ export default function RoutineBuilder({
   const openExerciseModal = () => {
     setIsCreatingExercise(false)
     setSelectedGroupForModal(null)
-    setExerciseSearch("")
+    setExerciseSearch('')
     setShowExerciseModal(true)
   }
 
   const validateNewExerciseForm = (): boolean => {
     const errors: Record<string, string> = {}
-    if (!newExerciseForm.name) errors.name = "El nombre es requerido"
-    if (!newExerciseForm.muscleGroup) errors.muscleGroup = "Selecciona un grupo"
+    if (!newExerciseForm.name) errors.name = 'El nombre es requerido'
+    if (!newExerciseForm.muscleGroup) errors.muscleGroup = 'Selecciona un grupo'
     setNewExerciseErrors(errors)
     return Object.keys(errors).length === 0
   }
 
   const handleSaveNewExercise = async () => {
     if (!validateNewExerciseForm()) {
-      addToast("Completa los campos obligatorios", "error")
+      addToast('Completa los campos obligatorios', 'error')
       return
     }
     setIsSavingExercise(true)
     try {
       await createExercise({ name: newExerciseForm.name, muscleGroup: newExerciseForm.muscleGroup })
-      addToast("Ejercicio creado correctamente", "success")
+      addToast('Ejercicio creado correctamente', 'success')
       loadExercises()
-      setNewExerciseForm({ name: "", muscleGroup: "" })
+      setNewExerciseForm({ name: '', muscleGroup: '' })
       setIsCreatingExercise(false)
     } catch (e: unknown) {
-      addToast(e instanceof Error ? e.message : "Error creando ejercicio", "error")
+      addToast(e instanceof Error ? e.message : 'Error creando ejercicio', 'error')
     } finally {
       setIsSavingExercise(false)
     }
@@ -247,7 +247,7 @@ export default function RoutineBuilder({
       ...exercise,
       uniqueId: Math.random().toString(36).substring(2, 9),
       sets: 4,
-      reps: "10-12",
+      reps: '10-12',
       restSeconds: 60,
     }
     setDayExercises((prev) => ({ ...prev, [selectedDay]: [...prev[selectedDay], exerciseCopy] }))
@@ -261,7 +261,11 @@ export default function RoutineBuilder({
     }))
   }
 
-  const updateExerciseDetail = (uniqueId: string, field: keyof DayExercise, value: string | number) => {
+  const updateExerciseDetail = (
+    uniqueId: string,
+    field: keyof DayExercise,
+    value: string | number
+  ) => {
     setDayExercises((prev) => ({
       ...prev,
       [selectedDay]: prev[selectedDay].map((e) =>
@@ -274,11 +278,11 @@ export default function RoutineBuilder({
 
   const handleSaveAndAssign = async () => {
     if (selectedUsers.size === 0 && !personalizedUser) {
-      addToast("Selecciona al menos un cliente", "error")
+      addToast('Selecciona al menos un cliente', 'error')
       return
     }
     if (!routineName) {
-      addToast("Ponle nombre a la rutina", "error")
+      addToast('Ponle nombre a la rutina', 'error')
       return
     }
 
@@ -289,7 +293,7 @@ export default function RoutineBuilder({
           exercise: { id: ex.id },
           dayOfWeek,
           sets: parseInt(String(ex.sets)) || 4,
-          reps: ex.reps || "12",
+          reps: ex.reps || '12',
           restSeconds: 60,
           orderIndex: index,
         }))
@@ -312,13 +316,13 @@ export default function RoutineBuilder({
 
       addToast(
         `Rutina "${routineName}" asignada exitosamente a ${personalizedUser ? 1 : selectedUsers.size} cliente(s).`,
-        "success"
+        'success'
       )
       setShowAssignModal(false)
       setSelectedUsers(new Set())
-      if (personalizedUser) navigate("/admin/usuarios")
+      if (personalizedUser) navigate('/admin/usuarios')
     } catch (e: unknown) {
-      addToast(e instanceof Error ? e.message : "Error guardando rutina", "error")
+      addToast(e instanceof Error ? e.message : 'Error guardando rutina', 'error')
     } finally {
       setIsSaving(false)
     }
@@ -332,7 +336,7 @@ export default function RoutineBuilder({
           exercise: { id: ex.id },
           dayOfWeek,
           sets: parseInt(String(ex.sets)) || 4,
-          reps: ex.reps || "12",
+          reps: ex.reps || '12',
           restSeconds: 60,
           orderIndex: index,
         }))
@@ -345,9 +349,12 @@ export default function RoutineBuilder({
         exercises: exercisesPayload,
       }
       await createWorkout(payload)
-      addToast(`Plantilla "${routineName}" guardada en la biblioteca general exitosamente.`, "success")
+      addToast(
+        `Plantilla "${routineName}" guardada en la biblioteca general exitosamente.`,
+        'success'
+      )
     } catch (e: unknown) {
-      addToast(e instanceof Error ? e.message : "Error guardando plantilla", "error")
+      addToast(e instanceof Error ? e.message : 'Error guardando plantilla', 'error')
     } finally {
       setIsSaving(false)
     }
@@ -361,7 +368,7 @@ export default function RoutineBuilder({
           <div className="mb-4 flex items-center gap-3">
             {personalizedUser ? (
               <button
-                onClick={() => navigate("/admin/usuarios")}
+                onClick={() => navigate('/admin/usuarios')}
                 className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] shadow-sm transition-colors hover:bg-[var(--surface-hover)]"
               >
                 <ArrowLeft size={16} /> Volver a Usuarios
@@ -376,8 +383,8 @@ export default function RoutineBuilder({
                 </button>
               )
             )}
-            <span className="rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase text-[var(--accent)]">
-              {personalizedUser ? "MODO ASIGNACIÓN" : "MODO PLANTILLA"}
+            <span className="rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-[var(--accent)] uppercase">
+              {personalizedUser ? 'MODO ASIGNACIÓN' : 'MODO PLANTILLA'}
             </span>
           </div>
 
@@ -386,7 +393,7 @@ export default function RoutineBuilder({
               type="text"
               value={routineName}
               onChange={(e) => setRoutineName(e.target.value)}
-              className="w-full border-b-2 border-transparent bg-transparent pb-2 text-3xl font-black text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/30 transition-colors duration-200 outline-none hover:border-[var(--border)] focus:border-[var(--accent)] sm:text-4xl"
+              className="w-full border-b-2 border-transparent bg-transparent pb-2 text-3xl font-black text-[var(--text-primary)] transition-colors duration-200 outline-none placeholder:text-[var(--text-muted)]/30 hover:border-[var(--border)] focus:border-[var(--accent)] sm:text-4xl"
               placeholder="Escribe el nombre de la rutina aquí..."
             />
             <Edit2
@@ -403,7 +410,7 @@ export default function RoutineBuilder({
               <>
                 <span className="h-1 w-1 rounded-full bg-[var(--border)]" />
                 <span className="flex items-center gap-1.5">
-                  <Users size={16} /> Personalizando para:{" "}
+                  <Users size={16} /> Personalizando para:{' '}
                   <strong className="text-[var(--text-primary)]">{personalizedUser.name}</strong>
                 </span>
               </>
@@ -415,10 +422,10 @@ export default function RoutineBuilder({
             <button
               onClick={handleSaveAndAssign}
               disabled={isSaving}
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-lg shadow-[var(--accent)]/25 transition-all hover:brightness-110 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
             >
               <Check size={16} />
-              Guardar y Asignar a {personalizedUser.name?.split(" ")[0] || personalizedUser.email}
+              Guardar y Asignar a {personalizedUser.name?.split(' ')[0] || personalizedUser.email}
             </button>
           ) : (
             <>
@@ -428,11 +435,11 @@ export default function RoutineBuilder({
                 className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:opacity-50"
               >
                 <Save size={16} />
-                {isSaving ? "Guardando..." : "Guardar Plantilla"}
+                {isSaving ? 'Guardando...' : 'Guardar Plantilla'}
               </button>
               <button
                 onClick={() => setShowAssignModal(true)}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-lg shadow-[var(--accent)]/25 transition-all hover:brightness-110"
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
               >
                 <Users size={16} /> Guardar y Asignar
               </button>
@@ -449,16 +456,16 @@ export default function RoutineBuilder({
             onClick={() => setSelectedDay(d.key)}
             className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
               selectedDay === d.key
-                ? "bg-[var(--accent)] text-[var(--accent-text)] shadow-md"
-                : "text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-md'
+                : 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
             }`}
           >
             {d.label}
             <span
               className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-bold ${
                 selectedDay === d.key
-                  ? "bg-white/20 text-white"
-                  : "bg-[var(--bg-secondary)] text-[var(--text-muted)]"
+                  ? 'bg-white/20 text-white'
+                  : 'bg-[var(--bg-secondary)] text-[var(--text-muted)]'
               }`}
             >
               {dayExercises[d.key].length}
@@ -503,9 +510,11 @@ export default function RoutineBuilder({
               <div className="w-full min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h4 className="text-base font-bold text-[var(--text-primary)]">{exercise.name}</h4>
-                    <span className="mt-1 inline-block rounded-full bg-[var(--accent)]/10 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase text-[var(--accent)]">
-                      {exercise.muscleGroup || "General"}
+                    <h4 className="text-base font-bold text-[var(--text-primary)]">
+                      {exercise.name}
+                    </h4>
+                    <span className="mt-1 inline-block rounded-full bg-[var(--accent)]/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-[var(--accent)] uppercase">
+                      {exercise.muscleGroup || 'General'}
                     </span>
                   </div>
                   <button
@@ -519,7 +528,7 @@ export default function RoutineBuilder({
 
                 <div className="mt-4 flex flex-wrap gap-3">
                   <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                    <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       Series
                     </p>
                     <input
@@ -527,28 +536,32 @@ export default function RoutineBuilder({
                       min="1"
                       value={exercise.sets}
                       onChange={(e) =>
-                        updateExerciseDetail(exercise.uniqueId, "sets", parseInt(e.target.value) || 1)
+                        updateExerciseDetail(
+                          exercise.uniqueId,
+                          'sets',
+                          parseInt(e.target.value) || 1
+                        )
                       }
                       className="w-12 border-none bg-transparent text-center text-sm font-bold text-[var(--text-primary)] outline-none"
                       aria-label="Número de series"
                     />
                   </div>
                   <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                    <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       Reps
                     </p>
                     <input
                       type="text"
                       value={exercise.reps}
                       onChange={(e) =>
-                        updateExerciseDetail(exercise.uniqueId, "reps", e.target.value)
+                        updateExerciseDetail(exercise.uniqueId, 'reps', e.target.value)
                       }
                       className="w-14 border-none bg-transparent text-center text-sm font-bold text-[var(--text-primary)] outline-none"
                       aria-label="Número de repeticiones"
                     />
                   </div>
                   <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2 text-center">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                    <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       Descanso (s)
                     </p>
                     <input
@@ -557,7 +570,11 @@ export default function RoutineBuilder({
                       step="15"
                       value={exercise.restSeconds}
                       onChange={(e) =>
-                        updateExerciseDetail(exercise.uniqueId, "restSeconds", parseInt(e.target.value) || 0)
+                        updateExerciseDetail(
+                          exercise.uniqueId,
+                          'restSeconds',
+                          parseInt(e.target.value) || 0
+                        )
                       }
                       className="w-14 border-none bg-transparent text-center text-sm font-bold text-[var(--text-primary)] outline-none"
                       aria-label="Tiempo de descanso en segundos"
@@ -584,7 +601,7 @@ export default function RoutineBuilder({
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
+              if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
                 openExerciseModal()
               }
@@ -610,16 +627,21 @@ export default function RoutineBuilder({
         onClose={() => setShowExerciseModal(false)}
         title={
           isCreatingExercise
-            ? "Nuevo Ejercicio"
+            ? 'Nuevo Ejercicio'
             : selectedGroupForModal
               ? `Ejercicios: ${selectedGroupForModal.toUpperCase()}`
-              : "Biblioteca de Ejercicios"
+              : 'Biblioteca de Ejercicios'
         }
         size="xl"
       >
         {isCreatingExercise ? (
           <div className="space-y-4">
-            <FormField label="Nombre del Ejercicio" required error={newExerciseErrors.name} htmlFor="new-ex-name">
+            <FormField
+              label="Nombre del Ejercicio"
+              required
+              error={newExerciseErrors.name}
+              htmlFor="new-ex-name"
+            >
               <input
                 id="new-ex-name"
                 type="text"
@@ -627,15 +649,22 @@ export default function RoutineBuilder({
                 onChange={(e) => setNewExerciseForm({ ...newExerciseForm, name: e.target.value })}
                 placeholder="Ej. Press de Banca"
                 autoFocus
-                className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
-            <FormField label="Grupo Muscular" required error={newExerciseErrors.muscleGroup} htmlFor="new-ex-group">
+            <FormField
+              label="Grupo Muscular"
+              required
+              error={newExerciseErrors.muscleGroup}
+              htmlFor="new-ex-group"
+            >
               <select
                 id="new-ex-group"
                 value={newExerciseForm.muscleGroup}
-                onChange={(e) => setNewExerciseForm({ ...newExerciseForm, muscleGroup: e.target.value })}
-                className="h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                onChange={(e) =>
+                  setNewExerciseForm({ ...newExerciseForm, muscleGroup: e.target.value })
+                }
+                className="h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               >
                 <option value="" disabled>
                   Selecciona un grupo muscular...
@@ -658,12 +687,12 @@ export default function RoutineBuilder({
               <button
                 onClick={handleSaveNewExercise}
                 disabled={isSavingExercise}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-lg shadow-[var(--accent)]/25 transition-all hover:brightness-110 disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
               >
                 {isSavingExercise && (
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                 )}
-                {isSavingExercise ? "Guardando..." : "Crear Ejercicio"}
+                {isSavingExercise ? 'Guardando...' : 'Crear Ejercicio'}
               </button>
             </div>
           </div>
@@ -672,8 +701,8 @@ export default function RoutineBuilder({
             {ALL_GROUPS.map((groupName) => {
               const groupInfo = MUSCLE_GROUPS.find((g) => g.name === groupName) || {
                 name: groupName,
-                description: "",
-                imageUrl: "",
+                description: '',
+                imageUrl: '',
               }
               return (
                 <button
@@ -689,7 +718,11 @@ export default function RoutineBuilder({
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-secondary)]">
-                      <Dumbbell size={32} className="text-[var(--text-muted)] opacity-40" aria-hidden="true" />
+                      <Dumbbell
+                        size={32}
+                        className="text-[var(--text-muted)] opacity-40"
+                        aria-hidden="true"
+                      />
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -716,13 +749,15 @@ export default function RoutineBuilder({
                 value={exerciseSearch}
                 onChange={setExerciseSearch}
                 placeholder={
-                  selectedGroupForModal ? "Buscar en este grupo..." : "Buscar cualquier ejercicio..."
+                  selectedGroupForModal
+                    ? 'Buscar en este grupo...'
+                    : 'Buscar cualquier ejercicio...'
                 }
                 className="flex-1"
               />
               <button
                 onClick={() => setIsCreatingExercise(true)}
-                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-lg shadow-[var(--accent)]/25 transition-all hover:brightness-110"
+                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
               >
                 <Plus size={16} /> Nuevo
               </button>
@@ -746,25 +781,34 @@ export default function RoutineBuilder({
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <Dumbbell size={20} className="text-[var(--text-muted)]" aria-hidden="true" />
+                        <Dumbbell
+                          size={20}
+                          className="text-[var(--text-muted)]"
+                          aria-hidden="true"
+                        />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold text-[var(--text-primary)]">
                         {exercise.name}
                       </p>
-                      <span className="mt-1 inline-block rounded-full bg-[var(--bg-secondary)] px-2 py-0.5 text-[9px] font-bold tracking-wider uppercase text-[var(--accent)]">
-                        {exercise.muscleGroup || "General"}
+                      <span className="mt-1 inline-block rounded-full bg-[var(--bg-secondary)] px-2 py-0.5 text-[9px] font-bold tracking-wider text-[var(--accent)] uppercase">
+                        {exercise.muscleGroup || 'General'}
                       </span>
                     </div>
-                    <Plus size={18} className="shrink-0 text-[var(--text-muted)]" aria-hidden="true" />
+                    <Plus
+                      size={18}
+                      className="shrink-0 text-[var(--text-muted)]"
+                      aria-hidden="true"
+                    />
                   </button>
                 ))}
               {dbExercises.length > 0 &&
                 dbExercises
                   .filter((e) => !selectedGroupForModal || e.muscleGroup === selectedGroupForModal)
-                  .filter((e) => e.name.toLowerCase().includes(debouncedExerciseSearch.toLowerCase()))
-                  .length === 0 && (
+                  .filter((e) =>
+                    e.name.toLowerCase().includes(debouncedExerciseSearch.toLowerCase())
+                  ).length === 0 && (
                   <p className="col-span-1 py-8 text-center text-sm text-[var(--text-muted)] sm:col-span-2">
                     No se encontraron ejercicios con ese filtro.
                   </p>
@@ -802,24 +846,24 @@ export default function RoutineBuilder({
                   }}
                   className={`flex w-full items-center gap-4 rounded-xl border p-3 text-left transition-all ${
                     isSelected
-                      ? "border-[var(--accent)] bg-[var(--accent)]/10"
-                      : "border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)]"
+                      ? 'border-[var(--accent)] bg-[var(--accent)]/10'
+                      : 'border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)]'
                   }`}
                 >
                   <div
                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors ${
                       isSelected
-                        ? "border-[var(--accent)] bg-[var(--accent)]"
-                        : "border-[var(--border)] bg-transparent"
+                        ? 'border-[var(--accent)] bg-[var(--accent)]'
+                        : 'border-[var(--border)] bg-transparent'
                     }`}
                   >
                     {isSelected && <Check size={12} color="white" strokeWidth={3} />}
                   </div>
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-xs font-bold text-[var(--text-primary)]">
-                    {(user.name || user.email || "")
-                      .split(" ")
+                    {(user.name || user.email || '')
+                      .split(' ')
                       .map((n: string) => n[0])
-                      .join("")
+                      .join('')
                       .substring(0, 2)
                       .toUpperCase()}
                   </div>
@@ -851,12 +895,12 @@ export default function RoutineBuilder({
             <button
               onClick={handleSaveAndAssign}
               disabled={isSaving}
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-lg shadow-[var(--accent)]/25 transition-all hover:brightness-110 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
             >
               {isSaving && (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               )}
-              {isSaving ? "Guardando..." : `Asignar a ${selectedUsers.size} cliente(s)`}
+              {isSaving ? 'Guardando...' : `Asignar a ${selectedUsers.size} cliente(s)`}
             </button>
           </div>
         </div>

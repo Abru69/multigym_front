@@ -8,6 +8,54 @@ Formato: [YYYY-MM-DD]
 
 ### Completado
 
+- **Platform Users API Route Fix**
+  - Agregado proxy `/platform-api` en `vite.config.ts` para evitar colisión entre la ruta frontend `/platform/users` y el endpoint backend `/platform/users`
+  - Endpoints de Platform Users actualizados a `/platform-api/users` en `src/lib/api.ts`
+  - `platformUsersStore.ts` ahora tolera respuestas nulas al cargar usuarios
+  - Build passing
+
+### Completado
+
+- **Platform Users Integration**
+  - `PlatformUserDTO` y `PlatformUserRequestDTO` agregados a `src/types/api.ts`
+  - Funciones API: `getPlatformUsers`, `createPlatformUser`, `updatePlatformUser`, `togglePlatformUserStatus`, `deletePlatformUser`
+  - Nuevo store: `src/features/platform/store/platformUsersStore.ts`
+  - `PlatformUsers.tsx` reescrito con datos reales del backend
+  - Formulario con name, lastName, email, password (create), role
+  - Roles: SUPER_ADMIN, SUPPORT, DEVOPS (sin SALES)
+  - Toggle status con `PATCH /platform/users/{id}/status`
+  - Eliminar con `DELETE /platform/users/{id}` + ConfirmDialog
+  - Loading state y error handling
+  - Build passing
+
+### Completado
+
+- **Platform Tenants Integration**
+  - `TenantDTO` actualizado con `planId` y `trialEndsAt`
+  - `SaasPlanDTO` y `TenantRequestDTO` agregados a `src/types/api.ts`
+  - Funciones API: `getTenants`, `createTenant`, `deleteTenant`, `toggleTenantStatus`, `getSaasPlans`
+  - Nuevo store: `src/features/platform/store/platformTenantsStore.ts`
+  - `PlatformTenants.tsx` reescrito con datos reales del backend
+  - Columna "Plan" resuelta desde `GET /api/saas-plans`
+  - Columna "Límite" con `memberLimit` del plan SaaS
+  - Toggle status con `PATCH /api/tenants/{tenantId}/status`
+  - Eliminar con `DELETE /api/tenants/{tenantId}` + ConfirmDialog
+  - Crear tenant con `planId` real (UUID)
+  - Build passing
+
+### Completado
+
+- **Platform Dashboard Integration**
+  - `TenantDTO` agregado a `src/types/api.ts`
+  - `getTenants()` agregado a `src/lib/api.ts`
+  - Nuevo store: `src/features/platform/store/platformDashboardStore.ts`
+  - `PlatformDashboard.tsx` ahora usa datos reales del backend
+  - Métricas reales: total gymnasios, gymnasios activos, crecimiento, tenants recientes
+  - Datos mock: MRR, miembros, retención, actividad reciente (sin endpoint en backend)
+  - Build passing
+
+### Completado
+
 - **Auth CSS Migration**
   - AuthShared.css migrado a Tailwind inline
   - 5 páginas auth actualizadas: Login, Register, ForgotPassword, ResetPassword, ActivateAccount

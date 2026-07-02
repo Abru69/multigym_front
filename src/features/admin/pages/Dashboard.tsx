@@ -207,10 +207,7 @@ export default function AdminDashboard() {
                     boxShadow: 'var(--shadow-lg)',
                   }}
                   itemStyle={{ color: 'var(--accent)' }}
-                  formatter={(value) => [
-                    `$${Number(value).toLocaleString()} MXN`,
-                    'Ventas',
-                  ]}
+                  formatter={(value) => [`$${Number(value).toLocaleString()} MXN`, 'Ventas']}
                 />
                 <Line
                   type="monotone"

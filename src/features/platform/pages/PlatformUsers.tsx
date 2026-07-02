@@ -1,88 +1,45 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, X, Shield, Headphones, Code, TrendingUp, MoreVertical } from 'lucide-react'
+import { Search, Plus, X, Shield, Headphones, Code, MoreVertical } from 'lucide-react'
+import { usePlatformUsersStore } from '../store/platformUsersStore'
+import { ConfirmDialog } from '@/features/admin/components/ConfirmDialog'
+import type { PlatformUserDTO, PlatformUserRequestDTO } from '@/types'
 
-type Role = 'SUPER_ADMIN' | 'SUPPORT' | 'DEVOPS' | 'SALES'
-type Status = 'ACTIVE' | 'INACTIVE'
-
-interface PUser {
-  id: string
-  name: string
-  email: string
-  role: Role
-  status: Status
-  lastLogin: string
-  createdAt: string
-}
+type Role = 'SUPER_ADMIN' | 'SUPPORT' | 'DEVOPS'
 
 const roleConfig: Record<Role, { icon: React.ElementType; color: string; label: string }> = {
   SUPER_ADMIN: { icon: Shield, color: 'var(--warning)', label: 'Super Admin' },
   SUPPORT: { icon: Headphones, color: 'var(--info)', label: 'Soporte' },
   DEVOPS: { icon: Code, color: 'var(--success)', label: 'DevOps' },
-  SALES: { icon: TrendingUp, color: 'var(--warning)', label: 'Ventas' },
 }
 
-const initialUsers: PUser[] = [
-  {
-    id: '1',
-    name: 'Carlos Herrera',
-    email: 'carlos@saas.com',
-    role: 'SUPER_ADMIN',
-    status: 'ACTIVE',
-    lastLogin: 'Hoy 12:36',
-    createdAt: '01 Ene 2026',
-  },
-  {
-    id: '2',
-    name: 'Ana Martínez',
-    email: 'ana@saas.com',
-    role: 'SUPPORT',
-    status: 'ACTIVE',
-    lastLogin: 'Hoy 09:14',
-    createdAt: '15 Ene 2026',
-  },
-  {
-    id: '3',
-    name: 'Luis Ramírez',
-    email: 'luis@saas.com',
-    role: 'DEVOPS',
-    status: 'ACTIVE',
-    lastLogin: 'Ayer 22:05',
-    createdAt: '20 Ene 2026',
-  },
-  {
-    id: '4',
-    name: 'María Torres',
-    email: 'maria@saas.com',
-    role: 'SALES',
-    status: 'ACTIVE',
-    lastLogin: 'Hace 2 días',
-    createdAt: '01 Feb 2026',
-  },
-  {
-    id: '5',
-    name: 'Pedro Gómez',
-    email: 'pedro@saas.com',
-    role: 'SUPPORT',
-    status: 'INACTIVE',
-    lastLogin: 'Hace 2 semanas',
-    createdAt: '10 Feb 2026',
-  },
-]
-
 export default function PlatformUsers() {
-  const [users, setUsers] = useState<PUser[]>(initialUsers)
+  const { users, isLoading, error, loadUsers, createUser, updateUser, toggleStatus, deleteUser } =
+    usePlatformUsersStore()
+
   const [search, setSearch] = useState('')
   const [showModal, setShowModal] = useState(false)
-  const [editing, setEditing] = useState<PUser | null>(null)
+  const [editing, setEditing] = useState<PlatformUserDTO | null>(null)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [toast, setToast] = useState('')
-  const [form, setForm] = useState({ name: '', email: '', role: 'SUPPORT' as Role })
+  const [deleteTarget, setDeleteTarget] = useState<PlatformUserDTO | null>(null)
+  const [form, setForm] = useState<PlatformUserRequestDTO>({
+    email: '',
+    password: '',
+    name: '',
+    lastName: '',
+    role: 'SUPPORT',
+  })
+
+  useEffect(() => {
+    loadUsers()
+  }, [loadUsers])
 
   const filtered = users.filter(
     (u) =>
+      u.email.toLowerCase().includes(search.toLowerCase()) ||
       u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
+      (u.lastName && u.lastName.toLowerCase().includes(search.toLowerCase()))
   )
 
   const showToast = (msg: string) => {
@@ -91,49 +48,52 @@ export default function PlatformUsers() {
   }
 
   const openCreate = () => {
-    setForm({ name: '', email: '', role: 'SUPPORT' })
+    setForm({ email: '', password: '', name: '', lastName: '', role: 'SUPPORT' })
     setEditing(null)
     setShowModal(true)
   }
-  const openEdit = (u: PUser) => {
-    setForm({ name: u.name, email: u.email, role: u.role })
+
+  const openEdit = (u: PlatformUserDTO) => {
+    setForm({
+      email: u.email,
+      name: u.name,
+      lastName: u.lastName || '',
+      role: u.role,
+    })
     setEditing(u)
     setShowModal(true)
     setOpenMenu(null)
   }
 
-  const toggleStatus = (u: PUser) => {
-    setUsers((us) =>
-      us.map((x) =>
-        x.id === u.id ? { ...x, status: x.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' } : x
-      )
-    )
-    showToast(`${u.name} ${u.status === 'ACTIVE' ? 'desactivado' : 'activado'}`)
+  const handleToggleStatus = async (u: PlatformUserDTO) => {
+    const ok = await toggleStatus(u.id)
+    if (ok) {
+      showToast(`${u.email} ${u.isActive ? 'desactivado' : 'activado'}`)
+    }
     setOpenMenu(null)
   }
 
-  const deleteUser = (u: PUser) => {
-    setUsers((us) => us.filter((x) => x.id !== u.id))
-    showToast(`${u.name} eliminado`)
+  const confirmDelete = (u: PlatformUserDTO) => {
+    setDeleteTarget(u)
     setOpenMenu(null)
   }
 
-  const save = () => {
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    const ok = await deleteUser(deleteTarget.id)
+    if (ok) {
+      showToast(`${deleteTarget.email} eliminado`)
+    }
+    setDeleteTarget(null)
+  }
+
+  const save = async () => {
     if (editing) {
-      setUsers((us) => us.map((x) => (x.id === editing.id ? { ...x, ...form } : x)))
-      showToast('Cambios guardados')
+      const ok = await updateUser(editing.id, form)
+      if (ok) showToast('Cambios guardados')
     } else {
-      setUsers((us) => [
-        {
-          id: Date.now().toString(),
-          ...form,
-          status: 'ACTIVE',
-          lastLogin: 'Nunca',
-          createdAt: 'Hoy',
-        },
-        ...us,
-      ])
-      showToast('Usuario creado')
+      const ok = await createUser(form)
+      if (ok) showToast('Usuario creado')
     }
     setShowModal(false)
   }
@@ -171,8 +131,20 @@ export default function PlatformUsers() {
         </button>
       </div>
 
-      {/* Role cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {error && (
+        <div
+          className="rounded-xl px-4 py-3 text-sm"
+          style={{
+            background: 'var(--error)/10',
+            color: 'var(--error)',
+            border: '1px solid var(--error)',
+          }}
+        >
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {roleCounts.map((r) => (
           <div
             key={r.role}
@@ -200,7 +172,6 @@ export default function PlatformUsers() {
         ))}
       </div>
 
-      {/* Search */}
       <div
         className="flex items-center gap-2 rounded-xl px-3 py-2.5"
         style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
@@ -215,151 +186,181 @@ export default function PlatformUsers() {
         />
       </div>
 
-      {/* Table */}
       <div
         className="overflow-hidden rounded-2xl"
         style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
       >
-        <table className="w-full">
-          <thead>
-            <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {['Usuario', 'Rol', 'Estado', 'Último acceso', 'Creado', ''].map((h) => (
-                <th
-                  key={h}
-                  className="px-4 py-3 text-left text-xs font-semibold tracking-wide uppercase"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((u, i) => {
-              const rc = roleConfig[u.role]
-              return (
-                <motion.tr
-                  key={u.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="border-b transition-colors last:border-b-0"
-                  style={{ borderColor: 'var(--border)' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-hover)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-black"
-                        style={{
-                          background: 'linear-gradient(135deg,var(--accent),var(--detail))',
-                          color: 'var(--text-on-primary)',
-                        }}
-                      >
-                        {u.name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')
-                          .slice(0, 2)}
-                      </div>
-                      <div>
-                        <p
-                          className="text-sm font-semibold"
-                          style={{ color: 'var(--text-primary)' }}
-                        >
-                          {u.name}
-                        </p>
-                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                          {u.email}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="flex items-center gap-1.5 text-xs font-semibold"
-                      style={{ color: rc.color }}
-                    >
-                      <rc.icon size={12} />
-                      {rc.label}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="rounded-full px-2 py-0.5 text-xs font-bold"
-                      style={{
-                        background: `${u.status === 'ACTIVE' ? 'var(--success)' : 'var(--text-muted)'}18`,
-                        color: u.status === 'ACTIVE' ? 'var(--success)' : 'var(--text-muted)',
-                      }}
-                    >
-                      {u.status === 'ACTIVE' ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {u.lastLogin}
-                  </td>
-                  <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {u.createdAt}
-                  </td>
-                  <td className="relative px-4 py-3">
-                    <button
-                      onClick={() => setOpenMenu(openMenu === u.id ? null : u.id)}
-                      className="rounded-lg p-1.5"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
-                      <MoreVertical size={16} />
-                    </button>
-                    <AnimatePresence>
-                      {openMenu === u.id && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          className="absolute right-0 z-10 w-40 rounded-xl py-1 shadow-lg"
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div
+              className="h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"
+              style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }}
+            />
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                {['Usuario', 'Rol', 'Estado', 'Último acceso', 'Creado', ''].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left text-xs font-semibold tracking-wide uppercase"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((u, i) => {
+                const rc = roleConfig[u.role]
+                return (
+                  <motion.tr
+                    key={u.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="border-b transition-colors last:border-b-0"
+                    style={{ borderColor: 'var(--border)' }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = 'var(--surface-hover)')
+                    }
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-sm font-black"
                           style={{
-                            background: 'var(--surface)',
-                            border: '1px solid var(--border)',
-                            top: '100%',
+                            background: 'linear-gradient(135deg,var(--accent),var(--detail))',
+                            color: 'var(--text-on-primary)',
                           }}
                         >
-                          {[
-                            { label: '✏️ Editar', fn: () => openEdit(u) },
-                            {
-                              label: u.status === 'ACTIVE' ? '⏸ Desactivar' : '▶ Activar',
-                              fn: () => toggleStatus(u),
-                            },
-                            { label: '🗑 Eliminar', fn: () => deleteUser(u), danger: true },
-                          ].map((item) => (
-                            <button
-                              key={item.label}
-                              onClick={item.fn}
-                              className="block w-full px-4 py-2 text-left text-sm transition-colors"
-                              style={{
-                                color: item.danger ? 'var(--danger)' : 'var(--text-secondary)',
-                              }}
-                              onMouseEnter={(e) =>
-                                (e.currentTarget.style.background = 'var(--surface-hover)')
-                              }
-                              onMouseLeave={(e) =>
-                                (e.currentTarget.style.background = 'transparent')
-                              }
-                            >
-                              {item.label}
-                            </button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                          {u.email.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p
+                            className="text-sm font-semibold"
+                            style={{ color: 'var(--text-primary)' }}
+                          >
+                            {u.name} {u.lastName}
+                          </p>
+                          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                            {u.email}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className="flex items-center gap-1.5 text-xs font-semibold"
+                        style={{ color: rc.color }}
+                      >
+                        <rc.icon size={12} />
+                        {rc.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className="rounded-full px-2 py-0.5 text-xs font-bold"
+                        style={{
+                          background: `${u.isActive ? 'var(--success)' : 'var(--text-muted)'}18`,
+                          color: u.isActive ? 'var(--success)' : 'var(--text-muted)',
+                        }}
+                      >
+                        {u.isActive ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
+                      {u.lastLogin
+                        ? new Date(u.lastLogin).toLocaleDateString('es-MX', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })
+                        : 'Nunca'}
+                    </td>
+                    <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
+                      {new Date(u.createdAt).toLocaleDateString('es-MX', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </td>
+                    <td className="relative px-4 py-3">
+                      <button
+                        onClick={() => setOpenMenu(openMenu === u.id ? null : u.id)}
+                        className="rounded-lg p-1.5"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+                      <AnimatePresence>
+                        {openMenu === u.id && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="absolute right-0 z-10 w-40 rounded-xl py-1 shadow-lg"
+                            style={{
+                              background: 'var(--surface)',
+                              border: '1px solid var(--border)',
+                              top: '100%',
+                            }}
+                          >
+                            {[
+                              { label: '✏️ Editar', fn: () => openEdit(u) },
+                              {
+                                label: u.isActive ? '⏸ Desactivar' : '▶ Activar',
+                                fn: () => handleToggleStatus(u),
+                              },
+                              {
+                                label: '🗑 Eliminar',
+                                fn: () => confirmDelete(u),
+                                danger: true,
+                              },
+                            ].map((item) => (
+                              <button
+                                key={item.label}
+                                onClick={item.fn}
+                                className="block w-full px-4 py-2 text-left text-sm transition-colors"
+                                style={{
+                                  color: item.danger ? 'var(--danger)' : 'var(--text-secondary)',
+                                }}
+                                onMouseEnter={(e) =>
+                                  (e.currentTarget.style.background = 'var(--surface-hover)')
+                                }
+                                onMouseLeave={(e) =>
+                                  (e.currentTarget.style.background = 'transparent')
+                                }
+                              >
+                                {item.label}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </td>
+                  </motion.tr>
+                )
+              })}
+              {filtered.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-4 py-12 text-center text-sm"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    No se encontraron usuarios
                   </td>
-                </motion.tr>
-              )
-            })}
-          </tbody>
-        </table>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
 
-      {/* Modal */}
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -387,22 +388,93 @@ export default function PlatformUsers() {
                 </button>
               </div>
               <div className="space-y-4">
-                {[
-                  { label: 'Nombre', key: 'name', placeholder: 'Juan García' },
-                  { label: 'Email', key: 'email', placeholder: 'juan@saas.com', type: 'email' },
-                ].map((f) => (
-                  <div key={f.key}>
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="mb-1.5 block text-xs font-semibold"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    Nombre
+                  </label>
+                  <input
+                    id="name"
+                    type="text"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Juan"
+                    className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                    style={{
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-primary)',
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
+                    onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="lastName"
+                    className="mb-1.5 block text-xs font-semibold"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    Apellido
+                  </label>
+                  <input
+                    id="lastName"
+                    type="text"
+                    value={form.lastName || ''}
+                    onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                    placeholder="García"
+                    className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                    style={{
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-primary)',
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
+                    onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="mb-1.5 block text-xs font-semibold"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="juan@saas.com"
+                    className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
+                    style={{
+                      background: 'var(--input-bg)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text-primary)',
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = 'var(--accent)')}
+                    onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+                  />
+                </div>
+                {!editing && (
+                  <div>
                     <label
+                      htmlFor="password"
                       className="mb-1.5 block text-xs font-semibold"
                       style={{ color: 'var(--text-secondary)' }}
                     >
-                      {f.label}
+                      Contraseña
                     </label>
                     <input
-                      type={f.type ?? 'text'}
-                      value={(form as any)[f.key]}
-                      onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                      placeholder={f.placeholder}
+                      id="password"
+                      type="password"
+                      value={form.password || ''}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      placeholder="Mínimo 8 caracteres"
                       className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
                       style={{
                         background: 'var(--input-bg)',
@@ -413,15 +485,17 @@ export default function PlatformUsers() {
                       onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
                     />
                   </div>
-                ))}
+                )}
                 <div>
                   <label
+                    htmlFor="role"
                     className="mb-1.5 block text-xs font-semibold"
                     style={{ color: 'var(--text-secondary)' }}
                   >
                     Rol
                   </label>
                   <select
+                    id="role"
                     value={form.role}
                     onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
                     className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
@@ -434,7 +508,6 @@ export default function PlatformUsers() {
                     <option value="SUPER_ADMIN">Super Admin</option>
                     <option value="SUPPORT">Soporte</option>
                     <option value="DEVOPS">DevOps</option>
-                    <option value="SALES">Ventas</option>
                   </select>
                 </div>
               </div>
@@ -448,7 +521,8 @@ export default function PlatformUsers() {
                 </button>
                 <button
                   onClick={save}
-                  className="rounded-xl px-4 py-2 text-sm font-semibold"
+                  disabled={isLoading}
+                  className="rounded-xl px-4 py-2 text-sm font-semibold disabled:opacity-50"
                   style={{ background: 'var(--accent)', color: 'var(--text-on-primary)' }}
                 >
                   {editing ? 'Guardar' : 'Crear'}
@@ -458,6 +532,15 @@ export default function PlatformUsers() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Eliminar usuario"
+        message={`¿Estás seguro de que deseas eliminar a ${deleteTarget?.email}? Esta acción no se puede deshacer.`}
+        isLoading={isLoading}
+      />
 
       <AnimatePresence>
         {toast && (

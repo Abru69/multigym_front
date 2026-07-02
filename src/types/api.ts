@@ -19,6 +19,37 @@ export interface PlatformLoginResponse {
   role: string
 }
 
+export interface TenantDTO {
+  tenantId: string
+  name: string
+  subdomain: string
+  status: 'ACTIVE' | 'INACTIVE'
+  planId: string | null
+  trialEndsAt: string | null
+  createdAt: string
+}
+
+export interface SaasPlanDTO {
+  id: string
+  name: string
+  description: string | null
+  price: number
+  memberLimit: number
+  trialDays: number
+  isActive: boolean
+}
+
+export interface TenantRequestDTO {
+  tenantId: string
+  name: string
+  subdomain: string
+  adminEmail: string
+  adminPassword: string
+  adminName: string
+  adminPhone: string
+  planId: string
+}
+
 export interface MemberDTO {
   id: string
   name: string
@@ -68,6 +99,25 @@ export interface ExerciseDTO {
   id: string
   name: string
   muscleGroup: string
+}
+
+export interface PlatformUserDTO {
+  id: string
+  email: string
+  name: string
+  lastName: string | null
+  role: 'SUPER_ADMIN' | 'SUPPORT' | 'DEVOPS'
+  isActive: boolean
+  lastLogin: string | null
+  createdAt: string
+}
+
+export interface PlatformUserRequestDTO {
+  email: string
+  password?: string
+  name: string
+  lastName?: string
+  role: 'SUPER_ADMIN' | 'SUPPORT' | 'DEVOPS'
 }
 
 export interface WorkoutDTO {

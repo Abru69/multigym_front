@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Building2,
@@ -21,6 +22,8 @@ import {
   Cell,
   Legend,
 } from 'recharts'
+import { usePlatformDashboardStore } from '@/features/platform/store/platformDashboardStore'
+import { LoadingState } from '@/features/admin/components/LoadingState'
 
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }
 const fadeUp = {
@@ -28,88 +31,76 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 }
 
-const metrics = [
-  {
-    label: 'Gymnasios Activos',
-    value: '12',
-    change: '+3',
-    up: true,
-    icon: Building2,
-    color: 'var(--accent)',
-  },
-  {
-    label: 'Total Miembros',
-    value: '1,427',
-    change: '+18%',
-    up: true,
-    icon: Users,
-    color: 'var(--success)',
-  },
-  {
-    label: 'MRR',
-    value: '$6,240',
-    change: '+12%',
-    up: true,
-    icon: DollarSign,
-    color: 'var(--warning)',
-  },
-  {
-    label: 'Tasa Retención',
-    value: '94.2%',
-    change: '+1.3%',
-    up: true,
-    icon: TrendingUp,
-    color: 'var(--info)',
-  },
-]
-
-const growthData = [
-  { month: 'Ene', tenants: 3, mrr: 870 },
-  { month: 'Feb', tenants: 4, mrr: 1160 },
-  { month: 'Mar', tenants: 5, mrr: 1450 },
-  { month: 'Abr', tenants: 7, mrr: 2030 },
-  { month: 'May', tenants: 9, mrr: 2610 },
-  { month: 'Jun', tenants: 10, mrr: 3200 },
-  { month: 'Jul', tenants: 11, mrr: 4560 },
-  { month: 'Ago', tenants: 12, mrr: 6240 },
-]
-
-const planDist = [
-  { name: 'Starter', value: 4, color: 'var(--info)' },
-  { name: 'Pro', value: 5, color: 'var(--accent)' },
-  { name: 'Enterprise', value: 3, color: 'var(--warning)' },
-]
-
-const recentTenants = [
-  { name: 'FitZone Elite', plan: 'ENTERPRISE', status: 'ACTIVE', date: '12 Ene', members: 342 },
-  { name: 'PowerGym MX', plan: 'STARTER', status: 'TRIAL', date: '14 Feb', members: 47 },
-  { name: 'Titan Sports', plan: 'PRO', status: 'TRIAL', date: '20 Feb', members: 93 },
-  { name: 'Zeus Gym', plan: 'PRO', status: 'ACTIVE', date: '10 Mar', members: 175 },
-  { name: 'Body Factory', plan: 'ENTERPRISE', status: 'ACTIVE', date: '15 Mar', members: 512 },
-]
-
-const activity = [
-  { text: 'Nuevo gimnasio registrado: PowerGym MX', time: 'hace 2h', dot: 'var(--success)' },
-  { text: 'Plan actualizado: Iron Temple → Pro', time: 'hace 5h', dot: 'var(--accent)' },
-  { text: 'Pago procesado: Body Factory $199', time: 'hace 7h', dot: 'var(--warning)' },
-  { text: 'Tenant suspendido: Alpha Fitness', time: 'ayer', dot: 'var(--danger)' },
-  { text: 'Nuevo usuario de plataforma: Ana Martínez', time: 'ayer', dot: 'var(--success)' },
-  { text: 'Reporte mensual generado', time: 'hace 2d', dot: 'var(--text-muted)' },
-]
-
 const statusColor: Record<string, string> = {
   ACTIVE: 'var(--success)',
-  TRIAL: 'var(--warning)',
-  SUSPENDED: 'var(--danger)',
-}
-
-const planColor: Record<string, string> = {
-  STARTER: 'var(--info)',
-  PRO: 'var(--accent)',
-  ENTERPRISE: 'var(--warning)',
+  INACTIVE: 'var(--danger)',
 }
 
 export default function PlatformDashboard() {
+  const {
+    metrics,
+    recentTenants,
+    growthData,
+    planDistribution,
+    activity,
+    isLoading,
+    error,
+    loadDashboard,
+  } = usePlatformDashboardStore()
+
+  useEffect(() => {
+    loadDashboard()
+  }, [loadDashboard])
+
+  if (isLoading) return <LoadingState text="Cargando dashboard..." />
+
+  if (error) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <p className="text-sm" style={{ color: 'var(--error)' }}>
+          {error}
+        </p>
+      </div>
+    )
+  }
+
+  if (!metrics) return null
+
+  const metricCards = [
+    {
+      label: 'Gymnasios Activos',
+      value: metrics.activeGyms.toString(),
+      change: metrics.activeGymsChange,
+      up: true,
+      icon: Building2,
+      color: 'var(--accent)',
+    },
+    {
+      label: 'Total Miembros',
+      value: metrics.totalMembers.toLocaleString(),
+      change: metrics.totalMembersChange,
+      up: true,
+      icon: Users,
+      color: 'var(--success)',
+    },
+    {
+      label: 'MRR',
+      value: `$${metrics.mrr.toLocaleString()}`,
+      change: metrics.mrrChange,
+      up: true,
+      icon: DollarSign,
+      color: 'var(--warning)',
+    },
+    {
+      label: 'Tasa Retención',
+      value: `${metrics.retentionRate}%`,
+      change: metrics.retentionChange,
+      up: true,
+      icon: TrendingUp,
+      color: 'var(--info)',
+    },
+  ]
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -132,7 +123,7 @@ export default function PlatformDashboard() {
         variants={stagger}
         className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
       >
-        {metrics.map((m) => (
+        {metricCards.map((m) => (
           <motion.div
             key={m.label}
             variants={fadeUp}
@@ -200,15 +191,6 @@ export default function PlatformDashboard() {
                   tickLine={false}
                 />
                 <YAxis
-                  yAxisId="left"
-                  tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v) => `$${v}`}
-                />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
                   tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
@@ -221,28 +203,14 @@ export default function PlatformDashboard() {
                     fontSize: 12,
                     color: 'var(--text-primary)',
                   }}
-                  formatter={(v: any, name: any) => [
-                    name === 'mrr' ? `$${v}` : v,
-                    name === 'mrr' ? 'MRR' : 'Tenants',
-                  ]}
                 />
                 <Area
-                  yAxisId="left"
                   type="monotone"
-                  dataKey="mrr"
+                  dataKey="tenants"
                   stroke="var(--accent)"
                   strokeWidth={2.5}
                   fill="url(#mrrGrad)"
-                  dot={false}
-                />
-                <Area
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="tenants"
-                  stroke="var(--warning)"
-                  strokeWidth={2}
-                  fill="none"
-                  dot={{ fill: 'var(--warning)', r: 3 }}
+                  dot={{ fill: 'var(--accent)', r: 3 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -264,7 +232,7 @@ export default function PlatformDashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={planDist}
+                  data={planDistribution}
                   cx="50%"
                   cy="50%"
                   innerRadius={40}
@@ -272,7 +240,7 @@ export default function PlatformDashboard() {
                   paddingAngle={3}
                   dataKey="value"
                 >
-                  {planDist.map((entry, i) => (
+                  {planDistribution.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />
                   ))}
                 </Pie>
@@ -293,7 +261,7 @@ export default function PlatformDashboard() {
             </ResponsiveContainer>
           </div>
           <div className="mt-2 space-y-2">
-            {planDist.map((p) => (
+            {planDistribution.map((p) => (
               <div key={p.name} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full" style={{ background: p.color }} />
@@ -332,7 +300,7 @@ export default function PlatformDashboard() {
           </div>
           <div className="space-y-3">
             {recentTenants.map((t) => (
-              <div key={t.name} className="flex items-center gap-3">
+              <div key={t.tenantId} className="flex items-center gap-3">
                 <div
                   className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl text-sm font-black"
                   style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}
@@ -347,21 +315,25 @@ export default function PlatformDashboard() {
                     {t.name}
                   </p>
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {t.members} miembros · {t.date}
+                    {t.subdomain} · {new Date(t.createdAt).toLocaleDateString('es-MX')}
                   </p>
                 </div>
                 <span
                   className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-                  style={{ background: `${planColor[t.plan]}18`, color: planColor[t.plan] }}
+                  style={{
+                    background: `${statusColor[t.status]}18`,
+                    color: statusColor[t.status],
+                  }}
                 >
-                  {t.plan}
+                  {t.status}
                 </span>
-                <span
-                  className="h-2 w-2 flex-shrink-0 rounded-full"
-                  style={{ background: statusColor[t.status] }}
-                />
               </div>
             ))}
+            {recentTenants.length === 0 && (
+              <p className="text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+                No hay gimnasios registrados
+              </p>
+            )}
           </div>
         </motion.div>
 

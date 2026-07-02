@@ -1,18 +1,18 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { productCategories } from "@/data/products"
-import { getProducts, createProduct } from "@/lib/api"
-import { formatCurrency } from "@/lib/utils"
-import { Plus, Edit2, Trash2, Package, AlertCircle, Image as ImageIcon } from "lucide-react"
-import { Modal } from "@/components/ui/Modal"
-import { useToastStore } from "@/components/ui/Toast"
-import { AdminHeader } from "../components/AdminHeader"
-import { SearchBar } from "../components/SearchBar"
-import { LoadingState } from "../components/LoadingState"
-import { EmptyState } from "../components/EmptyState"
-import { ConfirmDialog } from "../components/ConfirmDialog"
-import { FormField } from "../components/FormField"
-import { useDebounce } from "@/hooks/useDebounce"
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { productCategories } from '@/data/products'
+import { getProducts, createProduct } from '@/lib/api'
+import { formatCurrency } from '@/lib/utils'
+import { Plus, Edit2, Trash2, Package, AlertCircle, Image as ImageIcon } from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
+import { useToastStore } from '@/components/ui/Toast'
+import { AdminHeader } from '../components/AdminHeader'
+import { SearchBar } from '../components/SearchBar'
+import { LoadingState } from '../components/LoadingState'
+import { EmptyState } from '../components/EmptyState'
+import { ConfirmDialog } from '../components/ConfirmDialog'
+import { FormField } from '../components/FormField'
+import { useDebounce } from '@/hooks/useDebounce'
 
 interface ProductItem {
   id: string
@@ -28,9 +28,9 @@ interface ProductItem {
 
 export default function Inventory() {
   const addToast = useToastStore((s) => s.addToast)
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search)
-  const [category, setCategory] = useState("all")
+  const [category, setCategory] = useState('all')
   const [showModal, setShowModal] = useState(false)
   const [productsList, setProductsList] = useState<ProductItem[]>([])
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null)
@@ -39,12 +39,12 @@ export default function Inventory() {
   const [isLoading, setIsLoading] = useState(true)
 
   const [form, setForm] = useState({
-    name: "",
-    price: "",
-    stock: "",
-    category: "proteinas",
-    brand: "",
-    description: "",
+    name: '',
+    price: '',
+    stock: '',
+    category: 'proteinas',
+    brand: '',
+    description: '',
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [dragActive, setDragActive] = useState(false)
@@ -63,10 +63,11 @@ export default function Inventory() {
           price: p.price,
           stock: p.stock,
           isAvailable: p.stock > 0,
-          slug: p.name.toLowerCase().replace(/ /g, "-"),
-          brand: "MultiGym",
-          category: "proteinas",
-          image: "https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=400&h=400&fit=crop",
+          slug: p.name.toLowerCase().replace(/ /g, '-'),
+          brand: 'MultiGym',
+          category: 'proteinas',
+          image:
+            'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=400&h=400&fit=crop',
         }))
       )
     } catch (e) {
@@ -85,22 +86,22 @@ export default function Inventory() {
     return productsList.filter((p) => {
       const matchSearch =
         p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term)
-      const matchCategory = category === "all" || p.category === category
+      const matchCategory = category === 'all' || p.category === category
       return matchSearch && matchCategory
     })
   }, [productsList, debouncedSearch, category])
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {}
-    if (!form.name) errors.name = "El nombre es requerido"
-    if (!form.price || Number(form.price) <= 0) errors.price = "Precio inválido"
-    if (!form.stock || Number(form.stock) < 0) errors.stock = "Stock inválido"
+    if (!form.name) errors.name = 'El nombre es requerido'
+    if (!form.price || Number(form.price) <= 0) errors.price = 'Precio inválido'
+    if (!form.stock || Number(form.stock) < 0) errors.stock = 'Stock inválido'
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
 
   const openCreate = () => {
-    setForm({ name: "", price: "", stock: "", category: "proteinas", brand: "", description: "" })
+    setForm({ name: '', price: '', stock: '', category: 'proteinas', brand: '', description: '' })
     setFormErrors({})
     setEditingProduct(null)
     setImagePreview(null)
@@ -114,7 +115,7 @@ export default function Inventory() {
       stock: product.stock.toString(),
       category: product.category,
       brand: product.brand,
-      description: "",
+      description: '',
     })
     setFormErrors({})
     setEditingProduct(product)
@@ -128,19 +129,19 @@ export default function Inventory() {
     setIsSaving(true)
     try {
       if (editingProduct) {
-        addToast("Edición de productos próximamente disponible", "warning")
+        addToast('Edición de productos próximamente disponible', 'warning')
       } else {
         await createProduct({
           name: form.name,
           price: parseFloat(form.price) || 0,
           stock: parseInt(form.stock) || 0,
         })
-        addToast("Producto creado correctamente", "success")
+        addToast('Producto creado correctamente', 'success')
         loadProducts()
       }
       setShowModal(false)
     } catch (err: unknown) {
-      addToast(err instanceof Error ? err.message : "Error al guardar", "error")
+      addToast(err instanceof Error ? err.message : 'Error al guardar', 'error')
     } finally {
       setIsSaving(false)
     }
@@ -163,7 +164,7 @@ export default function Inventory() {
         action={
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-lg shadow-[var(--accent)]/25 transition-all hover:brightness-110"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
           >
             <Plus size={16} /> Nuevo Producto
           </button>
@@ -181,12 +182,12 @@ export default function Inventory() {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           aria-label="Filtrar por categoría"
-          className="h-10 appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 pr-10 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+          className="h-10 appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 pr-10 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-            backgroundPosition: "right 0.5rem center",
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "1.5em 1.5em",
+            backgroundPosition: 'right 0.5rem center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: '1.5em 1.5em',
           }}
         >
           {productCategories.map((c) => (
@@ -219,22 +220,22 @@ export default function Inventory() {
             <table className="w-full" aria-label="Inventario de productos">
               <thead>
                 <tr className="border-b border-[var(--border)] bg-[var(--bg-secondary)]">
-                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
                     Producto
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
                     Categoría
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
                     Precio
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
                     Stock
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
                     Estado
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                  <th className="px-6 py-3 text-right text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
                     Acciones
                   </th>
                 </tr>
@@ -263,14 +264,14 @@ export default function Inventory() {
                             <p className="truncate text-sm font-bold text-[var(--text-primary)]">
                               {product.name}
                             </p>
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                            <p className="text-[10px] font-semibold tracking-wider text-[var(--text-muted)] uppercase">
                               {product.brand}
                             </p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="rounded-lg bg-[var(--surface-hover)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                        <span className="rounded-lg bg-[var(--surface-hover)] px-2.5 py-1 text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
                           {product.category}
                         </span>
                       </td>
@@ -283,27 +284,31 @@ export default function Inventory() {
                             className="text-sm font-bold"
                             style={{
                               color:
-                                product.stock < 10 ? "var(--warning)" : "var(--text-secondary)",
+                                product.stock < 10 ? 'var(--warning)' : 'var(--text-secondary)',
                             }}
                           >
                             {product.stock} uds
                           </span>
                           {product.stock < 10 && (
-                            <AlertCircle size={14} className="text-[var(--warning)]" aria-hidden="true" />
+                            <AlertCircle
+                              size={14}
+                              className="text-[var(--warning)]"
+                              aria-hidden="true"
+                            />
                           )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+                          className="rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase"
                           style={{
                             background: product.isAvailable
-                              ? "var(--accent-muted)"
-                              : "var(--error-muted)",
-                            color: product.isAvailable ? "var(--success)" : "var(--error)",
+                              ? 'var(--accent-muted)'
+                              : 'var(--error-muted)',
+                            color: product.isAvailable ? 'var(--success)' : 'var(--error)',
                           }}
                         >
-                          {product.isAvailable ? "Activo" : "Inactivo"}
+                          {product.isAvailable ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -337,7 +342,7 @@ export default function Inventory() {
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={editingProduct ? "Editar Producto" : "Nuevo Producto"}
+        title={editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
         size="lg"
       >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
@@ -347,8 +352,8 @@ export default function Inventory() {
               <div
                 className={`relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors ${
                   dragActive
-                    ? "border-[var(--accent)] bg-[var(--accent)]/5"
-                    : "border-[var(--border)] bg-[var(--bg-secondary)]"
+                    ? 'border-[var(--accent)] bg-[var(--accent)]/5'
+                    : 'border-[var(--border)] bg-[var(--bg-secondary)]'
                 }`}
                 onDragOver={(e) => {
                   e.preventDefault()
@@ -364,7 +369,9 @@ export default function Inventory() {
                       const dataTransfer = new DataTransfer()
                       dataTransfer.items.add(e.dataTransfer.files[0])
                       input.files = dataTransfer.files
-                      handleFileChange({ target: { files: e.dataTransfer.files } } as React.ChangeEvent<HTMLInputElement>)
+                      handleFileChange({
+                        target: { files: e.dataTransfer.files },
+                      } as React.ChangeEvent<HTMLInputElement>)
                     }
                   }
                 }}
@@ -374,7 +381,11 @@ export default function Inventory() {
               >
                 {imagePreview ? (
                   <>
-                    <img src={imagePreview} alt="Preview" className="h-full w-full rounded-xl object-cover" />
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="h-full w-full rounded-xl object-cover"
+                    />
                     <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 opacity-0 transition-opacity hover:opacity-100">
                       <span className="rounded-full bg-black/50 px-3 py-1.5 text-xs font-bold text-white">
                         Cambiar
@@ -383,8 +394,14 @@ export default function Inventory() {
                   </>
                 ) : (
                   <div className="text-center">
-                    <ImageIcon size={32} className="mx-auto mb-2 text-[var(--text-muted)] opacity-50" aria-hidden="true" />
-                    <p className="text-xs font-bold text-[var(--text-primary)]">Arrastra o haz clic</p>
+                    <ImageIcon
+                      size={32}
+                      className="mx-auto mb-2 text-[var(--text-muted)] opacity-50"
+                      aria-hidden="true"
+                    />
+                    <p className="text-xs font-bold text-[var(--text-primary)]">
+                      Arrastra o haz clic
+                    </p>
                     <p className="mt-1 text-[10px] text-[var(--text-muted)]">PNG, JPG hasta 5MB</p>
                   </div>
                 )}
@@ -401,26 +418,36 @@ export default function Inventory() {
 
           {/* Fields */}
           <div className="space-y-4 md:col-span-3">
-            <FormField label="Nombre del Producto" required error={formErrors.name} htmlFor="prod-name">
+            <FormField
+              label="Nombre del Producto"
+              required
+              error={formErrors.name}
+              htmlFor="prod-name"
+            >
               <input
                 id="prod-name"
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Ej: Gold Standard Whey 5lbs"
-                className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
 
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="Precio (MXN)" required error={formErrors.price} htmlFor="prod-price">
+              <FormField
+                label="Precio (MXN)"
+                required
+                error={formErrors.price}
+                htmlFor="prod-price"
+              >
                 <input
                   id="prod-price"
                   type="number"
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
                   placeholder="0.00"
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
               <FormField label="Stock" required error={formErrors.stock} htmlFor="prod-stock">
@@ -430,7 +457,7 @@ export default function Inventory() {
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}
                   placeholder="0"
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
             </div>
@@ -441,10 +468,10 @@ export default function Inventory() {
                   id="prod-category"
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                  className="h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 >
                   {productCategories
-                    .filter((c) => c.value !== "all")
+                    .filter((c) => c.value !== 'all')
                     .map((c) => (
                       <option key={c.value} value={c.value}>
                         {c.label}
@@ -459,7 +486,7 @@ export default function Inventory() {
                   value={form.brand}
                   onChange={(e) => setForm({ ...form, brand: e.target.value })}
                   placeholder="Ej: Optimum Nutrition"
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
             </div>
@@ -471,7 +498,7 @@ export default function Inventory() {
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={3}
                 placeholder="Características principales..."
-                className="min-h-[80px] w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                className="min-h-[80px] w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
           </div>
@@ -488,10 +515,12 @@ export default function Inventory() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-lg shadow-[var(--accent)]/25 transition-all hover:brightness-110 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
           >
-            {isSaving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />}
-            {editingProduct ? "Guardar Cambios" : "Crear Producto"}
+            {isSaving && (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            )}
+            {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
           </button>
         </div>
       </Modal>
@@ -501,7 +530,7 @@ export default function Inventory() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => {
-          addToast("Eliminación de productos próximamente disponible", "warning")
+          addToast('Eliminación de productos próximamente disponible', 'warning')
           setDeleteTarget(null)
         }}
         title="Eliminar producto"

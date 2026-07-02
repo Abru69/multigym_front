@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Search,
@@ -8,146 +8,65 @@ import {
   MoreVertical,
   CheckCircle,
   PauseCircle,
-  XCircle,
-  Clock,
   Loader2,
 } from 'lucide-react'
-import { fetchApi } from '@/lib/api'
+import { usePlatformTenantsStore } from '@/features/platform/store/platformTenantsStore'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
-
-interface Tenant {
-  id: string
-  name: string
-  subdomain: string
-  plan: 'STARTER' | 'PRO' | 'ENTERPRISE'
-  status: 'ACTIVE' | 'TRIAL' | 'SUSPENDED' | 'CANCELLED'
-  members: number
-  revenue: string
-  createdAt: string
-  email: string
-}
-
-const initialTenants: Tenant[] = [
-  {
-    id: '1',
-    name: 'FitZone Elite',
-    subdomain: 'fitzone',
-    plan: 'ENTERPRISE',
-    status: 'ACTIVE',
-    members: 342,
-    revenue: '$199',
-    createdAt: '12 Ene 2026',
-    email: 'admin@fitzone.com',
-  },
-  {
-    id: '2',
-    name: 'Iron Temple',
-    subdomain: 'irontemple',
-    plan: 'PRO',
-    status: 'ACTIVE',
-    members: 218,
-    revenue: '$79',
-    createdAt: '28 Ene 2026',
-    email: 'ops@irontemple.mx',
-  },
-  {
-    id: '3',
-    name: 'PowerGym MX',
-    subdomain: 'powergym',
-    plan: 'STARTER',
-    status: 'TRIAL',
-    members: 47,
-    revenue: '$0',
-    createdAt: '14 Feb 2026',
-    email: 'hola@powergym.mx',
-  },
-  {
-    id: '4',
-    name: 'Titan Sports',
-    subdomain: 'titan',
-    plan: 'PRO',
-    status: 'TRIAL',
-    members: 93,
-    revenue: '$0',
-    createdAt: '20 Feb 2026',
-    email: 'info@titansports.com',
-  },
-  {
-    id: '5',
-    name: 'Alpha Fitness',
-    subdomain: 'alpha',
-    plan: 'STARTER',
-    status: 'SUSPENDED',
-    members: 12,
-    revenue: '$0',
-    createdAt: '05 Mar 2026',
-    email: 'admin@alphafitness.mx',
-  },
-  {
-    id: '6',
-    name: 'Zeus Gym',
-    subdomain: 'zeus',
-    plan: 'PRO',
-    status: 'ACTIVE',
-    members: 175,
-    revenue: '$79',
-    createdAt: '10 Mar 2026',
-    email: 'zeus@zeusgym.com',
-  },
-  {
-    id: '7',
-    name: 'Body Factory',
-    subdomain: 'bodyfactory',
-    plan: 'ENTERPRISE',
-    status: 'ACTIVE',
-    members: 512,
-    revenue: '$199',
-    createdAt: '15 Mar 2026',
-    email: 'hello@bodyfactory.io',
-  },
-  {
-    id: '8',
-    name: 'GymPro CDMX',
-    subdomain: 'gympro',
-    plan: 'STARTER',
-    status: 'TRIAL',
-    members: 28,
-    revenue: '$0',
-    createdAt: '01 Abr 2026',
-    email: 'contact@gympro.mx',
-  },
-]
+import { ConfirmDialog } from '@/features/admin/components/ConfirmDialog'
+import { LoadingState } from '@/features/admin/components/LoadingState'
+import type { TenantRequestDTO } from '@/types'
 
 const statusConfig = {
   ACTIVE: { label: 'Activo', color: 'var(--success)', icon: CheckCircle },
-  TRIAL: { label: 'Trial', color: 'var(--warning)', icon: Clock },
-  SUSPENDED: { label: 'Suspendido', color: 'var(--danger)', icon: PauseCircle },
-  CANCELLED: { label: 'Cancelado', color: 'var(--text-muted)', icon: XCircle },
+  INACTIVE: { label: 'Inactivo', color: 'var(--danger)', icon: PauseCircle },
 }
 
-const planColors = { STARTER: 'var(--info)', PRO: 'var(--accent)', ENTERPRISE: 'var(--warning)' }
+const planColors: Record<string, string> = {
+  Basic: 'var(--info)',
+  Pro: 'var(--accent)',
+  Enterprise: 'var(--warning)',
+}
 
 export default function PlatformTenants() {
-  const [tenants, setTenants] = useState<Tenant[]>(initialTenants)
+  const {
+    tenants,
+    plans,
+    isLoading,
+    error,
+    loadTenants,
+    loadPlans,
+    createTenant,
+    toggleStatus,
+    deleteTenant,
+    getPlanName,
+    getMemberLimit,
+  } = usePlatformTenantsStore()
+
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('ALL')
   const [showModal, setShowModal] = useState(false)
-  const [editingTenant, setEditingTenant] = useState<Tenant | null>(null)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [toast, setToast] = useState('')
-  const [form, setForm] = useState({
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [form, setForm] = useState<TenantRequestDTO>({
+    tenantId: '',
     name: '',
     subdomain: '',
-    email: '',
-    plan: 'STARTER',
-    status: 'TRIAL',
-    adminName: '',
+    adminEmail: '',
     adminPassword: '',
+    adminName: '',
     adminPhone: '',
+    planId: '',
   })
   const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    loadTenants()
+    loadPlans()
+  }, [loadTenants, loadPlans])
 
   const filtered = tenants.filter((t) => {
     const matchSearch =
@@ -164,89 +83,50 @@ export default function PlatformTenants() {
 
   const openCreate = () => {
     setForm({
+      tenantId: '',
       name: '',
       subdomain: '',
-      email: '',
-      plan: 'STARTER',
-      status: 'TRIAL',
-      adminName: '',
+      adminEmail: '',
       adminPassword: '',
+      adminName: '',
       adminPhone: '',
+      planId: plans[0]?.id || '',
     })
-    setEditingTenant(null)
     setShowModal(true)
   }
 
-  const openEdit = (t: Tenant) => {
-    setForm({
-      name: t.name,
-      subdomain: t.subdomain,
-      email: t.email,
-      plan: t.plan,
-      status: t.status,
-      adminName: '',
-      adminPassword: '',
-      adminPhone: '',
-    })
-    setEditingTenant(t)
-    setShowModal(true)
+  const handleToggleStatus = async (tenantId: string) => {
+    const ok = await toggleStatus(tenantId)
+    if (ok) {
+      showToast('Estado actualizado')
+    } else {
+      showToast('Error al cambiar estado')
+    }
     setOpenMenu(null)
   }
 
-  const toggleStatus = (t: Tenant) => {
-    const next = t.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE'
-    setTenants((ts) => ts.map((x) => (x.id === t.id ? { ...x, status: next as any } : x)))
-    showToast(`${t.name} ${next === 'ACTIVE' ? 'activado' : 'suspendido'}`)
-    setOpenMenu(null)
-  }
-
-  const deleteTenant = (t: Tenant) => {
-    setTenants((ts) => ts.filter((x) => x.id !== t.id))
-    showToast(`${t.name} eliminado`)
-    setOpenMenu(null)
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setIsDeleting(true)
+    const ok = await deleteTenant(deleteTarget)
+    setIsDeleting(false)
+    setDeleteTarget(null)
+    if (ok) {
+      showToast('Gimnasio eliminado')
+    } else {
+      showToast('Error al eliminar gimnasio')
+    }
   }
 
   const save = async () => {
-    if (editingTenant) {
-      setTenants((ts) =>
-        ts.map((x) => (x.id === editingTenant.id ? ({ ...x, ...form } as Tenant) : x))
-      )
-      showToast('Cambios guardados')
+    setIsSaving(true)
+    const ok = await createTenant(form)
+    setIsSaving(false)
+    if (ok) {
+      showToast('Gimnasio creado')
       setShowModal(false)
     } else {
-      setIsSaving(true)
-      try {
-        await fetchApi('/api/tenants', {
-          method: 'POST',
-          body: JSON.stringify({
-            tenantId: form.subdomain,
-            name: form.name,
-            subdomain: form.subdomain,
-            adminEmail: form.email,
-            adminPassword: form.adminPassword || 'admin123',
-            adminName: form.adminName || form.name,
-            adminPhone: form.adminPhone || '',
-          }),
-        })
-        const newT: Tenant = {
-          id: Date.now().toString(),
-          ...(form as any),
-          members: 0,
-          revenue: '$0',
-          createdAt: new Date().toLocaleDateString('es-MX', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-          }),
-        }
-        setTenants((ts) => [newT, ...ts])
-        showToast('✅ Gimnasio creado en el servidor')
-        setShowModal(false)
-      } catch (err: any) {
-        showToast(`❌ Error: ${err.message || 'No se pudo crear el gimnasio'}`)
-      } finally {
-        setIsSaving(false)
-      }
+      showToast('Error al crear gimnasio')
     }
   }
 
@@ -258,16 +138,23 @@ export default function PlatformTenants() {
       color: 'var(--success)',
     },
     {
-      label: 'Trial',
-      count: tenants.filter((t) => t.status === 'TRIAL').length,
-      color: 'var(--warning)',
-    },
-    {
-      label: 'Suspendidos',
-      count: tenants.filter((t) => t.status === 'SUSPENDED').length,
+      label: 'Inactivos',
+      count: tenants.filter((t) => t.status === 'INACTIVE').length,
       color: 'var(--danger)',
     },
   ]
+
+  if (isLoading && tenants.length === 0) return <LoadingState text="Cargando gimnasios..." />
+
+  if (error && tenants.length === 0) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <p className="text-sm" style={{ color: 'var(--error)' }}>
+          {error}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -293,15 +180,18 @@ export default function PlatformTenants() {
         {stats.map((s) => (
           <div
             key={s.label}
+            role="button"
+            tabIndex={0}
             className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm transition-all"
             style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             onClick={() =>
-              setFilter(
-                s.label === 'Total'
-                  ? 'ALL'
-                  : s.label.toUpperCase().replace('SUSPENDIDOS', 'SUSPENDED')
-              )
+              setFilter(s.label === 'Total' ? 'ALL' : s.label.toUpperCase().slice(0, -1))
             }
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                setFilter(s.label === 'Total' ? 'ALL' : s.label.toUpperCase().slice(0, -1))
+              }
+            }}
           >
             <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />
             <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{s.count}</span>
@@ -326,7 +216,7 @@ export default function PlatformTenants() {
           />
         </div>
         <div className="flex gap-1">
-          {['ALL', 'ACTIVE', 'TRIAL', 'SUSPENDED'].map((f) => (
+          {['ALL', 'ACTIVE', 'INACTIVE'].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -337,7 +227,7 @@ export default function PlatformTenants() {
                 border: filter === f ? '1px solid var(--accent)' : '1px solid var(--border)',
               }}
             >
-              {f === 'ALL' ? 'Todos' : f.charAt(0) + f.slice(1).toLowerCase()}
+              {f === 'ALL' ? 'Todos' : f === 'ACTIVE' ? 'Activos' : 'Inactivos'}
             </button>
           ))}
         </div>
@@ -351,31 +241,28 @@ export default function PlatformTenants() {
         <table className="w-full">
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {[
-                'Gimnasio',
-                'Subdominio',
-                'Plan',
-                'Miembros',
-                'Estado',
-                'Ingresos/mes',
-                'Acciones',
-              ].map((h) => (
-                <th
-                  key={h}
-                  className="px-4 py-3 text-left text-xs font-semibold tracking-wide uppercase"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  {h}
-                </th>
-              ))}
+              {['Gimnasio', 'Subdominio', 'Plan', 'Límite', 'Estado', 'Creado', 'Acciones'].map(
+                (h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left text-xs font-semibold tracking-wide uppercase"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    {h}
+                  </th>
+                )
+              )}
             </tr>
           </thead>
           <tbody>
             {filtered.map((t, i) => {
               const sc = statusConfig[t.status]
+              const planName = getPlanName(t.planId)
+              const planColor = planColors[planName] || 'var(--text-muted)'
+              const memberLimit = getMemberLimit(t.planId)
               return (
                 <motion.tr
-                  key={t.id}
+                  key={t.tenantId}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }}
@@ -392,17 +279,9 @@ export default function PlatformTenants() {
                       >
                         {t.name[0]}
                       </div>
-                      <div>
-                        <p
-                          className="text-sm font-semibold"
-                          style={{ color: 'var(--text-primary)' }}
-                        >
-                          {t.name}
-                        </p>
-                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                          {t.email}
-                        </p>
-                      </div>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        {t.name}
+                      </p>
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -413,13 +292,16 @@ export default function PlatformTenants() {
                   <td className="px-4 py-3">
                     <span
                       className="rounded-full px-2.5 py-1 text-xs font-bold"
-                      style={{ background: `${planColors[t.plan]}18`, color: planColors[t.plan] }}
+                      style={{ background: `${planColor}18`, color: planColor }}
                     >
-                      {t.plan}
+                      {planName}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    {t.members.toLocaleString()}
+                  <td
+                    className="px-4 py-3 text-sm font-semibold"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    {memberLimit}
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -430,12 +312,16 @@ export default function PlatformTenants() {
                       {sc.label}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm font-bold" style={{ color: 'var(--success)' }}>
-                    {t.revenue}
+                  <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {new Date(t.createdAt).toLocaleDateString('es-MX', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
                   </td>
                   <td className="relative px-4 py-3">
                     <button
-                      onClick={() => setOpenMenu(openMenu === t.id ? null : t.id)}
+                      onClick={() => setOpenMenu(openMenu === t.tenantId ? null : t.tenantId)}
                       className="rounded-lg p-1.5 transition-colors"
                       style={{ color: 'var(--text-muted)' }}
                       onMouseEnter={(e) =>
@@ -446,7 +332,7 @@ export default function PlatformTenants() {
                       <MoreVertical size={16} />
                     </button>
                     <AnimatePresence>
-                      {openMenu === t.id && (
+                      {openMenu === t.tenantId && (
                         <motion.div
                           initial={{ opacity: 0, scale: 0.9, y: -5 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -459,12 +345,18 @@ export default function PlatformTenants() {
                           }}
                         >
                           {[
-                            { label: '✏️ Editar', fn: () => openEdit(t) },
                             {
                               label: t.status === 'ACTIVE' ? '⏸ Suspender' : '▶ Activar',
-                              fn: () => toggleStatus(t),
+                              fn: () => handleToggleStatus(t.tenantId),
                             },
-                            { label: '🗑 Eliminar', fn: () => deleteTenant(t), danger: true },
+                            {
+                              label: '🗑 Eliminar',
+                              fn: () => {
+                                setDeleteTarget(t.tenantId)
+                                setOpenMenu(null)
+                              },
+                              danger: true,
+                            },
                           ].map((item) => (
                             <button
                               key={item.label}
@@ -504,7 +396,18 @@ export default function PlatformTenants() {
         Mostrando {filtered.length} de {tenants.length} gimnasios
       </p>
 
-      {/* Modal */}
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Eliminar Gimnasio"
+        message={`¿Estás seguro de eliminar "${tenants.find((t) => t.tenantId === deleteTarget)?.name}"? Esta acción eliminará permanentemente el gimnasio y todos sus datos.`}
+        confirmLabel="Eliminar Gimnasio"
+        isLoading={isDeleting}
+      />
+
+      {/* Create Modal */}
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -529,7 +432,7 @@ export default function PlatformTenants() {
             >
               <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-                  {editingTenant ? 'Editar Gimnasio' : 'Nuevo Gimnasio'}
+                  Nuevo Gimnasio
                 </h2>
                 <button onClick={() => setShowModal(false)} style={{ color: 'var(--text-muted)' }}>
                   <X size={20} />
@@ -537,94 +440,65 @@ export default function PlatformTenants() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { label: 'Nombre', key: 'name', placeholder: 'Ej: FitZone Elite' },
-                  { label: 'Subdominio', key: 'subdomain', placeholder: 'fitzone' },
+                  { label: 'Nombre', key: 'name' as const, placeholder: 'Ej: FitZone Elite' },
+                  { label: 'Tenant ID', key: 'tenantId' as const, placeholder: 'fitzone' },
+                  { label: 'Subdominio', key: 'subdomain' as const, placeholder: 'fitzone' },
                   {
-                    label: 'Email de contacto',
-                    key: 'email',
+                    label: 'Email Admin',
+                    key: 'adminEmail' as const,
                     placeholder: 'admin@gym.com',
                     type: 'email',
+                    colSpan: true,
                   },
                 ].map((f) => (
-                  <div key={f.key} className={f.key === 'email' ? 'col-span-2' : ''}>
+                  <div key={f.key} className={f.colSpan ? 'col-span-2' : ''}>
                     <Label>{f.label}</Label>
                     <Input
                       type={f.type ?? 'text'}
-                      value={(form as any)[f.key]}
+                      value={form[f.key]}
                       onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                       placeholder={f.placeholder}
                     />
                   </div>
                 ))}
-                {!editingTenant && (
-                  <>
-                    <div className="col-span-2">
-                      <label
-                        className="mb-1.5 block text-xs font-semibold"
-                        style={{ color: 'var(--detail)' }}
-                      >
-                        Datos del Administrador
-                      </label>
-                      <div className="h-px w-full" style={{ background: 'var(--border)' }} />
-                    </div>
-                    {[
-                      { label: 'Nombre del Admin', key: 'adminName', placeholder: 'Juan Pérez' },
-                      {
-                        label: 'Contraseña Admin',
-                        key: 'adminPassword',
-                        placeholder: 'admin123',
-                        type: 'password',
-                      },
-                      {
-                        label: 'Teléfono Admin',
-                        key: 'adminPhone',
-                        placeholder: '+52 614 555 0000',
-                      },
-                    ].map((f) => (
-                      <div key={f.key}>
-                        <Label>{f.label}</Label>
-                        <Input
-                          type={f.type ?? 'text'}
-                          value={(form as any)[f.key]}
-                          onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-                          placeholder={f.placeholder}
-                        />
-                      </div>
-                    ))}
-                  </>
-                )}
-                <div>
+                <div className="col-span-2">
                   <label
                     className="mb-1.5 block text-xs font-semibold"
-                    style={{ color: 'var(--text-secondary)' }}
+                    style={{ color: 'var(--detail)' }}
                   >
-                    Plan
+                    Datos del Administrador
                   </label>
-                  <select
-                    value={form.plan}
-                    onChange={(e) => setForm({ ...form, plan: e.target.value })}
-                    className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
-                    style={{
-                      background: 'var(--input-bg)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--text-primary)',
-                    }}
-                  >
-                    <option value="STARTER">Starter — $29/mes</option>
-                    <option value="PRO">Pro — $79/mes</option>
-                    <option value="ENTERPRISE">Enterprise — $199/mes</option>
-                  </select>
+                  <div className="h-px w-full" style={{ background: 'var(--border)' }} />
                 </div>
-                <div>
-                  <label
-                    className="mb-1.5 block text-xs font-semibold"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    Estado
-                  </label>
+                {[
+                  { label: 'Nombre Admin', key: 'adminName' as const, placeholder: 'Juan Pérez' },
+                  {
+                    label: 'Contraseña',
+                    key: 'adminPassword' as const,
+                    placeholder: 'Mínimo 8 caracteres',
+                    type: 'password',
+                  },
+                  {
+                    label: 'Teléfono',
+                    key: 'adminPhone' as const,
+                    placeholder: '+52 614 555 0000',
+                  },
+                ].map((f) => (
+                  <div key={f.key}>
+                    <Label>{f.label}</Label>
+                    <Input
+                      type={f.type ?? 'text'}
+                      value={form[f.key]}
+                      onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
+                      placeholder={f.placeholder}
+                    />
+                  </div>
+                ))}
+                <div className="col-span-2">
+                  <Label>Plan SaaS</Label>
                   <select
-                    value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value })}
+                    value={form.planId}
+                    onChange={(e) => setForm({ ...form, planId: e.target.value })}
                     className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
                     style={{
                       background: 'var(--input-bg)',
@@ -632,9 +506,14 @@ export default function PlatformTenants() {
                       color: 'var(--text-primary)',
                     }}
                   >
-                    <option value="TRIAL">Trial</option>
-                    <option value="ACTIVE">Activo</option>
-                    <option value="SUSPENDED">Suspendido</option>
+                    {plans
+                      .filter((p) => p.isActive)
+                      .map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} — ${p.price}/mes —{' '}
+                          {p.memberLimit === -1 ? 'Ilimitado' : `${p.memberLimit} miembros`}
+                        </option>
+                      ))}
                   </select>
                 </div>
               </div>
@@ -644,7 +523,7 @@ export default function PlatformTenants() {
                 </Button>
                 <Button onClick={save} disabled={isSaving} className="gap-2">
                   {isSaving && <Loader2 size={14} className="animate-spin" />}
-                  {editingTenant ? 'Guardar' : 'Crear Gimnasio'}
+                  Crear Gimnasio
                 </Button>
               </div>
             </motion.div>
@@ -667,7 +546,7 @@ export default function PlatformTenants() {
               boxShadow: 'var(--shadow-lg)',
             }}
           >
-            ✅ {toast}
+            {toast}
           </motion.div>
         )}
       </AnimatePresence>

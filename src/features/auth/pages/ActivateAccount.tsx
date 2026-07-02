@@ -47,9 +47,7 @@ export default function ActivateAccount() {
       await activateAccount(payload)
       setSuccess(true)
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : 'El enlace ha expirado o no es válido.',
-      )
+      setError(err instanceof Error ? err.message : 'El enlace ha expirado o no es válido.')
     } finally {
       setIsLoading(false)
     }

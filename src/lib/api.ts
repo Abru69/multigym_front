@@ -1,5 +1,15 @@
 import { getTenantFromSubdomain } from './tenant'
-import type { ResponseDTO, ProductDTO, ExerciseDTO, WorkoutDTO } from '@/types'
+import type {
+  ResponseDTO,
+  ProductDTO,
+  ExerciseDTO,
+  WorkoutDTO,
+  TenantDTO,
+  SaasPlanDTO,
+  TenantRequestDTO,
+  PlatformUserDTO,
+  PlatformUserRequestDTO,
+} from '@/types'
 
 export async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
   let token = ''
@@ -100,3 +110,39 @@ export const activateAccount = (data: { token: string; newPassword?: string }) =
     method: 'POST',
     body: JSON.stringify(data),
   })
+
+export const getTenants = () => fetchApi<ResponseDTO<TenantDTO>>('/api/tenants')
+
+export const createTenant = (data: TenantRequestDTO) =>
+  fetchApi<ResponseDTO<TenantDTO>>('/api/tenants', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+
+export const deleteTenant = (tenantId: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/tenants/${tenantId}`, { method: 'DELETE' })
+
+export const toggleTenantStatus = (tenantId: string) =>
+  fetchApi<ResponseDTO<TenantDTO>>(`/api/tenants/${tenantId}/status`, { method: 'PATCH' })
+
+export const getSaasPlans = () => fetchApi<ResponseDTO<SaasPlanDTO>>('/api/saas-plans')
+
+export const getPlatformUsers = () => fetchApi<ResponseDTO<PlatformUserDTO>>('/platform-api/users')
+
+export const createPlatformUser = (data: PlatformUserRequestDTO) =>
+  fetchApi<ResponseDTO<PlatformUserDTO>>('/platform-api/users', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+
+export const updatePlatformUser = (id: string, data: PlatformUserRequestDTO) =>
+  fetchApi<ResponseDTO<PlatformUserDTO>>(`/platform-api/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+
+export const togglePlatformUserStatus = (id: string) =>
+  fetchApi<ResponseDTO<PlatformUserDTO>>(`/platform-api/users/${id}/status`, { method: 'PATCH' })
+
+export const deletePlatformUser = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/platform-api/users/${id}`, { method: 'DELETE' })

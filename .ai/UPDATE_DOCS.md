@@ -2,13 +2,13 @@
 
 ## Cuándo Actualizar
 
-| Evento | Archivo a actualizar |
-|--------|---------------------|
-| Completar un módulo | `docs/PROJECT_STATUS.md`, `docs/CHANGELOG.md` |
-| Encontrar bug conocido | `docs/PROJECT_STATUS.md` |
-| Agregar nueva dependencia | `docs/AI_CONTEXT.md` |
-| Definir próxima tarea | `docs/NEXT_SESSION.md` |
-| Cambiar reglas | `.ai/RULES.md` |
+| Evento                    | Archivo a actualizar                          |
+| ------------------------- | --------------------------------------------- |
+| Completar un módulo       | `docs/PROJECT_STATUS.md`, `docs/CHANGELOG.md` |
+| Encontrar bug conocido    | `docs/PROJECT_STATUS.md`                      |
+| Agregar nueva dependencia | `docs/AI_CONTEXT.md`                          |
+| Definir próxima tarea     | `docs/NEXT_SESSION.md`                        |
+| Cambiar reglas            | `.ai/RULES.md`                                |
 
 ## Formato del Changelog
 
@@ -16,13 +16,16 @@
 ## [YYYY-MM-DD]
 
 ### Completado
+
 - Módulo X redesigned con Tailwind
 - Componente Y creado
 
 ### En Progreso
+
 - Módulo Z
 
 ### Bugs Conocidos
+
 - Issue con W
 ```
 

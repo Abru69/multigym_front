@@ -62,7 +62,7 @@ export default function ResetPassword() {
       setError(
         err instanceof Error
           ? err.message
-          : 'El enlace ha expirado o no es válido. Solicita uno nuevo.',
+          : 'El enlace ha expirado o no es válido. Solicita uno nuevo.'
       )
     } finally {
       setIsLoading(false)
