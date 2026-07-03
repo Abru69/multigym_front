@@ -3,11 +3,12 @@ export interface User {
   name: string
   email: string
   avatar?: string
-  role: "admin" | "client"
+  role: 'admin' | 'client'
   phone?: string
   joinDate: string
   isActive: boolean
   currentPlan?: string
+  tenantId?: string
 }
 
 export interface AuthState {

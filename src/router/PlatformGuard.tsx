@@ -1,5 +1,5 @@
-import { Navigate } from "react-router-dom"
-import { usePlatformAuthStore } from "@/store/platformAuthStore"
+import { Navigate } from 'react-router-dom'
+import { usePlatformAuthStore } from '@/features/platform/store/platformAuthStore'
 
 export function PlatformGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = usePlatformAuthStore()

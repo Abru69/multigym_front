@@ -1,10 +1,11 @@
-import { RouterProvider } from "react-router-dom"
-import { router } from "./router"
+import { RouterProvider } from 'react-router-dom'
+import { router } from './router'
+import { useTheme } from './hooks/useTheme'
 
 function App() {
-  return (
-    <RouterProvider router={router} />
-  )
+  useTheme() // Initialize theme globally on app load
+
+  return <RouterProvider router={router} />
 }
 
 export default App

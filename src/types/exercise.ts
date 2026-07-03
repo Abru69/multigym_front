@@ -13,16 +13,16 @@ export interface Exercise {
 }
 
 export type MuscleGroup =
-  | "pecho"
-  | "espalda"
-  | "hombros"
-  | "biceps"
-  | "triceps"
-  | "piernas"
-  | "gluteos"
-  | "abdomen"
-  | "cardio"
-  | "cuerpo-completo"
+  | 'pecho'
+  | 'espalda'
+  | 'hombros'
+  | 'biceps'
+  | 'triceps'
+  | 'piernas'
+  | 'gluteos'
+  | 'abdomen'
+  | 'cardio'
+  | 'cuerpo-completo'
 
 export interface Routine {
   id: string
@@ -42,7 +42,8 @@ export interface RoutineDay {
   isRestDay: boolean
 }
 
-export type DayOfWeek = "lunes" | "martes" | "miercoles" | "jueves" | "viernes" | "sabado" | "domingo"
+export type DayOfWeek =
+  'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo'
 
 export interface ProgressEntry {
   id: string
