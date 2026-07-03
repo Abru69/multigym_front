@@ -16,9 +16,9 @@ export function AdminLayout() {
   const { user, logout, tenantId } = useAuthStore()
   const { branding } = useTenantBranding()
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     const currentTenantId = tenantId || user?.tenantId
-    logout()
+    await logout()
     if (currentTenantId) {
       window.location.href = getTenantUrl(currentTenantId)
     } else {

@@ -82,9 +82,9 @@ export default function Landing() {
       : branding.hero.ctaAuthenticatedClient
     : branding.hero.ctaText
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     const currentTenantId = authTenantId || user?.tenantId
-    logout()
+    await logout()
     setShowMenu(false)
     if (currentTenantId) {
       window.location.href = getTenantUrl(currentTenantId)

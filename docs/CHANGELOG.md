@@ -4,6 +4,22 @@ Formato: [YYYY-MM-DD]
 
 ---
 
+## [2026-07-03]
+
+### Completado
+
+- **Auth Backend Integration — Login, Logout, Forgot Password, Reset Password**
+  - `api.ts`: Corregida URL de `activateAccount` (`/api/tenant/user/` → `/api/tenant/users/`)
+  - `api.ts`: Agregados `logout()` y `refreshToken()` que llaman `POST /api/auth/logout` y `POST /api/auth/refresh-token`
+  - `authStore.ts`: `logout()` ahora llama el endpoint backend antes de limpiar estado local
+  - `authStore.ts`: `login()` ahora lanza errores del backend en vez de retornar `false`
+  - `Login.tsx`: Muestra el mensaje real del backend (ej: "Invalid credentials", "Tenant not found") en vez de "Credenciales inválidas" genérico
+  - `ForgotPassword.tsx`: Migrado de `fetch()` raw a `fetchApi()` para consistencia
+  - `ResetPassword.tsx`: Migrado de `fetch()` raw a `fetchApi()`, eliminado input de tenant ID (backend resuelve desde token), minlength corregido a 8
+  - `AdminLayout.tsx`, `ClientLayout.tsx`, `TenantDashboard.tsx`, `Landing.tsx`: `handleLogout` actualizado a `async/await` para esperar la llamada al backend antes de redirigir
+
+---
+
 ## [2026-07-02]
 
 ### Completado

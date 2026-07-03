@@ -33,9 +33,9 @@ export function ClientLayout() {
 
   const portalLink = user?.role === 'admin' ? '/admin' : '/app/rutinas'
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     const currentTenantId = tenantId || user?.tenantId
-    logout()
+    await logout()
     setShowMenu(false)
     if (currentTenantId) {
       window.location.href = getTenantUrl(currentTenantId)

@@ -31,12 +31,14 @@ export default function Login() {
       return
     }
 
-    const ok = await login(email, password, effectiveTenant)
-    if (ok) {
-      const user = useAuthStore.getState().user
-      navigate(user?.role === 'admin' ? '/admin' : '/')
-    } else {
-      setError('Credenciales inválidas.')
+    try {
+      const ok = await login(email, password, effectiveTenant)
+      if (ok) {
+        const user = useAuthStore.getState().user
+        navigate(user?.role === 'admin' ? '/admin' : '/')
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Credenciales inválidas.')
     }
   }
 

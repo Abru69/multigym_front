@@ -109,10 +109,18 @@ export const deleteWorkout = (id: string) =>
   fetchApi<ResponseDTO<unknown>>(`/api/workouts/${id}`, { method: 'DELETE' })
 
 export const activateAccount = (data: { token: string; newPassword?: string }) =>
-  fetchApi<ResponseDTO<unknown>>('/api/tenant/user/activate-account', {
+  fetchApi<ResponseDTO<unknown>>('/api/tenant/users/activate-account', {
     method: 'POST',
     body: JSON.stringify(data),
   })
+
+export const logout = () => fetchApi<ResponseDTO<unknown>>('/api/auth/logout', { method: 'POST' })
+
+export const refreshToken = () =>
+  fetchApi<ResponseDTO<{ accessToken: string; type: string; expiresIn: number; tenantId: string; role: string }>>(
+    '/api/auth/refresh-token',
+    { method: 'POST' }
+  )
 
 export const getTenants = () => fetchApi<ResponseDTO<TenantDTO>>('/api/tenants')
 

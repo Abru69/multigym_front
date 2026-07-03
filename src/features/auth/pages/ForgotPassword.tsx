@@ -4,9 +4,12 @@ import { motion } from 'framer-motion'
 import { Mail, ArrowLeft, Loader2, CheckCircle, Building2 } from 'lucide-react'
 import { getTenantFromSubdomain } from '@/lib/tenant'
 import { resolveBranding } from '@/lib/tenantConfig'
+import { fetchApi } from '@/lib/api'
+import type { ResponseDTO } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
+
 export default function ForgotPassword() {
   const autoTenant = getTenantFromSubdomain()
   const branding = autoTenant ? resolveBranding(autoTenant) : null
@@ -29,20 +32,10 @@ export default function ForgotPassword() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
+      await fetchApi<ResponseDTO<unknown>>('/api/auth/reset-password', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Tenant-ID': effectiveTenant,
-        },
         body: JSON.stringify({ email }),
       })
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null)
-        throw new Error(data?.mensaje || 'No se pudo procesar la solicitud')
-      }
-
       setSent(true)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al enviar la solicitud')

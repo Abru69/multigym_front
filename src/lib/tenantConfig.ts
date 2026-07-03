@@ -56,6 +56,33 @@ export interface TenantBranding {
   /** Optional background video/image for the hero */
   heroVideo?: string
   heroImage?: string
+
+  /** Gym schedule */
+  schedule: {
+    weekdays: string
+    saturday: string
+    sunday: string
+  }
+
+  /** Gym contact info */
+  address: string
+  phone: string
+
+  /** Trainers */
+  trainers: Array<{
+    name: string
+    specialty: string
+    avatar?: string
+  }>
+
+  /** Membership plans */
+  plans: Array<{
+    name: string
+    price: number
+    period: string
+    features: string[]
+    featured?: boolean
+  }>
 }
 
 /**
@@ -107,6 +134,47 @@ export const DEFAULT_BRANDING: TenantBranding = {
   },
 
   heroVideo: '/vid_sup.mp4',
+
+  schedule: {
+    weekdays: '6:00 AM - 10:00 PM',
+    saturday: '7:00 AM - 8:00 PM',
+    sunday: '8:00 AM - 2:00 PM',
+  },
+  address: '',
+  phone: '',
+  trainers: [],
+  plans: [
+    {
+      name: 'Básico',
+      price: 299,
+      period: 'mes',
+      features: ['Acceso al gimnasio', '2 rutinas personalizadas', 'Soporte por email'],
+    },
+    {
+      name: 'Pro',
+      price: 499,
+      period: 'mes',
+      features: [
+        'Acceso ilimitado',
+        'Rutinas ilimitadas',
+        'Nutrición personalizada',
+        'Soporte prioritario',
+      ],
+      featured: true,
+    },
+    {
+      name: 'Premium',
+      price: 799,
+      period: 'mes',
+      features: [
+        'Todo del plan Pro',
+        'Entrenador personal',
+        'Acceso a tienda con descuento',
+        'Clases grupales',
+        'Soporte 24/7',
+      ],
+    },
+  ],
 }
 
 /**
@@ -148,6 +216,51 @@ export const TENANT_CONFIGS: Record<string, Partial<TenantBranding>> = {
     },
 
     heroVideo: '/vid_sup.mp4',
+
+    schedule: {
+      weekdays: '6:00 AM - 10:00 PM',
+      saturday: '7:00 AM - 8:00 PM',
+      sunday: '8:00 AM - 2:00 PM',
+    },
+    address: 'Av. Revolución #1234, Col. Centro, Ciudad de México',
+    phone: '+52 55 1234 5678',
+    trainers: [
+      { name: 'Carlos Méndez', specialty: 'Musculación y Fuerza' },
+      { name: 'Laura Gómez', specialty: 'CrossFit y Funcional' },
+      { name: 'Miguel Torres', specialty: 'Nutrición Deportiva' },
+    ],
+    plans: [
+      {
+        name: 'Básico',
+        price: 299,
+        period: 'mes',
+        features: ['Acceso al gimnasio', '2 rutinas personalizadas', 'Soporte por email'],
+      },
+      {
+        name: 'Pro',
+        price: 499,
+        period: 'mes',
+        features: [
+          'Acceso ilimitado',
+          'Rutinas ilimitadas',
+          'Nutrición personalizada',
+          'Soporte prioritario',
+        ],
+        featured: true,
+      },
+      {
+        name: 'Premium',
+        price: 799,
+        period: 'mes',
+        features: [
+          'Todo del plan Pro',
+          'Entrenador personal',
+          'Acceso a tienda con descuento',
+          'Clases grupales',
+          'Soporte 24/7',
+        ],
+      },
+    ],
   },
 
   gym1: {
@@ -192,6 +305,51 @@ export const TENANT_CONFIGS: Record<string, Partial<TenantBranding>> = {
       accentText: '#ffffff',
       detail: '#fc8181',
     },
+
+    schedule: {
+      weekdays: '5:30 AM - 11:00 PM',
+      saturday: '6:00 AM - 9:00 PM',
+      sunday: '7:00 AM - 3:00 PM',
+    },
+    address: 'Calle Independencia #567, Col. Roma, Ciudad de México',
+    phone: '+52 55 8765 4321',
+    trainers: [
+      { name: 'Roberto Díaz', specialty: 'Musculación Clásica' },
+      { name: 'Ana López', specialty: 'Yoga y Pilates' },
+      { name: 'Pedro Sánchez', specialty: 'Box y MMA' },
+    ],
+    plans: [
+      {
+        name: 'Básico',
+        price: 350,
+        period: 'mes',
+        features: ['Acceso al gimnasio', '1 rutina personalizada', 'Lockers'],
+      },
+      {
+        name: 'Pro',
+        price: 550,
+        period: 'mes',
+        features: [
+          'Acceso ilimitado',
+          'Rutinas ilimitadas',
+          'Clases grupales',
+          'Asesoría nutricional',
+        ],
+        featured: true,
+      },
+      {
+        name: 'Premium',
+        price: 850,
+        period: 'mes',
+        features: [
+          'Todo del plan Pro',
+          'Entrenador personal',
+          'Sauna y vapor',
+          'Estacionamiento',
+          'Soporte 24/7',
+        ],
+      },
+    ],
   },
 
   gymh: {
@@ -236,6 +394,51 @@ export const TENANT_CONFIGS: Record<string, Partial<TenantBranding>> = {
       accentText: '#ffffff',
       detail: '#81e6d9',
     },
+
+    schedule: {
+      weekdays: '6:00 AM - 10:00 PM',
+      saturday: '7:00 AM - 7:00 PM',
+      sunday: '8:00 AM - 1:00 PM',
+    },
+    address: 'Blvd. Independencia #890, Col. Norte, Guadalajara',
+    phone: '+52 33 5555 1234',
+    trainers: [
+      { name: 'Fernando Ruíz', specialty: 'CrossFit' },
+      { name: 'Sofía Herrera', specialty: 'Funcional y HIIT' },
+      { name: 'Diego Morales', specialty: 'Nutrición y Suplementación' },
+    ],
+    plans: [
+      {
+        name: 'Básico',
+        price: 250,
+        period: 'mes',
+        features: ['Acceso al gimnasio', '2 clases grupales/semana', 'App móvil'],
+      },
+      {
+        name: 'Pro',
+        price: 450,
+        period: 'mes',
+        features: [
+          'Acceso ilimitado',
+          'Clases ilimitadas',
+          'Rutinas personalizadas',
+          'Seguimiento mensual',
+        ],
+        featured: true,
+      },
+      {
+        name: 'Premium',
+        price: 700,
+        period: 'mes',
+        features: [
+          'Todo del plan Pro',
+          'Entrenador dedicado',
+          'Plan nutricional',
+          'Tienda con 15% descuento',
+          'Acceso VIP',
+        ],
+      },
+    ],
   },
 }
 
@@ -261,5 +464,8 @@ export function resolveBranding(tenantId: string | null): TenantBranding {
     ...override,
     hero: { ...DEFAULT_BRANDING.hero, ...override.hero },
     colors: { ...DEFAULT_BRANDING.colors, ...override.colors },
+    schedule: { ...DEFAULT_BRANDING.schedule, ...override.schedule },
+    trainers: override.trainers ?? DEFAULT_BRANDING.trainers,
+    plans: override.plans ?? DEFAULT_BRANDING.plans,
   }
 }

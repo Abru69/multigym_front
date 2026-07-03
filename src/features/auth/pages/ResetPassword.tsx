@@ -1,19 +1,18 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Lock, ArrowLeft, Loader2, CheckCircle, Eye, EyeOff, Building2 } from 'lucide-react'
+import { Lock, ArrowLeft, Loader2, CheckCircle, Eye, EyeOff } from 'lucide-react'
 
-import { getTenantFromSubdomain } from '@/lib/tenant'
+import { fetchApi } from '@/lib/api'
+import type { ResponseDTO } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
+
 export default function ResetPassword() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') || ''
-  const tenantParam = searchParams.get('tenantId') || ''
-  const autoTenant = getTenantFromSubdomain()
 
-  const [tenantId, setTenantId] = useState(autoTenant || tenantParam)
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -25,8 +24,8 @@ export default function ResetPassword() {
     e.preventDefault()
     setError('')
 
-    if (newPassword.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.')
+    if (newPassword.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.')
       return
     }
 
@@ -43,20 +42,10 @@ export default function ResetPassword() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/auth/reset-password/confirm', {
+      await fetchApi<ResponseDTO<unknown>>('/api/auth/reset-password/confirm', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Tenant-ID': tenantId,
-        },
         body: JSON.stringify({ token, newPassword }),
       })
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null)
-        throw new Error(data?.mensaje || 'No se pudo restablecer la contraseña')
-      }
-
       setSuccess(true)
     } catch (err: unknown) {
       setError(
@@ -128,27 +117,6 @@ export default function ResetPassword() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {!(autoTenant || tenantParam) && (
-          <div>
-            <Label>Código de Gimnasio</Label>
-            <div className="relative">
-              <Building2
-                size={16}
-                className="absolute top-1/2 left-3.5 -translate-y-1/2"
-                style={{ color: 'var(--text-muted)' }}
-              />
-              <Input
-                type="text"
-                value={tenantId}
-                onChange={(e) => setTenantId(e.target.value)}
-                placeholder="ej. reto4"
-                className="pl-10"
-                required
-              />
-            </div>
-          </div>
-        )}
-
         <div>
           <Label>Nueva contraseña</Label>
           <div className="relative">
@@ -164,7 +132,7 @@ export default function ResetPassword() {
               placeholder="••••••••"
               className="pr-11 pl-10"
               required
-              minLength={6}
+              minLength={8}
             />
             <button
               type="button"
@@ -192,7 +160,7 @@ export default function ResetPassword() {
               placeholder="••••••••"
               className="pr-4 pl-10"
               required
-              minLength={6}
+              minLength={8}
             />
           </div>
         </div>
