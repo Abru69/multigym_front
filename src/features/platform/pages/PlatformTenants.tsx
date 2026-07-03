@@ -29,6 +29,16 @@ const planColors: Record<string, string> = {
   Enterprise: 'var(--warning)',
 }
 
+function getMemberUsageColor(memberCount: number, memberLimit: number): string {
+  if (memberLimit === -1) return 'var(--info)'
+  if (memberLimit === 0) return 'var(--text-muted)'
+
+  const percentage = (memberCount / memberLimit) * 100
+  if (percentage >= 90) return 'var(--danger)'
+  if (percentage >= 70) return 'var(--warning)'
+  return 'var(--success)'
+}
+
 export default function PlatformTenants() {
   const {
     tenants,
@@ -41,7 +51,6 @@ export default function PlatformTenants() {
     toggleStatus,
     deleteTenant,
     getPlanName,
-    getMemberLimit,
   } = usePlatformTenantsStore()
 
   const [search, setSearch] = useState('')
@@ -68,13 +77,15 @@ export default function PlatformTenants() {
     loadPlans()
   }, [loadTenants, loadPlans])
 
-  const filtered = tenants.filter((t) => {
-    const matchSearch =
-      t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.subdomain.toLowerCase().includes(search.toLowerCase())
-    const matchFilter = filter === 'ALL' || t.status === filter
-    return matchSearch && matchFilter
-  })
+  const filtered = tenants
+    .filter((t) => {
+      const matchSearch =
+        t.name.toLowerCase().includes(search.toLowerCase()) ||
+        t.subdomain.toLowerCase().includes(search.toLowerCase())
+      const matchFilter = filter === 'ALL' || t.status === filter
+      return matchSearch && matchFilter
+    })
+    .sort((a, b) => a.name.localeCompare(b.name))
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -96,13 +107,13 @@ export default function PlatformTenants() {
   }
 
   const handleToggleStatus = async (tenantId: string) => {
+    setOpenMenu(null)
     const ok = await toggleStatus(tenantId)
     if (ok) {
       showToast('Estado actualizado')
     } else {
       showToast('Error al cambiar estado')
     }
-    setOpenMenu(null)
   }
 
   const handleDelete = async () => {
@@ -235,13 +246,13 @@ export default function PlatformTenants() {
 
       {/* Table */}
       <div
-        className="overflow-hidden rounded-2xl"
+        className="rounded-2xl"
         style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
       >
         <table className="w-full">
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {['Gimnasio', 'Subdominio', 'Plan', 'Límite', 'Estado', 'Creado', 'Acciones'].map(
+              {['Gimnasio', 'Subdominio', 'Plan', 'Miembros', 'Estado', 'Creado', 'Acciones'].map(
                 (h) => (
                   <th
                     key={h}
@@ -259,7 +270,12 @@ export default function PlatformTenants() {
               const sc = statusConfig[t.status]
               const planName = getPlanName(t.planId)
               const planColor = planColors[planName] || 'var(--text-muted)'
-              const memberLimit = getMemberLimit(t.planId)
+              const memberCount = t.memberCount ?? 0
+              const memberLimit = t.memberLimit ?? 0
+              const hasUnlimitedMembers = memberLimit === -1
+              const usageColor = getMemberUsageColor(memberCount, memberLimit)
+              const usagePercentage =
+                memberLimit > 0 ? Math.min(100, Math.round((memberCount / memberLimit) * 100)) : 0
               return (
                 <motion.tr
                   key={t.tenantId}
@@ -290,27 +306,61 @@ export default function PlatformTenants() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className="rounded-full px-2.5 py-1 text-xs font-bold"
-                      style={{ background: `${planColor}18`, color: planColor }}
-                    >
-                      {planName}
-                    </span>
-                  </td>
-                  <td
-                    className="px-4 py-3 text-sm font-semibold"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    {memberLimit}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className="rounded-full px-2.5 py-1 text-xs font-bold"
+                        style={{ background: `${planColor}18`, color: planColor }}
+                      >
+                        {planName}
+                      </span>
+                      {t.isTrial && (
+                        <span
+                          className="rounded-full px-2.5 py-1 text-xs font-bold"
+                          style={{ background: 'var(--warning-muted)', color: 'var(--warning)' }}
+                        >
+                          Trial
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className="flex items-center gap-1.5 text-xs font-semibold"
-                      style={{ color: sc.color }}
+                    <div className="min-w-24 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2 text-sm font-semibold">
+                        <span style={{ color: 'var(--text-primary)' }}>
+                          {memberCount.toLocaleString()}
+                        </span>
+                        <span style={{ color: 'var(--text-muted)' }}>
+                          / {hasUnlimitedMembers ? '∞' : memberLimit.toLocaleString()}
+                        </span>
+                      </div>
+                      {!hasUnlimitedMembers && (
+                        <div
+                          className="h-1.5 overflow-hidden rounded-full"
+                          style={{ background: 'var(--surface-hover)' }}
+                          aria-label={`${usagePercentage}% de miembros usados`}
+                        >
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{ width: `${usagePercentage}%`, background: usageColor }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleToggleStatus(t.tenantId)
+                      }}
+                      className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold transition-all hover:opacity-80"
+                      style={{ background: `${sc.color}18`, color: sc.color }}
+                      title={t.status === 'ACTIVE' ? 'Clic para suspender' : 'Clic para activar'}
                     >
                       <sc.icon size={12} />
                       {sc.label}
-                    </span>
+                    </button>
                   </td>
                   <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                     {new Date(t.createdAt).toLocaleDateString('es-MX', {
@@ -321,7 +371,11 @@ export default function PlatformTenants() {
                   </td>
                   <td className="relative px-4 py-3">
                     <button
-                      onClick={() => setOpenMenu(openMenu === t.tenantId ? null : t.tenantId)}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setOpenMenu(openMenu === t.tenantId ? null : t.tenantId)
+                      }}
                       className="rounded-lg p-1.5 transition-colors"
                       style={{ color: 'var(--text-muted)' }}
                       onMouseEnter={(e) =>
@@ -337,7 +391,7 @@ export default function PlatformTenants() {
                           initial={{ opacity: 0, scale: 0.9, y: -5 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.9 }}
-                          className="absolute right-0 z-10 w-44 rounded-xl py-1 shadow-lg"
+                           className="absolute right-0 z-50 w-44 rounded-xl py-1 shadow-lg"
                           style={{
                             background: 'var(--surface)',
                             border: '1px solid var(--border)',
@@ -359,8 +413,13 @@ export default function PlatformTenants() {
                             },
                           ].map((item) => (
                             <button
+                              type="button"
                               key={item.label}
-                              onClick={item.fn}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setOpenMenu(null)
+                                item.fn()
+                              }}
                               className="block w-full px-4 py-2 text-left text-sm transition-colors"
                               style={{
                                 color: item.danger ? 'var(--danger)' : 'var(--text-secondary)',

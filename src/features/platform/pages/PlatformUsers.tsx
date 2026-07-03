@@ -66,11 +66,11 @@ export default function PlatformUsers() {
   }
 
   const handleToggleStatus = async (u: PlatformUserDTO) => {
+    setOpenMenu(null)
     const ok = await toggleStatus(u.id)
     if (ok) {
       showToast(`${u.email} ${u.isActive ? 'desactivado' : 'activado'}`)
     }
-    setOpenMenu(null)
   }
 
   const confirmDelete = (u: PlatformUserDTO) => {
@@ -187,7 +187,7 @@ export default function PlatformUsers() {
       </div>
 
       <div
-        className="overflow-hidden rounded-2xl"
+        className="rounded-2xl"
         style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
       >
         {isLoading ? (
@@ -201,7 +201,7 @@ export default function PlatformUsers() {
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                {['Usuario', 'Rol', 'Estado', 'Último acceso', 'Creado', ''].map((h) => (
+                {['Usuario', 'Rol', 'Estado', 'Último acceso', 'Creado', 'Acciones'].map((h) => (
                   <th
                     key={h}
                     className="px-4 py-3 text-left text-xs font-semibold tracking-wide uppercase"
@@ -262,15 +262,21 @@ export default function PlatformUsers() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className="rounded-full px-2 py-0.5 text-xs font-bold"
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleToggleStatus(u)
+                        }}
+                        className="rounded-full px-2 py-0.5 text-xs font-bold transition-all hover:opacity-80"
                         style={{
                           background: `${u.isActive ? 'var(--success)' : 'var(--text-muted)'}18`,
                           color: u.isActive ? 'var(--success)' : 'var(--text-muted)',
                         }}
+                        title={u.isActive ? 'Clic para desactivar' : 'Clic para activar'}
                       >
                         {u.isActive ? 'Activo' : 'Inactivo'}
-                      </span>
+                      </button>
                     </td>
                     <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                       {u.lastLogin
@@ -290,7 +296,11 @@ export default function PlatformUsers() {
                     </td>
                     <td className="relative px-4 py-3">
                       <button
-                        onClick={() => setOpenMenu(openMenu === u.id ? null : u.id)}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setOpenMenu(openMenu === u.id ? null : u.id)
+                        }}
                         className="rounded-lg p-1.5"
                         style={{ color: 'var(--text-muted)' }}
                       >
@@ -302,7 +312,7 @@ export default function PlatformUsers() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
-                            className="absolute right-0 z-10 w-40 rounded-xl py-1 shadow-lg"
+                            className="absolute right-0 z-50 w-40 rounded-xl py-1 shadow-lg"
                             style={{
                               background: 'var(--surface)',
                               border: '1px solid var(--border)',
@@ -322,8 +332,13 @@ export default function PlatformUsers() {
                               },
                             ].map((item) => (
                               <button
+                                type="button"
                                 key={item.label}
-                                onClick={item.fn}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setOpenMenu(null)
+                                  item.fn()
+                                }}
                                 className="block w-full px-4 py-2 text-left text-sm transition-colors"
                                 style={{
                                   color: item.danger ? 'var(--danger)' : 'var(--text-secondary)',

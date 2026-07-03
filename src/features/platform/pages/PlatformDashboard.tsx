@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Building2,
@@ -23,7 +23,9 @@ import {
   Legend,
 } from 'recharts'
 import { usePlatformDashboardStore } from '@/features/platform/store/platformDashboardStore'
+import { getAudits } from '@/lib/api'
 import { LoadingState } from '@/features/admin/components/LoadingState'
+import type { AuditLogDTO } from '@/types'
 
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }
 const fadeUp = {
@@ -36,20 +38,73 @@ const statusColor: Record<string, string> = {
   INACTIVE: 'var(--danger)',
 }
 
+const auditDotColor: Record<string, string> = {
+  TENANT_CREATED: 'var(--success)',
+  TENANT_UPDATED: 'var(--accent)',
+  TENANT_SUSPENDED: 'var(--danger)',
+  TENANT_DELETED: 'var(--danger)',
+  USER_LOGIN: 'var(--accent)',
+  PLATFORM_USER_CREATED: 'var(--success)',
+  PLAN_UPDATED: 'var(--warning)',
+}
+
+function formatAuditText(log: AuditLogDTO): string {
+  const action = log.action
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+  const entity = log.entityName || 'desconocido'
+  return `${action}: ${entity}${log.tenantName ? ' (' + log.tenantName + ')' : ''}`
+}
+
+function getRelativeTime(dateStr: string): string {
+  const now = new Date()
+  const date = new Date(dateStr)
+  const diffMs = now.getTime() - date.getTime()
+  const diffMin = Math.floor(diffMs / 60000)
+  const diffH = Math.floor(diffMin / 60)
+  const diffD = Math.floor(diffH / 24)
+
+  if (diffMin < 1) return 'Ahora'
+  if (diffMin < 60) return `hace ${diffMin}m`
+  if (diffH < 24) return `hace ${diffH}h`
+  if (diffD === 1) return 'Ayer'
+  return `hace ${diffD}d`
+}
+
+interface Activity {
+  text: string
+  time: string
+  dot: string
+}
+
 export default function PlatformDashboard() {
   const {
     metrics,
     recentTenants,
     growthData,
     planDistribution,
-    activity,
     isLoading,
     error,
     loadDashboard,
   } = usePlatformDashboardStore()
 
+  const [activity, setActivity] = useState<Activity[]>([])
+
   useEffect(() => {
     loadDashboard()
+    getAudits({ size: 6 })
+      .then((res) => {
+        const logs = res?.dto?.data || []
+        setActivity(
+          logs.map((log) => ({
+            text: formatAuditText(log),
+            time: getRelativeTime(log.createdAt),
+            dot: auditDotColor[log.action] || 'var(--text-muted)',
+          }))
+        )
+      })
+      .catch(() => setActivity([]))
   }, [loadDashboard])
 
   if (isLoading) return <LoadingState text="Cargando dashboard..." />

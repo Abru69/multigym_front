@@ -13,6 +13,7 @@ export type {
   LoginResponse,
   PlatformLoginResponse,
   TenantDTO,
+  TenantSummaryDTO,
   SaasPlanDTO,
   TenantRequestDTO,
   PlatformUserDTO,
@@ -25,4 +26,6 @@ export type {
   ProductDTO,
   ExerciseDTO,
   WorkoutDTO,
+  AuditLogDTO,
+  PaginatedResult,
 } from './api'

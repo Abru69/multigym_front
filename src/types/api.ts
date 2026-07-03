@@ -27,6 +27,20 @@ export interface TenantDTO {
   planId: string | null
   trialEndsAt: string | null
   createdAt: string
+  memberCount: number
+  memberLimit: number
+  planPrice: number
+  isTrial: boolean
+}
+
+export interface TenantSummaryDTO {
+  tenantCount: number
+  activeTenantCount: number
+  trialTenantCount: number
+  totalMemberCount: number
+  totalMemberLimit: number
+  mrr: number
+  retentionRate: number
 }
 
 export interface SaasPlanDTO {
@@ -134,4 +148,28 @@ export interface WorkoutDTO {
     restSeconds: number
     orderIndex: number
   }>
+}
+
+export interface AuditLogDTO {
+  id: string
+  tenantId: string | null
+  tenantName: string | null
+  userId: string | null
+  userType: string | null
+  action: string
+  entityName: string
+  entityId: string | null
+  metadata: string | null
+  ipAddress: string | null
+  createdAt: string
+}
+
+export interface PaginatedResult<T> {
+  data: T[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+  first: boolean
+  last: boolean
 }

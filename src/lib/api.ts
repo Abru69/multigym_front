@@ -5,10 +5,13 @@ import type {
   ExerciseDTO,
   WorkoutDTO,
   TenantDTO,
+  TenantSummaryDTO,
   SaasPlanDTO,
   TenantRequestDTO,
   PlatformUserDTO,
   PlatformUserRequestDTO,
+  AuditLogDTO,
+  PaginatedResult,
 } from '@/types'
 
 export async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -113,6 +116,9 @@ export const activateAccount = (data: { token: string; newPassword?: string }) =
 
 export const getTenants = () => fetchApi<ResponseDTO<TenantDTO>>('/api/tenants')
 
+export const getTenantsSummary = () =>
+  fetchApi<ResponseDTO<TenantSummaryDTO>>('/api/tenants/summary')
+
 export const createTenant = (data: TenantRequestDTO) =>
   fetchApi<ResponseDTO<TenantDTO>>('/api/tenants', {
     method: 'POST',
@@ -146,3 +152,25 @@ export const togglePlatformUserStatus = (id: string) =>
 
 export const deletePlatformUser = (id: string) =>
   fetchApi<ResponseDTO<unknown>>(`/platform-api/users/${id}`, { method: 'DELETE' })
+
+export interface AuditFilters {
+  action?: string
+  entityName?: string
+  tenantId?: string
+  fromDate?: string
+  toDate?: string
+  page?: number
+  size?: number
+}
+
+export const getAudits = (filters: AuditFilters = {}) => {
+  const params = new URLSearchParams()
+  if (filters.action) params.set('action', filters.action)
+  if (filters.entityName) params.set('entityName', filters.entityName)
+  if (filters.tenantId) params.set('tenantId', filters.tenantId)
+  if (filters.fromDate) params.set('fromDate', filters.fromDate)
+  if (filters.toDate) params.set('toDate', filters.toDate)
+  params.set('page', String(filters.page ?? 0))
+  params.set('size', String(filters.size ?? 20))
+  return fetchApi<ResponseDTO<PaginatedResult<AuditLogDTO>>>(`/api/audits?${params.toString()}`)
+}

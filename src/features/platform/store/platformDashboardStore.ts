@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import { getTenants } from '@/lib/api'
-import type { TenantDTO } from '@/types'
+import { getSaasPlans, getTenants, getTenantsSummary } from '@/lib/api'
+import type { SaasPlanDTO, TenantDTO, TenantSummaryDTO } from '@/types'
 
 interface GrowthData {
   month: string
@@ -25,18 +25,11 @@ interface DashboardMetrics {
   retentionChange: string
 }
 
-interface Activity {
-  text: string
-  time: string
-  dot: string
-}
-
 interface PlatformDashboardStore {
   metrics: DashboardMetrics | null
   recentTenants: TenantDTO[]
   growthData: GrowthData[]
   planDistribution: PlanDistribution[]
-  activity: Activity[]
   isLoading: boolean
   error: string | null
   loadDashboard: () => Promise<void>
@@ -55,6 +48,15 @@ const MONTH_NAMES = [
   'Oct',
   'Nov',
   'Dic',
+]
+
+const PLAN_COLORS = [
+  'var(--info)',
+  'var(--accent)',
+  'var(--warning)',
+  'var(--success)',
+  'var(--danger)',
+  'var(--detail)',
 ]
 
 function calculateGrowthData(tenants: TenantDTO[]): GrowthData[] {
@@ -86,40 +88,49 @@ function calculateGrowthData(tenants: TenantDTO[]): GrowthData[] {
   })
 }
 
-function calculateMetrics(tenants: TenantDTO[]): DashboardMetrics {
-  const total = tenants.length
-  const active = tenants.filter((t) => t.status === 'ACTIVE').length
+function getMemberUsageChange(summary: TenantSummaryDTO): string {
+  if (summary.totalMemberLimit === -1) return 'Sin límite'
+  if (summary.totalMemberLimit === 0) return '0% usado'
 
+  return `${Math.round((summary.totalMemberCount / summary.totalMemberLimit) * 100)}% usado`
+}
+
+function calculateMetrics(summary: TenantSummaryDTO): DashboardMetrics {
   return {
-    totalGyms: total,
-    activeGyms: active,
-    totalMembers: 1427,
-    mrr: 6240,
-    retentionRate: 94.2,
-    activeGymsChange: `+${active}`,
-    totalMembersChange: '+18%',
-    mrrChange: '+12%',
-    retentionChange: '+1.3%',
+    totalGyms: summary.tenantCount,
+    activeGyms: summary.activeTenantCount,
+    totalMembers: summary.totalMemberCount,
+    mrr: summary.mrr,
+    retentionRate: summary.retentionRate,
+    activeGymsChange: `${summary.activeTenantCount}/${summary.tenantCount}`,
+    totalMembersChange: getMemberUsageChange(summary),
+    mrrChange: 'Actual',
+    retentionChange: `${summary.trialTenantCount} trial`,
   }
+}
+
+function calculatePlanDistribution(tenants: TenantDTO[], plans: SaasPlanDTO[]): PlanDistribution[] {
+  const counts = tenants.reduce<Record<string, number>>((acc, tenant) => {
+    const key = tenant.planId || 'NO_PLAN'
+    acc[key] = (acc[key] || 0) + 1
+    return acc
+  }, {})
+
+  return Object.entries(counts).map(([planId, value], index) => {
+    const plan = plans.find((p) => p.id === planId)
+    return {
+      name: plan?.name || 'Sin plan',
+      value,
+      color: PLAN_COLORS[index % PLAN_COLORS.length],
+    }
+  })
 }
 
 export const usePlatformDashboardStore = create<PlatformDashboardStore>()((set) => ({
   metrics: null,
   recentTenants: [],
   growthData: [],
-  planDistribution: [
-    { name: 'Starter', value: 4, color: 'var(--info)' },
-    { name: 'Pro', value: 5, color: 'var(--accent)' },
-    { name: 'Enterprise', value: 3, color: 'var(--warning)' },
-  ],
-  activity: [
-    { text: 'Nuevo gimnasio registrado: PowerGym MX', time: 'hace 2h', dot: 'var(--success)' },
-    { text: 'Plan actualizado: Iron Temple → Pro', time: 'hace 5h', dot: 'var(--accent)' },
-    { text: 'Pago procesado: Body Factory $199', time: 'hace 7h', dot: 'var(--warning)' },
-    { text: 'Tenant suspendido: Alpha Fitness', time: 'ayer', dot: 'var(--danger)' },
-    { text: 'Nuevo usuario de plataforma: Ana Martínez', time: 'ayer', dot: 'var(--success)' },
-    { text: 'Reporte mensual generado', time: 'hace 2d', dot: 'var(--text-muted)' },
-  ],
+  planDistribution: [],
   isLoading: false,
   error: null,
 
@@ -127,17 +138,28 @@ export const usePlatformDashboardStore = create<PlatformDashboardStore>()((set) 
     set({ isLoading: true, error: null })
 
     try {
-      const response = await getTenants()
-      const tenants = response.lista || []
+      const [tenantsResponse, summaryResponse, plansResponse] = await Promise.all([
+        getTenants(),
+        getTenantsSummary(),
+        getSaasPlans(),
+      ])
+      const tenants = tenantsResponse?.lista || []
+      const summary = summaryResponse?.dto
+      const plans = plansResponse?.lista || []
+
+      if (!summary) {
+        throw new Error('No se recibió el resumen de tenants')
+      }
 
       const sorted = [...tenants].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )
 
       set({
-        metrics: calculateMetrics(tenants),
+        metrics: calculateMetrics(summary),
         recentTenants: sorted.slice(0, 5),
         growthData: calculateGrowthData(tenants),
+        planDistribution: calculatePlanDistribution(tenants, plans),
         isLoading: false,
       })
     } catch (err) {

@@ -61,8 +61,11 @@
 ### Fase 8 — Platform Integration
 
 - **Platform Dashboard** integrado con `GET /api/tenants`
+- **Platform Dashboard** usa `GET /api/tenants/summary` para métricas reales: MRR, miembros, retención y trials
+- **Platform Dashboard** calcula distribución real de planes con `GET /api/tenants` + `GET /api/saas-plans`
 - **Platform Tenants** integrado con:
   - `GET /api/tenants` — listar tenants
+  - Métricas enriquecidas por tenant: `memberCount`, `memberLimit`, `planPrice`, `isTrial`
   - `GET /api/saas-plans` — resolver nombres de planes
   - `POST /api/tenants` — crear tenant con `planId`
   - `PATCH /api/tenants/{tenantId}/status` — toggle estado

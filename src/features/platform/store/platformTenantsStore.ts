@@ -32,7 +32,7 @@ export const usePlatformTenantsStore = create<PlatformTenantsStore>()((set, get)
     set({ isLoading: true, error: null })
     try {
       const response = await getTenants()
-      set({ tenants: response.lista || [], isLoading: false })
+      set({ tenants: response?.lista || [], isLoading: false })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al cargar gimnasios'
       set({ error: message, isLoading: false })
@@ -42,7 +42,7 @@ export const usePlatformTenantsStore = create<PlatformTenantsStore>()((set, get)
   loadPlans: async () => {
     try {
       const response = await getSaasPlans()
-      set({ plans: response.lista || [] })
+      set({ plans: response?.lista || [] })
     } catch (err) {
       console.error('Error loading SaaS plans:', err)
     }

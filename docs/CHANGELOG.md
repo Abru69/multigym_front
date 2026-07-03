@@ -8,6 +8,16 @@ Formato: [YYYY-MM-DD]
 
 ### Completado
 
+- **Platform Dashboard Summary Metrics**
+  - `TenantDTO` actualizado con `memberCount`, `memberLimit`, `planPrice`, `isTrial`
+  - `TenantSummaryDTO` agregado para `GET /api/tenants/summary`
+  - Platform Dashboard usa métricas reales: tenants activos, miembros totales, MRR y retención
+  - Distribución de planes conectada con `GET /api/tenants` + `GET /api/saas-plans`
+  - Platform Tenants muestra uso de miembros como `actual / límite` con barra de progreso
+  - Platform Tenants muestra insignia `Trial` cuando `isTrial` está activo
+
+### Completado
+
 - **Platform Users API Route Fix**
   - Agregado proxy `/platform-api` en `vite.config.ts` para evitar colisión entre la ruta frontend `/platform/users` y el endpoint backend `/platform/users`
   - Endpoints de Platform Users actualizados a `/platform-api/users` en `src/lib/api.ts`
