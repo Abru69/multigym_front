@@ -117,9 +117,9 @@ export default function SaaSLanding() {
   }
 
   return (
-    <div className="bg-background min-h-screen overflow-x-hidden font-sans">
+    <div className="min-h-screen overflow-x-hidden bg-[var(--background)] font-sans">
       {/* Navigation */}
-      <nav className="bg-background/80 border-border fixed top-0 right-0 left-0 z-50 mx-auto flex w-full max-w-7xl items-center justify-between border-b px-6 py-4 backdrop-blur-md">
+      <nav className="fixed top-0 right-0 left-0 z-50 mx-auto flex w-full max-w-7xl items-center justify-between border-b border-[var(--border)] bg-[var(--background)]/80 px-6 py-4 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div
             className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black"
@@ -137,20 +137,20 @@ export default function SaaSLanding() {
         <div className="flex items-center gap-6">
           <a
             href="#caracteristicas"
-            className="text-text-secondary hover:text-accent hidden text-sm font-semibold transition-colors md:block"
+            className="hover:text-accent hidden text-sm font-semibold text-[var(--text-secondary)] transition-colors md:block"
           >
             Características
           </a>
           <a
             href="#precios"
-            className="text-text-secondary hover:text-accent hidden text-sm font-semibold transition-colors md:block"
+            className="hover:text-accent hidden text-sm font-semibold text-[var(--text-secondary)] transition-colors md:block"
           >
             Precios
           </a>
           <div className="bg-border hidden h-4 w-px md:block" />
           <Link
             to="/platform/login"
-            className="text-text-secondary hover:text-primary text-sm font-semibold transition-colors"
+            className="text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--accent)]"
           >
             Portal Administrador
           </Link>
@@ -195,7 +195,7 @@ export default function SaaSLanding() {
 
             <motion.p
               variants={heroItem}
-              className="text-text-secondary mx-auto mb-10 max-w-3xl text-lg leading-relaxed font-medium sm:text-xl"
+              className="mx-auto mb-10 max-w-3xl text-lg leading-relaxed font-medium text-[var(--text-secondary)] sm:text-xl"
             >
               La solución "todo en uno" para dueños de gimnasios. Administra sedes, diseña rutinas
               interactivas, vende suplementación y fideliza a tus atletas bajo tu propia marca y
@@ -234,16 +234,16 @@ export default function SaaSLanding() {
           transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
           className="relative z-10 mx-auto mt-20 w-full max-w-6xl px-6"
         >
-          <div className="border-border bg-surface/50 glass-card overflow-hidden rounded-2xl border p-2 shadow-2xl backdrop-blur-xl">
-            <div className="bg-background border-border/50 relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl border">
+          <div className="glass-card overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)]/50 p-2 shadow-2xl backdrop-blur-xl">
+            <div className="relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl border border-[var(--border)]/50 bg-[var(--background)]">
               <div className="absolute inset-0 flex flex-col">
-                <div className="border-border bg-surface flex h-12 items-center gap-2 border-b px-4">
+                <div className="flex h-12 items-center gap-2 border-b border-[var(--border)] bg-[var(--surface)] px-4">
                   <div className="flex gap-1.5">
                     <div className="bg-danger/80 h-3 w-3 rounded-full" />
                     <div className="bg-warning/80 h-3 w-3 rounded-full" />
                     <div className="bg-success/80 h-3 w-3 rounded-full" />
                   </div>
-                  <div className="bg-background border-border text-text-muted mx-auto flex h-6 w-64 items-center rounded-md border px-3 font-mono text-[10px]">
+                  <div className="mx-auto flex h-6 w-64 items-center rounded-md border border-[var(--border)] bg-[var(--background)] px-3 font-mono text-[10px] text-[var(--text-muted)]">
                     <Shield size={10} className="mr-2 inline" /> tugimnasio.multigym.com
                   </div>
                 </div>
@@ -251,8 +251,8 @@ export default function SaaSLanding() {
                   {/* Abstract representation of the dashboard */}
                   <div className="grid w-full max-w-4xl grid-cols-3 gap-6 p-8">
                     <div className="col-span-2 space-y-6">
-                      <div className="bg-surface border-border flex h-32 flex-col gap-3 rounded-xl border p-4">
-                        <div className="bg-text-muted/20 h-4 w-32 rounded" />
+                      <div className="flex h-32 flex-col gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4">
+                        <div className="h-4 w-32 rounded bg-[var(--text-muted)]/20" />
                         <div className="flex flex-1 items-end gap-2">
                           {[40, 70, 45, 90, 65, 85, 100].map((h, i) => (
                             <div
@@ -264,13 +264,13 @@ export default function SaaSLanding() {
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-6">
-                        <div className="bg-surface border-border h-40 rounded-xl border p-4" />
-                        <div className="bg-surface border-border h-40 rounded-xl border p-4" />
+                        <div className="h-40 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4" />
+                        <div className="h-40 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4" />
                       </div>
                     </div>
                     <div className="col-span-1 space-y-6">
-                      <div className="bg-surface border-border h-48 rounded-xl border p-4" />
-                      <div className="bg-surface border-border h-24 rounded-xl border p-4" />
+                      <div className="h-48 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4" />
+                      <div className="h-24 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4" />
                     </div>
                   </div>
                 </div>
@@ -281,14 +281,17 @@ export default function SaaSLanding() {
       </section>
 
       {/* Logos Section */}
-      <section className="border-border bg-surface/30 border-b py-12">
+      <section className="border-b border-[var(--border)] bg-[var(--surface)]/30 py-12">
         <div className="mx-auto max-w-7xl px-6 text-center">
-          <p className="text-text-muted mb-8 text-sm font-bold tracking-widest uppercase">
+          <p className="mb-8 text-sm font-bold tracking-widest text-[var(--text-muted)] uppercase">
             Confiado por más de 500 gimnasios en todo el mundo
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 opacity-50 grayscale transition-all duration-500 hover:grayscale-0 md:gap-16">
             {['FitZone', 'Iron Temple', 'PowerGym', 'Alpha Fitness', 'Zeus Gym'].map((logo) => (
-              <div key={logo} className="font-heading text-text-secondary text-2xl font-black">
+              <div
+                key={logo}
+                className="font-heading text-2xl font-black text-[var(--text-secondary)]"
+              >
                 {logo}
               </div>
             ))}
@@ -303,7 +306,7 @@ export default function SaaSLanding() {
             <h2 className="font-heading mb-4 text-4xl font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-5xl">
               Control <span className="text-accent">Absoluto</span>
             </h2>
-            <p className="text-text-secondary mx-auto max-w-2xl text-lg">
+            <p className="mx-auto max-w-2xl text-lg text-[var(--text-secondary)]">
               Todo lo que necesitas para operar, crecer y escalar tu negocio fitness. Sin
               complicaciones tecnológicas, enfócate en tus clientes.
             </p>
@@ -317,15 +320,15 @@ export default function SaaSLanding() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-100px' }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="group bg-surface border-border hover:border-accent/50 rounded-2xl border p-8 transition-all duration-300"
+                className="group hover:border-accent/50 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 transition-all duration-300"
               >
-                <div className="bg-background border-border group-hover:bg-accent/10 mb-6 flex h-14 w-14 items-center justify-center rounded-xl border transition-all duration-300 group-hover:scale-110">
+                <div className="group-hover:bg-accent/10 mb-6 flex h-14 w-14 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--background)] transition-all duration-300 group-hover:scale-110">
                   <f.icon size={28} className="text-accent" strokeWidth={1.5} />
                 </div>
                 <h3 className="font-heading mb-3 text-xl font-bold tracking-tight text-[var(--text-primary)]">
                   {f.title}
                 </h3>
-                <p className="text-text-secondary text-sm leading-relaxed">{f.desc}</p>
+                <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{f.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -333,7 +336,10 @@ export default function SaaSLanding() {
       </section>
 
       {/* Pricing Section */}
-      <section id="precios" className="bg-surface/50 border-border relative border-y py-24">
+      <section
+        id="precios"
+        className="relative border-y border-[var(--border)] bg-[var(--surface)]/50 py-24"
+      >
         <div className="from-primary/10 via-background to-background pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))]" />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6">
@@ -342,7 +348,7 @@ export default function SaaSLanding() {
               Planes <span className="text-accent">Transparentes</span>
             </h2>
 
-            <p className="text-text-secondary text-base font-bold">
+            <p className="text-base font-bold text-[var(--text-secondary)]">
               Pago único anual en Pesos Mexicanos (MXN). Sin comisiones ocultas.
             </p>
           </div>
@@ -355,8 +361,8 @@ export default function SaaSLanding() {
                   key={p.name}
                   className={`relative flex flex-col rounded-3xl p-8 transition-transform duration-300 hover:-translate-y-2 ${
                     p.featured
-                      ? 'bg-surface border-accent shadow-glow border-2'
-                      : 'bg-surface border-border border'
+                      ? 'border-accent shadow-glow border-2 bg-[var(--surface)]'
+                      : 'border border-[var(--border)] bg-[var(--surface)]'
                   }`}
                 >
                   {p.featured && (
@@ -368,13 +374,13 @@ export default function SaaSLanding() {
                   <h3 className="font-heading mb-2 text-2xl font-bold text-[var(--text-primary)]">
                     {p.name}
                   </h3>
-                  <p className="text-text-secondary mb-6 min-h-[40px] text-sm">{p.desc}</p>
+                  <p className="mb-6 min-h-[40px] text-sm text-[var(--text-secondary)]">{p.desc}</p>
 
                   <div className="mb-8 flex items-end gap-1">
                     <span className="font-heading text-4xl font-black text-[var(--text-primary)] lg:text-5xl">
                       ${price.toLocaleString('es-MX')}
                     </span>
-                    <span className="text-text-muted mb-2 font-bold">MXN /año</span>
+                    <span className="mb-2 font-bold text-[var(--text-muted)]">MXN /año</span>
                   </div>
 
                   <ul className="mb-8 flex-1 space-y-4">
@@ -409,7 +415,7 @@ export default function SaaSLanding() {
           <h2 className="font-heading mb-6 text-4xl font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-6xl">
             LLEVA TU NEGOCIO AL <span className="text-accent">FUTURO</span>
           </h2>
-          <p className="text-text-secondary mx-auto mb-10 max-w-2xl text-lg">
+          <p className="mx-auto mb-10 max-w-2xl text-lg text-[var(--text-secondary)]">
             Únete a la plataforma SaaS que está revolucionando la forma en que los gimnasios
             interactúan con sus clientes.
           </p>
@@ -424,7 +430,7 @@ export default function SaaSLanding() {
       </section>
 
       {/* Footer */}
-      <footer className="border-border bg-surface border-t py-12">
+      <footer className="border-t border-[var(--border)] bg-[var(--surface)] py-12">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
           <div className="flex items-center gap-2">
             <div
@@ -440,20 +446,20 @@ export default function SaaSLanding() {
               MULTIGYM SAAS
             </span>
           </div>
-          <p className="text-text-muted text-center text-sm font-medium md:text-left">
+          <p className="text-center text-sm font-medium text-[var(--text-muted)] md:text-left">
             © {new Date().getFullYear()} MultiGym Platform. Todos los derechos reservados.
           </p>
           <div className="flex gap-6 text-sm font-medium">
             <Link
               to="/platform/login"
-              className="text-text-muted hover:text-accent transition-colors"
+              className="hover:text-accent text-[var(--text-muted)] transition-colors"
             >
               Login Propietarios
             </Link>
-            <a href="#" className="text-text-muted hover:text-accent transition-colors">
+            <a href="#" className="hover:text-accent text-[var(--text-muted)] transition-colors">
               Soporte
             </a>
-            <a href="#" className="text-text-muted hover:text-accent transition-colors">
+            <a href="#" className="hover:text-accent text-[var(--text-muted)] transition-colors">
               Términos
             </a>
           </div>

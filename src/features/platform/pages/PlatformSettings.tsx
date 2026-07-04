@@ -65,10 +65,10 @@ export default function PlatformSettings() {
       <Label>{label}</Label>
       <select
         {...props}
-        className="border-border bg-background text-text-primary focus:ring-accent flex h-11 w-full appearance-none rounded-xl border px-4 py-2 text-sm transition-colors outline-none focus:ring-2"
+        className="flex h-11 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-2 text-sm text-[var(--text-primary)] transition-colors outline-none focus:ring-2 focus:ring-[var(--accent)]"
       >
         {options.map((o: any) => (
-          <option key={o.value} value={o.value} className="bg-surface">
+          <option key={o.value} value={o.value} className="bg-[var(--surface)]">
             {o.label}
           </option>
         ))}
@@ -78,9 +78,9 @@ export default function PlatformSettings() {
 
   const Card = ({ icon: Icon, title, children }: any) => (
     <UICard>
-      <CardHeader className="border-border flex flex-row items-center gap-3 border-b pb-4">
+      <CardHeader className="flex flex-row items-center gap-3 border-b border-[var(--border)] pb-4">
         <div
-          className="text-text-secondary flex h-8 w-8 items-center justify-center rounded-lg"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-secondary)]"
           style={{ background: 'var(--input-bg)' }}
         >
           <Icon size={16} />

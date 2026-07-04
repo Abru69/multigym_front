@@ -78,7 +78,7 @@ export default function Catalog() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="focus:ring-accent w-full cursor-pointer appearance-none rounded-xl border border-white/[0.06] bg-white/[0.03] py-3 pr-10 pl-11 text-sm text-[var(--text-primary)] transition-all outline-none focus:ring-2 sm:w-48"
+              className="w-full cursor-pointer appearance-none rounded-xl border border-white/[0.06] bg-white/[0.03] py-3 pr-10 pl-11 text-sm text-[var(--text-primary)] transition-all outline-none focus:ring-2 focus:ring-[var(--accent)] sm:w-48"
             >
               {productCategories.map((c) => (
                 <option key={c.value} value={c.value}>

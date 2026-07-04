@@ -18,9 +18,9 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="group bg-surface border-border hover:border-accent/40 flex h-full flex-col overflow-hidden rounded-2xl border transition-colors duration-300"
+      className="group hover:border-accent/40 flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl transition-colors duration-300"
     >
-      <div className="bg-background relative aspect-square overflow-hidden">
+      <div className="relative aspect-square overflow-hidden bg-white/[0.04]">
         <Link to={`/tienda/${product.slug}`} className="block h-full w-full">
           <img
             src={product.image}
@@ -68,7 +68,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
       <Link to={`/tienda/${product.slug}`} className="flex flex-1 flex-col p-5">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <span className="text-text-muted text-[10px] font-bold tracking-widest uppercase">
+          <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
             {product.brand}
           </span>
           <div className="text-warning flex items-center gap-1 text-[10px] font-bold">
@@ -81,7 +81,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           {product.name}
         </h3>
 
-        <p className="text-text-secondary mb-4 flex-1 text-xs">
+        <p className="mb-4 flex-1 text-xs text-[var(--text-secondary)]">
           {product.flavor ? `${product.flavor} • ` : ''}
           {product.weight
             ? product.weight
@@ -92,7 +92,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
         <div className="mt-auto">
           {product.originalPrice && (
-            <span className="text-text-muted block text-xs line-through">
+            <span className="block text-xs text-[var(--text-muted)] line-through">
               {formatCurrency(product.originalPrice)}
             </span>
           )}
