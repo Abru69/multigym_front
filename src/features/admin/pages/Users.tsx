@@ -52,9 +52,9 @@ export default function UsersPage() {
     try {
       setIsLoading(true)
       setError('')
-      const response = await fetchApi<ResponseDTO<UserDTO>>('/api/tenant/user/getAll')
-      if (response && response.lista) {
-        setClients(response.lista)
+      const response = await fetchApi<ResponseDTO<{ data: UserDTO[] }>>('/api/tenant/users')
+      if (response?.dto?.data) {
+        setClients(response.dto.data)
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al cargar usuarios')
@@ -100,7 +100,7 @@ export default function UsersPage() {
     setIsSaving(true)
     try {
       if (selectedUser) {
-        await fetchApi<UserDTO>(`/api/tenant/user/update/${selectedUser.id}`, {
+        await fetchApi(`/api/tenant/users/${selectedUser.id}`, {
           method: 'PUT',
           body: JSON.stringify({
             name: form.name,
@@ -113,7 +113,7 @@ export default function UsersPage() {
         })
         addToast('Usuario actualizado correctamente', 'success')
       } else {
-        await fetchApi<ResponseDTO<unknown>>('/api/tenant/user', {
+        await fetchApi(`/api/tenant/users`, {
           method: 'POST',
           body: JSON.stringify({
             name: form.name,
@@ -160,7 +160,7 @@ export default function UsersPage() {
   const toggleStatus = async (user: UserDTO) => {
     setOpenMenuId(null)
     try {
-      await fetchApi<UserDTO>(`/api/tenant/user/${user.id}/status`, { method: 'PATCH' })
+      await fetchApi(`/api/tenant/users/${user.id}/status`, { method: 'PATCH' })
       setClients(clients.map((c) => (c.id === user.id ? { ...c, isActive: !c.isActive } : c)))
       addToast(
         `${user.memberDTO?.name || user.email} ${user.isActive ? 'desactivado' : 'activado'}`,
@@ -174,7 +174,7 @@ export default function UsersPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return
     try {
-      await fetchApi(`/api/tenant/user/delete/${deleteTarget.id}`, { method: 'DELETE' })
+      await fetchApi(`/api/tenant/users/${deleteTarget.id}`, { method: 'DELETE' })
       setClients(clients.filter((c) => c.id !== deleteTarget.id))
       addToast(`${deleteTarget.memberDTO?.name || deleteTarget.email} eliminado`, 'success')
     } catch (err: unknown) {
@@ -195,7 +195,7 @@ export default function UsersPage() {
         action={
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+            className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
           >
             <UserPlus size={16} /> Nuevo Usuario
           </button>
@@ -203,7 +203,7 @@ export default function UsersPage() {
       />
 
       {error && (
-        <div className="flex items-center gap-3 rounded-xl border border-[var(--error)]/20 bg-[var(--error)]/10 px-4 py-3">
+        <div className="flex items-center gap-3 rounded-2xl border border-[var(--error)]/20 bg-[var(--error)]/10 px-4 py-3 backdrop-blur-xl">
           <p className="flex-1 text-sm text-[var(--error)]">{error}</p>
           <button
             onClick={loadUsers}
@@ -221,7 +221,7 @@ export default function UsersPage() {
           placeholder="Buscar por nombre o email..."
           className="flex-1"
         />
-        <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5">
+        <div className="flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 backdrop-blur-xl">
           <ShieldCheck size={16} className="text-[var(--success)]" aria-hidden="true" />
           <span className="text-sm font-semibold text-[var(--text-primary)]">
             Activos: {activeCount}
@@ -239,7 +239,7 @@ export default function UsersPage() {
           action={
             <button
               onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)]"
+              className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
             >
               <UserPlus size={16} /> Agregar Usuario
             </button>
@@ -253,14 +253,13 @@ export default function UsersPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }}
-              className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 transition-all hover:border-[var(--accent)]/30 hover:shadow-lg"
+              className="group rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:bg-white/[0.05] hover:shadow-[0_0_24px_rgba(66,204,99,0.08)]"
             >
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold"
+                    className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 text-sm font-bold shadow-[0_0_12px_rgba(66,204,99,0.15)]"
                     style={{
-                      background: user.isActive ? 'var(--accent-muted)' : 'var(--error-muted)',
                       color: user.isActive ? 'var(--success)' : 'var(--error)',
                     }}
                   >
@@ -279,7 +278,7 @@ export default function UsersPage() {
                       e.stopPropagation()
                       setOpenMenuId(openMenuId === user.id ? null : user.id)
                     }}
-                    className="rounded-lg p-1.5 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-1.5 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--text-primary)]"
                     aria-label="Más opciones"
                     aria-expanded={openMenuId === user.id}
                   >
@@ -291,11 +290,11 @@ export default function UsersPage() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="absolute right-0 z-50 mt-1 w-48 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] py-1 shadow-xl"
+                        className="absolute right-0 z-50 mt-1 w-48 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] py-1 shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
                       >
                         <button
                           onClick={() => openEdit(user)}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--text-primary)] backdrop-blur-md transition-all hover:bg-white/[0.06]"
                         >
                           <Edit2 size={14} /> Editar
                         </button>
@@ -303,23 +302,23 @@ export default function UsersPage() {
                           onClick={() =>
                             navigate(`/admin/ejercicios?tab=routines&userId=${user.id}`)
                           }
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--accent)] hover:bg-[var(--surface-hover)]"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--accent)] backdrop-blur-md transition-all hover:bg-white/[0.06]"
                         >
                           <Dumbbell size={14} /> Crear Rutina
                         </button>
                         <button
                           onClick={() => toggleStatus(user)}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--text-primary)] backdrop-blur-md transition-all hover:bg-white/[0.06]"
                         >
                           {user.isActive ? '⏸ Desactivar' : '▶ Activar'}
                         </button>
-                        <div className="my-1 h-px bg-[var(--border)]" />
+                        <div className="my-1 h-px bg-white/[0.06]" />
                         <button
                           onClick={() => {
                             setOpenMenuId(null)
                             setDeleteTarget(user)
                           }}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--error)] hover:bg-[var(--error)]/10"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--error)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10"
                         >
                           <Trash2 size={14} /> Eliminar
                         </button>
@@ -331,15 +330,14 @@ export default function UsersPage() {
 
               <div className="mb-3 flex items-center gap-2">
                 <span
-                  className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  className="glass-badge rounded-full px-2.5 py-0.5 text-xs font-semibold"
                   style={{
-                    background: user.isActive ? 'var(--accent-muted)' : 'var(--error-muted)',
                     color: user.isActive ? 'var(--success)' : 'var(--error)',
                   }}
                 >
                   {user.isActive ? 'Activo' : 'Inactivo'}
                 </span>
-                <span className="rounded-full bg-[var(--surface-hover)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-secondary)]">
+                <span className="glass-badge rounded-full px-2.5 py-0.5 text-xs font-semibold text-[var(--text-secondary)]">
                   {user.role}
                 </span>
               </div>
@@ -359,7 +357,7 @@ export default function UsersPage() {
 
               <button
                 onClick={() => navigate(`/admin/ejercicios?tab=routines&userId=${user.id}`)}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-transparent py-2 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08]"
               >
                 <Dumbbell size={14} /> Crear Rutina
               </button>
@@ -383,7 +381,7 @@ export default function UsersPage() {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="Ej: Juan Pérez"
-              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+              className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
             />
           </FormField>
 
@@ -394,7 +392,7 @@ export default function UsersPage() {
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="Ej: 555-1234"
-              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+              className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
             />
           </FormField>
 
@@ -410,7 +408,7 @@ export default function UsersPage() {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               placeholder="usuario@ejemplo.com"
-              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+              className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
             />
           </FormField>
 
@@ -426,7 +424,7 @@ export default function UsersPage() {
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               placeholder="••••••••"
-              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+              className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
             />
           </FormField>
 
@@ -436,7 +434,7 @@ export default function UsersPage() {
                 id="user-role"
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="h-10 w-full appearance-none rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               >
                 <option value="CLIENT">Cliente</option>
                 <option value="ADMIN">Administrador</option>
@@ -457,18 +455,18 @@ export default function UsersPage() {
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+        <div className="mt-6 flex justify-end gap-3 border-t border-white/[0.06] pt-4">
           <button
             onClick={() => setShowModal(false)}
             disabled={isSaving}
-            className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:opacity-50"
+            className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={handleSaveUser}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
+            className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
           >
             {isSaving && (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />

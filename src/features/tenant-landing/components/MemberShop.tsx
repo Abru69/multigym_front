@@ -29,9 +29,7 @@ export function MemberShop() {
               <ShoppingBag size={24} />
             </div>
             <div>
-              <h3 className="font-semibold text-[var(--text-primary)]">
-                Suplementos y Accesorios
-              </h3>
+              <h3 className="font-semibold text-[var(--text-primary)]">Suplementos y Accesorios</h3>
               <p className="text-sm text-[var(--text-muted)]">
                 Explora nuestra tienda de productos deportivos
               </p>

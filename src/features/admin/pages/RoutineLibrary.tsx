@@ -33,7 +33,7 @@ export default function RoutineLibrary() {
     try {
       setIsLoading(true)
       const res = await getWorkouts()
-      setTemplates(res.lista || [])
+      setTemplates(res.dto?.data || [])
     } catch (e) {
       console.error('Error fetching templates', e)
     } finally {
@@ -87,7 +87,7 @@ export default function RoutineLibrary() {
         action={
           <button
             onClick={() => setIsBuilding(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+            className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
           >
             <Plus size={16} /> Crear Nueva Plantilla
           </button>
@@ -111,7 +111,7 @@ export default function RoutineLibrary() {
           action={
             <button
               onClick={() => setIsBuilding(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-transparent px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+              className="inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
             >
               Comenzar a crear
             </button>
@@ -125,7 +125,7 @@ export default function RoutineLibrary() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
-              className="group cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 transition-all hover:border-[var(--accent)]"
+              className="group cursor-pointer rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:shadow-[0_0_32px_rgba(66,204,99,0.08)]"
               onClick={() => setEditingRoutine(template)}
               role="button"
               tabIndex={0}
@@ -138,7 +138,7 @@ export default function RoutineLibrary() {
               aria-label={`Editar plantilla ${template.title}`}
             >
               <div className="mb-4 flex items-start justify-between">
-                <div className="rounded-xl bg-[var(--accent)]/10 p-3 transition-transform group-hover:scale-110">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 shadow-[0_0_12px_rgba(66,204,99,0.15)] transition-transform group-hover:scale-110">
                   <Dumbbell size={24} className="text-[var(--accent)]" aria-hidden="true" />
                 </div>
                 <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
@@ -147,7 +147,7 @@ export default function RoutineLibrary() {
                       e.stopPropagation()
                       setEditingRoutine(template)
                     }}
-                    className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]"
+                    className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--accent)]"
                     aria-label={`Editar ${template.title}`}
                   >
                     <Edit2 size={16} />
@@ -157,7 +157,7 @@ export default function RoutineLibrary() {
                       e.stopPropagation()
                       setDeleteTarget(template)
                     }}
-                    className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+                    className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
                     aria-label={`Eliminar ${template.title}`}
                   >
                     <Trash2 size={16} />

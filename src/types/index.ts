@@ -26,6 +26,7 @@ export type {
   ProductDTO,
   ExerciseDTO,
   WorkoutDTO,
+  OrderDTO,
   AuditLogDTO,
   PaginatedResult,
 } from './api'

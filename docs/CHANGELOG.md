@@ -4,7 +4,64 @@ Formato: [YYYY-MM-DD]
 
 ---
 
+## [2026-07-04]
+
+### Completado
+
+- **Admin Panel Glassmorphism + Depth Redesign**
+  - **Concepto visual**: "Frosted Gym" — Paneles de vidrio esmerilado sobre fondo oscuro profundo con acentos de gradiente vibrantes, sombras en capas, bordes luminosos y efectos de luz ambiental
+  - **CSS Foundation** (`index.css`): Variables glassmorphism v2 (`--glass-bg-subtle/medium/strong`, `--glass-border`, `--depth-1/2/3/4`, `--gradient-accent/glow/subtle`, `--ambient-glow`), utilidades `.glass-subtle`, `.glass-strong`, `.glass-card`, `.glass-btn-primary`, `.glass-badge`, `.depth-1/2/3/4`
+  - **Componentes UI rediseñados**:
+    - `Card.tsx` — `border-white/[0.06] bg-white/[0.03] backdrop-blur-xl`, hover con glow sutil
+    - `Badge.tsx` — Variantes glass (`glass`, `glass-accent`, `glass-error`, `glass-warning`), `backdrop-blur-md`
+    - `Button.tsx` — Variantes `glass`, `glass-accent`, primary con `bg-gradient-to-r`, `active:scale-[0.97]`
+    - `Modal.tsx` — `rounded-3xl`, `bg-white/[0.04] backdrop-blur-2xl`, overlay `bg-black/70 backdrop-blur-sm`
+    - `SearchBar.tsx` — `rounded-2xl bg-white/[0.04] backdrop-blur-xl`
+    - `EmptyState.tsx` — Icono con gradiente, `rounded-2xl border border-white/[0.06]`
+    - `ConfirmDialog.tsx` — Icono alerta con gradiente rojo, botones glass
+    - `AdminHeader.tsx` — Icono con gradiente `rounded-2xl`, título `font-black tracking-tight`
+  - **DashboardLayout.tsx** — Ambient glow `bg-[var(--ambient-glow)]`, nav links con underline+glow, mobile sidebar glass
+  - **6 páginas admin rediseñadas**:
+    - `Users.tsx` — Cards de usuario glass con gradient avatars, menú contextual glass
+    - `Inventory.tsx` — Tabla glass con `backdrop-blur-xl`, filas hover, badges glass
+    - `Exercises.tsx` — Muscle group cards glass, segmented tabs con gradiente
+    - `RoutineBuilder.tsx` — Exercise cards glass, day tabs con gradiente, detail inputs glass
+    - `RoutineLibrary.tsx` — Routine template cards glass
+    - `Dashboard.tsx` — Stats cards glass, chart tooltip glass, activity feed dots con glow
+  - **Build**: `tsc -b && vite build` y `prettier --write` pasan sin errores
+  - **Nota**: Todos los errores de lint son preexistentes (PlatformSettings, router/index, Checkout, ProductDetail)
+
+---
+
 ## [2026-07-03]
+
+### Completado
+
+- **Critical Fix: Response Format Mismatch (lista → dto.data)**
+  - **Problema**: Backend retorna `PaginatedResult` en campo `dto`, frontend leía de `lista`
+  - **Solución**: Todos los componentes ahora leen de `response.dto.data`
+  - Archivos corregidos:
+    - `Users.tsx` - `response.dto?.data || []`
+    - `Dashboard.tsx` - `response.dto?.data || []` (users, workouts, orders)
+    - `Inventory.tsx` - `response.dto?.data || []`
+    - `Exercises.tsx` - `response.dto?.data || []`
+    - `RoutineBuilder.tsx` - `response.dto?.data || []` (exercises + users)
+    - `RoutineLibrary.tsx` - `response.dto?.data || []`
+    - `Catalog.tsx` - `response.dto?.data || []`
+    - `platformDashboardStore.ts` - `response?.dto?.data || []` (tenants + plans)
+    - `platformTenantsStore.ts` - `response?.dto?.data || []` (tenants + plans)
+    - `platformUsersStore.ts` - `response?.dto?.data || []`
+
+### Completado
+
+- **Backend API Validation & Frontend Fixes**
+  - Validación completa de endpoints backend vs expectativas frontend (55 endpoints en 17 controladores)
+  - Corregido `RoutineBuilder.tsx`: ruta `/api/tenant/user/getAll` → `/api/tenant/users` (plural coincidente con backend)
+  - Implementado `Dashboard.tsx` calculando métricas usando endpoints existentes (`/api/tenant/users`, `/api/workouts`, `/api/orders`) en lugar del inexistente `/api/tenant/dashboard`
+  - Agregado tipo `OrderDTO` a `src/types/api.ts` y `src/types/index.ts`
+  - Dashboard muestra: clientes activos, ventas del mes, rutinas creadas, clientes sin rutina
+  - Gráfico de ingresos mensuales calculado desde órdenes reales
+  - Feed de actividad generado desde usuarios, rutinas y órdenes recientes
 
 ### Completado
 

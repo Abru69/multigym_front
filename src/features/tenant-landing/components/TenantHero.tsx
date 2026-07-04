@@ -51,8 +51,7 @@ export function TenantHero() {
             </div>
 
             <h1 className="mb-6 text-4xl leading-tight font-bold text-[var(--text-primary)] sm:text-5xl lg:text-6xl">
-              {hero.title}{' '}
-              <span className="text-[var(--accent)]">{hero.titleAccent}</span>
+              {hero.title} <span className="text-[var(--accent)]">{hero.titleAccent}</span>
             </h1>
 
             <p className="mb-8 max-w-lg text-lg text-[var(--text-secondary)]">{hero.subtitle}</p>
@@ -96,7 +95,9 @@ export function TenantHero() {
               <div className="flex h-80 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[var(--accent)]/10 to-[var(--detail)]/10">
                 <div className="text-center">
                   <div className="mb-2 text-6xl">💪</div>
-                  <p className="text-lg font-semibold text-[var(--text-primary)]">{branding.name}</p>
+                  <p className="text-lg font-semibold text-[var(--text-primary)]">
+                    {branding.name}
+                  </p>
                   <p className="text-sm text-[var(--text-muted)]">{branding.tagline}</p>
                 </div>
               </div>

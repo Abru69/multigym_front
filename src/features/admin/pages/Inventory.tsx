@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { productCategories } from '@/data/products'
-import { getProducts, createProduct } from '@/lib/api'
+import { getProducts, createProduct, fetchApi } from '@/lib/api'
+import type { ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import { Plus, Edit2, Trash2, Package, AlertCircle, Image as ImageIcon } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
@@ -55,7 +56,7 @@ export default function Inventory() {
     try {
       setIsLoading(true)
       const response = await getProducts()
-      const apiProducts = response.lista || []
+      const apiProducts = response.dto?.data || []
       setProductsList(
         apiProducts.map((p) => ({
           id: p.id,
@@ -129,7 +130,15 @@ export default function Inventory() {
     setIsSaving(true)
     try {
       if (editingProduct) {
-        addToast('Edición de productos próximamente disponible', 'warning')
+        await fetchApi<ResponseDTO<unknown>>(`/api/products/${editingProduct.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            name: form.name,
+            price: parseFloat(form.price) || 0,
+            stock: parseInt(form.stock) || 0,
+          }),
+        })
+        addToast('Producto actualizado correctamente', 'success')
       } else {
         await createProduct({
           name: form.name,
@@ -137,8 +146,8 @@ export default function Inventory() {
           stock: parseInt(form.stock) || 0,
         })
         addToast('Producto creado correctamente', 'success')
-        loadProducts()
       }
+      loadProducts()
       setShowModal(false)
     } catch (err: unknown) {
       addToast(err instanceof Error ? err.message : 'Error al guardar', 'error')
@@ -164,7 +173,7 @@ export default function Inventory() {
         action={
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+            className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
           >
             <Plus size={16} /> Nuevo Producto
           </button>
@@ -182,7 +191,7 @@ export default function Inventory() {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           aria-label="Filtrar por categoría"
-          className="h-10 appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 pr-10 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+          className="h-11 appearance-none rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 pr-10 text-sm text-[var(--text-primary)] backdrop-blur-xl focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
             backgroundPosition: 'right 0.5rem center',
@@ -208,39 +217,39 @@ export default function Inventory() {
           action={
             <button
               onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)]"
+              className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
             >
               <Plus size={16} /> Agregar Producto
             </button>
           }
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
+        <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl">
           <div className="overflow-x-auto">
             <table className="w-full" aria-label="Inventario de productos">
               <thead>
-                <tr className="border-b border-[var(--border)] bg-[var(--bg-secondary)]">
-                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
+                <tr className="border-b border-white/[0.06] bg-white/[0.02]">
+                  <th className="px-6 py-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
                     Producto
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
+                  <th className="px-6 py-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
                     Categoría
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
+                  <th className="px-6 py-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
                     Precio
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
+                  <th className="px-6 py-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
                     Stock
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
+                  <th className="px-6 py-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
                     Estado
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
+                  <th className="px-6 py-3 text-right text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
                     Acciones
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--border)]">
+              <tbody className="divide-y divide-white/[0.04]">
                 <AnimatePresence>
                   {filtered.map((product) => (
                     <motion.tr
@@ -248,11 +257,11 @@ export default function Inventory() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="group transition-colors hover:bg-[var(--surface-hover)]"
+                      className="group transition-colors hover:bg-white/[0.03]"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-[var(--surface-hover)]">
+                          <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.04]">
                             <img
                               src={product.image}
                               alt={product.name}
@@ -264,14 +273,14 @@ export default function Inventory() {
                             <p className="truncate text-sm font-bold text-[var(--text-primary)]">
                               {product.name}
                             </p>
-                            <p className="text-[10px] font-semibold tracking-wider text-[var(--text-muted)] uppercase">
+                            <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                               {product.brand}
                             </p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="rounded-lg bg-[var(--surface-hover)] px-2.5 py-1 text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
+                        <span className="glass-badge rounded-xl px-2.5 py-1 text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
                           {product.category}
                         </span>
                       </td>
@@ -300,11 +309,8 @@ export default function Inventory() {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className="rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase"
+                          className="glass-badge rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase"
                           style={{
-                            background: product.isAvailable
-                              ? 'var(--accent-muted)'
-                              : 'var(--error-muted)',
                             color: product.isAvailable ? 'var(--success)' : 'var(--error)',
                           }}
                         >
@@ -315,14 +321,14 @@ export default function Inventory() {
                         <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                           <button
                             onClick={() => openEdit(product)}
-                            className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                            className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--text-primary)]"
                             aria-label={`Editar ${product.name}`}
                           >
                             <Edit2 size={16} />
                           </button>
                           <button
                             onClick={() => setDeleteTarget(product)}
-                            className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+                            className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
                             aria-label={`Eliminar ${product.name}`}
                           >
                             <Trash2 size={16} />
@@ -350,10 +356,10 @@ export default function Inventory() {
           <div className="md:col-span-2">
             <FormField label="Imagen del Producto">
               <div
-                className={`relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors ${
+                className={`relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-all ${
                   dragActive
                     ? 'border-[var(--accent)] bg-[var(--accent)]/5'
-                    : 'border-[var(--border)] bg-[var(--bg-secondary)]'
+                    : 'border-white/[0.08] bg-white/[0.02]'
                 }`}
                 onDragOver={(e) => {
                   e.preventDefault()
@@ -384,10 +390,10 @@ export default function Inventory() {
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="h-full w-full rounded-xl object-cover"
+                      className="h-full w-full rounded-2xl object-cover"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 opacity-0 transition-opacity hover:opacity-100">
-                      <span className="rounded-full bg-black/50 px-3 py-1.5 text-xs font-bold text-white">
+                    <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/40 opacity-0 transition-opacity hover:opacity-100">
+                      <span className="rounded-full bg-black/50 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-md">
                         Cambiar
                       </span>
                     </div>
@@ -396,7 +402,7 @@ export default function Inventory() {
                   <div className="text-center">
                     <ImageIcon
                       size={32}
-                      className="mx-auto mb-2 text-[var(--text-muted)] opacity-50"
+                      className="mx-auto mb-2 text-[var(--accent)] opacity-50"
                       aria-hidden="true"
                     />
                     <p className="text-xs font-bold text-[var(--text-primary)]">
@@ -430,7 +436,7 @@ export default function Inventory() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Ej: Gold Standard Whey 5lbs"
-                className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
 
@@ -447,7 +453,7 @@ export default function Inventory() {
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
                   placeholder="0.00"
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
               <FormField label="Stock" required error={formErrors.stock} htmlFor="prod-stock">
@@ -457,7 +463,7 @@ export default function Inventory() {
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}
                   placeholder="0"
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
             </div>
@@ -468,7 +474,7 @@ export default function Inventory() {
                   id="prod-category"
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full appearance-none rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 >
                   {productCategories
                     .filter((c) => c.value !== 'all')
@@ -486,7 +492,7 @@ export default function Inventory() {
                   value={form.brand}
                   onChange={(e) => setForm({ ...form, brand: e.target.value })}
                   placeholder="Ej: Optimum Nutrition"
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
             </div>
@@ -498,24 +504,24 @@ export default function Inventory() {
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={3}
                 placeholder="Características principales..."
-                className="min-h-[80px] w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="min-h-[80px] w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+        <div className="mt-6 flex justify-end gap-3 border-t border-white/[0.06] pt-4">
           <button
             onClick={() => setShowModal(false)}
             disabled={isSaving}
-            className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:opacity-50"
+            className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
+            className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
           >
             {isSaving && (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -529,9 +535,17 @@ export default function Inventory() {
       <ConfirmDialog
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        onConfirm={() => {
-          addToast('Eliminación de productos próximamente disponible', 'warning')
-          setDeleteTarget(null)
+        onConfirm={async () => {
+          if (!deleteTarget) return
+          try {
+            await fetchApi(`/api/products/${deleteTarget.id}`, { method: 'DELETE' })
+            setProductsList(productsList.filter((p) => p.id !== deleteTarget.id))
+            addToast(`${deleteTarget.name} eliminado`, 'success')
+          } catch (err: unknown) {
+            addToast(err instanceof Error ? err.message : 'Error al eliminar', 'error')
+          } finally {
+            setDeleteTarget(null)
+          }
         }}
         title="Eliminar producto"
         message={`¿Estás seguro de eliminar "${deleteTarget?.name}"? Esta acción no se puede deshacer.`}

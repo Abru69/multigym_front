@@ -15,7 +15,7 @@ export default function Catalog() {
   useEffect(() => {
     getProducts()
       .then((response) => {
-        const apiProducts = response.lista || []
+        const apiProducts = response.dto?.data || []
         const mapped: Product[] = apiProducts.map((p) => ({
           id: p.id,
           name: p.name,

@@ -91,18 +91,19 @@ export async function fetchApi<T>(url: string, options: RequestInit = {}): Promi
   return null as T
 }
 
-export const getProducts = () => fetchApi<ResponseDTO<ProductDTO>>('/api/products')
+export const getProducts = () => fetchApi<ResponseDTO<PaginatedResult<ProductDTO>>>('/api/products')
 export const createProduct = (data: Partial<ProductDTO>) =>
   fetchApi<ResponseDTO<ProductDTO>>('/api/products', { method: 'POST', body: JSON.stringify(data) })
 
-export const getExercises = () => fetchApi<ResponseDTO<ExerciseDTO>>('/api/exercises')
+export const getExercises = () =>
+  fetchApi<ResponseDTO<PaginatedResult<ExerciseDTO>>>('/api/exercises')
 export const createExercise = (data: Partial<ExerciseDTO>) =>
   fetchApi<ResponseDTO<ExerciseDTO>>('/api/exercises', {
     method: 'POST',
     body: JSON.stringify(data),
   })
 
-export const getWorkouts = () => fetchApi<ResponseDTO<WorkoutDTO>>('/api/workouts')
+export const getWorkouts = () => fetchApi<ResponseDTO<PaginatedResult<WorkoutDTO>>>('/api/workouts')
 export const createWorkout = (data: Partial<WorkoutDTO>) =>
   fetchApi<ResponseDTO<WorkoutDTO>>('/api/workouts', { method: 'POST', body: JSON.stringify(data) })
 export const deleteWorkout = (id: string) =>
@@ -117,12 +118,17 @@ export const activateAccount = (data: { token: string; newPassword?: string }) =
 export const logout = () => fetchApi<ResponseDTO<unknown>>('/api/auth/logout', { method: 'POST' })
 
 export const refreshToken = () =>
-  fetchApi<ResponseDTO<{ accessToken: string; type: string; expiresIn: number; tenantId: string; role: string }>>(
-    '/api/auth/refresh-token',
-    { method: 'POST' }
-  )
+  fetchApi<
+    ResponseDTO<{
+      accessToken: string
+      type: string
+      expiresIn: number
+      tenantId: string
+      role: string
+    }>
+  >('/api/auth/refresh-token', { method: 'POST' })
 
-export const getTenants = () => fetchApi<ResponseDTO<TenantDTO>>('/api/tenants')
+export const getTenants = () => fetchApi<ResponseDTO<PaginatedResult<TenantDTO>>>('/api/tenants')
 
 export const getTenantsSummary = () =>
   fetchApi<ResponseDTO<TenantSummaryDTO>>('/api/tenants/summary')
@@ -139,9 +145,11 @@ export const deleteTenant = (tenantId: string) =>
 export const toggleTenantStatus = (tenantId: string) =>
   fetchApi<ResponseDTO<TenantDTO>>(`/api/tenants/${tenantId}/status`, { method: 'PATCH' })
 
-export const getSaasPlans = () => fetchApi<ResponseDTO<SaasPlanDTO>>('/api/saas-plans')
+export const getSaasPlans = () =>
+  fetchApi<ResponseDTO<PaginatedResult<SaasPlanDTO>>>('/api/saas-plans')
 
-export const getPlatformUsers = () => fetchApi<ResponseDTO<PlatformUserDTO>>('/platform-api/users')
+export const getPlatformUsers = () =>
+  fetchApi<ResponseDTO<PaginatedResult<PlatformUserDTO>>>('/platform-api/users')
 
 export const createPlatformUser = (data: PlatformUserRequestDTO) =>
   fetchApi<ResponseDTO<PlatformUserDTO>>('/platform-api/users', {

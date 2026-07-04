@@ -66,7 +66,9 @@ export function MemberSummary() {
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-          <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">Actividad Reciente</h3>
+          <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">
+            Actividad Reciente
+          </h3>
           <div className="space-y-3">
             {recentActivity.map((activity, index) => (
               <div

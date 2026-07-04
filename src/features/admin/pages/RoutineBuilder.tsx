@@ -8,7 +8,6 @@ import {
   Image,
   GripVertical,
   Users,
-  Search,
   X,
   Check,
   ArrowLeft,
@@ -21,7 +20,6 @@ import { useToastStore } from '@/components/ui/Toast'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { getExercises, createExercise, createWorkout, fetchApi } from '@/lib/api'
 import { MUSCLE_GROUPS } from '@/data/constants'
-import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -112,7 +110,7 @@ export default function RoutineBuilder({
   const loadExercises = useCallback(async () => {
     try {
       const res = await getExercises()
-      const apiExercises = res.lista || []
+      const apiExercises = res.dto?.data || []
       const mapped: ExerciseData[] = apiExercises.map((e) => ({
         id: e.id,
         name: e.name,
@@ -127,8 +125,8 @@ export default function RoutineBuilder({
 
   useEffect(() => {
     loadExercises()
-    fetchApi<ResponseDTO<UserData>>('/api/tenant/user/getAll')
-      .then((res) => setDbUsers(res.lista || []))
+    fetchApi<ResponseDTO<{ data: UserData[] }>>('/api/tenant/users')
+      .then((res) => setDbUsers(res.dto?.data || []))
       .catch((e) => console.error(e))
   }, [loadExercises])
 
@@ -175,19 +173,16 @@ export default function RoutineBuilder({
     return initialDays
   })
 
-  // Exercise Modal State
   const [showExerciseModal, setShowExerciseModal] = useState(false)
   const [exerciseSearch, setExerciseSearch] = useState('')
   const debouncedExerciseSearch = useDebounce(exerciseSearch)
   const [selectedGroupForModal, setSelectedGroupForModal] = useState<string | null>(null)
 
-  // New Exercise State
   const [isCreatingExercise, setIsCreatingExercise] = useState(false)
   const [newExerciseForm, setNewExerciseForm] = useState({ name: '', muscleGroup: '' })
   const [newExerciseErrors, setNewExerciseErrors] = useState<Record<string, string>>({})
   const [isSavingExercise, setIsSavingExercise] = useState(false)
 
-  // Assign Modal State
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [searchUser, setSearchUser] = useState('')
   const debouncedUserSearch = useDebounce(searchUser)
@@ -363,13 +358,13 @@ export default function RoutineBuilder({
   return (
     <div className="flex w-full flex-col gap-6">
       {/* Header */}
-      <div className="flex flex-col items-start gap-6 border-b border-[var(--border)] pb-8 md:flex-row md:items-end">
+      <div className="flex flex-col items-start gap-6 border-b border-white/[0.06] pb-8 md:flex-row md:items-end">
         <div className="w-full flex-1">
           <div className="mb-4 flex items-center gap-3">
             {personalizedUser ? (
               <button
                 onClick={() => navigate('/admin/usuarios')}
-                className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] shadow-sm transition-colors hover:bg-[var(--surface-hover)]"
+                className="inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
               >
                 <ArrowLeft size={16} /> Volver a Usuarios
               </button>
@@ -377,13 +372,13 @@ export default function RoutineBuilder({
               onBack && (
                 <button
                   onClick={onBack}
-                  className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] shadow-sm transition-colors hover:bg-[var(--surface-hover)]"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
                 >
                   <ArrowLeft size={16} /> Volver a Plantillas
                 </button>
               )
             )}
-            <span className="rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-[var(--accent)] uppercase">
+            <span className="glass-badge rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-[var(--accent)] uppercase">
               {personalizedUser ? 'MODO ASIGNACIÓN' : 'MODO PLANTILLA'}
             </span>
           </div>
@@ -393,7 +388,7 @@ export default function RoutineBuilder({
               type="text"
               value={routineName}
               onChange={(e) => setRoutineName(e.target.value)}
-              className="w-full border-b-2 border-transparent bg-transparent pb-2 text-3xl font-black text-[var(--text-primary)] transition-colors duration-200 outline-none placeholder:text-[var(--text-muted)]/30 hover:border-[var(--border)] focus:border-[var(--accent)] sm:text-4xl"
+              className="w-full border-b-2 border-transparent bg-transparent pb-2 text-3xl font-black text-[var(--text-primary)] transition-colors duration-200 outline-none placeholder:text-[var(--text-muted)]/30 hover:border-white/[0.1] focus:border-[var(--accent)] sm:text-4xl"
               placeholder="Escribe el nombre de la rutina aquí..."
             />
             <Edit2
@@ -408,7 +403,7 @@ export default function RoutineBuilder({
             </span>
             {personalizedUser && (
               <>
-                <span className="h-1 w-1 rounded-full bg-[var(--border)]" />
+                <span className="h-1 w-1 rounded-full bg-white/[0.15]" />
                 <span className="flex items-center gap-1.5">
                   <Users size={16} /> Personalizando para:{' '}
                   <strong className="text-[var(--text-primary)]">{personalizedUser.name}</strong>
@@ -422,7 +417,7 @@ export default function RoutineBuilder({
             <button
               onClick={handleSaveAndAssign}
               disabled={isSaving}
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
+              className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
             >
               <Check size={16} />
               Guardar y Asignar a {personalizedUser.name?.split(' ')[0] || personalizedUser.email}
@@ -432,14 +427,14 @@ export default function RoutineBuilder({
               <button
                 onClick={handleSaveTemplate}
                 disabled={isSaving}
-                className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
               >
                 <Save size={16} />
                 {isSaving ? 'Guardando...' : 'Guardar Plantilla'}
               </button>
               <button
                 onClick={() => setShowAssignModal(true)}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+                className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
               >
                 <Users size={16} /> Guardar y Asignar
               </button>
@@ -449,15 +444,15 @@ export default function RoutineBuilder({
       </div>
 
       {/* Day tabs */}
-      <div className="flex flex-wrap gap-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1 shadow-sm">
+      <div className="flex flex-wrap gap-2 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-1 shadow-sm backdrop-blur-xl">
         {DAYS.map((d) => (
           <button
             key={d.key}
             onClick={() => setSelectedDay(d.key)}
             className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
               selectedDay === d.key
-                ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-md'
-                : 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+                ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]'
+                : 'text-[var(--text-muted)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]'
             }`}
           >
             {d.label}
@@ -465,7 +460,7 @@ export default function RoutineBuilder({
               className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-bold ${
                 selectedDay === d.key
                   ? 'bg-white/20 text-white'
-                  : 'bg-[var(--bg-secondary)] text-[var(--text-muted)]'
+                  : 'bg-white/[0.04] text-[var(--text-muted)]'
               }`}
             >
               {dayExercises[d.key].length}
@@ -484,14 +479,14 @@ export default function RoutineBuilder({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: index * 0.05 }}
-              className="group flex flex-col gap-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-lg sm:flex-row sm:items-center sm:p-5"
+              className="group flex flex-col gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl sm:flex-row sm:items-center sm:p-5"
             >
               <div className="flex shrink-0 items-center text-[var(--text-muted)]">
                 <GripVertical size={18} aria-hidden="true" />
               </div>
 
               {/* Image */}
-              <div className="h-32 w-full flex-shrink-0 overflow-hidden rounded-xl bg-[var(--bg-secondary)] sm:h-20 sm:w-24">
+              <div className="h-32 w-full flex-shrink-0 overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02] sm:h-20 sm:w-24">
                 {exercise.imageUrl ? (
                   <img
                     src={exercise.imageUrl}
@@ -500,7 +495,7 @@ export default function RoutineBuilder({
                     loading="lazy"
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-[var(--text-muted)]">
+                  <div className="flex h-full w-full items-center justify-center text-[var(--accent)]">
                     <Image size={24} aria-hidden="true" />
                   </div>
                 )}
@@ -513,13 +508,13 @@ export default function RoutineBuilder({
                     <h4 className="text-base font-bold text-[var(--text-primary)]">
                       {exercise.name}
                     </h4>
-                    <span className="mt-1 inline-block rounded-full bg-[var(--accent)]/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-[var(--accent)] uppercase">
+                    <span className="mt-1 inline-block rounded-xl border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-2 py-0.5 text-[10px] font-bold tracking-wider text-[var(--accent)] uppercase">
                       {exercise.muscleGroup || 'General'}
                     </span>
                   </div>
                   <button
                     onClick={() => removeExercise(exercise.uniqueId)}
-                    className="rounded-lg p-2 text-[var(--error)] opacity-100 transition-all hover:bg-[var(--error)]/10 sm:opacity-0 sm:group-hover:opacity-100"
+                    className="rounded-xl p-2 text-[var(--error)] opacity-100 transition-all hover:bg-[var(--error)]/10 sm:opacity-0 sm:group-hover:opacity-100"
                     aria-label={`Eliminar ${exercise.name}`}
                   >
                     <Trash2 size={16} />
@@ -527,7 +522,7 @@ export default function RoutineBuilder({
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2 text-center">
+                  <div className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-center backdrop-blur-xl">
                     <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       Series
                     </p>
@@ -546,7 +541,7 @@ export default function RoutineBuilder({
                       aria-label="Número de series"
                     />
                   </div>
-                  <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2 text-center">
+                  <div className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-center backdrop-blur-xl">
                     <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       Reps
                     </p>
@@ -560,7 +555,7 @@ export default function RoutineBuilder({
                       aria-label="Número de repeticiones"
                     />
                   </div>
-                  <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2 text-center">
+                  <div className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-center backdrop-blur-xl">
                     <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       Descanso (s)
                     </p>
@@ -589,14 +584,14 @@ export default function RoutineBuilder({
         {/* Add button */}
         <button
           onClick={openExerciseModal}
-          className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[var(--border)] bg-transparent text-sm font-bold text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 hover:text-[var(--accent)]"
+          className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-white/[0.08] bg-transparent text-sm font-bold text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 hover:text-[var(--accent)]"
         >
           <Plus size={18} /> Agregar Ejercicio a {DAYS.find((d) => d.key === selectedDay)?.label}
         </button>
 
         {currentExercises.length === 0 && (
           <div
-            className="cursor-pointer rounded-3xl border-2 border-dashed border-[var(--border)] bg-[var(--surface)] px-4 py-12 text-center transition-colors hover:border-[var(--accent)] hover:bg-[var(--accent)]/5"
+            className="cursor-pointer rounded-3xl border-2 border-dashed border-white/[0.08] bg-white/[0.02] px-4 py-12 text-center backdrop-blur-xl transition-all hover:border-[var(--accent)] hover:bg-[var(--accent)]/5"
             onClick={openExerciseModal}
             role="button"
             tabIndex={0}
@@ -608,8 +603,8 @@ export default function RoutineBuilder({
             }}
             aria-label={`Añadir ejercicios al ${DAYS.find((d) => d.key === selectedDay)?.label}`}
           >
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--bg-secondary)]">
-              <Plus size={24} className="text-[var(--text-muted)]" aria-hidden="true" />
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04]">
+              <Plus size={24} className="text-[var(--accent)]" aria-hidden="true" />
             </div>
             <p className="mb-2 text-lg font-bold text-[var(--text-primary)]">
               Añadir ejercicios al {DAYS.find((d) => d.key === selectedDay)?.label}
@@ -649,7 +644,7 @@ export default function RoutineBuilder({
                 onChange={(e) => setNewExerciseForm({ ...newExerciseForm, name: e.target.value })}
                 placeholder="Ej. Press de Banca"
                 autoFocus
-                className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
             <FormField
@@ -664,7 +659,7 @@ export default function RoutineBuilder({
                 onChange={(e) =>
                   setNewExerciseForm({ ...newExerciseForm, muscleGroup: e.target.value })
                 }
-                className="h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="h-10 w-full appearance-none rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               >
                 <option value="" disabled>
                   Selecciona un grupo muscular...
@@ -676,18 +671,18 @@ export default function RoutineBuilder({
                 ))}
               </select>
             </FormField>
-            <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+            <div className="flex justify-end gap-3 border-t border-white/[0.06] pt-4">
               <button
                 onClick={() => setIsCreatingExercise(false)}
                 disabled={isSavingExercise}
-                className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:opacity-50"
+                className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveNewExercise}
                 disabled={isSavingExercise}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
+                className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
               >
                 {isSavingExercise && (
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -708,7 +703,7 @@ export default function RoutineBuilder({
                 <button
                   key={groupName}
                   onClick={() => setSelectedGroupForModal(groupName)}
-                  className="group relative h-32 overflow-hidden rounded-xl border border-[var(--border)] transition-all hover:border-[var(--accent)]/30 hover:shadow-lg"
+                  className="group relative h-32 overflow-hidden rounded-2xl border border-white/[0.06] backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:shadow-[0_0_24px_rgba(66,204,99,0.08)]"
                 >
                   {groupInfo.imageUrl ? (
                     <img
@@ -717,10 +712,10 @@ export default function RoutineBuilder({
                       className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-secondary)]">
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/[0.02]">
                       <Dumbbell
                         size={32}
-                        className="text-[var(--text-muted)] opacity-40"
+                        className="text-[var(--accent)] opacity-40"
                         aria-hidden="true"
                       />
                     </div>
@@ -739,7 +734,7 @@ export default function RoutineBuilder({
               {selectedGroupForModal && (
                 <button
                   onClick={() => setSelectedGroupForModal(null)}
-                  className="inline-flex shrink-0 items-center justify-center rounded-xl border border-[var(--border)] p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                  className="inline-flex shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--text-primary)]"
                   aria-label="Volver a grupos"
                 >
                   <ArrowLeft size={16} />
@@ -757,7 +752,7 @@ export default function RoutineBuilder({
               />
               <button
                 onClick={() => setIsCreatingExercise(true)}
-                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+                className="glass-btn-primary inline-flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold"
               >
                 <Plus size={16} /> Nuevo
               </button>
@@ -771,9 +766,9 @@ export default function RoutineBuilder({
                   <button
                     key={exercise.id}
                     onClick={() => handleAddExercise(exercise)}
-                    className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 text-left transition-all hover:border-[var(--accent)]/30 hover:bg-[var(--surface-hover)]"
+                    className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3 text-left backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:bg-white/[0.05]"
                   >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.04]">
                       {exercise.imageUrl ? (
                         <img
                           src={exercise.imageUrl}
@@ -781,18 +776,14 @@ export default function RoutineBuilder({
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <Dumbbell
-                          size={20}
-                          className="text-[var(--text-muted)]"
-                          aria-hidden="true"
-                        />
+                        <Dumbbell size={20} className="text-[var(--accent)]" aria-hidden="true" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold text-[var(--text-primary)]">
                         {exercise.name}
                       </p>
-                      <span className="mt-1 inline-block rounded-full bg-[var(--bg-secondary)] px-2 py-0.5 text-[9px] font-bold tracking-wider text-[var(--accent)] uppercase">
+                      <span className="mt-1 inline-block rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-2 py-0.5 text-[9px] font-bold tracking-wider text-[var(--accent)] uppercase">
                         {exercise.muscleGroup || 'General'}
                       </span>
                     </div>
@@ -844,22 +835,22 @@ export default function RoutineBuilder({
                     isSelected ? next.delete(user.id) : next.add(user.id)
                     setSelectedUsers(next)
                   }}
-                  className={`flex w-full items-center gap-4 rounded-xl border p-3 text-left transition-all ${
+                  className={`flex w-full items-center gap-4 rounded-2xl border p-3 text-left backdrop-blur-xl transition-all ${
                     isSelected
-                      ? 'border-[var(--accent)] bg-[var(--accent)]/10'
-                      : 'border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)]'
+                      ? 'border-[var(--accent)]/50 bg-[var(--accent)]/10 shadow-[0_0_16px_rgba(66,204,99,0.1)]'
+                      : 'border-white/[0.06] bg-white/[0.03] hover:bg-white/[0.05]'
                   }`}
                 >
                   <div
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors ${
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-lg transition-colors ${
                       isSelected
-                        ? 'border-[var(--accent)] bg-[var(--accent)]'
-                        : 'border-[var(--border)] bg-transparent'
+                        ? 'border-[var(--accent)] bg-gradient-to-br from-[var(--accent)] to-[var(--detail)]'
+                        : 'border-white/[0.15] bg-transparent'
                     }`}
                   >
                     {isSelected && <Check size={12} color="white" strokeWidth={3} />}
                   </div>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-xs font-bold text-[var(--text-primary)]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-xs font-bold text-[var(--text-primary)]">
                     {(user.name || user.email || '')
                       .split(' ')
                       .map((n: string) => n[0])
@@ -885,17 +876,17 @@ export default function RoutineBuilder({
             )}
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+          <div className="flex justify-end gap-3 border-t border-white/[0.06] pt-4">
             <button
               onClick={() => setShowAssignModal(false)}
-              className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+              className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
             >
               Cancelar
             </button>
             <button
               onClick={handleSaveAndAssign}
               disabled={isSaving}
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
+              className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
             >
               {isSaving && (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />

@@ -391,7 +391,7 @@ export default function PlatformTenants() {
                           initial={{ opacity: 0, scale: 0.9, y: -5 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.9 }}
-                           className="absolute right-0 z-50 w-44 rounded-xl py-1 shadow-lg"
+                          className="absolute right-0 z-50 w-44 rounded-xl py-1 shadow-lg"
                           style={{
                             background: 'var(--surface)',
                             border: '1px solid var(--border)',

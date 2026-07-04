@@ -12,7 +12,10 @@ interface AuditFilters {
 
 interface PlatformLogsStore {
   logs: AuditLogDTO[]
-  pagination: Pick<PaginatedResult<AuditLogDTO>, 'page' | 'size' | 'totalElements' | 'totalPages' | 'first' | 'last'>
+  pagination: Pick<
+    PaginatedResult<AuditLogDTO>,
+    'page' | 'size' | 'totalElements' | 'totalPages' | 'first' | 'last'
+  >
   filters: AuditFilters
   isLoading: boolean
   error: string | null

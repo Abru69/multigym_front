@@ -4,12 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Dumbbell, Plus, Edit2, Trash2, Layers } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { useToastStore } from '@/components/ui/Toast'
-import { getExercises, createExercise } from '@/lib/api'
+import { getExercises, createExercise, fetchApi } from '@/lib/api'
+import type { ResponseDTO } from '@/types'
 import { MUSCLE_GROUPS } from '@/data/constants'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
 import { EmptyState } from '../components/EmptyState'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
 import RoutineLibrary from './RoutineLibrary'
@@ -63,12 +65,14 @@ export default function Exercises() {
   const [isCreatingGroup, setIsCreatingGroup] = useState(false)
   const [newGroupForm, setNewGroupForm] = useState({ name: '', description: '', imageUrl: '' })
   const [newGroupErrors, setNewGroupErrors] = useState<Record<string, string>>({})
+  const [editingExercise, setEditingExercise] = useState<Exercise | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Exercise | null>(null)
 
   const loadExercises = useCallback(async () => {
     try {
       setIsLoading(true)
       const response = await getExercises()
-      setExercisesList(response.lista || [])
+      setExercisesList(response.dto?.data || [])
     } catch (e) {
       console.error(e)
     } finally {
@@ -149,16 +153,48 @@ export default function Exercises() {
     setNewGroupForm({ name: '', description: '', imageUrl: '' })
   }
 
+  const handleEditExercise = async () => {
+    if (!editingExercise || !formName.trim()) return
+    setIsSaving(true)
+    try {
+      await fetchApi(`/api/exercises/${editingExercise.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ name: formName.trim(), muscleGroup: selectedGroup! }),
+      })
+      addToast('Ejercicio actualizado', 'success')
+      loadExercises()
+      setEditingExercise(null)
+      setFormName('')
+    } catch (e: unknown) {
+      addToast(e instanceof Error ? e.message : 'Error al actualizar', 'error')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleDeleteExercise = async () => {
+    if (!deleteTarget) return
+    try {
+      await fetchApi(`/api/exercises/${deleteTarget.id}`, { method: 'DELETE' })
+      setExercisesList(exercisesList.filter((e) => e.id !== deleteTarget.id))
+      addToast(`${deleteTarget.name} eliminado`, 'success')
+    } catch (e: unknown) {
+      addToast(e instanceof Error ? e.message : 'Error al eliminar', 'error')
+    } finally {
+      setDeleteTarget(null)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex w-full shrink-0 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1 shadow-sm sm:w-fit">
+      <div className="flex w-full shrink-0 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-1 shadow-sm backdrop-blur-xl sm:w-fit">
         <button
           onClick={() => handleTabChange('exercises')}
           className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all sm:px-6 ${
             activeTab === 'exercises'
-              ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-md'
-              : 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+              ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]'
+              : 'text-[var(--text-muted)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]'
           }`}
         >
           Grupos Musculares
@@ -167,8 +203,8 @@ export default function Exercises() {
           onClick={() => handleTabChange('routines')}
           className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all sm:px-6 ${
             activeTab === 'routines'
-              ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-md'
-              : 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+              ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]'
+              : 'text-[var(--text-muted)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]'
           }`}
         >
           Plantillas de Rutinas
@@ -184,7 +220,7 @@ export default function Exercises() {
             action={
               <button
                 onClick={() => setIsCreatingGroup(true)}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+                className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
               >
                 <Plus size={16} /> Agregar Grupo
               </button>
@@ -201,7 +237,7 @@ export default function Exercises() {
               action={
                 <button
                   onClick={() => setIsCreatingGroup(true)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)]"
+                  className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
                 >
                   <Plus size={16} /> Crear Grupo
                 </button>
@@ -218,7 +254,7 @@ export default function Exercises() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => setSelectedGroup(group.name)}
-                    className="group cursor-pointer overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-lg transition-all hover:border-[var(--accent)]/30 hover:shadow-xl"
+                    className="group cursor-pointer overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:shadow-[0_0_32px_rgba(66,204,99,0.08)]"
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
@@ -240,10 +276,10 @@ export default function Exercises() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       </div>
                     ) : (
-                      <div className="flex h-32 items-center justify-center bg-[var(--bg-secondary)]">
+                      <div className="flex h-32 items-center justify-center bg-white/[0.02]">
                         <Dumbbell
                           size={32}
-                          className="text-[var(--text-muted)] opacity-40"
+                          className="text-[var(--accent)] opacity-40"
                           aria-hidden="true"
                         />
                       </div>
@@ -254,7 +290,7 @@ export default function Exercises() {
                       <p className="mt-1 line-clamp-2 text-xs text-[var(--text-muted)]">
                         {group.description || 'Explora los ejercicios de este grupo muscular.'}
                       </p>
-                      <div className="mt-3 inline-flex rounded-lg bg-[var(--accent)]/10 px-2.5 py-1">
+                      <div className="mt-3 inline-flex rounded-xl border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-2.5 py-1">
                         <span className="text-[10px] font-bold text-[var(--accent)]">
                           {count} {count === 1 ? 'ejercicio' : 'ejercicios'}
                         </span>
@@ -270,7 +306,13 @@ export default function Exercises() {
           <Modal
             isOpen={!!selectedGroup}
             onClose={closeModal}
-            title={isCreating ? 'Nuevo Ejercicio' : `Ejercicios: ${selectedGroup}`}
+            title={
+              isCreating
+                ? editingExercise
+                  ? 'Editar Ejercicio'
+                  : 'Nuevo Ejercicio'
+                : `Ejercicios: ${selectedGroup}`
+            }
             size="lg"
           >
             {isCreating ? (
@@ -288,7 +330,7 @@ export default function Exercises() {
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="Ej. Press de Banca Inclinado"
                     autoFocus
-                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                    className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                   />
                 </FormField>
                 <FormField
@@ -302,26 +344,34 @@ export default function Exercises() {
                     type="text"
                     value={selectedGroup || ''}
                     disabled
-                    className="h-10 w-full cursor-not-allowed rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 text-sm text-[var(--text-muted)] opacity-60"
+                    className="h-10 w-full cursor-not-allowed rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 text-sm text-[var(--text-muted)] opacity-60"
                   />
                 </FormField>
-                <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+                <div className="flex justify-end gap-3 border-t border-white/[0.06] pt-4">
                   <button
-                    onClick={() => setIsCreating(false)}
+                    onClick={() => {
+                      setIsCreating(false)
+                      setEditingExercise(null)
+                      setFormName('')
+                    }}
                     disabled={isSaving}
-                    className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:opacity-50"
+                    className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
                   >
                     Cancelar
                   </button>
                   <button
-                    onClick={handleSave}
+                    onClick={editingExercise ? handleEditExercise : handleSave}
                     disabled={isSaving}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
+                    className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
                   >
                     {isSaving && (
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                     )}
-                    {isSaving ? 'Guardando...' : 'Guardar Ejercicio'}
+                    {isSaving
+                      ? 'Guardando...'
+                      : editingExercise
+                        ? 'Actualizar'
+                        : 'Guardar Ejercicio'}
                   </button>
                 </div>
               </div>
@@ -336,7 +386,7 @@ export default function Exercises() {
                   />
                   <button
                     onClick={() => setIsCreating(true)}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+                    className="glass-btn-primary inline-flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold"
                   >
                     <Plus size={16} /> Nuevo
                   </button>
@@ -355,7 +405,7 @@ export default function Exercises() {
                       !search ? (
                         <button
                           onClick={() => setIsCreating(true)}
-                          className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-text)]"
+                          className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold"
                         >
                           <Plus size={16} /> Crear Ejercicio
                         </button>
@@ -371,12 +421,12 @@ export default function Exercises() {
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          className="group flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 transition-colors hover:bg-[var(--surface-hover)]"
+                          className="group flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-3 backdrop-blur-xl transition-all hover:bg-white/[0.05]"
                         >
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04]">
                             <Dumbbell
                               size={18}
-                              className="text-[var(--text-muted)]"
+                              className="text-[var(--accent)]"
                               aria-hidden="true"
                             />
                           </div>
@@ -387,17 +437,19 @@ export default function Exercises() {
                           </div>
                           <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                             <button
-                              onClick={() => addToast('Edición próximamente disponible', 'warning')}
-                              className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]"
+                              onClick={() => {
+                                setEditingExercise(exercise)
+                                setFormName(exercise.name)
+                                setIsCreating(true)
+                              }}
+                              className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--accent)]"
                               aria-label={`Editar ${exercise.name}`}
                             >
                               <Edit2 size={14} />
                             </button>
                             <button
-                              onClick={() =>
-                                addToast('Eliminación próximamente disponible', 'warning')
-                              }
-                              className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+                              onClick={() => setDeleteTarget(exercise)}
+                              className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
                               aria-label={`Eliminar ${exercise.name}`}
                             >
                               <Trash2 size={14} />
@@ -433,7 +485,7 @@ export default function Exercises() {
                   onChange={(e) => setNewGroupForm({ ...newGroupForm, name: e.target.value })}
                   placeholder="Ej. Antebrazos"
                   autoFocus
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
               <FormField label="Descripción" htmlFor="group-desc">
@@ -445,7 +497,7 @@ export default function Exercises() {
                     setNewGroupForm({ ...newGroupForm, description: e.target.value })
                   }
                   placeholder="Ej. Ejercicios para fortalecer el agarre."
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
               <FormField label="URL de Imagen" htmlFor="group-img">
@@ -455,25 +507,35 @@ export default function Exercises() {
                   value={newGroupForm.imageUrl}
                   onChange={(e) => setNewGroupForm({ ...newGroupForm, imageUrl: e.target.value })}
                   placeholder="https://images.unsplash.com/..."
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
-              <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+              <div className="flex justify-end gap-3 border-t border-white/[0.06] pt-4">
                 <button
                   onClick={() => setIsCreatingGroup(false)}
-                  className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+                  className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSaveNewGroup}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+                  className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
                 >
                   Guardar
                 </button>
               </div>
             </div>
           </Modal>
+
+          {/* Delete Confirmation */}
+          <ConfirmDialog
+            isOpen={!!deleteTarget}
+            onClose={() => setDeleteTarget(null)}
+            onConfirm={handleDeleteExercise}
+            title="Eliminar ejercicio"
+            message={`¿Estás seguro de eliminar "${deleteTarget?.name}"? Esta acción no se puede deshacer.`}
+            confirmLabel="Eliminar"
+          />
         </>
       ) : (
         <RoutineLibrary />

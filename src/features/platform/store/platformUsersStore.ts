@@ -28,7 +28,7 @@ export const usePlatformUsersStore = create<PlatformUsersStore>()((set, get) => 
     set({ isLoading: true, error: null })
     try {
       const response = await getPlatformUsers()
-      set({ users: response?.lista || [], isLoading: false })
+      set({ users: response?.dto?.data || [], isLoading: false })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al cargar usuarios'
       set({ error: message, isLoading: false })

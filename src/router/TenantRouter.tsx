@@ -3,12 +3,8 @@ import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { Spinner } from '@/components/ui/Spinner'
 
-const TenantLandingPage = lazy(
-  () => import('@/features/tenant-landing/pages/TenantLandingPage')
-)
-const TenantDashboard = lazy(
-  () => import('@/features/tenant-landing/pages/TenantDashboard')
-)
+const TenantLandingPage = lazy(() => import('@/features/tenant-landing/pages/TenantLandingPage'))
+const TenantDashboard = lazy(() => import('@/features/tenant-landing/pages/TenantDashboard'))
 const Landing = lazy(() => import('@/features/landing/pages/LandingPage'))
 
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
