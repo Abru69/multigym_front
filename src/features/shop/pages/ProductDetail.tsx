@@ -27,7 +27,6 @@ export default function ProductDetail() {
   const initialQuantity = cartItem ? cartItem.quantity : 1
   const [quantity, setQuantity] = useState(initialQuantity)
 
-  // Update local quantity if cart changes externally
   useEffect(() => {
     if (cartItem) setQuantity(cartItem.quantity)
   }, [cartItem])
@@ -35,10 +34,10 @@ export default function ProductDetail() {
   if (!product) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-        <h2 className="mb-2 text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+        <h2 className="mb-2 text-2xl font-bold text-[var(--text-primary)]">
           Producto no encontrado
         </h2>
-        <Link to="/tienda" className="text-sm font-medium" style={{ color: 'var(--accent)' }}>
+        <Link to="/tienda" className="text-sm font-medium text-[var(--accent)]">
           Volver a la tienda
         </Link>
       </div>
@@ -59,61 +58,44 @@ export default function ProductDetail() {
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 sm:py-8">
       <Link
         to="/tienda"
-        className="inline-flex items-center gap-2 text-sm font-medium transition-colors"
-        style={{ color: 'var(--text-secondary)' }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
-        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
+        className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
       >
         <ChevronLeft size={16} /> Volver al catálogo
       </Link>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-16">
-        {/* Images */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="space-y-4"
         >
-          <div
-            className="aspect-square overflow-hidden rounded-3xl"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-          >
+          <div className="aspect-square overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl">
             <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
           </div>
         </motion.div>
 
-        {/* Info */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           className="flex flex-col"
         >
-          <span
-            className="mb-2 text-xs font-bold tracking-wider uppercase"
-            style={{ color: 'var(--accent)' }}
-          >
+          <span className="mb-2 text-xs font-bold tracking-wider text-[var(--accent)] uppercase">
             {product.brand}
           </span>
-          <h1
-            className="mb-4 text-3xl font-bold sm:text-4xl"
-            style={{ color: 'var(--text-primary)' }}
-          >
+          <h1 className="mb-4 text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
             {product.name}
           </h1>
 
-          <div
-            className="mb-6 flex items-center gap-4 pb-6"
-            style={{ borderBottom: '1px solid var(--border)' }}
-          >
+          <div className="mb-6 flex items-center gap-4 border-b border-white/[0.06] pb-6">
             <div
               className="flex items-center gap-1 text-sm font-medium"
               style={{ color: 'var(--warning)' }}
             >
               <Star size={16} fill="currentColor" />
               {product.rating}{' '}
-              <span style={{ color: 'var(--text-muted)' }}>({product.reviewCount})</span>
+              <span className="text-[var(--text-muted)]">({product.reviewCount})</span>
             </div>
-            <div className="h-1 w-1 rounded-full" style={{ background: 'var(--border)' }} />
+            <div className="h-1 w-1 rounded-full bg-white/[0.06]" />
             <span
               className="text-sm font-medium"
               style={{ color: product.isAvailable ? 'var(--success)' : 'var(--danger)' }}
@@ -124,30 +106,22 @@ export default function ProductDetail() {
 
           <div className="mb-6">
             {product.originalPrice && (
-              <span
-                className="mb-1 block text-lg line-through"
-                style={{ color: 'var(--text-muted)' }}
-              >
+              <span className="mb-1 block text-lg text-[var(--text-muted)] line-through">
                 {formatCurrency(product.originalPrice)}
               </span>
             )}
-            <span className="text-4xl font-black" style={{ color: 'var(--text-primary)' }}>
+            <span className="text-4xl font-black text-[var(--text-primary)]">
               {formatCurrency(product.price)}
             </span>
           </div>
 
-          <p className="mb-8 text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+          <p className="mb-8 text-sm leading-relaxed text-[var(--text-secondary)]">
             {product.description}
           </p>
 
-          {/* Actions */}
           <div className="mt-auto space-y-4">
             <div className="flex items-center gap-4">
-              {/* Qty */}
-              <div
-                className="flex h-14 items-center rounded-xl px-2"
-                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-              >
+              <div className="flex h-14 items-center rounded-xl border border-white/[0.06] bg-white/[0.03] px-2">
                 <Button
                   variant="outline"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -155,10 +129,7 @@ export default function ProductDetail() {
                 >
                   <Minus size={16} />
                 </Button>
-                <span
-                  className="w-12 text-center font-bold"
-                  style={{ color: 'var(--text-primary)' }}
-                >
+                <span className="w-12 text-center font-bold text-[var(--text-primary)]">
                   {quantity}
                 </span>
                 <Button
@@ -170,7 +141,6 @@ export default function ProductDetail() {
                 </Button>
               </div>
 
-              {/* Add to cart */}
               <Button
                 onClick={handleAddToCart}
                 disabled={!product.isAvailable}
@@ -181,7 +151,6 @@ export default function ProductDetail() {
               </Button>
             </div>
 
-            {/* Features list */}
             <div className="grid grid-cols-2 gap-3 pt-6">
               {[
                 { icon: ShieldCheck, text: 'Garantía de calidad' },
@@ -189,8 +158,7 @@ export default function ProductDetail() {
               ].map((f) => (
                 <div
                   key={f.text}
-                  className="flex items-center gap-2 text-xs font-medium"
-                  style={{ color: 'var(--text-muted)' }}
+                  className="flex items-center gap-2 text-xs font-medium text-[var(--text-muted)]"
                 >
                   <f.icon size={16} /> {f.text}
                 </div>
@@ -200,57 +168,45 @@ export default function ProductDetail() {
         </motion.div>
       </div>
 
-      {/* Details Tabs */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="mt-16 pt-16"
-        style={{ borderTop: '1px solid var(--border)' }}
+        className="mt-16 border-t border-white/[0.06] pt-16"
       >
         <div className="mb-8 flex items-center gap-2">
-          <Info size={24} style={{ color: 'var(--accent)' }} />
-          <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            Información Nutricional
-          </h2>
+          <Info size={24} className="text-[var(--accent)]" />
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">Información Nutricional</h2>
         </div>
 
         {product.nutritionFacts && product.nutritionFacts.length > 0 ? (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-16">
             <div className="space-y-4">
               <div className="mb-4 flex justify-between text-sm">
-                <span style={{ color: 'var(--text-muted)' }}>
+                <span className="text-[var(--text-muted)]">
                   Tamaño de porción:{' '}
-                  <strong style={{ color: 'var(--text-primary)' }}>
+                  <strong className="text-[var(--text-primary)]">
                     {product.servingSize || 'N/A'}
                   </strong>
                 </span>
-                <span style={{ color: 'var(--text-muted)' }}>
+                <span className="text-[var(--text-muted)]">
                   Porciones:{' '}
-                  <strong style={{ color: 'var(--text-primary)' }}>
+                  <strong className="text-[var(--text-primary)]">
                     {product.servings || 'N/A'}
                   </strong>
                 </span>
               </div>
-              <div
-                className="overflow-hidden rounded-2xl"
-                style={{ border: '1px solid var(--border)' }}
-              >
+              <div className="overflow-hidden rounded-2xl border border-white/[0.06]">
                 {product.nutritionFacts.map((fact, i) => (
                   <div
                     key={fact.label}
-                    className="flex justify-between p-4 text-sm"
-                    style={{ background: i % 2 === 0 ? 'var(--surface)' : 'var(--background)' }}
+                    className={`flex justify-between p-4 text-sm ${i % 2 === 0 ? 'bg-white/[0.03]' : 'bg-white/[0.02]'}`}
                   >
-                    <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
-                      {fact.label}
-                    </span>
+                    <span className="font-medium text-[var(--text-primary)]">{fact.label}</span>
                     <div className="text-right">
-                      <span className="font-bold" style={{ color: 'var(--text-primary)' }}>
-                        {fact.value}
-                      </span>
+                      <span className="font-bold text-[var(--text-primary)]">{fact.value}</span>
                       {fact.dailyValue && (
-                        <span className="ml-3 text-xs" style={{ color: 'var(--text-muted)' }}>
+                        <span className="ml-3 text-xs text-[var(--text-muted)]">
                           {fact.dailyValue}
                         </span>
                       )}
@@ -260,7 +216,7 @@ export default function ProductDetail() {
               </div>
             </div>
             <div>
-              <h3 className="mb-3 font-semibold" style={{ color: 'var(--text-primary)' }}>
+              <h3 className="mb-3 font-semibold text-[var(--text-primary)]">
                 Detalles del producto
               </h3>
               <ul className="space-y-3 text-sm">
@@ -273,14 +229,10 @@ export default function ProductDetail() {
                     d.value && (
                       <li
                         key={d.label}
-                        className="flex justify-between pb-2"
-                        style={{ borderBottom: '1px solid var(--border)' }}
+                        className="flex justify-between border-b border-white/[0.06] pb-2"
                       >
-                        <span style={{ color: 'var(--text-muted)' }}>{d.label}</span>
-                        <span
-                          className="font-medium capitalize"
-                          style={{ color: 'var(--text-primary)' }}
-                        >
+                        <span className="text-[var(--text-muted)]">{d.label}</span>
+                        <span className="font-medium text-[var(--text-primary)] capitalize">
                           {d.value}
                         </span>
                       </li>
@@ -290,7 +242,7 @@ export default function ProductDetail() {
             </div>
           </div>
         ) : (
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm text-[var(--text-muted)]">
             No hay información nutricional disponible para este producto.
           </p>
         )}

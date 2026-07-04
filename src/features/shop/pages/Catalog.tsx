@@ -46,26 +46,21 @@ export default function Catalog() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:py-8 lg:py-10">
-      {/* Header */}
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <h1
-            className="mb-2 text-3xl font-black sm:text-4xl"
-            style={{ color: 'var(--text-primary)' }}
-          >
+          <h1 className="mb-2 text-3xl font-black text-[var(--text-primary)] sm:text-4xl">
             Suplementación
           </h1>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-sm text-[var(--text-secondary)]">
             Potencia tus resultados con productos premium.
           </p>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative">
             <Search
               size={16}
-              className="text-text-muted absolute top-1/2 left-4 -translate-y-1/2"
+              className="absolute top-1/2 left-4 -translate-y-1/2 text-[var(--text-muted)]"
             />
             <Input
               type="text"
@@ -78,12 +73,12 @@ export default function Catalog() {
           <div className="relative">
             <SlidersHorizontal
               size={16}
-              className="text-text-muted pointer-events-none absolute top-1/2 left-4 -translate-y-1/2"
+              className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-[var(--text-muted)]"
             />
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="border-border bg-surface text-text-primary focus:ring-accent w-full cursor-pointer appearance-none rounded-xl border py-3 pr-10 pl-11 text-sm transition-all outline-none focus:ring-2 sm:w-48"
+              className="focus:ring-accent w-full cursor-pointer appearance-none rounded-xl border border-white/[0.06] bg-white/[0.03] py-3 pr-10 pl-11 text-sm text-[var(--text-primary)] transition-all outline-none focus:ring-2 sm:w-48"
             >
               {productCategories.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -95,7 +90,6 @@ export default function Catalog() {
         </div>
       </div>
 
-      {/* Grid */}
       {filtered.length > 0 ? (
         <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 xl:grid-cols-5">
           {filtered.map((product, i) => (
@@ -103,19 +97,12 @@ export default function Catalog() {
           ))}
         </div>
       ) : (
-        <div
-          className="rounded-3xl px-4 py-20 text-center"
-          style={{ border: '1px dashed var(--border)' }}
-        >
-          <PackageX
-            size={48}
-            className="mx-auto mb-4 opacity-40"
-            style={{ color: 'var(--text-muted)' }}
-          />
-          <h3 className="mb-2 text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <div className="rounded-3xl border border-dashed border-white/[0.08] px-4 py-20 text-center">
+          <PackageX size={48} className="mx-auto mb-4 text-[var(--text-muted)] opacity-40" />
+          <h3 className="mb-2 text-lg font-semibold text-[var(--text-primary)]">
             No se encontraron productos
           </h3>
-          <p className="mx-auto max-w-sm text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <p className="mx-auto max-w-sm text-sm text-[var(--text-secondary)]">
             No hay productos que coincidan con tu búsqueda. Intenta con otros términos o categorías.
           </p>
           <Button

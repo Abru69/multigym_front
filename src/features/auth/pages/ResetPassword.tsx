@@ -61,23 +61,19 @@ export default function ResetPassword() {
   if (success) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-        <div
-          className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
-          style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}
-        >
-          <CheckCircle size={32} />
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 shadow-[0_0_16px_rgba(66,204,99,0.15)]">
+          <CheckCircle size={32} className="text-[var(--accent)]" />
         </div>
-        <h2 className="mb-1 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+        <h2 className="mb-1 text-xl font-black tracking-tight text-[var(--text-primary)]">
           Contraseña actualizada
         </h2>
-        <p className="mb-6 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+        <p className="mb-6 text-sm leading-relaxed text-[var(--text-muted)]">
           Tu contraseña ha sido restablecida correctamente. Ya puedes iniciar sesión con tu nueva
           contraseña.
         </p>
         <Link
           to="/login"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
-          style={{ background: 'var(--accent)', color: 'var(--accent-text)' }}
+          className="glass-btn-primary inline-flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold"
         >
           Ir al inicio de sesión
         </Link>
@@ -89,29 +85,21 @@ export default function ResetPassword() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
       <Link
         to="/login"
-        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold transition-colors hover:underline"
-        style={{ color: 'var(--text-muted)' }}
+        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)] hover:underline"
       >
         <ArrowLeft size={14} />
         Volver al login
       </Link>
 
-      <h2 className="mb-1 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+      <h2 className="mb-1 text-xl font-black tracking-tight text-[var(--text-primary)]">
         Nueva contraseña
       </h2>
-      <p className="mb-6 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+      <p className="mb-6 text-sm leading-relaxed text-[var(--text-muted)]">
         Ingresa tu nueva contraseña para restablecer el acceso a tu cuenta.
       </p>
 
       {error && (
-        <div
-          className="mb-4 rounded-lg border px-4 py-3 text-sm"
-          style={{
-            background: 'var(--error-muted)',
-            color: 'var(--danger)',
-            borderColor: 'var(--error)',
-          }}
-        >
+        <div className="mb-4 rounded-2xl border border-[var(--error)]/20 bg-[var(--error)]/10 px-4 py-3 text-sm text-[var(--error)] backdrop-blur-xl">
           {error}
         </div>
       )}
@@ -122,8 +110,7 @@ export default function ResetPassword() {
           <div className="relative">
             <Lock
               size={16}
-              className="absolute top-1/2 left-3.5 -translate-y-1/2"
-              style={{ color: 'var(--text-muted)' }}
+              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-[var(--text-muted)]"
             />
             <Input
               type={showPassword ? 'text' : 'password'}
@@ -137,8 +124,7 @@ export default function ResetPassword() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute top-1/2 right-3 -translate-y-1/2"
-              style={{ color: 'var(--text-muted)' }}
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
             >
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
@@ -150,8 +136,7 @@ export default function ResetPassword() {
           <div className="relative">
             <Lock
               size={16}
-              className="absolute top-1/2 left-3.5 -translate-y-1/2"
-              style={{ color: 'var(--text-muted)' }}
+              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-[var(--text-muted)]"
             />
             <Input
               type={showPassword ? 'text' : 'password'}

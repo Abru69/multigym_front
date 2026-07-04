@@ -51,7 +51,6 @@ const features = [
   },
 ]
 
-// Stagger variants for Hero
 const heroStagger = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.15 } },
@@ -68,7 +67,6 @@ export default function Landing() {
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
 
-  // ─── Tenant Branding ───────────────────────────────────────────
   const { branding, isTenantContext } = useTenantBranding()
 
   if (!isTenantContext) {
@@ -95,9 +93,7 @@ export default function Landing() {
 
   return (
     <div className="bg-background min-h-screen font-sans">
-      {/* Hero Section */}
       <section className="relative flex min-h-screen flex-col overflow-hidden">
-        {/* Video / Image Background */}
         <div className="absolute inset-0 z-0">
           {branding.heroVideo ? (
             <video
@@ -117,14 +113,11 @@ export default function Landing() {
           ) : (
             <div className="bg-background h-full w-full" />
           )}
-          {/* Overlay to darken the video for contrast */}
           <div className="absolute inset-0 z-10 bg-black/60" />
-          {/* Subtle gradient from bottom to blend into the next section */}
           <div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-48 bg-gradient-to-t from-[var(--surface)] to-transparent" />
         </div>
 
-        {/* Nav */}
-        <nav className="relative z-50 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6">
+        <nav className="relative z-50 mx-auto flex w-full max-w-7xl items-center justify-between border-b border-white/[0.06] px-6 py-6 backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <div className="bg-accent text-accent-text flex h-10 w-10 items-center justify-center rounded-lg text-sm font-black">
               {branding.logoAbbr}
@@ -170,7 +163,7 @@ export default function Landing() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="bg-surface border-border absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border py-1 shadow-xl"
+                      className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.04] py-1 shadow-2xl backdrop-blur-2xl"
                     >
                       <Link
                         to={portalLink}
@@ -186,7 +179,7 @@ export default function Landing() {
                       >
                         Tienda
                       </Link>
-                      <div className="my-1 h-px bg-[var(--border)]" />
+                      <div className="my-1 h-px bg-white/[0.08]" />
                       <Button
                         variant="ghost"
                         onClick={handleLogout}
@@ -208,7 +201,6 @@ export default function Landing() {
           </div>
         </nav>
 
-        {/* Hero Content */}
         <div className="relative z-20 flex flex-1 flex-col items-center justify-center px-6 pt-10 pb-20 text-center">
           <motion.div
             variants={heroStagger}
@@ -217,7 +209,7 @@ export default function Landing() {
             className="mx-auto flex max-w-5xl flex-col items-center"
           >
             <motion.div variants={heroItem} className="mb-6">
-              <span className="bg-detail/15 text-detail inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.06] px-4 py-1.5 text-xs font-bold tracking-widest text-[var(--detail)] uppercase backdrop-blur-xl">
                 <Zap size={14} />
                 {branding.hero.badge}
               </span>
@@ -249,7 +241,7 @@ export default function Landing() {
               >
                 <Button
                   onClick={() => navigate(isAuthenticated ? portalLink : '/registro')}
-                  className="shadow-glow h-14 w-full gap-3 px-10 text-sm font-bold tracking-wider uppercase sm:w-auto"
+                  className="h-14 w-full gap-3 px-10 text-sm font-bold tracking-wider uppercase shadow-[0_0_16px_rgba(66,204,99,0.3)] backdrop-blur-sm sm:w-auto"
                 >
                   {ctaText}
                   <ChevronRight size={18} strokeWidth={3} />
@@ -274,13 +266,12 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="bg-surface border-border border-y">
+      <section className="border-y border-white/[0.06] bg-white/[0.02] backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-12 px-6 py-12 sm:flex-row sm:gap-24">
           {branding.stats.map(([val, label]) => (
             <div key={label} className="text-center">
               <p className="font-heading text-accent mb-1 text-4xl font-black sm:text-5xl">{val}</p>
-              <p className="text-text-secondary text-xs font-bold tracking-widest uppercase">
+              <p className="text-xs font-bold tracking-widest text-[var(--text-secondary)] uppercase">
                 {label}
               </p>
             </div>
@@ -288,14 +279,13 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="mx-auto max-w-7xl px-6 py-24 sm:py-32" ref={featuresRef}>
         <div className="mb-20 text-center">
           <h2 className="font-heading mb-4 text-3xl font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-5xl">
             {branding.featuresHeading}{' '}
             <span className="text-accent">{branding.featuresHeadingAccent}</span>
           </h2>
-          <p className="text-text-secondary mx-auto max-w-2xl text-lg">
+          <p className="mx-auto max-w-2xl text-lg text-[var(--text-secondary)]">
             {branding.featuresSubtitle}
           </p>
         </div>
@@ -307,33 +297,30 @@ export default function Landing() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={isFeaturesInView ? { opacity: 1, scale: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.1, ease: 'easeOut' }}
-              className="group bg-surface border-border hover:border-accent/50 relative overflow-hidden rounded-2xl border p-8 transition-colors duration-300"
+              className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] p-8 backdrop-blur-xl transition-colors duration-300 hover:border-[var(--accent)]/30"
             >
-              {/* Subtle hover glow inside the card */}
-              <div className="bg-accent pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-[0.02]" />
+              <div className="pointer-events-none absolute inset-0 bg-[var(--accent)] opacity-0 transition-opacity duration-300 group-hover:opacity-[0.02]" />
 
-              <div className="bg-background border-border mb-6 flex h-14 w-14 items-center justify-center rounded-xl border transition-transform duration-300 group-hover:scale-110">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.05] transition-transform duration-300 group-hover:scale-110">
                 <f.icon size={28} className="text-accent" strokeWidth={1.5} />
               </div>
               <h3 className="font-heading mb-3 text-xl font-bold tracking-tight text-[var(--text-primary)]">
                 {f.title}
               </h3>
-              <p className="text-text-secondary text-sm leading-relaxed">{f.desc}</p>
+              <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{f.desc}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* Final CTA */}
       <section className="px-6 pb-32">
-        <div className="bg-surface border-border relative mx-auto max-w-4xl overflow-hidden rounded-3xl border p-12 text-center sm:p-20">
-          {/* Glow effect behind */}
-          <div className="bg-accent/20 pointer-events-none absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 blur-[100px]" />
+        <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.03] p-12 text-center backdrop-blur-xl sm:p-20">
+          <div className="pointer-events-none absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 bg-[var(--accent)]/20 blur-[100px]" />
 
           <h2 className="font-heading relative z-10 mb-6 text-4xl font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-6xl">
             {isAuthenticated ? branding.ctaHeadingAuth : branding.ctaHeadingGuest}
           </h2>
-          <p className="text-text-secondary relative z-10 mx-auto mb-10 max-w-xl text-lg">
+          <p className="relative z-10 mx-auto mb-10 max-w-xl text-lg text-[var(--text-secondary)]">
             {isAuthenticated ? branding.ctaSubAuth : branding.ctaSubGuest}
           </p>
 
@@ -345,16 +332,7 @@ export default function Landing() {
             <Button
               variant="outline"
               onClick={() => navigate(isAuthenticated ? portalLink : '/registro')}
-              className="h-14 gap-3 border-none px-10 text-sm font-bold tracking-wider uppercase transition-colors"
-              style={{ background: 'var(--text-primary)', color: 'var(--bg-primary)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--accent)'
-                e.currentTarget.style.color = 'var(--accent-text)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--text-primary)'
-                e.currentTarget.style.color = 'var(--bg-primary)'
-              }}
+              className="h-14 gap-3 border-none bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] px-10 text-sm font-bold tracking-wider text-white uppercase transition-colors hover:brightness-110"
             >
               {isAuthenticated ? branding.ctaButtonAuth : branding.ctaButtonGuest}
               <ChevronRight size={18} strokeWidth={3} />
@@ -363,8 +341,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-border bg-background border-t px-6 py-10">
+      <footer className="border-t border-white/[0.06] bg-white/[0.02] px-6 py-10 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2">
             <div className="bg-accent text-accent-text flex h-8 w-8 items-center justify-center rounded text-xs font-black">
@@ -378,12 +355,12 @@ export default function Landing() {
             {!isTenantContext && (
               <Link
                 to="/platform/login"
-                className="text-text-muted hover:text-accent text-xs font-semibold transition-colors"
+                className="hover:text-accent text-xs font-semibold text-[var(--text-muted)] transition-colors"
               >
                 Panel SaaS (Propietario)
               </Link>
             )}
-            <p className="text-text-muted text-xs font-medium">
+            <p className="text-xs font-medium text-[var(--text-muted)]">
               © {new Date().getFullYear()} {branding.name}. {branding.tagline}.
             </p>
           </div>
