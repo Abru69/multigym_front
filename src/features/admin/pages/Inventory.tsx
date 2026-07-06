@@ -1,18 +1,17 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { productCategories } from '@/data/products'
 import { getProducts, createProduct, fetchApi } from '@/lib/api'
 import type { ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import { Plus, Edit2, Trash2, Package, AlertCircle, Image as ImageIcon } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
+import { DataTable, type DataTableColumn } from '@/components/ui/DataTable'
 import { useToastStore } from '@/components/ui/Toast'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
-import { EmptyState } from '../components/EmptyState'
-import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { useDebounce } from '@/hooks/useDebounce'
 
 interface ProductItem {
@@ -25,6 +24,22 @@ interface ProductItem {
   brand: string
   category: string
   image: string
+}
+
+const categoryBadgeClass: Record<string, string> = {
+  proteinas: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  creatinas: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  preworkout: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  vitaminas: 'bg-green-500/10 text-green-400 border-green-500/20',
+  accesorios: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+}
+
+const categoryLabel: Record<string, string> = {
+  proteinas: 'Proteínas',
+  creatinas: 'Creatinas',
+  preworkout: 'Pre-Workout',
+  vitaminas: 'Vitaminas',
+  accesorios: 'Accesorios',
 }
 
 export default function Inventory() {
@@ -164,6 +179,122 @@ export default function Inventory() {
     }
   }
 
+  const columns: DataTableColumn<ProductItem>[] = useMemo(
+    () => [
+      {
+        key: 'name',
+        label: 'Producto',
+        sortable: true,
+        render: (item) => (
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)]">
+              <img
+                src={item.image}
+                alt={item.name}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold text-[var(--text-primary)]">{item.name}</p>
+              <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
+                {item.brand}
+              </p>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'category',
+        label: 'Categoría',
+        render: (item) => (
+          <span
+            className={`inline-flex items-center rounded-lg border px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase ${
+              categoryBadgeClass[item.category] ?? 'border-gray-500/20 bg-gray-500/10 text-gray-400'
+            }`}
+          >
+            {categoryLabel[item.category] ?? item.category}
+          </span>
+        ),
+      },
+      {
+        key: 'price',
+        label: 'Precio',
+        sortable: true,
+        render: (item) => (
+          <span className="text-sm font-semibold text-[var(--text-primary)]">
+            {formatCurrency(item.price)}
+          </span>
+        ),
+      },
+      {
+        key: 'stock',
+        label: 'Stock',
+        sortable: true,
+        render: (item) => (
+          <div className="flex items-center gap-2">
+            <span
+              className="text-sm font-bold"
+              style={{
+                color: item.stock < 10 ? 'var(--error)' : 'var(--success)',
+              }}
+            >
+              {item.stock} uds
+            </span>
+            {item.stock < 10 && (
+              <AlertCircle size={14} className="text-[var(--error)]" aria-hidden="true" />
+            )}
+          </div>
+        ),
+      },
+      {
+        key: 'isAvailable',
+        label: 'Estado',
+        render: (item) => (
+          <span
+            className="inline-flex items-center rounded-full border border-white/[0.08] bg-[var(--card)]/80 px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase backdrop-blur-xl"
+            style={{
+              color: item.isAvailable ? 'var(--success)' : 'var(--error)',
+            }}
+          >
+            {item.isAvailable ? 'Activo' : 'Inactivo'}
+          </span>
+        ),
+      },
+      {
+        key: 'actions',
+        label: 'Acciones',
+        headerClassName: 'text-right',
+        className: 'text-right',
+        render: (item) => (
+          <div className="flex items-center justify-end gap-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                openEdit(item)
+              }}
+              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--text-primary)]"
+              aria-label={`Editar ${item.name}`}
+            >
+              <Edit2 size={16} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setDeleteTarget(item)
+              }}
+              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+              aria-label={`Eliminar ${item.name}`}
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        ),
+      },
+    ],
+    []
+  )
+
   return (
     <div className="space-y-6">
       <AdminHeader
@@ -173,7 +304,7 @@ export default function Inventory() {
         action={
           <button
             onClick={openCreate}
-            className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
           >
             <Plus size={16} /> Nuevo Producto
           </button>
@@ -209,139 +340,16 @@ export default function Inventory() {
 
       {isLoading ? (
         <LoadingState text="Cargando inventario..." />
-      ) : filtered.length === 0 ? (
-        <EmptyState
-          icon={Package}
-          title="Inventario vacío"
-          description="No se encontraron productos con esos filtros."
-          action={
-            <button
-              onClick={openCreate}
-              className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
-            >
-              <Plus size={16} /> Agregar Producto
-            </button>
-          }
-        />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl">
-          <div className="overflow-x-auto">
-            <table className="w-full" aria-label="Inventario de productos">
-              <thead>
-                <tr className="border-b border-[var(--border)] bg-[var(--surface)]">
-                  <th className="px-6 py-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Producto
-                  </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Categoría
-                  </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Precio
-                  </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Stock
-                  </th>
-                  <th className="px-6 py-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Estado
-                  </th>
-                  <th className="px-6 py-3 text-right text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/[0.04]">
-                <AnimatePresence>
-                  {filtered.map((product) => (
-                    <motion.tr
-                      key={product.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="group transition-colors hover:bg-[var(--card)]"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)]">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="h-full w-full object-cover"
-                              loading="lazy"
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-[var(--text-primary)]">
-                              {product.name}
-                            </p>
-                            <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
-                              {product.brand}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="glass-badge rounded-xl px-2.5 py-1 text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
-                          {product.category}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold text-[var(--text-primary)]">
-                        {formatCurrency(product.price)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="text-sm font-bold"
-                            style={{
-                              color:
-                                product.stock < 10 ? 'var(--warning)' : 'var(--text-secondary)',
-                            }}
-                          >
-                            {product.stock} uds
-                          </span>
-                          {product.stock < 10 && (
-                            <AlertCircle
-                              size={14}
-                              className="text-[var(--warning)]"
-                              aria-hidden="true"
-                            />
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className="glass-badge rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase"
-                          style={{
-                            color: product.isAvailable ? 'var(--success)' : 'var(--error)',
-                          }}
-                        >
-                          {product.isAvailable ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                          <button
-                            onClick={() => openEdit(product)}
-                            className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--text-primary)]"
-                            aria-label={`Editar ${product.name}`}
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => setDeleteTarget(product)}
-                            className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
-                            aria-label={`Eliminar ${product.name}`}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <DataTable
+          columns={columns}
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          onRowClick={openEdit}
+          emptyIcon={Package}
+          emptyTitle="Inventario vacío"
+          emptyDescription="No se encontraron productos con esos filtros."
+        />
       )}
 
       {/* Create/Edit Modal */}
@@ -521,7 +529,7 @@ export default function Inventory() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
           >
             {isSaving && (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />

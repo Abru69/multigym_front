@@ -188,13 +188,13 @@ export default function Exercises() {
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex w-full shrink-0 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1 shadow-sm backdrop-blur-xl sm:w-fit">
+      <div className="flex w-full shrink-0 rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-1 shadow-sm backdrop-blur-xl sm:w-fit">
         <button
           onClick={() => handleTabChange('exercises')}
           className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all sm:px-6 ${
             activeTab === 'exercises'
-              ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]'
-              : 'text-[var(--text-muted)] hover:bg-[var(--card)] hover:text-[var(--text-primary)]'
+              ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.25)]'
+              : 'text-[var(--text-secondary)] hover:bg-white/[0.04]'
           }`}
         >
           Grupos Musculares
@@ -203,8 +203,8 @@ export default function Exercises() {
           onClick={() => handleTabChange('routines')}
           className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all sm:px-6 ${
             activeTab === 'routines'
-              ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]'
-              : 'text-[var(--text-muted)] hover:bg-[var(--card)] hover:text-[var(--text-primary)]'
+              ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.25)]'
+              : 'text-[var(--text-secondary)] hover:bg-white/[0.04]'
           }`}
         >
           Plantillas de Rutinas
@@ -220,7 +220,7 @@ export default function Exercises() {
             action={
               <button
                 onClick={() => setIsCreatingGroup(true)}
-                className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
               >
                 <Plus size={16} /> Agregar Grupo
               </button>
@@ -237,7 +237,7 @@ export default function Exercises() {
               action={
                 <button
                   onClick={() => setIsCreatingGroup(true)}
-                  className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
                 >
                   <Plus size={16} /> Crear Grupo
                 </button>
@@ -254,7 +254,7 @@ export default function Exercises() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => setSelectedGroup(group.name)}
-                    className="group cursor-pointer overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:shadow-[0_0_32px_rgba(66,204,99,0.08)]"
+                    className="relative cursor-pointer overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-6 backdrop-blur-xl transition-all duration-300 hover:border-white/[0.12] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
@@ -265,6 +265,8 @@ export default function Exercises() {
                     }}
                     aria-label={`Ver ejercicios de ${group.name}`}
                   >
+                    <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.04] to-transparent" />
+
                     {group.imageUrl ? (
                       <div className="relative h-32 overflow-hidden">
                         <img
@@ -276,7 +278,7 @@ export default function Exercises() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       </div>
                     ) : (
-                      <div className="flex h-32 items-center justify-center bg-[var(--surface)]">
+                      <div className="relative flex h-32 items-center justify-center bg-[var(--surface)]">
                         <Dumbbell
                           size={32}
                           className="text-[var(--accent)] opacity-40"
@@ -285,12 +287,12 @@ export default function Exercises() {
                       </div>
                     )}
 
-                    <div className="p-4">
+                    <div className="relative">
                       <h3 className="text-sm font-bold text-[var(--text-primary)]">{group.name}</h3>
                       <p className="mt-1 line-clamp-2 text-xs text-[var(--text-muted)]">
                         {group.description || 'Explora los ejercicios de este grupo muscular.'}
                       </p>
-                      <div className="mt-3 inline-flex rounded-xl border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-2.5 py-1">
+                      <div className="mt-3 inline-flex rounded-xl bg-[var(--accent)]/15 px-2.5 py-1 shadow-[0_0_8px_rgba(66,204,99,0.1)]">
                         <span className="text-[10px] font-bold text-[var(--accent)]">
                           {count} {count === 1 ? 'ejercicio' : 'ejercicios'}
                         </span>
@@ -347,7 +349,7 @@ export default function Exercises() {
                     className="h-10 w-full cursor-not-allowed rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-muted)] opacity-60"
                   />
                 </FormField>
-                <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+                <div className="flex justify-end gap-3 border-t border-white/[0.06] pt-4">
                   <button
                     onClick={() => {
                       setIsCreating(false)
@@ -355,14 +357,14 @@ export default function Exercises() {
                       setFormName('')
                     }}
                     disabled={isSaving}
-                    className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
+                    className="rounded-2xl border border-white/[0.08] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={editingExercise ? handleEditExercise : handleSave}
                     disabled={isSaving}
-                    className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
+                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
                   >
                     {isSaving && (
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -386,7 +388,7 @@ export default function Exercises() {
                   />
                   <button
                     onClick={() => setIsCreating(true)}
-                    className="glass-btn-primary inline-flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold"
+                    className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
                   >
                     <Plus size={16} /> Nuevo
                   </button>
@@ -405,7 +407,7 @@ export default function Exercises() {
                       !search ? (
                         <button
                           onClick={() => setIsCreating(true)}
-                          className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold"
+                          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-4 py-2 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
                         >
                           <Plus size={16} /> Crear Ejercicio
                         </button>
@@ -421,9 +423,9 @@ export default function Exercises() {
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          className="group flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 backdrop-blur-xl transition-all hover:bg-[var(--surface-hover)]"
+                          className="group flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-[var(--card)] p-3 backdrop-blur-xl transition-all hover:bg-[var(--surface-hover)]"
                         >
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.06] bg-[var(--card)]">
                             <Dumbbell
                               size={18}
                               className="text-[var(--accent)]"
@@ -442,14 +444,14 @@ export default function Exercises() {
                                 setFormName(exercise.name)
                                 setIsCreating(true)
                               }}
-                              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--accent)]"
+                              className="rounded-xl border border-white/[0.06] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--accent)]"
                               aria-label={`Editar ${exercise.name}`}
                             >
                               <Edit2 size={14} />
                             </button>
                             <button
                               onClick={() => setDeleteTarget(exercise)}
-                              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+                              className="rounded-xl border border-white/[0.06] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
                               aria-label={`Eliminar ${exercise.name}`}
                             >
                               <Trash2 size={14} />
@@ -510,16 +512,16 @@ export default function Exercises() {
                   className="h-10 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
-              <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+              <div className="flex justify-end gap-3 border-t border-white/[0.06] pt-4">
                 <button
                   onClick={() => setIsCreatingGroup(false)}
-                  className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
+                  className="rounded-2xl border border-white/[0.08] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSaveNewGroup}
-                  className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
                 >
                   Guardar
                 </button>

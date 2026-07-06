@@ -6,11 +6,11 @@ export function AuthLayout() {
   const { branding } = useTenantBranding()
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4">
+    <div className="mesh-bg relative flex min-h-screen items-center justify-center p-4">
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 h-[400px] w-[400px] rounded-full bg-[var(--accent)]/5 blur-[120px]" />
-        <div className="absolute right-1/4 bottom-1/4 h-[300px] w-[300px] rounded-full bg-[var(--detail)]/5 blur-[100px]" />
+        <div className="absolute top-1/4 left-1/4 h-[400px] w-[400px] rounded-full bg-[var(--accent)]/10 blur-[120px]" />
+        <div className="absolute right-1/4 bottom-1/4 h-[300px] w-[300px] rounded-full bg-[var(--detail)]/10 blur-[100px]" />
       </div>
 
       <motion.div
@@ -21,7 +21,7 @@ export function AuthLayout() {
       >
         {/* Logo */}
         <Link to="/" className="mb-8 flex items-center justify-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 text-lg font-black text-[var(--accent)] shadow-[0_0_16px_rgba(66,204,99,0.15)]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 text-lg font-black text-[var(--accent)] shadow-[0_0_20px_rgba(66,204,99,0.2)]">
             {branding.logoAbbr}
           </div>
           <div>
@@ -33,8 +33,11 @@ export function AuthLayout() {
         </Link>
 
         {/* Glass Card */}
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[var(--depth-3)] backdrop-blur-2xl sm:p-8">
-          <Outlet />
+        <div className="relative rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[var(--card)]/90 to-[var(--surface)]/95 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.4)] backdrop-blur-2xl sm:p-8">
+          <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.02] to-transparent" />
+          <div className="relative z-10">
+            <Outlet />
+          </div>
         </div>
       </motion.div>
     </div>

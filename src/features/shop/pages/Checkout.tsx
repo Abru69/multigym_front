@@ -27,7 +27,6 @@ export default function Checkout() {
   const handleSimulatePayment = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // Simulate network request
     await new Promise((r) => setTimeout(r, 2000))
     setLoading(false)
     setStep('success')
@@ -41,7 +40,7 @@ export default function Checkout() {
         <div className="mb-10 flex items-center justify-center">
           <div className="flex items-center gap-3">
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${step === 'shipping' || step === 'payment' ? 'bg-[var(--accent)] text-white' : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-all ${step === 'shipping' || step === 'payment' ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]' : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'}`}
             >
               1
             </div>
@@ -50,9 +49,9 @@ export default function Checkout() {
             >
               Envío
             </span>
-            <div className="h-0.5 w-10 bg-white/[0.08]" />
+            <div className="h-0.5 w-10 bg-white/[0.06]" />
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${step === 'payment' ? 'bg-[var(--accent)] text-white' : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-all ${step === 'payment' ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]' : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'}`}
             >
               2
             </div>
@@ -114,7 +113,7 @@ export default function Checkout() {
             </div>
 
             {/* Order Summary Sidebar */}
-            <div className="h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 backdrop-blur-xl">
+            <div className="h-fit rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-6 backdrop-blur-xl">
               <h3 className="mb-4 text-lg font-bold text-[var(--text-primary)]">Resumen</h3>
               <div className="scrollbar-hide mb-6 max-h-60 space-y-3 overflow-y-auto pr-2">
                 {items.map((item) => (
@@ -138,7 +137,7 @@ export default function Checkout() {
                   </div>
                 ))}
               </div>
-              <div className="space-y-2 border-t border-[var(--border)] pt-4 text-sm">
+              <div className="space-y-2 border-t border-white/[0.06] pt-4 text-sm">
                 <div className="flex justify-between text-[var(--text-secondary)]">
                   <span>Subtotal</span>
                   <span>{formatCurrency(subtotal)}</span>
@@ -239,7 +238,7 @@ export default function Checkout() {
             animate={{ opacity: 1, scale: 1 }}
             className="mx-auto max-w-md py-10 text-center"
           >
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--accent)]/10 backdrop-blur">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent)]/10 to-[var(--success)]/5 shadow-[0_0_24px_rgba(66,204,99,0.15)]">
               <CheckCircle2 size={40} className="text-[var(--success)]" />
             </div>
             <h2 className="mb-2 text-2xl font-bold text-[var(--text-primary)]">¡Pago Exitoso!</h2>
@@ -247,7 +246,7 @@ export default function Checkout() {
               Tu orden ha sido confirmada. Te enviaremos un correo con los detalles del envío y
               número de rastreo.
             </p>
-            <div className="mb-8 flex items-center gap-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-left backdrop-blur-xl">
+            <div className="mb-8 flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-4 text-left backdrop-blur-xl">
               <div className="flex h-10 w-10 items-center justify-center rounded bg-[var(--card)] text-[var(--text-muted)]">
                 <Package size={20} />
               </div>

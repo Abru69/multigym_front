@@ -7,7 +7,15 @@ interface SpinnerProps {
 }
 
 function Spinner({ size = 20, className }: SpinnerProps) {
-  return <Loader2 size={size} className={cn('animate-spin text-[var(--accent)]', className)} />
+  return (
+    <Loader2
+      size={size}
+      className={cn(
+        'animate-spin text-[var(--accent)] drop-shadow-[0_0_8px_rgba(66,204,99,0.4)]',
+        className
+      )}
+    />
+  )
 }
 
 export { Spinner }

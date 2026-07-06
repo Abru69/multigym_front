@@ -69,7 +69,7 @@ export default function ProductDetail() {
           animate={{ opacity: 1, x: 0 }}
           className="space-y-4"
         >
-          <div className="aspect-square overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-xl">
+          <div className="aspect-square overflow-hidden rounded-3xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] backdrop-blur-xl">
             <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
           </div>
         </motion.div>
@@ -121,7 +121,7 @@ export default function ProductDetail() {
 
           <div className="mt-auto space-y-4">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-2">
+              <div className="flex h-14 items-center rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2">
                 <Button
                   variant="outline"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -196,7 +196,7 @@ export default function ProductDetail() {
                   </strong>
                 </span>
               </div>
-              <div className="overflow-hidden rounded-2xl border border-[var(--border)]">
+              <div className="overflow-hidden rounded-2xl border border-white/[0.06]">
                 {product.nutritionFacts.map((fact, i) => (
                   <div
                     key={fact.label}
@@ -229,7 +229,7 @@ export default function ProductDetail() {
                     d.value && (
                       <li
                         key={d.label}
-                        className="flex justify-between border-b border-[var(--border)] pb-2"
+                        className="flex justify-between border-b border-white/[0.06] pb-2"
                       >
                         <span className="text-[var(--text-muted)]">{d.label}</span>
                         <span className="font-medium text-[var(--text-primary)] capitalize">

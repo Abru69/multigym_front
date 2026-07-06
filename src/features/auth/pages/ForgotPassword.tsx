@@ -59,7 +59,7 @@ export default function ForgotPassword() {
         </p>
         <Link
           to="/login"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)] hover:underline"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
         >
           <ArrowLeft size={14} /> Volver al inicio de sesión
         </Link>
@@ -71,7 +71,7 @@ export default function ForgotPassword() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
       <Link
         to="/login"
-        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)] hover:underline"
+        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
       >
         <ArrowLeft size={14} /> Volver
       </Link>

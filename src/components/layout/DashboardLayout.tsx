@@ -49,7 +49,7 @@ export function DashboardLayout({
           <div className="flex items-center gap-6">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-secondary)] backdrop-blur-md transition-all hover:bg-white/[0.08] lg:hidden"
+              className="rounded-xl border border-white/[0.08] bg-[var(--card)]/80 p-2 text-[var(--text-secondary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] lg:hidden"
             >
               <Menu size={20} />
             </button>
@@ -88,8 +88,7 @@ export function DashboardLayout({
                       {isActive && (
                         <motion.div
                           layoutId="nav-indicator"
-                          className="absolute inset-x-0 -bottom-[13px] h-[2px] bg-gradient-to-r from-[var(--accent)] to-[var(--detail)]"
-                          style={{ boxShadow: '0 2px 8px rgba(66,204,99,0.3)' }}
+                          className="absolute inset-x-0 -bottom-[13px] h-[2px] bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] shadow-[0_0_20px_rgba(66,204,99,0.25)]"
                           transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                         />
                       )}
@@ -123,7 +122,7 @@ export function DashboardLayout({
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] py-2 shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+                    className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-white/[0.08] bg-[var(--card)]/90 py-2 shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
                   >
                     <div className="mb-1 border-b border-[var(--border)] px-4 py-3">
                       <p className="truncate text-sm font-bold text-[var(--text-primary)]">
@@ -162,7 +161,7 @@ export function DashboardLayout({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.3 }}
-              className="absolute top-0 left-0 flex h-screen w-64 flex-col border-r border-[var(--border)] bg-[var(--card)] shadow-[0_0_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+              className="absolute top-0 left-0 flex h-screen w-64 flex-col border-r border-[var(--border)] bg-[var(--card)]/95 shadow-[0_0_60px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b border-[var(--border)] p-5">
@@ -172,7 +171,7 @@ export function DashboardLayout({
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-1.5 text-[var(--text-secondary)] backdrop-blur-md transition-all hover:bg-white/[0.08]"
+                  className="rounded-xl border border-white/[0.08] bg-[var(--card)]/80 p-1.5 text-[var(--text-secondary)] backdrop-blur-xl transition-all hover:bg-white/[0.08]"
                 >
                   <X size={18} />
                 </button>
@@ -206,6 +205,7 @@ export function DashboardLayout({
 
       {/* Main Content */}
       <main className="relative z-10 flex-1 overflow-x-hidden p-4 lg:p-8">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_at_50%_0%,rgba(66,204,99,0.04)_0%,transparent_70%)]" />
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}

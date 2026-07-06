@@ -48,9 +48,7 @@ export default function Catalog() {
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:py-8 lg:py-10">
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <h1 className="mb-2 text-3xl font-black text-[var(--text-primary)] sm:text-4xl">
-            Suplementación
-          </h1>
+          <h1 className="text-gradient mb-2 text-3xl font-black sm:text-4xl">Suplementación</h1>
           <p className="text-sm text-[var(--text-secondary)]">
             Potencia tus resultados con productos premium.
           </p>
@@ -78,7 +76,7 @@ export default function Catalog() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full cursor-pointer appearance-none rounded-xl border border-[var(--border)] bg-[var(--card)] py-3 pr-10 pl-11 text-sm text-[var(--text-primary)] transition-all outline-none focus:ring-2 focus:ring-[var(--accent)] sm:w-48"
+              className="w-full cursor-pointer appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] py-3 pr-10 pl-11 text-sm text-[var(--text-primary)] transition-all duration-300 outline-none hover:border-[var(--border-hover)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
             >
               {productCategories.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -97,7 +95,7 @@ export default function Catalog() {
           ))}
         </div>
       ) : (
-        <div className="rounded-3xl border border-dashed border-[var(--border)] px-4 py-20 text-center">
+        <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)]/50 px-4 py-20 text-center backdrop-blur-xl">
           <PackageX size={48} className="mx-auto mb-4 text-[var(--text-muted)] opacity-40" />
           <h3 className="mb-2 text-lg font-semibold text-[var(--text-primary)]">
             No se encontraron productos

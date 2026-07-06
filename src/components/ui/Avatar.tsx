@@ -15,12 +15,12 @@ const sizeClasses = {
 }
 
 const colorPalette = [
-  'bg-blue-500/20 text-blue-400',
-  'bg-emerald-500/20 text-emerald-400',
-  'bg-purple-500/20 text-purple-400',
-  'bg-amber-500/20 text-amber-400',
-  'bg-rose-500/20 text-rose-400',
-  'bg-cyan-500/20 text-cyan-400',
+  'bg-blue-500/20 text-blue-400 ring-blue-500/20',
+  'bg-emerald-500/20 text-emerald-400 ring-emerald-500/20',
+  'bg-purple-500/20 text-purple-400 ring-purple-500/20',
+  'bg-amber-500/20 text-amber-400 ring-amber-500/20',
+  'bg-rose-500/20 text-rose-400 ring-rose-500/20',
+  'bg-cyan-500/20 text-cyan-400 ring-cyan-500/20',
 ]
 
 function Avatar({ src, name, size = 'md', className }: AvatarProps) {
@@ -38,7 +38,11 @@ function Avatar({ src, name, size = 'md', className }: AvatarProps) {
       <img
         src={src}
         alt={name}
-        className={cn('rounded-full object-cover', sizeClasses[size], className)}
+        className={cn(
+          'rounded-full object-cover ring-2 ring-white/[0.06]',
+          sizeClasses[size],
+          className
+        )}
       />
     )
   }
@@ -46,7 +50,7 @@ function Avatar({ src, name, size = 'md', className }: AvatarProps) {
   return (
     <div
       className={cn(
-        'flex items-center justify-center rounded-full font-semibold',
+        'flex items-center justify-center rounded-full font-semibold ring-2',
         sizeClasses[size],
         colorPalette[colorIndex],
         className

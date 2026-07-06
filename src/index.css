@@ -2,9 +2,7 @@
 
 /* =============================================
    DESIGN SYSTEM — DARK THEME (EXCLUSIVE)
-   =============================================
-   Premium gym/fitness identity.
-   Sporty, clean, technological, minimal.
+   Premium Glass Gym Identity
    ============================================= */
 
 /* ===== TAILWIND @theme TOKENS ===== */
@@ -68,7 +66,7 @@
   /* Secondary — Deep blue */
   --secondary: #012742;
 
-  /* Accent — Green energetic (same as primary) */
+  /* Accent — Green energetic */
   --accent: #42cc63;
   --accent-hover: #35b454;
   --accent-muted: rgba(66, 204, 99, 0.12);
@@ -79,7 +77,7 @@
   --border: #263244;
   --border-hover: #304256;
 
-  /* Semantic — Support colors */
+  /* Semantic */
   --success: #22c55e;
   --success-hover: #16a34a;
   --warning: #f59e0b;
@@ -96,7 +94,7 @@
   --radius-xl: 1rem;
   --radius-full: 9999px;
 
-  /* Shadows — subtle, not exaggerated */
+  /* Shadows */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
@@ -122,22 +120,65 @@
   --depth-3: 0 8px 32px rgba(0, 0, 0, 0.5);
   --depth-4: 0 16px 48px rgba(0, 0, 0, 0.6);
 
-  /* Accent gradients */
+  /* Premium Gradients */
   --gradient-accent: linear-gradient(135deg, #42cc63 0%, #35b454 100%);
+  --gradient-accent-strong: linear-gradient(135deg, #42cc63 0%, #22c55e 50%, #8be7a0 100%);
   --gradient-accent-glow: 0 0 30px rgba(66, 204, 99, 0.25);
   --gradient-accent-subtle: linear-gradient(
     135deg,
     rgba(66, 204, 99, 0.12) 0%,
     rgba(66, 204, 99, 0.04) 100%
   );
+  --gradient-card: linear-gradient(135deg, rgba(26, 35, 50, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
+  --gradient-surface: linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(11, 18, 32, 0.9) 100%);
+  --gradient-border: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  --gradient-mesh-1: radial-gradient(
+    ellipse at 20% 80%,
+    rgba(66, 204, 99, 0.06) 0%,
+    transparent 50%
+  );
+  --gradient-mesh-2: radial-gradient(
+    ellipse at 80% 20%,
+    rgba(59, 130, 246, 0.04) 0%,
+    transparent 50%
+  );
+  --gradient-mesh-3: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(139, 231, 160, 0.03) 0%,
+    transparent 60%
+  );
+
+  /* Glow System */
+  --glow-accent: 0 0 20px rgba(66, 204, 99, 0.15);
+  --glow-accent-md: 0 0 30px rgba(66, 204, 99, 0.2);
+  --glow-accent-lg: 0 0 50px rgba(66, 204, 99, 0.3);
+  --glow-accent-xl: 0 0 80px rgba(66, 204, 99, 0.35);
+  --glow-subtle: 0 0 15px rgba(255, 255, 255, 0.03);
+  --glow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
 
   /* Ambient light */
-  --ambient-glow: radial-gradient(ellipse at 50% 0%, rgba(66, 204, 99, 0.04) 0%, transparent 70%);
+  --ambient-glow: radial-gradient(ellipse at 50% 0%, rgba(66, 204, 99, 0.05) 0%, transparent 70%);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Muscle group colors */
+  --muscle-pecho: #ef4444;
+  --muscle-espalda: #3b82f6;
+  --muscle-hombros: #f59e0b;
+  --muscle-biceps: #8b5cf6;
+  --muscle-triceps: #ec4899;
+  --muscle-piernas: #22c55e;
+  --muscle-gluteos: #06b6d4;
+  --muscle-abdomen: #f97316;
+  --muscle-cardio: #ef4444;
+  --muscle-cuerpo-completo: #6366f1;
 }
 
 /* ===== BASE ===== */
@@ -200,6 +241,8 @@ select option {
 }
 
 /* ===== CUSTOM UTILITIES ===== */
+
+/* Glass variants */
 @utility glass {
   background: var(--card);
   backdrop-filter: blur(16px);
@@ -229,14 +272,34 @@ select option {
   box-shadow: var(--depth-2);
 }
 
+@utility glass-premium {
+  background: linear-gradient(135deg, rgba(26, 35, 50, 0.7) 0%, rgba(17, 24, 39, 0.8) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Glow utilities */
 @utility accent-glow {
-  box-shadow: var(--shadow-glow);
+  box-shadow: var(--glow-accent);
+}
+
+@utility accent-glow-md {
+  box-shadow: var(--glow-accent-md);
+}
+
+@utility accent-glow-lg {
+  box-shadow: var(--glow-accent-lg);
 }
 
 @utility accent-glow-strong {
   box-shadow: var(--gradient-accent-glow);
 }
 
+/* Text gradient */
 @utility text-gradient {
   background: linear-gradient(135deg, var(--accent) 0%, var(--detail) 100%);
   -webkit-background-clip: text;
@@ -244,14 +307,39 @@ select option {
   background-clip: text;
 }
 
-@utility scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
+@utility text-gradient-strong {
+  background: linear-gradient(135deg, #42cc63 0%, #22c55e 40%, #8be7a0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
+/* Card premium */
+@utility card-premium {
+  background: linear-gradient(135deg, rgba(26, 35, 50, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Noise overlay */
+@utility noise-overlay {
+  position: relative;
+}
+
+/* Mesh background */
+@utility mesh-bg {
+  background:
+    var(--gradient-mesh-1), var(--gradient-mesh-2), var(--gradient-mesh-3), var(--bg-primary);
+}
+
+/* Border gradient effect */
+@utility border-gradient {
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Depth utilities */
 @utility depth-1 {
   box-shadow: var(--depth-1);
 }
@@ -266,6 +354,15 @@ select option {
 
 @utility depth-4 {
   box-shadow: var(--depth-4);
+}
+
+/* Scrollbar hide */
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ===== ANIMATIONS ===== */
@@ -310,10 +407,115 @@ select option {
   }
 }
 
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.9);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(66, 204, 99, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(66, 204, 99, 0.3);
+  }
+}
+
 @utility pulse-glow-anim {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
 @utility float-anim {
   animation: float 3s ease-in-out infinite;
+}
+
+@utility gradient-shift-anim {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+@utility fade-in-up-anim {
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+@utility glow-pulse-anim {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* ===== NOISE TEXTURE (SVG) ===== */
+.noise-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+}
+
+/* ===== MESH BACKGROUND ===== */
+.mesh-bg {
+  background:
+    var(--gradient-mesh-1), var(--gradient-mesh-2), var(--gradient-mesh-3), var(--bg-primary);
+}
+
+/* ===== PREMIUM CARD INNER HIGHLIGHT ===== */
+.card-highlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== TABLE ROW HOVER GLOW ===== */
+.table-row-glow {
+  transition: all 200ms ease;
+}
+.table-row-glow:hover {
+  background: rgba(66, 204, 99, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(66, 204, 99, 0.1);
 }

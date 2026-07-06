@@ -60,7 +60,7 @@ function ToastContainer() {
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 50, scale: 0.95 }}
               className={cn(
-                'flex min-w-[280px] items-center gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-sm',
+                'flex min-w-[280px] items-center gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-xl',
                 typeClasses[toast.type]
               )}
             >

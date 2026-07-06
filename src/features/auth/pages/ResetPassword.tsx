@@ -71,11 +71,10 @@ export default function ResetPassword() {
           Tu contraseña ha sido restablecida correctamente. Ya puedes iniciar sesión con tu nueva
           contraseña.
         </p>
-        <Link
-          to="/login"
-          className="glass-btn-primary inline-flex w-full items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold"
-        >
-          Ir al inicio de sesión
+        <Link to="/login">
+          <Button className="w-full gap-2 rounded-2xl py-3 text-sm font-bold">
+            Ir al inicio de sesión
+          </Button>
         </Link>
       </motion.div>
     )
@@ -85,7 +84,7 @@ export default function ResetPassword() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
       <Link
         to="/login"
-        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)] hover:underline"
+        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
       >
         <ArrowLeft size={14} />
         Volver al login

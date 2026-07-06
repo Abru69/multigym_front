@@ -54,7 +54,7 @@ export function ClientLayout() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 text-xs font-black text-[var(--accent)] shadow-[0_0_12px_rgba(66,204,99,0.15)]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 text-xs font-black text-[var(--accent)] shadow-[0_0_12px_rgba(66,204,99,0.12)]">
                 {branding.logoAbbr}
               </div>
               <span className="hidden text-sm font-bold tracking-tight text-[var(--text-primary)] sm:block">
@@ -71,7 +71,7 @@ export function ClientLayout() {
                     className={({ isActive }) =>
                       `flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
                         isActive
-                          ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_12px_rgba(66,204,99,0.3)]'
+                          ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.25)]'
                           : 'text-[var(--text-secondary)] hover:bg-[var(--card)] hover:text-[var(--text-primary)]'
                       }`
                     }
@@ -86,7 +86,7 @@ export function ClientLayout() {
           <div className="flex items-center gap-3">
             <Link
               to="/tienda/carrito"
-              className="relative rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-secondary)] backdrop-blur-md transition-all hover:bg-white/[0.08]"
+              className="relative rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-secondary)] backdrop-blur-md transition-all hover:border-[var(--accent)]/30 hover:bg-white/[0.08] hover:shadow-[0_0_12px_rgba(66,204,99,0.1)]"
             >
               <ShoppingCart size={20} />
               {cartCount > 0 && (
@@ -123,7 +123,7 @@ export function ClientLayout() {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] py-1 shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+                      className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-2xl border border-white/[0.08] bg-[var(--card)]/90 py-1 shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
                     >
                       <button
                         onClick={() => {
@@ -174,7 +174,7 @@ export function ClientLayout() {
 
       {/* Mobile Bottom Nav */}
       {isAuthenticated && (
-        <nav className="fixed right-0 bottom-0 left-0 z-30 flex items-center justify-around border-t border-[var(--border)] bg-[var(--card)] px-2 py-2 backdrop-blur-2xl lg:hidden">
+        <nav className="fixed right-0 bottom-0 left-0 z-30 flex items-center justify-around border-t border-white/[0.06] bg-[var(--card)]/90 px-2 py-2 backdrop-blur-2xl lg:hidden">
           {clientNav.map((item) => (
             <NavLink
               key={item.to}
@@ -182,7 +182,7 @@ export function ClientLayout() {
               className={({ isActive }) =>
                 `flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 transition-all ${
                   isActive
-                    ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_12px_rgba(66,204,99,0.3)]'
+                    ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_12px_rgba(66,204,99,0.25)]'
                     : 'text-[var(--text-muted)] hover:bg-[var(--card)]'
                 }`
               }

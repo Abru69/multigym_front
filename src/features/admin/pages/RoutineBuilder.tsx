@@ -358,101 +358,103 @@ export default function RoutineBuilder({
   return (
     <div className="flex w-full flex-col gap-6">
       {/* Header */}
-      <div className="flex flex-col items-start gap-6 border-b border-[var(--border)] pb-8 md:flex-row md:items-end">
-        <div className="w-full flex-1">
-          <div className="mb-4 flex items-center gap-3">
+      <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-4 backdrop-blur-xl">
+        <div className="flex flex-col items-start gap-6 md:flex-row md:items-end">
+          <div className="w-full flex-1">
+            <div className="mb-4 flex items-center gap-3">
+              {personalizedUser ? (
+                <button
+                  onClick={() => navigate('/admin/usuarios')}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-[var(--card)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
+                >
+                  <ArrowLeft size={16} /> Volver a Usuarios
+                </button>
+              ) : (
+                onBack && (
+                  <button
+                    onClick={onBack}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-[var(--card)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
+                  >
+                    <ArrowLeft size={16} /> Volver a Plantillas
+                  </button>
+                )
+              )}
+              <span className="inline-flex items-center rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-[var(--accent)] uppercase backdrop-blur-xl">
+                {personalizedUser ? 'MODO ASIGNACIÓN' : 'MODO PLANTILLA'}
+              </span>
+            </div>
+
+            <div className="group relative">
+              <input
+                type="text"
+                value={routineName}
+                onChange={(e) => setRoutineName(e.target.value)}
+                className="w-full border-b-2 border-transparent bg-transparent pb-2 text-3xl font-black text-[var(--text-primary)] transition-colors duration-200 outline-none placeholder:text-[var(--text-muted)]/30 hover:border-[var(--border-hover)] focus:border-[var(--accent)] sm:text-4xl"
+                placeholder="Escribe el nombre de la rutina aquí..."
+              />
+              <Edit2
+                size={16}
+                className="pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 text-[var(--text-muted)] opacity-0 transition-opacity group-hover:opacity-100"
+              />
+            </div>
+
+            <p className="mt-3 flex flex-wrap items-center gap-3 text-sm font-medium text-[var(--text-muted)]">
+              <span className="flex items-center gap-1.5">
+                <Activity size={16} /> {totalExercises} ejercicios añadidos
+              </span>
+              {personalizedUser && (
+                <>
+                  <span className="h-1 w-1 rounded-full bg-white/[0.15]" />
+                  <span className="flex items-center gap-1.5">
+                    <Users size={16} /> Personalizando para:{' '}
+                    <strong className="text-[var(--text-primary)]">{personalizedUser.name}</strong>
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+          <div className="mt-4 flex w-full items-center gap-3 md:mt-0 md:w-auto">
             {personalizedUser ? (
               <button
-                onClick={() => navigate('/admin/usuarios')}
-                className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
+                onClick={handleSaveAndAssign}
+                disabled={isSaving}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
               >
-                <ArrowLeft size={16} /> Volver a Usuarios
+                <Check size={16} />
+                Guardar y Asignar a {personalizedUser.name?.split(' ')[0] || personalizedUser.email}
               </button>
             ) : (
-              onBack && (
-                <button
-                  onClick={onBack}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
-                >
-                  <ArrowLeft size={16} /> Volver a Plantillas
-                </button>
-              )
-            )}
-            <span className="glass-badge rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-[var(--accent)] uppercase">
-              {personalizedUser ? 'MODO ASIGNACIÓN' : 'MODO PLANTILLA'}
-            </span>
-          </div>
-
-          <div className="group relative">
-            <input
-              type="text"
-              value={routineName}
-              onChange={(e) => setRoutineName(e.target.value)}
-              className="w-full border-b-2 border-transparent bg-transparent pb-2 text-3xl font-black text-[var(--text-primary)] transition-colors duration-200 outline-none placeholder:text-[var(--text-muted)]/30 hover:border-[var(--border-hover)] focus:border-[var(--accent)] sm:text-4xl"
-              placeholder="Escribe el nombre de la rutina aquí..."
-            />
-            <Edit2
-              size={16}
-              className="pointer-events-none absolute top-1/2 right-0 -translate-y-1/2 text-[var(--text-muted)] opacity-0 transition-opacity group-hover:opacity-100"
-            />
-          </div>
-
-          <p className="mt-3 flex flex-wrap items-center gap-3 text-sm font-medium text-[var(--text-muted)]">
-            <span className="flex items-center gap-1.5">
-              <Activity size={16} /> {totalExercises} ejercicios añadidos
-            </span>
-            {personalizedUser && (
               <>
-                <span className="h-1 w-1 rounded-full bg-white/[0.15]" />
-                <span className="flex items-center gap-1.5">
-                  <Users size={16} /> Personalizando para:{' '}
-                  <strong className="text-[var(--text-primary)]">{personalizedUser.name}</strong>
-                </span>
+                <button
+                  onClick={handleSaveTemplate}
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
+                >
+                  <Save size={16} />
+                  {isSaving ? 'Guardando...' : 'Guardar Plantilla'}
+                </button>
+                <button
+                  onClick={() => setShowAssignModal(true)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
+                >
+                  <Users size={16} /> Guardar y Asignar
+                </button>
               </>
             )}
-          </p>
-        </div>
-        <div className="mt-4 flex w-full items-center gap-3 md:mt-0 md:w-auto">
-          {personalizedUser ? (
-            <button
-              onClick={handleSaveAndAssign}
-              disabled={isSaving}
-              className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
-            >
-              <Check size={16} />
-              Guardar y Asignar a {personalizedUser.name?.split(' ')[0] || personalizedUser.email}
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={handleSaveTemplate}
-                disabled={isSaving}
-                className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
-              >
-                <Save size={16} />
-                {isSaving ? 'Guardando...' : 'Guardar Plantilla'}
-              </button>
-              <button
-                onClick={() => setShowAssignModal(true)}
-                className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
-              >
-                <Users size={16} /> Guardar y Asignar
-              </button>
-            </>
-          )}
+          </div>
         </div>
       </div>
 
       {/* Day tabs */}
-      <div className="flex flex-wrap gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1 shadow-sm backdrop-blur-xl">
+      <div className="flex flex-wrap gap-2 rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-1 shadow-sm backdrop-blur-xl">
         {DAYS.map((d) => (
           <button
             key={d.key}
             onClick={() => setSelectedDay(d.key)}
             className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
               selectedDay === d.key
-                ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]'
-                : 'text-[var(--text-muted)] hover:bg-[var(--card)] hover:text-[var(--text-primary)]'
+                ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.25)]'
+                : 'text-[var(--text-secondary)] hover:bg-white/[0.04]'
             }`}
           >
             {d.label}
@@ -479,14 +481,14 @@ export default function RoutineBuilder({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ delay: index * 0.05 }}
-              className="group flex flex-col gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl sm:flex-row sm:items-center sm:p-5"
+              className="group flex flex-col gap-4 rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-4 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all hover:border-white/[0.1] sm:flex-row sm:items-center sm:p-5"
             >
               <div className="flex shrink-0 items-center text-[var(--text-muted)]">
                 <GripVertical size={18} aria-hidden="true" />
               </div>
 
               {/* Image */}
-              <div className="h-32 w-full flex-shrink-0 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] sm:h-20 sm:w-24">
+              <div className="h-32 w-full flex-shrink-0 overflow-hidden rounded-xl border border-white/[0.06] bg-[var(--surface)] sm:h-20 sm:w-24">
                 {exercise.imageUrl ? (
                   <img
                     src={exercise.imageUrl}
@@ -522,7 +524,7 @@ export default function RoutineBuilder({
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-center backdrop-blur-xl">
+                  <div className="rounded-xl border border-white/[0.06] bg-[var(--surface)] px-4 py-2 text-center backdrop-blur-xl">
                     <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       Series
                     </p>
@@ -541,7 +543,7 @@ export default function RoutineBuilder({
                       aria-label="Número de series"
                     />
                   </div>
-                  <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-center backdrop-blur-xl">
+                  <div className="rounded-xl border border-white/[0.06] bg-[var(--surface)] px-4 py-2 text-center backdrop-blur-xl">
                     <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       Reps
                     </p>
@@ -555,7 +557,7 @@ export default function RoutineBuilder({
                       aria-label="Número de repeticiones"
                     />
                   </div>
-                  <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-center backdrop-blur-xl">
+                  <div className="rounded-xl border border-white/[0.06] bg-[var(--surface)] px-4 py-2 text-center backdrop-blur-xl">
                     <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       Descanso (s)
                     </p>
@@ -584,14 +586,14 @@ export default function RoutineBuilder({
         {/* Add button */}
         <button
           onClick={openExerciseModal}
-          className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[var(--border)] bg-transparent text-sm font-bold text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 hover:text-[var(--accent)]"
+          className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-white/[0.08] bg-[var(--surface)]/50 text-sm font-bold text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:bg-[var(--surface)] hover:text-[var(--accent)]"
         >
           <Plus size={18} /> Agregar Ejercicio a {DAYS.find((d) => d.key === selectedDay)?.label}
         </button>
 
         {currentExercises.length === 0 && (
           <div
-            className="cursor-pointer rounded-3xl border-2 border-dashed border-[var(--border)] bg-[var(--surface)] px-4 py-12 text-center backdrop-blur-xl transition-all hover:border-[var(--accent)] hover:bg-[var(--accent)]/5"
+            className="cursor-pointer rounded-3xl border-2 border-dashed border-white/[0.08] bg-[var(--surface)]/50 px-4 py-12 text-center backdrop-blur-xl transition-all hover:border-[var(--accent)] hover:bg-[var(--accent)]/5"
             onClick={openExerciseModal}
             role="button"
             tabIndex={0}
@@ -603,7 +605,7 @@ export default function RoutineBuilder({
             }}
             aria-label={`Añadir ejercicios al ${DAYS.find((d) => d.key === selectedDay)?.label}`}
           >
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)]">
               <Plus size={24} className="text-[var(--accent)]" aria-hidden="true" />
             </div>
             <p className="mb-2 text-lg font-bold text-[var(--text-primary)]">
@@ -671,18 +673,18 @@ export default function RoutineBuilder({
                 ))}
               </select>
             </FormField>
-            <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+            <div className="flex justify-end gap-3 border-t border-white/[0.06] pt-4">
               <button
                 onClick={() => setIsCreatingExercise(false)}
                 disabled={isSavingExercise}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
+                className="rounded-2xl border border-white/[0.08] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveNewExercise}
                 disabled={isSavingExercise}
-                className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
               >
                 {isSavingExercise && (
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -703,7 +705,7 @@ export default function RoutineBuilder({
                 <button
                   key={groupName}
                   onClick={() => setSelectedGroupForModal(groupName)}
-                  className="group relative h-32 overflow-hidden rounded-2xl border border-[var(--border)] backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:shadow-[0_0_24px_rgba(66,204,99,0.08)]"
+                  className="group relative h-32 overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] backdrop-blur-xl transition-all duration-300 hover:border-white/[0.12] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
                 >
                   {groupInfo.imageUrl ? (
                     <img
@@ -734,7 +736,7 @@ export default function RoutineBuilder({
               {selectedGroupForModal && (
                 <button
                   onClick={() => setSelectedGroupForModal(null)}
-                  className="inline-flex shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--text-primary)]"
+                  className="inline-flex shrink-0 items-center justify-center rounded-xl border border-white/[0.06] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--text-primary)]"
                   aria-label="Volver a grupos"
                 >
                   <ArrowLeft size={16} />
@@ -752,7 +754,7 @@ export default function RoutineBuilder({
               />
               <button
                 onClick={() => setIsCreatingExercise(true)}
-                className="glass-btn-primary inline-flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold"
+                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
               >
                 <Plus size={16} /> Nuevo
               </button>
@@ -766,9 +768,9 @@ export default function RoutineBuilder({
                   <button
                     key={exercise.id}
                     onClick={() => handleAddExercise(exercise)}
-                    className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 text-left backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:bg-[var(--surface-hover)]"
+                    className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-3 text-left backdrop-blur-xl transition-all duration-300 hover:border-white/[0.12] hover:bg-[var(--surface-hover)]"
                   >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)]">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.06] bg-[var(--card)]">
                       {exercise.imageUrl ? (
                         <img
                           src={exercise.imageUrl}
@@ -838,7 +840,7 @@ export default function RoutineBuilder({
                   className={`flex w-full items-center gap-4 rounded-2xl border p-3 text-left backdrop-blur-xl transition-all ${
                     isSelected
                       ? 'border-[var(--accent)]/50 bg-[var(--accent)]/10 shadow-[0_0_16px_rgba(66,204,99,0.1)]'
-                      : 'border-[var(--border)] bg-[var(--card)] hover:bg-[var(--surface-hover)]'
+                      : 'border-white/[0.06] bg-[var(--card)] hover:bg-[var(--surface-hover)]'
                   }`}
                 >
                   <div
@@ -850,7 +852,7 @@ export default function RoutineBuilder({
                   >
                     {isSelected && <Check size={12} color="white" strokeWidth={3} />}
                   </div>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-bold text-[var(--text-primary)]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.06] bg-[var(--card)] text-xs font-bold text-[var(--text-primary)]">
                     {(user.name || user.email || '')
                       .split(' ')
                       .map((n: string) => n[0])
@@ -876,17 +878,17 @@ export default function RoutineBuilder({
             )}
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+          <div className="flex justify-end gap-3 border-t border-white/[0.06] pt-4">
             <button
               onClick={() => setShowAssignModal(false)}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
+              className="rounded-2xl border border-white/[0.08] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
             >
               Cancelar
             </button>
             <button
               onClick={handleSaveAndAssign}
               disabled={isSaving}
-              className="glass-btn-primary inline-flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
             >
               {isSaving && (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />

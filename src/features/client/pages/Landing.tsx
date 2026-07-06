@@ -209,7 +209,7 @@ export default function Landing() {
             className="mx-auto flex max-w-5xl flex-col items-center"
           >
             <motion.div variants={heroItem} className="mb-6">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-hover)] bg-[var(--surface-hover)] px-4 py-1.5 text-xs font-bold tracking-widest text-[var(--detail)] uppercase backdrop-blur-xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.06] px-4 py-1.5 text-xs font-bold tracking-widest text-[var(--detail)] uppercase backdrop-blur-xl">
                 <Zap size={14} />
                 {branding.hero.badge}
               </span>
@@ -220,12 +220,20 @@ export default function Landing() {
               className="font-heading mb-8 text-5xl leading-[1.1] font-black tracking-tight text-white uppercase sm:text-7xl lg:text-8xl"
             >
               {branding.hero.title} <br />
-              <span className="text-accent">{branding.hero.titleAccent}</span>
+              <span
+                style={{
+                  background: 'linear-gradient(135deg, var(--accent) 0%, var(--detail) 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                {branding.hero.titleAccent}
+              </span>
             </motion.h1>
 
             <motion.p
               variants={heroItem}
-              className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed font-medium text-white/80 sm:text-xl"
+              className="mx-auto mb-12 max-w-2xl text-lg font-medium text-white/70"
             >
               {branding.hero.subtitle}
             </motion.p>
@@ -256,7 +264,7 @@ export default function Landing() {
                 <Button
                   variant="outline"
                   onClick={() => navigate('/tienda')}
-                  className="h-14 w-full border-none bg-white/10 px-10 text-sm font-bold tracking-wider text-white uppercase backdrop-blur-md hover:bg-white/20 sm:w-auto"
+                  className="h-14 w-full border-none bg-white/[0.06] px-10 text-sm font-bold tracking-wider text-white uppercase backdrop-blur-md hover:bg-white/[0.1] sm:w-auto"
                 >
                   {branding.hero.secondaryCta}
                 </Button>
@@ -297,11 +305,11 @@ export default function Landing() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={isFeaturesInView ? { opacity: 1, scale: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.1, ease: 'easeOut' }}
-              className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 backdrop-blur-xl transition-colors duration-300 hover:border-[var(--accent)]/30"
+              className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-8 backdrop-blur-xl transition-all duration-300 hover:border-white/[0.12] hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
             >
-              <div className="pointer-events-none absolute inset-0 bg-[var(--accent)] opacity-0 transition-opacity duration-300 group-hover:opacity-[0.02]" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent" />
 
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] transition-transform duration-300 group-hover:scale-110">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent)]/15 to-[var(--accent)]/5 shadow-[0_0_16px_rgba(66,204,99,0.08)] transition-transform duration-300 group-hover:scale-110">
                 <f.icon size={28} className="text-accent" strokeWidth={1.5} />
               </div>
               <h3 className="font-heading mb-3 text-xl font-bold tracking-tight text-[var(--text-primary)]">
@@ -314,8 +322,9 @@ export default function Landing() {
       </section>
 
       <section className="px-6 pb-32">
-        <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-12 text-center backdrop-blur-xl sm:p-20">
+        <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-12 text-center backdrop-blur-xl sm:p-20">
           <div className="pointer-events-none absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 bg-[var(--accent)]/20 blur-[100px]" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent" />
 
           <h2 className="font-heading relative z-10 mb-6 text-4xl font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-6xl">
             {isAuthenticated ? branding.ctaHeadingAuth : branding.ctaHeadingGuest}
@@ -332,7 +341,7 @@ export default function Landing() {
             <Button
               variant="outline"
               onClick={() => navigate(isAuthenticated ? portalLink : '/registro')}
-              className="h-14 gap-3 border-none bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] px-10 text-sm font-bold tracking-wider text-white uppercase transition-colors hover:brightness-110"
+              className="h-14 gap-3 border-none bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] px-10 text-sm font-bold tracking-wider text-white uppercase shadow-[0_0_32px_rgba(66,204,99,0.3)] transition-all hover:shadow-[0_0_48px_rgba(66,204,99,0.45)]"
             >
               {isAuthenticated ? branding.ctaButtonAuth : branding.ctaButtonGuest}
               <ChevronRight size={18} strokeWidth={3} />
@@ -341,7 +350,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="border-t border-[var(--border)] bg-[var(--surface)] px-6 py-10 backdrop-blur-xl">
+      <footer className="border-t border-white/[0.06] bg-[var(--surface)] px-6 py-10 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2">
             <div className="bg-accent text-accent-text flex h-8 w-8 items-center justify-center rounded text-xs font-black">

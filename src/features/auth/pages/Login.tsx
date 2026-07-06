@@ -129,7 +129,7 @@ export default function Login() {
       <div className="mt-4 text-center">
         <Link
           to="/forgot-password"
-          className="text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)] hover:underline"
+          className="text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
         >
           ¿Olvidaste tu contraseña?
         </Link>
