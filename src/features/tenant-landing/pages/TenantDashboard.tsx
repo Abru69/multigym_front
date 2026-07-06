@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { Zap, LogOut } from 'lucide-react'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useRoutineStore } from '@/features/client/store/routineStore'
@@ -42,7 +41,6 @@ export default function TenantDashboard() {
           </Link>
 
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <Link
               to="/app/rutinas"
               className="hidden text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] sm:block"

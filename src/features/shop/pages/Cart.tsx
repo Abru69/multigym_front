@@ -23,7 +23,7 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-white/[0.06] text-[var(--text-muted)] backdrop-blur-xl">
+        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[var(--surface-hover)] text-[var(--text-muted)] backdrop-blur-xl">
           <ShoppingBag size={40} />
         </div>
         <h2 className="mb-3 text-2xl font-bold text-[var(--text-primary)]">
@@ -54,7 +54,7 @@ export default function Cart() {
         </Link>
         <button
           onClick={clearCart}
-          className="rounded-lg border border-white/[0.06] bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-red-400 transition-colors"
+          className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-xs font-medium text-red-400 transition-colors"
         >
           Vaciar carrito
         </button>
@@ -73,12 +73,12 @@ export default function Cart() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
                 key={product.id}
-                className="group relative flex gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 backdrop-blur-xl"
+                className="group relative flex gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 backdrop-blur-xl"
               >
                 {/* Image */}
                 <Link
                   to={`/tienda/${product.slug}`}
-                  className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-white/[0.04] sm:h-28 sm:w-28"
+                  className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-[var(--card)] sm:h-28 sm:w-28"
                 >
                   <img
                     src={product.image}
@@ -114,7 +114,7 @@ export default function Cart() {
                   {/* Actions */}
                   <div className="mt-auto flex items-center justify-between pt-4">
                     {/* Qty controls */}
-                    <div className="flex h-8 items-center rounded-lg border border-white/[0.06] bg-white/[0.04] px-1">
+                    <div className="flex h-8 items-center rounded-lg border border-[var(--border)] bg-[var(--card)] px-1">
                       <button
                         onClick={() => updateQuantity(product.id, quantity - 1)}
                         className="flex h-full w-7 items-center justify-center text-[var(--text-secondary)] transition-colors"
@@ -148,7 +148,7 @@ export default function Cart() {
 
         {/* Order Summary */}
         <div className="sticky top-24 w-full lg:w-[380px]">
-          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-xl">
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 backdrop-blur-xl">
             <h3 className="mb-6 text-lg font-bold text-[var(--text-primary)]">Resumen de Orden</h3>
 
             <div className="space-y-4 text-sm">
@@ -163,7 +163,7 @@ export default function Cart() {
               <div className="flex justify-between">
                 <span className="text-[var(--text-secondary)]">Costo de envío</span>
                 <span
-                  className={`font-medium ${shipping === 0 ? 'text-green-400' : 'text-[var(--text-primary)]'}`}
+                  className={`font-medium ${shipping === 0 ? 'text-[var(--success)]' : 'text-[var(--text-primary)]'}`}
                 >
                   {shipping === 0 ? 'Gratis' : formatCurrency(shipping)}
                 </span>
@@ -175,7 +175,7 @@ export default function Cart() {
               )}
             </div>
 
-            <div className="my-6 border-t border-dashed border-white/[0.06]" />
+            <div className="my-6 border-t border-dashed border-[var(--border)]" />
 
             <div className="mb-8 flex items-end justify-between">
               <span className="font-bold text-[var(--text-primary)]">Total</span>

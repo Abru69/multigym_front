@@ -78,7 +78,7 @@ export default function Catalog() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full cursor-pointer appearance-none rounded-xl border border-white/[0.06] bg-white/[0.03] py-3 pr-10 pl-11 text-sm text-[var(--text-primary)] transition-all outline-none focus:ring-2 focus:ring-[var(--accent)] sm:w-48"
+              className="w-full cursor-pointer appearance-none rounded-xl border border-[var(--border)] bg-[var(--card)] py-3 pr-10 pl-11 text-sm text-[var(--text-primary)] transition-all outline-none focus:ring-2 focus:ring-[var(--accent)] sm:w-48"
             >
               {productCategories.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -97,7 +97,7 @@ export default function Catalog() {
           ))}
         </div>
       ) : (
-        <div className="rounded-3xl border border-dashed border-white/[0.08] px-4 py-20 text-center">
+        <div className="rounded-3xl border border-dashed border-[var(--border)] px-4 py-20 text-center">
           <PackageX size={48} className="mx-auto mb-4 text-[var(--text-muted)] opacity-40" />
           <h3 className="mb-2 text-lg font-semibold text-[var(--text-primary)]">
             No se encontraron productos

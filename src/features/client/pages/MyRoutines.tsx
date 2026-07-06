@@ -135,7 +135,7 @@ function ProgressRing({
             animate={{ scale: 1 }}
             transition={{ type: 'spring', damping: 10 }}
           >
-            <Trophy size={24} className="text-emerald-400" />
+            <Trophy size={24} className="text-[var(--success)]" />
           </motion.div>
         ) : (
           <>
@@ -187,12 +187,12 @@ function ExerciseCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.35 }}
-      className={`overflow-hidden rounded-2xl border bg-white/[0.03] backdrop-blur-xl transition-shadow ${
+      className={`overflow-hidden rounded-2xl border bg-[var(--card)] backdrop-blur-xl transition-shadow ${
         allDone
-          ? 'border-emerald-400'
+          ? 'border-[var(--success)]'
           : isExpanded
             ? 'border-[var(--accent)]'
-            : 'border-white/[0.06]'
+            : 'border-[var(--border)]'
       } ${isExpanded ? 'shadow-[0_0_16px_rgba(66,204,99,0.15)]' : ''}`}
     >
       <motion.div
@@ -205,7 +205,7 @@ function ExerciseCard({
           {String(index + 1).padStart(2, '0')}
         </span>
 
-        <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-xl bg-white/[0.04]">
+        <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-xl bg-[var(--card)]">
           {exercise.imageUrl && (
             <img
               src={exercise.imageUrl}
@@ -215,7 +215,7 @@ function ExerciseCard({
             />
           )}
           {allDone && (
-            <div className="absolute inset-0 flex items-center justify-center bg-emerald-400/20">
+            <div className="absolute inset-0 flex items-center justify-center bg-[var(--success)]/15">
               <CheckCircle2 size={20} className="text-white" />
             </div>
           )}
@@ -247,9 +247,9 @@ function ExerciseCard({
               {MUSCLE_LABELS[exercise.muscleGroup] ?? exercise.muscleGroup}
             </span>
           </div>
-          <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-[var(--surface-hover)]">
             <motion.div
-              className={`h-full rounded-full ${allDone ? 'bg-emerald-400' : 'bg-[var(--accent)]'}`}
+              className={`h-full rounded-full ${allDone ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'}`}
               animate={{ width: `${setProgress}%` }}
               transition={{ duration: 0.4, ease: 'easeOut' }}
             />
@@ -268,7 +268,7 @@ function ExerciseCard({
           )}
           <span
             className={`text-xs font-bold tabular-nums ${
-              allDone ? 'text-emerald-400' : 'text-[var(--text-muted)]'
+              allDone ? 'text-[var(--success)]' : 'text-[var(--text-muted)]'
             }`}
           >
             {doneSets}/{exercise.sets}
@@ -289,12 +289,12 @@ function ExerciseCard({
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
-            <div className="space-y-3.5 border-t border-white/[0.06] px-3.5 pb-4">
+            <div className="space-y-3.5 border-t border-[var(--border)] px-3.5 pb-4">
               {hasActiveTimer && restTimer && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="mt-3.5 rounded-xl border border-[var(--accent)] bg-white/[0.04] p-4 text-center"
+                  className="mt-3.5 rounded-xl border border-[var(--accent)] bg-[var(--card)] p-4 text-center"
                 >
                   <p className="mb-2 text-[9px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                     ⏱ Descanso
@@ -366,7 +366,7 @@ function ExerciseCard({
                   { val: `${exercise.restSeconds}s`, label: 'Descanso', accent: false },
                   { val: exercise.weight || '—', label: 'Peso', accent: false },
                 ].map((s) => (
-                  <div key={s.label} className="rounded-xl bg-white/[0.04] p-2.5 text-center">
+                  <div key={s.label} className="rounded-xl bg-[var(--card)] p-2.5 text-center">
                     <p
                       className={`text-base font-bold ${
                         s.accent ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'
@@ -398,8 +398,8 @@ function ExerciseCard({
                         }}
                         className={`flex h-auto items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-bold ${
                           done
-                            ? 'border-emerald-400 bg-[var(--accent)]/10 text-emerald-400'
-                            : 'border-white/[0.06] bg-white/[0.02] text-[var(--text-secondary)]'
+                            ? 'border-[var(--success)] bg-[var(--accent)]/10 text-[var(--success)]'
+                            : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)]'
                         }`}
                         whileTap={{ scale: 0.85 }}
                         whileHover={{ scale: 1.04 }}
@@ -417,7 +417,7 @@ function ExerciseCard({
               </div>
 
               {exercise.tips && exercise.tips.length > 0 && (
-                <div className="rounded-xl bg-white/[0.04] p-3">
+                <div className="rounded-xl bg-[var(--card)] p-3">
                   <p className="mb-1.5 text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                     Consejos
                   </p>
@@ -698,8 +698,8 @@ export default function MyRoutines() {
         )}
       </AnimatePresence>
 
-      <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl">
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-5 pt-4 pb-3">
+      <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-xl">
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-5 pt-4 pb-3">
           <div>
             <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
               Semana actual
@@ -844,9 +844,9 @@ export default function MyRoutines() {
           </div>
 
           {!todayRoutine?.isRestDay && totalSets > 0 && (
-            <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+            <div className="h-1.5 overflow-hidden rounded-full bg-[var(--surface-hover)]">
               <motion.div
-                className={`h-full rounded-full ${progress >= 100 ? 'bg-emerald-400' : 'bg-[var(--accent)]'}`}
+                className={`h-full rounded-full ${progress >= 100 ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'}`}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               />
@@ -854,7 +854,7 @@ export default function MyRoutines() {
           )}
 
           {todayRoutine?.isRestDay ? (
-            <motion.div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] py-16 text-center backdrop-blur-xl">
+            <motion.div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] py-16 text-center backdrop-blur-xl">
               <div
                 className="pointer-events-none absolute inset-0"
                 style={{
@@ -903,15 +903,17 @@ export default function MyRoutines() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="rounded-2xl border border-emerald-400/30 bg-[var(--accent)]/10 py-8 text-center"
+                  className="rounded-2xl border border-[var(--success)]/30 bg-[var(--accent)]/10 py-8 text-center"
                 >
                   <motion.div
                     animate={{ scale: [1, 1.15, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   >
-                    <Trophy size={36} className="mx-auto text-emerald-400" />
+                    <Trophy size={36} className="mx-auto text-[var(--success)]" />
                   </motion.div>
-                  <p className="mt-3 text-lg font-bold text-emerald-400">¡Rutina Completada!</p>
+                  <p className="mt-3 text-lg font-bold text-[var(--success)]">
+                    ¡Rutina Completada!
+                  </p>
                   <p className="mt-1 text-sm text-[var(--text-muted)]">
                     {completedSetCount} series · {formatTime(elapsedSeconds)}
                   </p>
@@ -929,7 +931,7 @@ export default function MyRoutines() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ delay: 0.4, type: 'spring', damping: 22, stiffness: 260 }}
-            className="fixed right-0 bottom-[72px] left-0 z-40 border-t border-white/[0.06] bg-black/60 backdrop-blur-2xl lg:bottom-0"
+            className="fixed right-0 bottom-[72px] left-0 z-40 border-t border-[var(--border)] bg-black/60 backdrop-blur-2xl lg:bottom-0"
           >
             <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
               <MotionButton
@@ -954,9 +956,9 @@ export default function MyRoutines() {
                     </span>
                   )}
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                <div className="h-1.5 overflow-hidden rounded-full bg-[var(--surface-hover)]">
                   <motion.div
-                    className={`h-full rounded-full ${progress >= 100 ? 'bg-emerald-400' : 'bg-[var(--accent)]'}`}
+                    className={`h-full rounded-full ${progress >= 100 ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'}`}
                     animate={{ width: `${Math.min(progress, 100)}%` }}
                     transition={{ duration: 0.5 }}
                   />
@@ -971,9 +973,9 @@ export default function MyRoutines() {
                 }}
                 className={`flex h-11 items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-black tracking-wider whitespace-nowrap uppercase ${
                   progress >= 100
-                    ? 'bg-emerald-400 text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]'
+                    ? 'bg-[var(--success)] text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]'
                     : workoutStarted
-                      ? 'border border-white/[0.06] bg-[var(--surface)] text-[var(--text-primary)]'
+                      ? 'border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)]'
                       : 'bg-[var(--accent)] text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]'
                 }`}
               >
@@ -1063,7 +1065,7 @@ export default function MyRoutines() {
                 ].map((s) => (
                   <div
                     key={s.label}
-                    className="rounded-xl border border-white/[0.06] bg-white/[0.04] p-3"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3"
                   >
                     <p className="text-xl font-black" style={{ color: s.color }}>
                       {s.val}

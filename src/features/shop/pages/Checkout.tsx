@@ -41,7 +41,7 @@ export default function Checkout() {
         <div className="mb-10 flex items-center justify-center">
           <div className="flex items-center gap-3">
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${step === 'shipping' || step === 'payment' ? 'bg-[var(--accent)] text-white' : 'bg-white/[0.06] text-[var(--text-muted)]'}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${step === 'shipping' || step === 'payment' ? 'bg-[var(--accent)] text-white' : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'}`}
             >
               1
             </div>
@@ -52,7 +52,7 @@ export default function Checkout() {
             </span>
             <div className="h-0.5 w-10 bg-white/[0.08]" />
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${step === 'payment' ? 'bg-[var(--accent)] text-white' : 'bg-white/[0.06] text-[var(--text-muted)]'}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${step === 'payment' ? 'bg-[var(--accent)] text-white' : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'}`}
             >
               2
             </div>
@@ -114,12 +114,12 @@ export default function Checkout() {
             </div>
 
             {/* Order Summary Sidebar */}
-            <div className="h-fit rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 backdrop-blur-xl">
+            <div className="h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 backdrop-blur-xl">
               <h3 className="mb-4 text-lg font-bold text-[var(--text-primary)]">Resumen</h3>
               <div className="scrollbar-hide mb-6 max-h-60 space-y-3 overflow-y-auto pr-2">
                 {items.map((item) => (
                   <div key={item.product.id} className="flex gap-3">
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-white/[0.04]">
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-[var(--card)]">
                       <img
                         src={item.product.image}
                         alt={item.product.name}
@@ -138,7 +138,7 @@ export default function Checkout() {
                   </div>
                 ))}
               </div>
-              <div className="space-y-2 border-t border-white/[0.06] pt-4 text-sm">
+              <div className="space-y-2 border-t border-[var(--border)] pt-4 text-sm">
                 <div className="flex justify-between text-[var(--text-secondary)]">
                   <span>Subtotal</span>
                   <span>{formatCurrency(subtotal)}</span>
@@ -247,8 +247,8 @@ export default function Checkout() {
               Tu orden ha sido confirmada. Te enviaremos un correo con los detalles del envío y
               número de rastreo.
             </p>
-            <div className="mb-8 flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 text-left backdrop-blur-xl">
-              <div className="flex h-10 w-10 items-center justify-center rounded bg-white/[0.04] text-[var(--text-muted)]">
+            <div className="mb-8 flex items-center gap-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 text-left backdrop-blur-xl">
+              <div className="flex h-10 w-10 items-center justify-center rounded bg-[var(--card)] text-[var(--text-muted)]">
                 <Package size={20} />
               </div>
               <div>

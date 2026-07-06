@@ -7,16 +7,20 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border-accent/30 bg-accent/15 text-accent',
-        secondary: 'border-white/[0.08] bg-white/[0.06] text-[var(--text-secondary)]',
-        destructive: 'border-error/30 bg-error/15 text-error',
-        outline: 'border-white/[0.08] bg-transparent text-[var(--text-primary)]',
-        success: 'border-accent/30 bg-accent/15 text-accent',
-        warning: 'border-warning/30 bg-warning/15 text-warning',
-        glass: 'border-white/[0.1] bg-white/[0.06] text-[var(--text-primary)] backdrop-blur-xl',
-        'glass-accent': 'border-accent/20 bg-accent/10 text-accent backdrop-blur-xl',
-        'glass-error': 'border-error/20 bg-error/10 text-error backdrop-blur-xl',
-        'glass-warning': 'border-warning/20 bg-warning/10 text-warning backdrop-blur-xl',
+        default: 'border-[var(--accent)]/30 bg-[var(--accent)]/15 text-[var(--accent)]',
+        secondary: 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)]',
+        destructive: 'border-[var(--error)]/30 bg-[var(--error)]/15 text-[var(--error)]',
+        outline: 'border-[var(--border)] bg-transparent text-[var(--text-primary)]',
+        success: 'border-[var(--success)]/30 bg-[var(--success)]/15 text-[var(--success)]',
+        warning: 'border-[var(--warning)]/30 bg-[var(--warning)]/15 text-[var(--warning)]',
+        glass:
+          'border-[var(--glass-border)] bg-[var(--card)] text-[var(--text-primary)] backdrop-blur-xl',
+        'glass-accent':
+          'border-[var(--accent)]/20 bg-[var(--accent)]/10 text-[var(--accent)] backdrop-blur-xl',
+        'glass-error':
+          'border-[var(--error)]/20 bg-[var(--error)]/10 text-[var(--error)] backdrop-blur-xl',
+        'glass-warning':
+          'border-[var(--warning)]/20 bg-[var(--warning)]/10 text-[var(--warning)] backdrop-blur-xl',
       },
     },
     defaultVariants: {

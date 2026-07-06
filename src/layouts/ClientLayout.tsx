@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useCartStore } from '@/features/shop/store/cartStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
+
 import {
   Dumbbell,
   TrendingUp,
@@ -50,7 +50,7 @@ export function ClientLayout() {
       <div className="pointer-events-none fixed inset-x-0 top-0 z-0 h-[300px] bg-[var(--ambient-glow)]" />
 
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-white/[0.03] px-4 py-3 backdrop-blur-2xl">
+      <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--card)] px-4 py-3 backdrop-blur-2xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2.5">
@@ -72,7 +72,7 @@ export function ClientLayout() {
                       `flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
                         isActive
                           ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_12px_rgba(66,204,99,0.3)]'
-                          : 'text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]'
+                          : 'text-[var(--text-secondary)] hover:bg-[var(--card)] hover:text-[var(--text-primary)]'
                       }`
                     }
                   >
@@ -84,10 +84,9 @@ export function ClientLayout() {
           </div>
 
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <Link
               to="/tienda/carrito"
-              className="relative rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-secondary)] backdrop-blur-md transition-all hover:bg-white/[0.08]"
+              className="relative rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-secondary)] backdrop-blur-md transition-all hover:bg-white/[0.08]"
             >
               <ShoppingCart size={20} />
               {cartCount > 0 && (
@@ -100,11 +99,15 @@ export function ClientLayout() {
               <div className="relative">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] py-1.5 pr-3.5 pl-2.5 text-xs font-bold text-[var(--text-primary)] backdrop-blur-md transition-all hover:border-white/[0.15] hover:bg-white/[0.08]"
+                  className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] py-1.5 pr-3.5 pl-2.5 text-xs font-bold text-[var(--text-primary)] backdrop-blur-md transition-all hover:border-[var(--border-hover)] hover:bg-white/[0.08]"
                 >
                   <div className="flex h-5 w-5 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--detail)] text-white">
                     {user?.avatar ? (
-                      <img src={user.avatar} className="h-full w-full object-cover" alt={user.name} />
+                      <img
+                        src={user.avatar}
+                        className="h-full w-full object-cover"
+                        alt={user.name}
+                      />
                     ) : (
                       <User size={12} />
                     )}
@@ -120,18 +123,18 @@ export function ClientLayout() {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] py-1 shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+                      className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] py-1 shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
                     >
                       <button
                         onClick={() => {
                           setShowMenu(false)
                           navigate(portalLink)
                         }}
-                        className="block w-full px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)] backdrop-blur-md transition-all hover:bg-white/[0.06]"
+                        className="block w-full px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)] backdrop-blur-md transition-all hover:bg-[var(--surface-hover)]"
                       >
                         Mi Portal
                       </button>
-                      <div className="my-1 h-px bg-white/[0.06]" />
+                      <div className="my-1 h-px bg-[var(--surface-hover)]" />
                       <button
                         onClick={handleLogout}
                         className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-medium text-[var(--error)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10"
@@ -171,7 +174,7 @@ export function ClientLayout() {
 
       {/* Mobile Bottom Nav */}
       {isAuthenticated && (
-        <nav className="fixed right-0 bottom-0 left-0 z-30 flex items-center justify-around border-t border-white/[0.06] bg-white/[0.03] px-2 py-2 backdrop-blur-2xl lg:hidden">
+        <nav className="fixed right-0 bottom-0 left-0 z-30 flex items-center justify-around border-t border-[var(--border)] bg-[var(--card)] px-2 py-2 backdrop-blur-2xl lg:hidden">
           {clientNav.map((item) => (
             <NavLink
               key={item.to}
@@ -180,7 +183,7 @@ export function ClientLayout() {
                 `flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 transition-all ${
                   isActive
                     ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_12px_rgba(66,204,99,0.3)]'
-                    : 'text-[var(--text-muted)] hover:bg-white/[0.04]'
+                    : 'text-[var(--text-muted)] hover:bg-[var(--card)]'
                 }`
               }
             >

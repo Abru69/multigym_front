@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Outlet, NavLink, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
+
 import { Menu, X, LogOut, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -44,12 +44,12 @@ export function DashboardLayout({
       <div className="pointer-events-none fixed inset-x-0 top-0 z-0 h-[400px] bg-[var(--ambient-glow)]" />
 
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-white/[0.03] px-4 py-3 backdrop-blur-2xl lg:px-8">
+      <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--card)] px-4 py-3 backdrop-blur-2xl lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-secondary)] backdrop-blur-md transition-all hover:bg-white/[0.08] lg:hidden"
+              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-secondary)] backdrop-blur-md transition-all hover:bg-white/[0.08] lg:hidden"
             >
               <Menu size={20} />
             </button>
@@ -77,7 +77,7 @@ export function DashboardLayout({
                       'relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200',
                       isActive
                         ? 'text-[var(--accent)]'
-                        : 'text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]'
+                        : 'text-[var(--text-secondary)] hover:bg-[var(--card)] hover:text-[var(--text-primary)]'
                     )
                   }
                 >
@@ -102,12 +102,11 @@ export function DashboardLayout({
 
           <div className="flex items-center gap-3">
             {rightActions}
-            <ThemeToggle />
 
             <div className="relative">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] p-1.5 pr-3 backdrop-blur-md transition-all hover:border-white/[0.15] hover:bg-white/[0.08]"
+                className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] p-1.5 pr-3 backdrop-blur-md transition-all hover:border-[var(--border-hover)] hover:bg-white/[0.08]"
               >
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--detail)] text-[10px] font-bold text-white shadow-[0_0_12px_rgba(66,204,99,0.3)]">
                   {user?.initials ?? 'U'}
@@ -124,9 +123,9 @@ export function DashboardLayout({
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] py-2 shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+                    className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] py-2 shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
                   >
-                    <div className="mb-1 border-b border-white/[0.06] px-4 py-3">
+                    <div className="mb-1 border-b border-[var(--border)] px-4 py-3">
                       <p className="truncate text-sm font-bold text-[var(--text-primary)]">
                         {user?.name ?? 'User'}
                       </p>
@@ -163,17 +162,17 @@ export function DashboardLayout({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.3 }}
-              className="absolute top-0 left-0 flex h-screen w-64 flex-col border-r border-white/[0.06] bg-white/[0.04] shadow-[0_0_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+              className="absolute top-0 left-0 flex h-screen w-64 flex-col border-r border-[var(--border)] bg-[var(--card)] shadow-[0_0_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between border-b border-white/[0.06] p-5">
+              <div className="flex items-center justify-between border-b border-[var(--border)] p-5">
                 <div className="flex items-center gap-3">
                   {logo}
                   <h1 className="text-sm font-bold text-[var(--text-primary)]">{title}</h1>
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-1.5 text-[var(--text-secondary)] backdrop-blur-md transition-all hover:bg-white/[0.08]"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-1.5 text-[var(--text-secondary)] backdrop-blur-md transition-all hover:bg-white/[0.08]"
                 >
                   <X size={18} />
                 </button>
@@ -191,7 +190,7 @@ export function DashboardLayout({
                         'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all',
                         isActive
                           ? 'bg-gradient-to-r from-[var(--accent)] to-[var(--detail)] text-white shadow-[0_0_16px_rgba(66,204,99,0.3)]'
-                          : 'text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]'
+                          : 'text-[var(--text-secondary)] hover:bg-[var(--card)] hover:text-[var(--text-primary)]'
                       )
                     }
                   >

@@ -18,9 +18,9 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className="group hover:border-accent/40 flex h-full flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl transition-colors duration-300"
+      className="group hover:border-accent/40 flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-xl transition-colors duration-300"
     >
-      <div className="relative aspect-square overflow-hidden bg-white/[0.04]">
+      <div className="relative aspect-square overflow-hidden bg-[var(--card)]">
         <Link to={`/tienda/${product.slug}`} className="block h-full w-full">
           <img
             src={product.image}

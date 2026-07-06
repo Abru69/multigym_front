@@ -117,7 +117,7 @@ export default function Landing() {
           <div className="pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-48 bg-gradient-to-t from-[var(--surface)] to-transparent" />
         </div>
 
-        <nav className="relative z-50 mx-auto flex w-full max-w-7xl items-center justify-between border-b border-white/[0.06] px-6 py-6 backdrop-blur-xl">
+        <nav className="relative z-50 mx-auto flex w-full max-w-7xl items-center justify-between border-b border-[var(--border)] px-6 py-6 backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <div className="bg-accent text-accent-text flex h-10 w-10 items-center justify-center rounded-lg text-sm font-black">
               {branding.logoAbbr}
@@ -163,7 +163,7 @@ export default function Landing() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.04] py-1 shadow-2xl backdrop-blur-2xl"
+                      className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] py-1 shadow-2xl backdrop-blur-2xl"
                     >
                       <Link
                         to={portalLink}
@@ -209,7 +209,7 @@ export default function Landing() {
             className="mx-auto flex max-w-5xl flex-col items-center"
           >
             <motion.div variants={heroItem} className="mb-6">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.06] px-4 py-1.5 text-xs font-bold tracking-widest text-[var(--detail)] uppercase backdrop-blur-xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--border-hover)] bg-[var(--surface-hover)] px-4 py-1.5 text-xs font-bold tracking-widest text-[var(--detail)] uppercase backdrop-blur-xl">
                 <Zap size={14} />
                 {branding.hero.badge}
               </span>
@@ -266,7 +266,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="border-y border-white/[0.06] bg-white/[0.02] backdrop-blur-xl">
+      <section className="border-y border-[var(--border)] bg-[var(--surface)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-12 px-6 py-12 sm:flex-row sm:gap-24">
           {branding.stats.map(([val, label]) => (
             <div key={label} className="text-center">
@@ -297,11 +297,11 @@ export default function Landing() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={isFeaturesInView ? { opacity: 1, scale: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: i * 0.1, ease: 'easeOut' }}
-              className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] p-8 backdrop-blur-xl transition-colors duration-300 hover:border-[var(--accent)]/30"
+              className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 backdrop-blur-xl transition-colors duration-300 hover:border-[var(--accent)]/30"
             >
               <div className="pointer-events-none absolute inset-0 bg-[var(--accent)] opacity-0 transition-opacity duration-300 group-hover:opacity-[0.02]" />
 
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.05] transition-transform duration-300 group-hover:scale-110">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] transition-transform duration-300 group-hover:scale-110">
                 <f.icon size={28} className="text-accent" strokeWidth={1.5} />
               </div>
               <h3 className="font-heading mb-3 text-xl font-bold tracking-tight text-[var(--text-primary)]">
@@ -314,7 +314,7 @@ export default function Landing() {
       </section>
 
       <section className="px-6 pb-32">
-        <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.03] p-12 text-center backdrop-blur-xl sm:p-20">
+        <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-12 text-center backdrop-blur-xl sm:p-20">
           <div className="pointer-events-none absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 bg-[var(--accent)]/20 blur-[100px]" />
 
           <h2 className="font-heading relative z-10 mb-6 text-4xl font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-6xl">
@@ -341,7 +341,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="border-t border-white/[0.06] bg-white/[0.02] px-6 py-10 backdrop-blur-xl">
+      <footer className="border-t border-[var(--border)] bg-[var(--surface)] px-6 py-10 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2">
             <div className="bg-accent text-accent-text flex h-8 w-8 items-center justify-center rounded text-xs font-black">

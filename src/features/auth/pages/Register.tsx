@@ -26,7 +26,7 @@ export default function Register() {
           <strong className="text-[var(--text-secondary)]">administrador de tu gimnasio</strong>.
         </p>
 
-        <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-5 text-left backdrop-blur-xl">
+        <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-left backdrop-blur-xl">
           <p className="text-xs font-bold tracking-wider text-[var(--text-muted)] uppercase">
             ¿Cómo obtener acceso?
           </p>

@@ -54,9 +54,8 @@ export default function ForgotPassword() {
           Revisa tu correo
         </h2>
         <p className="mb-6 text-sm leading-relaxed text-[var(--text-muted)]">
-          Si existe una cuenta con{' '}
-          <strong className="text-[var(--text-secondary)]">{email}</strong>, recibirás un enlace
-          para restablecer tu contraseña.
+          Si existe una cuenta con <strong className="text-[var(--text-secondary)]">{email}</strong>
+          , recibirás un enlace para restablecer tu contraseña.
         </p>
         <Link
           to="/login"

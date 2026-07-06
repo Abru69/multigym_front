@@ -194,14 +194,14 @@ export default function AdminDashboard() {
             key={s.label}
             variants={fadeUp}
             onClick={() => navigate(s.href)}
-            className="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:shadow-[0_0_32px_rgba(66,204,99,0.08)]"
+            className="group relative cursor-pointer overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:shadow-[0_0_32px_rgba(66,204,99,0.08)]"
           >
             <div className="absolute -top-8 -right-8 opacity-5 transition-transform group-hover:scale-110">
               <s.icon size={100} style={{ color: s.color }} />
             </div>
             <div className="relative flex items-start justify-between">
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-xl"
+                className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-xl"
                 style={{ color: s.color }}
               >
                 <s.icon size={24} />
@@ -227,7 +227,7 @@ export default function AdminDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl lg:col-span-2"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl lg:col-span-2"
         >
           <div className="mb-6 flex items-center justify-between">
             <h3 className="text-lg font-bold tracking-tight text-[var(--text-primary)]">
@@ -300,7 +300,7 @@ export default function AdminDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl"
         >
           <h3 className="mb-6 text-lg font-bold tracking-tight text-[var(--text-primary)]">
             Actividad en Vivo
@@ -324,7 +324,7 @@ export default function AdminDashboard() {
                       }}
                     />
                     {i < data.recentActivity.length - 1 && (
-                      <div className="w-px flex-1 bg-white/[0.06]" />
+                      <div className="w-px flex-1 bg-[var(--surface-hover)]" />
                     )}
                   </div>
                   <div className="pb-4">

@@ -1,7 +1,6 @@
 import { Outlet, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 export function AuthLayout() {
   const { branding } = useTenantBranding()
@@ -12,11 +11,6 @@ export function AuthLayout() {
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute top-1/4 left-1/4 h-[400px] w-[400px] rounded-full bg-[var(--accent)]/5 blur-[120px]" />
         <div className="absolute right-1/4 bottom-1/4 h-[300px] w-[300px] rounded-full bg-[var(--detail)]/5 blur-[100px]" />
-      </div>
-
-      {/* Theme toggle in corner */}
-      <div className="absolute top-4 right-4 z-10">
-        <ThemeToggle />
       </div>
 
       <motion.div
@@ -34,14 +28,12 @@ export function AuthLayout() {
             <h1 className="text-xl font-black tracking-tight text-[var(--text-primary)]">
               {branding.name}
             </h1>
-            <p className="text-xs font-medium text-[var(--text-muted)]">
-              {branding.tagline}
-            </p>
+            <p className="text-xs font-medium text-[var(--text-muted)]">{branding.tagline}</p>
           </div>
         </Link>
 
         {/* Glass Card */}
-        <div className="rounded-3xl border border-white/[0.08] bg-white/[0.04] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-2xl sm:p-8">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-[var(--depth-3)] backdrop-blur-2xl sm:p-8">
           <Outlet />
         </div>
       </motion.div>

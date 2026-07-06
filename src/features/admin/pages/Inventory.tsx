@@ -191,7 +191,7 @@ export default function Inventory() {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           aria-label="Filtrar por categoría"
-          className="h-11 appearance-none rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 pr-10 text-sm text-[var(--text-primary)] backdrop-blur-xl focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+          className="h-11 appearance-none rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 pr-10 text-sm text-[var(--text-primary)] backdrop-blur-xl focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
             backgroundPosition: 'right 0.5rem center',
@@ -224,11 +224,11 @@ export default function Inventory() {
           }
         />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.03] shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl">
+        <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl">
           <div className="overflow-x-auto">
             <table className="w-full" aria-label="Inventario de productos">
               <thead>
-                <tr className="border-b border-white/[0.06] bg-white/[0.02]">
+                <tr className="border-b border-[var(--border)] bg-[var(--surface)]">
                   <th className="px-6 py-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
                     Producto
                   </th>
@@ -257,11 +257,11 @@ export default function Inventory() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="group transition-colors hover:bg-white/[0.03]"
+                      className="group transition-colors hover:bg-[var(--card)]"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.04]">
+                          <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)]">
                             <img
                               src={product.image}
                               alt={product.name}
@@ -321,14 +321,14 @@ export default function Inventory() {
                         <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                           <button
                             onClick={() => openEdit(product)}
-                            className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--text-primary)]"
+                            className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--text-primary)]"
                             aria-label={`Editar ${product.name}`}
                           >
                             <Edit2 size={16} />
                           </button>
                           <button
                             onClick={() => setDeleteTarget(product)}
-                            className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+                            className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
                             aria-label={`Eliminar ${product.name}`}
                           >
                             <Trash2 size={16} />
@@ -359,7 +359,7 @@ export default function Inventory() {
                 className={`relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-all ${
                   dragActive
                     ? 'border-[var(--accent)] bg-[var(--accent)]/5'
-                    : 'border-white/[0.08] bg-white/[0.02]'
+                    : 'border-[var(--border)] bg-[var(--surface)]'
                 }`}
                 onDragOver={(e) => {
                   e.preventDefault()
@@ -436,7 +436,7 @@ export default function Inventory() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Ej: Gold Standard Whey 5lbs"
-                className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="h-10 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
 
@@ -453,7 +453,7 @@ export default function Inventory() {
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
                   placeholder="0.00"
-                  className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
               <FormField label="Stock" required error={formErrors.stock} htmlFor="prod-stock">
@@ -463,7 +463,7 @@ export default function Inventory() {
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}
                   placeholder="0"
-                  className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
             </div>
@@ -474,7 +474,7 @@ export default function Inventory() {
                   id="prod-category"
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="h-10 w-full appearance-none rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full appearance-none rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 >
                   {productCategories
                     .filter((c) => c.value !== 'all')
@@ -492,7 +492,7 @@ export default function Inventory() {
                   value={form.brand}
                   onChange={(e) => setForm({ ...form, brand: e.target.value })}
                   placeholder="Ej: Optimum Nutrition"
-                  className="h-10 w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
             </div>
@@ -504,17 +504,17 @@ export default function Inventory() {
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={3}
                 placeholder="Características principales..."
-                className="min-h-[80px] w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="min-h-[80px] w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-3 border-t border-white/[0.06] pt-4">
+        <div className="mt-6 flex justify-end gap-3 border-t border-[var(--border)] pt-4">
           <button
             onClick={() => setShowModal(false)}
             disabled={isSaving}
-            className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
+            className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
           >
             Cancelar
           </button>

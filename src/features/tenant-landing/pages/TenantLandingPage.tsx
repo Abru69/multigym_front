@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { Zap } from 'lucide-react'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { TenantHero } from '../components/TenantHero'
@@ -48,7 +47,6 @@ export default function TenantLandingPage() {
           </nav>
 
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             {isAuthenticated ? (
               <Link
                 to={portalLink}

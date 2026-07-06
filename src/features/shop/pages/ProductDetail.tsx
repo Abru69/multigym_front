@@ -69,7 +69,7 @@ export default function ProductDetail() {
           animate={{ opacity: 1, x: 0 }}
           className="space-y-4"
         >
-          <div className="aspect-square overflow-hidden rounded-3xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl">
+          <div className="aspect-square overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-xl">
             <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
           </div>
         </motion.div>
@@ -86,7 +86,7 @@ export default function ProductDetail() {
             {product.name}
           </h1>
 
-          <div className="mb-6 flex items-center gap-4 border-b border-white/[0.06] pb-6">
+          <div className="mb-6 flex items-center gap-4 border-b border-[var(--border)] pb-6">
             <div
               className="flex items-center gap-1 text-sm font-medium"
               style={{ color: 'var(--warning)' }}
@@ -95,7 +95,7 @@ export default function ProductDetail() {
               {product.rating}{' '}
               <span className="text-[var(--text-muted)]">({product.reviewCount})</span>
             </div>
-            <div className="h-1 w-1 rounded-full bg-white/[0.06]" />
+            <div className="h-1 w-1 rounded-full bg-[var(--surface-hover)]" />
             <span
               className="text-sm font-medium"
               style={{ color: product.isAvailable ? 'var(--success)' : 'var(--danger)' }}
@@ -121,7 +121,7 @@ export default function ProductDetail() {
 
           <div className="mt-auto space-y-4">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 items-center rounded-xl border border-white/[0.06] bg-white/[0.03] px-2">
+              <div className="flex h-14 items-center rounded-xl border border-[var(--border)] bg-[var(--card)] px-2">
                 <Button
                   variant="outline"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -172,7 +172,7 @@ export default function ProductDetail() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="mt-16 border-t border-white/[0.06] pt-16"
+        className="mt-16 border-t border-[var(--border)] pt-16"
       >
         <div className="mb-8 flex items-center gap-2">
           <Info size={24} className="text-[var(--accent)]" />
@@ -196,11 +196,11 @@ export default function ProductDetail() {
                   </strong>
                 </span>
               </div>
-              <div className="overflow-hidden rounded-2xl border border-white/[0.06]">
+              <div className="overflow-hidden rounded-2xl border border-[var(--border)]">
                 {product.nutritionFacts.map((fact, i) => (
                   <div
                     key={fact.label}
-                    className={`flex justify-between p-4 text-sm ${i % 2 === 0 ? 'bg-white/[0.03]' : 'bg-white/[0.02]'}`}
+                    className={`flex justify-between p-4 text-sm ${i % 2 === 0 ? 'bg-[var(--card)]' : 'bg-[var(--surface)]'}`}
                   >
                     <span className="font-medium text-[var(--text-primary)]">{fact.label}</span>
                     <div className="text-right">
@@ -229,7 +229,7 @@ export default function ProductDetail() {
                     d.value && (
                       <li
                         key={d.label}
-                        className="flex justify-between border-b border-white/[0.06] pb-2"
+                        className="flex justify-between border-b border-[var(--border)] pb-2"
                       >
                         <span className="text-[var(--text-muted)]">{d.label}</span>
                         <span className="font-medium text-[var(--text-primary)] capitalize">

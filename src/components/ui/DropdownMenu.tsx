@@ -34,7 +34,7 @@ function DropdownMenu({ trigger, children, align = 'right', className }: Dropdow
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              'absolute z-50 mt-2 min-w-[180px] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl',
+              'absolute z-50 mt-2 min-w-[180px] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-xl backdrop-blur-xl',
               align === 'right' ? 'right-0' : 'left-0',
               className
             )}

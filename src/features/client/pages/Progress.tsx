@@ -77,7 +77,7 @@ export default function Progress() {
             key={s.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 text-center backdrop-blur-xl"
+            className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-center backdrop-blur-xl"
           >
             <s.icon size={20} className="mx-auto mb-2" style={{ color: s.color }} />
             <p className="text-lg font-black text-[var(--text-primary)]">{s.value}</p>
@@ -94,7 +94,7 @@ export default function Progress() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 backdrop-blur-xl"
+        className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 backdrop-blur-xl"
       >
         <h3 className="mb-4 font-semibold text-[var(--text-primary)]">Evolución de Peso</h3>
         <div className="h-56">
@@ -149,7 +149,7 @@ export default function Progress() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 backdrop-blur-xl"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 backdrop-blur-xl"
         >
           <h3 className="mb-4 font-semibold text-[var(--text-primary)]">Medidas Corporales (cm)</h3>
           <div className="h-64">
@@ -179,13 +179,13 @@ export default function Progress() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 backdrop-blur-xl"
+        className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 backdrop-blur-xl"
       >
         <h3 className="mb-4 font-semibold text-[var(--text-primary)]">Historial</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/[0.06]">
+              <tr className="border-b border-[var(--border)]">
                 {['Fecha', 'Peso', '% Grasa', 'Pecho', 'Cintura', 'Cadera'].map((h) => (
                   <th
                     key={h}
@@ -198,7 +198,7 @@ export default function Progress() {
             </thead>
             <tbody>
               {mockProgress.map((p) => (
-                <tr key={p.id} className="border-b border-white/[0.04]">
+                <tr key={p.id} className="border-b border-[var(--border)]">
                   <td className="py-3 text-[var(--text-secondary)]">{formatDateShort(p.date)}</td>
                   <td className="py-3 font-medium text-[var(--text-primary)]">{p.weight} kg</td>
                   <td className="py-3 text-[var(--text-secondary)]">{p.bodyFat}%</td>

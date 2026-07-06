@@ -111,7 +111,7 @@ export default function RoutineLibrary() {
           action={
             <button
               onClick={() => setIsBuilding(true)}
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
+              className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]"
             >
               Comenzar a crear
             </button>
@@ -125,7 +125,7 @@ export default function RoutineLibrary() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
-              className="group cursor-pointer rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:shadow-[0_0_32px_rgba(66,204,99,0.08)]"
+              className="group cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all hover:border-[var(--accent)]/30 hover:shadow-[0_0_32px_rgba(66,204,99,0.08)]"
               onClick={() => setEditingRoutine(template)}
               role="button"
               tabIndex={0}
@@ -147,7 +147,7 @@ export default function RoutineLibrary() {
                       e.stopPropagation()
                       setEditingRoutine(template)
                     }}
-                    className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--accent)]"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--accent)]"
                     aria-label={`Editar ${template.title}`}
                   >
                     <Edit2 size={16} />
@@ -157,7 +157,7 @@ export default function RoutineLibrary() {
                       e.stopPropagation()
                       setDeleteTarget(template)
                     }}
-                    className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
                     aria-label={`Eliminar ${template.title}`}
                   >
                     <Trash2 size={16} />

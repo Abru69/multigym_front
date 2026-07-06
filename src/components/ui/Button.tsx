@@ -8,20 +8,19 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-gradient-to-r from-accent to-detail text-white shadow-[0_0_20px_rgba(66,204,99,0.3)] hover:shadow-[0_0_30px_rgba(66,204,99,0.4)] hover:brightness-110',
-        destructive:
-          'bg-gradient-to-r from-error to-error/80 text-white shadow-[0_0_16px_rgba(248,113,113,0.3)] hover:shadow-[0_0_24px_rgba(248,113,113,0.4)]',
+          'bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white shadow-[0_0_16px_rgba(66,204,99,0.25)] hover:shadow-[0_0_24px_rgba(66,204,99,0.35)]',
+        destructive: 'bg-[var(--error)] hover:bg-[var(--error-hover)] text-white',
         outline:
-          'border border-white/[0.1] bg-transparent backdrop-blur-md text-[var(--text-primary)] hover:bg-white/[0.06] hover:border-white/[0.15]',
+          'border border-[var(--border)] bg-transparent text-[var(--text-primary)] hover:bg-white/[0.04] hover:border-[var(--border-hover)]',
         secondary:
-          'border border-white/[0.08] bg-white/[0.04] backdrop-blur-xl text-[var(--text-primary)] hover:bg-white/[0.08] hover:border-white/[0.12]',
+          'border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]',
         ghost:
-          'text-[var(--text-secondary)] hover:bg-white/[0.06] hover:text-[var(--text-primary)]',
-        link: 'text-accent underline-offset-4 hover:underline',
+          'text-[var(--text-secondary)] hover:bg-white/[0.04] hover:text-[var(--text-primary)]',
+        link: 'text-[var(--accent)] underline-offset-4 hover:underline',
         glass:
-          'border border-white/[0.1] bg-white/[0.04] backdrop-blur-xl text-[var(--text-primary)] hover:bg-white/[0.08] hover:border-white/[0.15] shadow-[0_4px_16px_rgba(0,0,0,0.2)]',
+          'border border-[var(--glass-border)] bg-[var(--card)] backdrop-blur-xl text-[var(--text-primary)] hover:bg-white/[0.06] shadow-[0_4px_16px_rgba(0,0,0,0.2)]',
         'glass-accent':
-          'border border-accent/20 bg-accent/10 backdrop-blur-xl text-accent hover:bg-accent/15 hover:border-accent/30 shadow-[0_0_16px_rgba(66,204,99,0.15)]',
+          'border border-[var(--accent)]/20 bg-[var(--accent)]/10 backdrop-blur-xl text-[var(--accent)] hover:bg-[var(--accent)]/15 shadow-[0_0_12px_rgba(66,204,99,0.15)]',
       },
       size: {
         default: 'h-11 px-4 py-2',

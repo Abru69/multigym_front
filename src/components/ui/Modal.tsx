@@ -66,7 +66,7 @@ export function Modal({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
             className={cn(
-              'relative w-full rounded-3xl border border-white/[0.08] bg-white/[0.04] shadow-[0_16px_48px_rgba(0,0,0,0.6)] backdrop-blur-2xl',
+              'relative w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--depth-4)] backdrop-blur-2xl',
               sizeClasses[size],
               className
             )}

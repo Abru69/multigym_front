@@ -67,7 +67,7 @@ export default function Nutrition() {
             Controla tus macros y construye tu físico desde la cocina.
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.06] px-4 py-2 text-sm font-bold text-[var(--text-primary)] shadow-sm backdrop-blur-xl">
+        <div className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface-hover)] px-4 py-2 text-sm font-bold text-[var(--text-primary)] shadow-sm backdrop-blur-xl">
           <Flame size={16} className="text-[var(--accent)]" />
           <span>Fase: Volumen Limpio</span>
         </div>
@@ -78,7 +78,7 @@ export default function Nutrition() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="col-span-2 flex flex-col justify-between rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 backdrop-blur-xl md:col-span-1"
+          className="col-span-2 flex flex-col justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 backdrop-blur-xl md:col-span-1"
         >
           <div className="mb-4 flex items-start justify-between">
             <span className="text-xs font-bold tracking-wider text-[var(--text-muted)] uppercase">
@@ -98,7 +98,7 @@ export default function Nutrition() {
             <p className="text-xs text-[var(--text-secondary)]">kcal consumidas</p>
           </div>
 
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.06]">
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--surface-hover)]">
             <motion.div
               initial={{ width: 0 }}
               animate={{
@@ -120,14 +120,14 @@ export default function Nutrition() {
           {
             label: 'Carbos',
             ...dailyMacros.carbs,
-            color: 'bg-blue-500',
-            textColor: 'text-blue-500',
+            color: 'bg-[var(--info)]',
+            textColor: 'text-[var(--info)]',
           },
           {
             label: 'Grasas',
             ...dailyMacros.fats,
-            color: 'bg-purple-500',
-            textColor: 'text-purple-500',
+            color: 'bg-[var(--info)]',
+            textColor: 'text-[var(--info)]',
           },
         ].map((macro, i) => (
           <motion.div
@@ -135,7 +135,7 @@ export default function Nutrition() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 + i * 0.05 }}
-            className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 backdrop-blur-xl"
+            className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 backdrop-blur-xl"
           >
             <span className="mb-4 block text-xs font-bold tracking-wider text-[var(--text-muted)] uppercase">
               {macro.label}
@@ -148,7 +148,7 @@ export default function Nutrition() {
                 / {macro.target}g
               </span>
             </div>
-            <div className="relative h-2 overflow-hidden rounded-full bg-white/[0.06]">
+            <div className="relative h-2 overflow-hidden rounded-full bg-[var(--surface-hover)]">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${calcProgress(macro.current, macro.target)}%` }}
@@ -178,8 +178,8 @@ export default function Nutrition() {
                 transition={{ delay: 0.2 + i * 0.1 }}
                 className={`rounded-xl border p-4 backdrop-blur-xl transition-all duration-300 ${
                   meal.completed
-                    ? 'border-white/[0.04] bg-white/[0.02] opacity-60'
-                    : 'border border-white/[0.06] bg-white/[0.03] hover:border-[var(--accent)]/40'
+                    ? 'border-[var(--border)] bg-[var(--surface)] opacity-60'
+                    : 'border border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)]/40'
                 }`}
               >
                 <div className="flex items-start gap-4">
@@ -202,7 +202,7 @@ export default function Nutrition() {
                       >
                         {meal.name}
                       </h3>
-                      <div className="flex items-center gap-1 rounded-md border border-white/[0.08] bg-white/[0.06] px-2 py-1 text-xs font-medium text-[var(--text-secondary)] backdrop-blur-sm">
+                      <div className="flex items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--surface-hover)] px-2 py-1 text-xs font-medium text-[var(--text-secondary)] backdrop-blur-sm">
                         <Clock size={12} />
                         {meal.time}
                       </div>
@@ -235,13 +235,13 @@ export default function Nutrition() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 backdrop-blur-xl"
+            className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 backdrop-blur-xl"
           >
             <div className="mb-6 flex items-start justify-between">
               <h3 className="font-heading font-bold tracking-tight text-[var(--text-primary)] uppercase">
                 Hidratación
               </h3>
-              <Droplets size={18} className="text-blue-400" />
+              <Droplets size={18} className="text-[var(--info)]" />
             </div>
 
             <div className="mb-4 flex flex-wrap gap-2">
@@ -252,8 +252,8 @@ export default function Nutrition() {
                   onClick={() => setWaterGlasses(i + 1)}
                   className={`h-12 w-10 rounded-lg p-0 ${
                     i < waterGlasses
-                      ? 'border border-blue-500/30 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 hover:text-blue-400'
-                      : 'border border-white/[0.06] bg-white/[0.04] text-[var(--text-muted)] hover:border-blue-500/20 hover:text-blue-400'
+                      ? 'border border-[var(--info)]/30 bg-[var(--info)]/15 text-[var(--info)] hover:bg-[var(--info)]/20 hover:text-[var(--info)]'
+                      : 'border border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:border-[var(--info)]/20 hover:text-[var(--info)]'
                   }`}
                 >
                   <Droplets size={16} fill={i < waterGlasses ? 'currentColor' : 'none'} />

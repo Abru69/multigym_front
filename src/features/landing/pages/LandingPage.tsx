@@ -3,7 +3,6 @@ import { RoutineShowcase } from '../components/RoutineShowcase'
 import { Features } from '../components/Features'
 import { Pricing } from '../components/Pricing'
 import { Footer } from '../components/Footer'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { Link } from 'react-router-dom'
 import { Zap } from 'lucide-react'
 
@@ -42,7 +41,6 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <Link
               to="/login"
               className="hidden text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] sm:block"
