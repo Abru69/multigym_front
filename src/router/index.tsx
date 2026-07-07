@@ -27,6 +27,10 @@ const AdminDashboard = lazy(() => import('@/features/admin/pages/Dashboard'))
 const Inventory = lazy(() => import('@/features/admin/pages/Inventory'))
 const Users = lazy(() => import('@/features/admin/pages/Users'))
 const Exercises = lazy(() => import('@/features/admin/pages/Exercises'))
+const Members = lazy(() => import('@/features/admin/pages/Members'))
+const Plans = lazy(() => import('@/features/admin/pages/Plans'))
+const Subscriptions = lazy(() => import('@/features/admin/pages/Subscriptions'))
+const Payments = lazy(() => import('@/features/admin/pages/Payments'))
 
 // Shop Pages
 const Catalog = lazy(() => import('@/features/shop/pages/Catalog'))
@@ -110,6 +114,10 @@ export const router = createBrowserRouter([
       { path: 'inventario', element: withSuspense(Inventory) },
       { path: 'usuarios', element: withSuspense(Users) },
       { path: 'ejercicios', element: withSuspense(Exercises) },
+      { path: 'miembros', element: withSuspense(Members) },
+      { path: 'planes', element: withSuspense(Plans) },
+      { path: 'suscripciones', element: withSuspense(Subscriptions) },
+      { path: 'pagos', element: withSuspense(Payments) },
     ],
   },
 

@@ -182,3 +182,109 @@ export interface PaginatedResult<T> {
   first: boolean
   last: boolean
 }
+
+export interface MemberListItemDTO {
+  id: string
+  name: string
+  phone: string
+  email: string
+  isActive: boolean
+}
+
+export interface PlanListItemDTO {
+  id: string
+  name: string
+  description: string | null
+  price: number
+  durationMonths: number
+  maxWorkoutsPerWeek: number | null
+  maxClasses: number | null
+  accessHours: string | null
+  features: string | null
+  isActive: boolean
+}
+
+export interface SubscriptionListItemDTO {
+  id: string
+  member: MemberListItemDTO | null
+  plan: PlanListItemDTO | null
+  startDate: string
+  endDate: string
+  status: string
+}
+
+export interface PaymentListItemDTO {
+  id: string
+  subscriptionId: string
+  amount: number
+  paymentDate: string
+  paymentMethod: string
+  status: string
+  reference: string | null
+}
+
+export interface WorkoutExerciseListItemDTO {
+  id: string
+  workoutId: string
+  exercise: ExerciseDTO
+  dayOfWeek: string
+  sets: number
+  reps: string
+  restSeconds: number
+  orderIndex: number
+}
+
+export interface WorkoutLogListItemDTO {
+  id: string
+  workoutId: string
+  durationMinutes: number
+  caloriesBurned: number
+  completedAt: string
+}
+
+export interface MemberRequest {
+  userId: string
+  name: string
+  phone: string
+}
+
+export interface PlanRequest {
+  name: string
+  description?: string
+  price: number
+  durationMonths: number
+  maxWorkoutsPerWeek?: number
+  maxClasses?: number
+  accessHours?: string
+  features?: string
+}
+
+export interface SubscriptionRequest {
+  memberId: string
+  planId: string
+  startDate: string
+  endDate: string
+}
+
+export interface PaymentRequest {
+  subscriptionId: string
+  amount: number
+  paymentMethod: string
+  reference?: string
+}
+
+export interface WorkoutExerciseRequest {
+  workoutId: string
+  exerciseId: string
+  dayOfWeek: string
+  sets: number
+  reps: string
+  restSeconds: number
+  orderIndex: number
+}
+
+export interface WorkoutLogRequest {
+  workoutId: string
+  durationMinutes: number
+  caloriesBurned: number
+}

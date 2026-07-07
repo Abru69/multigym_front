@@ -12,6 +12,12 @@ import type {
   PlatformUserRequestDTO,
   AuditLogDTO,
   PaginatedResult,
+  MemberListItemDTO,
+  PlanListItemDTO,
+  SubscriptionListItemDTO,
+  PaymentListItemDTO,
+  WorkoutExerciseListItemDTO,
+  WorkoutLogListItemDTO,
 } from '@/types'
 
 export async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -168,6 +174,163 @@ export const togglePlatformUserStatus = (id: string) =>
 
 export const deletePlatformUser = (id: string) =>
   fetchApi<ResponseDTO<unknown>>(`/platform-api/users/${id}`, { method: 'DELETE' })
+
+// --- Members ---
+export const getMembers = () =>
+  fetchApi<ResponseDTO<PaginatedResult<MemberListItemDTO>>>('/api/members')
+export const createMember = (data: { userId: string; name: string; phone: string }) =>
+  fetchApi<ResponseDTO<MemberListItemDTO>>('/api/members', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const updateMember = (id: string, data: { name: string; phone: string }) =>
+  fetchApi<ResponseDTO<MemberListItemDTO>>(`/api/members/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+export const deleteMember = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/members/${id}`, { method: 'DELETE' })
+export const getMemberById = (id: string) =>
+  fetchApi<ResponseDTO<MemberListItemDTO>>(`/api/members/${id}`)
+
+// --- Plans ---
+export const getPlans = () =>
+  fetchApi<ResponseDTO<PaginatedResult<PlanListItemDTO>>>('/api/plans')
+export const createPlan = (data: {
+  name: string
+  description?: string
+  price: number
+  durationMonths: number
+  maxWorkoutsPerWeek?: number
+  maxClasses?: number
+  accessHours?: string
+  features?: string
+}) =>
+  fetchApi<ResponseDTO<PlanListItemDTO>>('/api/plans', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const updatePlan = (
+  id: string,
+  data: {
+    name: string
+    description?: string
+    price: number
+    durationMonths: number
+    maxWorkoutsPerWeek?: number
+    maxClasses?: number
+    accessHours?: string
+    features?: string
+  }
+) =>
+  fetchApi<ResponseDTO<PlanListItemDTO>>(`/api/plans/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+export const deletePlan = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/plans/${id}`, { method: 'DELETE' })
+export const togglePlanStatus = (id: string) =>
+  fetchApi<ResponseDTO<PlanListItemDTO>>(`/api/plans/${id}/status`, { method: 'PATCH' })
+export const getPlanById = (id: string) =>
+  fetchApi<ResponseDTO<PlanListItemDTO>>(`/api/plans/${id}`)
+
+// --- Subscriptions ---
+export const getSubscriptions = () =>
+  fetchApi<ResponseDTO<PaginatedResult<SubscriptionListItemDTO>>>('/api/subscriptions')
+export const createSubscription = (data: {
+  memberId: string
+  planId: string
+  startDate: string
+  endDate: string
+}) =>
+  fetchApi<ResponseDTO<SubscriptionListItemDTO>>('/api/subscriptions', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const cancelSubscription = (id: string) =>
+  fetchApi<ResponseDTO<SubscriptionListItemDTO>>(`/api/subscriptions/${id}/cancel`, {
+    method: 'PATCH',
+  })
+export const getSubscriptionsByMember = (memberId: string) =>
+  fetchApi<ResponseDTO<PaginatedResult<SubscriptionListItemDTO>>>(
+    `/api/subscriptions/member/${memberId}`
+  )
+
+// --- Payments ---
+export const getPayments = () =>
+  fetchApi<ResponseDTO<PaginatedResult<PaymentListItemDTO>>>('/api/payments')
+export const createPayment = (data: {
+  subscriptionId: string
+  amount: number
+  paymentMethod: string
+  reference?: string
+}) =>
+  fetchApi<ResponseDTO<PaymentListItemDTO>>('/api/payments', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const getPaymentsBySubscription = (subscriptionId: string) =>
+  fetchApi<ResponseDTO<PaginatedResult<PaymentListItemDTO>>>(
+    `/api/payments/subscription/${subscriptionId}`
+  )
+
+// --- Workout Exercises ---
+export const getWorkoutExercises = (workoutId: string) =>
+  fetchApi<ResponseDTO<PaginatedResult<WorkoutExerciseListItemDTO>>>(
+    `/api/workout-exercises/${workoutId}`
+  )
+export const createWorkoutExercise = (data: {
+  workoutId: string
+  exerciseId: string
+  dayOfWeek: string
+  sets: number
+  reps: string
+  restSeconds: number
+  orderIndex: number
+}) =>
+  fetchApi<ResponseDTO<WorkoutExerciseListItemDTO>>('/api/workout-exercises', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const updateWorkoutExercise = (
+  id: string,
+  data: {
+    dayOfWeek?: string
+    sets?: number
+    reps?: string
+    restSeconds?: number
+    orderIndex?: number
+  }
+) =>
+  fetchApi<ResponseDTO<WorkoutExerciseListItemDTO>>(`/api/workout-exercises/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+export const deleteWorkoutExercise = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/workout-exercises/${id}`, { method: 'DELETE' })
+
+// --- Workout Logs ---
+export const getWorkoutLogs = (workoutId: string) =>
+  fetchApi<ResponseDTO<PaginatedResult<WorkoutLogListItemDTO>>>(
+    `/api/workout-logs/${workoutId}`
+  )
+export const createWorkoutLog = (data: {
+  workoutId: string
+  durationMinutes: number
+  caloriesBurned: number
+}) =>
+  fetchApi<ResponseDTO<WorkoutLogListItemDTO>>('/api/workout-logs', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const updateWorkoutLog = (
+  id: string,
+  data: { durationMinutes?: number; caloriesBurned?: number }
+) =>
+  fetchApi<ResponseDTO<WorkoutLogListItemDTO>>(`/api/workout-logs/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
 
 export interface AuditFilters {
   action?: string
