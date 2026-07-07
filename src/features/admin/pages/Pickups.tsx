@@ -5,20 +5,23 @@ import type { OrderDTO, OrderItemDTO, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
   Store,
-  CheckCircle2,
   Clock,
   Package,
   ChevronDown,
   ChevronUp,
   RefreshCw,
   MapPin,
-  Phone,
   Check,
+  X,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react'
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  COMPLETED: { label: 'Recogida', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
   PENDING: { label: 'Esperando', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
+  READY: { label: 'Listo para Recoger', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', dot: 'bg-blue-500' },
+  COMPLETED: { label: 'Recogida', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
+  CANCELLED: { label: 'Cancelada', color: 'text-gray-500', bg: 'bg-gray-50 border-gray-200', dot: 'bg-gray-400' },
 }
 
 function formatDate(dateStr?: string) {
@@ -36,9 +39,9 @@ function formatTime(dateStr?: string) {
 export default function Pickups() {
   const [orders, setOrders] = useState<OrderDTO[]>([])
   const [loading, setLoading] = useState(true)
-  const [markingId, setMarkingId] = useState<string | null>(null)
+  const [actionId, setActionId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'COMPLETED'>('PENDING')
+  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'READY' | 'COMPLETED' | 'CANCELLED'>('PENDING')
 
   const loadOrders = async () => {
     try {
@@ -58,20 +61,49 @@ export default function Pickups() {
 
   const handleMarkReady = async (orderId: string) => {
     try {
-      setMarkingId(orderId)
+      setActionId(orderId)
       await fetchApi(`/api/orders/${orderId}/ready`, { method: 'PATCH' })
       setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: 'COMPLETED' } : o))
+        prev.map((o) => (o.id === orderId ? { ...o, status: 'READY' } : o))
       )
     } catch (err) {
       console.error('Failed to mark as ready:', err)
     } finally {
-      setMarkingId(null)
+      setActionId(null)
+    }
+  }
+
+  const handleMarkComplete = async (orderId: string) => {
+    try {
+      setActionId(orderId)
+      await fetchApi(`/api/orders/${orderId}/complete`, { method: 'PATCH' })
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: 'COMPLETED' } : o))
+      )
+    } catch (err) {
+      console.error('Failed to mark as completed:', err)
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const handleCancel = async (orderId: string) => {
+    try {
+      setActionId(orderId)
+      await fetchApi(`/api/orders/${orderId}/cancel`, { method: 'PATCH' })
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: 'CANCELLED' } : o))
+      )
+    } catch (err) {
+      console.error('Failed to cancel order:', err)
+    } finally {
+      setActionId(null)
     }
   }
 
   const filtered = orders.filter((o) => filter === 'ALL' || o.status === filter)
   const pendingCount = orders.filter((o) => o.status === 'PENDING').length
+  const readyCount = orders.filter((o) => o.status === 'READY').length
   const completedCount = orders.filter((o) => o.status === 'COMPLETED').length
 
   if (loading) {
@@ -93,7 +125,7 @@ export default function Pickups() {
             Recogidas en Sucursal
           </h1>
           <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-            {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''} · {completedCount} completada{completedCount !== 1 ? 's' : ''}
+            {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''} · {readyCount} listo{readyCount !== 1 ? 's' : ''} · {completedCount} completada{completedCount !== 1 ? 's' : ''}
           </p>
         </div>
         <button
@@ -106,21 +138,25 @@ export default function Pickups() {
       </div>
 
       {/* Summary Cards */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className="mb-6 grid grid-cols-3 gap-3">
         <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 text-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-amber-600">Esperando</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-amber-600">Nuevas</p>
           <p className="mt-0.5 font-heading text-lg font-black text-amber-700">{pendingCount}</p>
         </div>
+        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-3 text-center">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-blue-600">Listas</p>
+          <p className="mt-0.5 font-heading text-lg font-black text-blue-700">{readyCount}</p>
+        </div>
         <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 text-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-600">Completadas</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-600">Entregadas</p>
           <p className="mt-0.5 font-heading text-lg font-black text-emerald-700">{completedCount}</p>
         </div>
       </div>
 
       {/* Filter */}
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Estado:</span>
-        {(['ALL', 'PENDING', 'COMPLETED'] as const).map((f) => (
+        {(['ALL', 'PENDING', 'READY', 'COMPLETED', 'CANCELLED'] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -130,7 +166,7 @@ export default function Pickups() {
                 : 'border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)]'
             }`}
           >
-            {f === 'ALL' ? 'Todas' : f === 'PENDING' ? 'Esperando' : 'Completadas'}
+            {f === 'ALL' ? 'Todas' : f === 'PENDING' ? 'Nuevas' : f === 'READY' ? 'Listas' : f === 'COMPLETED' ? 'Entregadas' : 'Canceladas'}
           </button>
         ))}
       </div>
@@ -141,7 +177,7 @@ export default function Pickups() {
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center">
             <Store size={32} className="mx-auto mb-3 text-[var(--text-muted)]" />
             <p className="text-sm text-[var(--text-secondary)]">
-              {filter === 'PENDING' ? 'No hay pedidos esperando recogida' : 'No hay órdenes de recogida'}
+              {filter === 'PENDING' ? 'No hay pedidos nuevos' : filter === 'READY' ? 'No hay pedidos listos' : 'No hay órdenes de recogida'}
             </p>
           </div>
         ) : (
@@ -187,15 +223,43 @@ export default function Pickups() {
                     {order.status === 'PENDING' && (
                       <button
                         onClick={() => handleMarkReady(order.id!)}
-                        disabled={markingId === order.id}
-                        className="flex items-center gap-1.5 rounded-xl bg-[var(--success)] px-3 py-2 text-xs font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                        disabled={actionId === order.id}
+                        className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
                       >
-                        {markingId === order.id ? (
+                        {actionId === order.id ? (
                           <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         ) : (
                           <Check size={12} />
                         )}
                         Marcar Listo
+                      </button>
+                    )}
+                    {order.status === 'READY' && (
+                      <button
+                        onClick={() => handleMarkComplete(order.id!)}
+                        disabled={actionId === order.id}
+                        className="flex items-center gap-1.5 rounded-xl bg-[var(--success)] px-3 py-2 text-xs font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                      >
+                        {actionId === order.id ? (
+                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        ) : (
+                          <CheckCircle2 size={12} />
+                        )}
+                        Entregado
+                      </button>
+                    )}
+                    {(order.status === 'PENDING' || order.status === 'READY') && (
+                      <button
+                        onClick={() => handleCancel(order.id!)}
+                        disabled={actionId === order.id}
+                        className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+                      >
+                        {actionId === order.id ? (
+                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-400 border-t-transparent" />
+                        ) : (
+                          <X size={12} />
+                        )}
+                        Cancelar
                       </button>
                     )}
                     <button
@@ -229,6 +293,14 @@ export default function Pickups() {
                                 </p>
                               </div>
                             </div>
+                          </div>
+                        )}
+
+                        {/* Client Info */}
+                        {order.user && (
+                          <div className="mb-3 rounded-xl bg-[var(--surface)] px-3 py-2.5">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Cliente</p>
+                            <p className="mt-0.5 text-xs font-bold text-[var(--text-primary)]">{order.user.name || order.user.email}</p>
                           </div>
                         )}
 

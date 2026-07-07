@@ -26,6 +26,7 @@ import {
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
   COMPLETED: { label: 'Completada', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
   PENDING: { label: 'Pendiente', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
+  READY: { label: 'Listo para Recoger', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', dot: 'bg-blue-500' },
   FAILED: { label: 'Fallida', color: 'text-red-700', bg: 'bg-red-50 border-red-200', dot: 'bg-red-500' },
   CANCELLED: { label: 'Cancelada', color: 'text-gray-500', bg: 'bg-gray-50 border-gray-200', dot: 'bg-gray-400' },
 }
@@ -351,33 +352,45 @@ export default function MyOrders() {
                         </div>
                       )}
 
-                      {/* Delivery Info */}
-                      {order.deliveryMethod && (
-                        <div className="mb-3 rounded-xl bg-[var(--surface)] px-3 py-2.5">
-                          <p className="text-[10px] font-medium text-[var(--text-muted)]">Método de entrega</p>
-                          <p className="mt-0.5 flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)]">
-                            {order.deliveryMethod === 'PICKUP' ? (
-                              <>
-                                <Store size={12} className="text-[var(--accent)]" />
-                                Recoger en sucursal
-                                {order.branchName && (
-                                  <span className="font-normal text-[var(--text-secondary)]"> — {order.branchName}</span>
-                                )}
-                              </>
-                            ) : (
-                              <>
-                                <Truck size={12} className="text-[var(--accent)]" />
-                                Envío a domicilio
-                              </>
-                            )}
-                          </p>
-                          {order.deliveryMethod === 'SHIPPING' && order.shippingAddress && (
-                            <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
-                              {order.shippingAddress}{order.shippingCity ? `, ${order.shippingCity}` : ''}{order.shippingPostalCode ? ` CP ${order.shippingPostalCode}` : ''}
-                            </p>
-                          )}
-                        </div>
-                      )}
+                       {/* Delivery Info */}
+                       {order.deliveryMethod && (
+                         <div className="mb-3 rounded-xl bg-[var(--surface)] px-3 py-2.5">
+                           <p className="text-[10px] font-medium text-[var(--text-muted)]">Método de entrega</p>
+                           <p className="mt-0.5 flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)]">
+                             {order.deliveryMethod === 'PICKUP' ? (
+                               <>
+                                 <Store size={12} className="text-[var(--accent)]" />
+                                 Recoger en sucursal
+                                 {order.branchName && (
+                                   <span className="font-normal text-[var(--text-secondary)]"> — {order.branchName}</span>
+                                 )}
+                               </>
+                             ) : (
+                               <>
+                                 <Truck size={12} className="text-[var(--accent)]" />
+                                 Envío a domicilio
+                               </>
+                             )}
+                           </p>
+                           {order.deliveryMethod === 'SHIPPING' && order.shippingAddress && (
+                             <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                               {order.shippingAddress}{order.shippingCity ? `, ${order.shippingCity}` : ''}{order.shippingPostalCode ? ` CP ${order.shippingPostalCode}` : ''}
+                             </p>
+                           )}
+                         </div>
+                       )}
+
+                       {/* READY Message */}
+                       {order.status === 'READY' && (
+                         <div className="mb-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5">
+                           <p className="text-xs font-bold text-blue-700">
+                             Tu pedido esta listo para recoger en{order.branchName ? ` ${order.branchName}` : ' la sucursal'}.
+                           </p>
+                           <p className="mt-0.5 text-[11px] text-blue-600">
+                             Pasa a recoger tu pedido mostrando este comprobante.
+                           </p>
+                         </div>
+                       )}
 
                       {/* Payment Info */}
                       <div className="grid grid-cols-2 gap-2">

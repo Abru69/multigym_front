@@ -410,3 +410,13 @@ export const markOrderReady = (orderId: string) =>
   fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${orderId}/ready`, {
     method: 'PATCH',
   })
+
+export const markOrderComplete = (orderId: string) =>
+  fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${orderId}/complete`, {
+    method: 'PATCH',
+  })
+
+export const cancelOrder = (orderId: string) =>
+  fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${orderId}/cancel`, {
+    method: 'PATCH',
+  })
