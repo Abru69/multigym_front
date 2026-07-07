@@ -14,6 +14,7 @@
 | Admin Pages        | ✅ 13 páginas (Dashboard, Inventario, Usuarios, Ejercicios, Miembros, Planes, Suscripciones, Pagos, Recogidas, Envíos, Métodos de Entrega, ...) |
 | Client Pages       | ✅ 4 páginas (Rutinas, Nutrición, Progreso, My Orders) |
 | Checkout           | ✅ Integrado con backend + delivery methods (3 pasos)|
+| Pickup Flow        | ✅ Estado READY, comprobante QR, entregado/cancelado |
 | Missing Endpoints  | ⚠️ Progress y Nutrition sin backend       |
 
 ## Funcionalidades Recientes (2026-07-07)

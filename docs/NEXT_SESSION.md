@@ -1,16 +1,15 @@
 # Próximos Pasos
 
-**Última sesión:** 2026-07-07 — Delivery Methods (Checkout, Pickups, Shipments, Settings)
+**Última sesión:** 2026-07-07 — Order Pickup Flow (QR voucher, READY/COMPLETED/CANCELLED)
 
 ## Completado Reciente
 
-- ✅ **Delivery Methods** — Checkout 3 pasos, Pickups admin, Shipments admin, DeliverySettings
-- ✅ **Checkout redesign** — Selección de método (recogida/envío), sucursal o dirección
-- ✅ **MyOrders** — Badge de método, filtro por tipo, muestra sucursal o dirección
-- ✅ **Pickups.tsx** — Vista admin pedidos recogida, "Marcar Listo" action
-- ✅ **Shipments.tsx** — Vista admin envíos con dirección de entrega
-- ✅ **DeliverySettings.tsx** — Toggle habilitar/deshabilitar por tenant
-- ✅ **Admin nav** — Recogidas, Envíos, Métodos de Entrega en sidebar
+- ✅ **Order Status Machine** — PENDING→READY→COMPLETED, CANCELLED con validación
+- ✅ **Pickup Flow** — Admin: "Marcar Listo" / "Entregado" / "Cancelar"
+- ✅ **PickupVoucher** — Modal con QR code, recibo, sucursal, artículos, total
+- ✅ **MyOrders READY badge** — Azul "Listo para Recoger" + botón "Ver Comprobante"
+- ✅ **fetchApi fix** — Falls back to auth-storage tenantId on localhost
+- ✅ **Tenant-settings CLIENT access** — Abierto para que checkout pueda leer delivery methods
 
 ## Endpoints Faltantes en Backend (Mock Data en Frontend)
 

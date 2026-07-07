@@ -8,6 +8,16 @@ Formato: [YYYY-MM-DD]
 
 ### Completado
 
+- **Order Pickup Flow (Flujo de Recogida)**
+  - `OrderStatus` enum con transiciones válidas: PENDING→READY→COMPLETED, CANCELLED
+  - Admin puede marcar "Listo" (valida pago, branch, delivery method)
+  - Admin puede marcar "Entregado" cuando cliente recoge en sucursal
+  - Admin puede "Cancelar" órdenes PENDING o READY
+  - Badge azul "Listo para Recoger" en MyOrders con mensaje contextual
+  - PickupVoucher: modal con QR code, número de orden, sucursal, artículos, total
+  - Botón "Ver Comprobante" para clientes con órdenes READY
+  - `qrcode.react` para generación de QR codes
+
 - **Delivery Methods (Métodos de Entrega)**
   - Checkout rediseñado: flujo de 3 pasos (método → detalles → pago)
   - Selección de método: Recogida en Sucursal o Envío a Domicilio
