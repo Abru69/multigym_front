@@ -8,6 +8,26 @@ Formato: [YYYY-MM-DD]
 
 ### Completado
 
+- **Platform Audit Logs integrados**
+  - `AuditLogDTO` y `PaginatedResult<T>` agregados a `api.ts`
+  - `getAudits()` con 5 filtros: action, entityName, tenantId, fromDate, toDate + paginación
+  - Nuevo store: `platformLogsStore.ts` con filtros, paginación, `loadLogs()`
+  - `PlatformLogs.tsx` reescrito: timeline UI, filtros, paginación, timestamps relativos
+  - Dashboard "Actividad Reciente" consume `GET /api/audits?size=6` (eliminó datos mock)
+
+- **Toggle rápido de estado**
+  - Gimnasios: click en badge de estado activa/suspende tenant (`PATCH /api/tenants/{id}/status`)
+  - Usuarios: click en badge activa/desactiva usuario (`PATCH /platform-api/users/{id}/status`)
+  - Sort alfabético en Gimnasios (`localeCompare`) para evitar reorden al cambiar estado
+
+- **Fix dropdowns en Platform**
+  - Eliminado `overflow-hidden` de DropdownMenu (causaba clipping)
+  - z-index bump `z-10` → `z-50` para menus sobre contenido
+  - `stopPropagation` en trigger para evitar toggle accidental
+  - `type="button"` en todos los botones de menú
+  - Cierre de menú antes de acción asíncrona (toggle/delete)
+  - Header "Acciones" agregado en tabla de Usuarios
+
 - **My Orders page** (`/app/mis-ordenes`)
   - Página con órdenes expandibles: items, payment method, referencia, total
   - Sort por fecha (default: recientes primero) y por total

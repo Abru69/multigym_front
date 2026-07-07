@@ -1,9 +1,13 @@
 # Próximos Pasos
 
-**Última sesión:** 2026-07-07 — My Orders, Checkout integrado, image mapping
+**Última sesión:** 2026-07-07 — Audit Logs, toggles de estado, fix dropdowns
 
 ## Completado Reciente
 
+- ✅ **Platform Audit Logs** — Timeline con filtros, paginación, actividad reciente en dashboard
+- ✅ **Toggle rápido de estado** — Click badge en Gimnasios y Usuarios para activar/suspendir
+- ✅ **Fix dropdowns** — z-index, overflow, stopPropagation, cierre antes de acción
+- ✅ **Sort alfabético Gimnasios** — Prevents reorden al cambiar estado
 - ✅ **My Orders page** — `/app/mis-ordenes` con sort por fecha/total, expandible
 - ✅ **Checkout integrado** — Envía items+paymentMethod+shippingAmount al backend
 - ✅ **Image mapping** — imageUrl/videoUrl de ProductDTO a image/video
@@ -140,4 +144,10 @@ El backend `POST /api/members` requiere un `userId` existente. Para crear un mie
 
 ## Bloqueado
 
+- **Audit Logs backend 500** — `GET /api/audits` retorna 500. Frontend listo, pendiente fix en backend (AuditLog entity mapping, null checks en `auditService.findFiltered`)
 - Progress.tsx y Nutrition.tsx — sin endpoints backend, se quedan como mock data hasta que se creen los controladores Java
+
+## Pendiente Medio
+
+- **Exportar CSV** en Audit Logs — Botón existe en UI pero aún no implementado
+- **Fix Lint Errors (121)** — preexistentes: react-refresh, no-unused-vars, jsx-a11y

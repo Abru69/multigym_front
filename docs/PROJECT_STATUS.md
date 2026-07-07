@@ -137,6 +137,15 @@
 
 ### Fase 10 — Conexión de 30 Endpoints (2026-07-06)
 
+### Fase 11 — Audit Logs + Toggles de Estado (2026-07-07)
+
+- **Audit Logs**: `getAudits()` con 5 filtros + paginación, `platformLogsStore.ts`, `PlatformLogs.tsx` con timeline
+- **Dashboard Actividad Reciente**: consume `GET /api/audits?size=6` (eliminó mock data)
+- **Toggle rápido**: badge click en Gimnasios y Usuarios para activar/suspendir
+- **Fix dropdowns**: z-index, overflow-hidden, stopPropagation, type="button"
+- **Sort alfabético** en tabla de Gimnasios
+- **⚠️ Backend**: `GET /api/audits` retorna 500 (pendiente fix backend)
+
 - **Types**: +12 DTO/Request types — MemberListItemDTO, PlanListItemDTO, SubscriptionListItemDTO, PaymentListItemDTO, WorkoutExerciseListItemDTO, WorkoutLogListItemDTO + 6 Request types
 - **API**: +17 funciones — Members (5), Plans (6), Subscriptions (4), Payments (3), WorkoutExercises (4), WorkoutLogs (3)
 - **4 páginas admin creadas**:

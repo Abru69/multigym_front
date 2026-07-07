@@ -70,8 +70,9 @@ src/
 
 ### 2. Plataforma SaaS (`features/platform/`)
 
-- Dashboard MRR, tenants, facturación, logs
-- Store: `platformAuthStore.ts`
+- Dashboard MRR, tenants, facturación, audit logs
+- Pages: PlatformDashboard, PlatformTenants, PlatformUsers, PlatformBilling, PlatformSettings, PlatformLogs
+- Stores: `platformAuthStore.ts`, `platformDashboardStore.ts`, `platformTenantsStore.ts`, `platformUsersStore.ts`, `platformLogsStore.ts`, `platformBillingStore.ts`, `platformSettingsStore.ts`
 
 ### 3. Admin Gimnasio (`features/admin/`)
 
