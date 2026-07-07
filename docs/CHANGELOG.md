@@ -4,6 +4,32 @@ Formato: [YYYY-MM-DD]
 
 ---
 
+## [2026-07-07]
+
+### Completado
+
+- **My Orders page** (`/app/mis-ordenes`)
+  - Página con órdenes expandibles: items, payment method, referencia, total
+  - Sort por fecha (default: recientes primero) y por total
+  - Summary cards: total órdenes, completadas, monto gastado
+  - Empty state con link a tienda, error state con retry
+  - Animaciones expand/collapse con AnimatePresence
+- **Checkout integrado con backend**
+  - Envía `items[]`, `paymentMethod`, `shippingAmount` a `POST /api/orders`
+  - Eliminó llamada incorrecta a `/api/payments` (endpoint de suscripciones)
+  - Error handling: toast + `console.error`, NO limpia carrito en error
+  - Campo "Nombre en la Tarjeta" agregado
+- **Image mapping fixes**
+  - `imageUrl`/`videoUrl` en ProductDTO mapeados a `image`/`video`
+  - Catalog, ProductDetail, Inventory, routineStore: fallback `p.imageUrl || p.image`
+- **Router + Navigation**
+  - Ruta `/app/mis-ordenes` con lazy loading
+  - Link "Mis Órdenes" con icono `Package` en ClientLayout
+- **Types**: `OrderItemDTO` agregado a `api.ts` y `index.ts`
+- Build: `vite build` ✅ (517ms)
+
+---
+
 ## [2026-07-06]
 
 ### Completado

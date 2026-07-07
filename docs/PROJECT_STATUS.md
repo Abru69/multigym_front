@@ -1,19 +1,38 @@
 # Estado del Proyecto
 
-**Última actualización:** 2026-07-06
+**Última actualización:** 2026-07-07
 
 ## Resumen
 
 | Área               | Estado                                    |
 | ------------------ | ----------------------------------------- |
-| Build              | ✅ Passing (1.76s)                        |
-| TypeScript         | ✅ `tsc --noEmit` clean                   |
-| Lint               | ⚠️ 134 problemas (preexistentes)          |
+| Build              | ✅ Passing (517ms)                        |
+| TypeScript         | ✅ Clean                                  |
+| Lint               | ⚠️ Problemas preexistentes               |
 | Dark Theme         | ✅ Near-black (#0a0a0a) + accent #aaff00 |
-| Rediseño Total     | ✅ 37 archivos, ~439 reemplazos           |
-| API Integration    | ✅ 30 endpoints conectados                |
-| Admin Pages        | ✅ 10 páginas (6 originales + 4 nuevas)   |
+| API Integration    | ✅ 30+ endpoints conectados               |
+| Admin Pages        | ✅ 10 páginas                             |
+| Client Pages       | ✅ 4 páginas (Rutinas, Nutrición, Progreso, My Orders) |
+| Checkout           | ✅ Integrado con backend (items + payment)|
 | Missing Endpoints  | ⚠️ Progress y Nutrition sin backend       |
+
+## Funcionalidades Recientes (2026-07-07)
+
+### My Orders (`/app/mis-ordenes`)
+- Endpoint: `GET /api/orders/my` (filtra por JWT user)
+- Sort por fecha (default: recientes primero) y por total
+- Summary cards: total, completadas, gastado
+- Cards expandibles con items, payment method, referencia
+- Empty state con link a tienda
+
+### Checkout
+- Envía `items[]`, `paymentMethod`, `shippingAmount` a `POST /api/orders`
+- Error handling: toast + consola, NO limpia carrito
+- Campo "Nombre en la Tarjeta" requerido
+
+### Image Mapping
+- `imageUrl`/`videoUrl` de ProductDTO mapeados a `image`/`video`
+- Fallback: `p.imageUrl || p.image` en Catalog, Detail, Inventory
 
 ## Paleta de Colores (Dark Theme)
 

@@ -1,17 +1,15 @@
 # Próximos Pasos
 
-**Última sesión:** 2026-07-06 — Conexión de 30 endpoints restantes al frontend
+**Última sesión:** 2026-07-07 — My Orders, Checkout integrado, image mapping
 
 ## Completado Reciente
 
-- ✅ **Conexión de endpoints** — 30 endpoints conectados, 16 nuevas funciones API
-- ✅ **4 páginas admin creadas** — Members, Plans, Subscriptions, Payments
-- ✅ **routineStore conectado** — loadRoutines() llama API en vez de mockRoutines
-- ✅ **Checkout conectado** — Crea orden real via POST /api/orders + POST /api/payments
+- ✅ **My Orders page** — `/app/mis-ordenes` con sort por fecha/total, expandible
+- ✅ **Checkout integrado** — Envía items+paymentMethod+shippingAmount al backend
+- ✅ **Image mapping** — imageUrl/videoUrl de ProductDTO a image/video
+- ✅ **Router + Navigation** — Ruta + link "Mis Órdenes" en ClientLayout
+- ✅ **Conexión de 30 endpoints** — Admin pages CRUD completo
 - ✅ **Dark Theme Near-Black** — `#0a0a0a` base, `#141414` cards, `#aaff00` accent
-- ✅ **Rediseño Total** — 37 archivos, ~439 reemplazos, estructuras nuevas
-- ✅ Platform Dashboard, Tenants, Users — CRUD completo con backend
-- ✅ SaaS Plans — resolución desde `GET /api/saas-plans`
 
 ## Endpoints Faltantes en Backend (Mock Data en Frontend)
 
