@@ -36,7 +36,11 @@ export default function Login() {
       const ok = await login(email, password, effectiveTenant)
       if (ok) {
         const user = useAuthStore.getState().user
-        navigate(user?.role === 'admin' ? '/admin' : '/')
+        if (user?.role === 'admin') {
+          navigate('/admin')
+        } else {
+          navigate('/app/rutinas')
+        }
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Credenciales inválidas.')
