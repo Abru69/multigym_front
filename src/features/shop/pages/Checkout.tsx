@@ -5,7 +5,7 @@ import { useCartStore } from '@/features/shop/store/cartStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useToastStore } from '@/components/ui/Toast'
 import { fetchApi } from '@/lib/api'
-import type { OrderDTO, ResponseDTO } from '@/types'
+import type { OrderDTO, ResponseDTO, BranchDTO, TenantSettingDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
   CheckCircle2,
@@ -16,19 +16,21 @@ import {
   Package,
   Check,
   MapPin,
+  Store,
+  Truck,
 } from 'lucide-react'
 
 const STEPS = [
-  { key: 'shipping', label: 'Envío', icon: MapPin },
+  { key: 'method', label: 'Entrega', icon: MapPin },
+  { key: 'details', label: 'Detalles', icon: Store },
   { key: 'payment', label: 'Pago', icon: CreditCard },
   { key: 'success', label: 'Confirmación', icon: CheckCircle2 },
 ] as const
 
 function StepIndicator({ currentStep }: { currentStep: string }) {
   const getStepIndex = (s: string) => {
-    if (s === 'shipping') return 0
-    if (s === 'payment') return 1
-    return 2
+    const idx = STEPS.findIndex((st) => st.key === s)
+    return idx >= 0 ? idx : 0
   }
   const idx = getStepIndex(currentStep)
 
@@ -76,12 +78,21 @@ export default function Checkout() {
   const { user } = useAuthStore()
   const addToast = useToastStore((s) => s.addToast)
   const navigate = useNavigate()
-  const [step, setStep] = useState<'shipping' | 'payment' | 'success'>('shipping')
+
+  const [step, setStep] = useState<'method' | 'details' | 'payment' | 'success'>('method')
   const [loading, setLoading] = useState(false)
   const [orderNumber, setOrderNumber] = useState('')
 
+  const [branches, setBranches] = useState<BranchDTO[]>([])
+  const [deliveryMethods, setDeliveryMethods] = useState({ pickup: true, shipping: true })
+  const [deliveryMethod, setDeliveryMethod] = useState<'PICKUP' | 'SHIPPING'>('PICKUP')
+  const [selectedBranch, setSelectedBranch] = useState<string>('')
+  const [shippingAddress, setShippingAddress] = useState('')
+  const [shippingCity, setShippingCity] = useState('')
+  const [shippingPostalCode, setShippingPostalCode] = useState('')
+
   const subtotal = total()
-  const shipping = subtotal > 1500 ? 0 : 150
+  const shipping = deliveryMethod === 'SHIPPING' ? (subtotal > 1500 ? 0 : 150) : 0
   const finalTotal = subtotal + shipping
 
   useEffect(() => {
@@ -89,6 +100,41 @@ export default function Checkout() {
       navigate('/tienda/carrito')
     }
   }, [items.length, step, navigate])
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [branchesRes, settingsRes] = await Promise.all([
+          fetchApi<ResponseDTO<BranchDTO[]>>('/api/branches'),
+          fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings'),
+        ])
+        setBranches(branchesRes.lista || [])
+
+        const settings = settingsRes.lista || []
+        const pickupEnabled = settings.find((s) => s.key === 'delivery_pickup_enabled')
+        const shippingEnabled = settings.find((s) => s.key === 'delivery_shipping_enabled')
+
+        const pickup = pickupEnabled ? pickupEnabled.value === 'true' : true
+        const shipping = shippingEnabled ? shippingEnabled.value === 'true' : true
+
+        setDeliveryMethods({ pickup, shipping })
+
+        if (pickup && !shipping) setDeliveryMethod('PICKUP')
+        else if (!pickup && shipping) setDeliveryMethod('SHIPPING')
+        else if (pickup) setDeliveryMethod('PICKUP')
+        else setDeliveryMethod('SHIPPING')
+      } catch (err) {
+        console.error('Failed to load delivery options:', err)
+      }
+    }
+    loadData()
+  }, [])
+
+  useEffect(() => {
+    if (branches.length > 0 && !selectedBranch) {
+      setSelectedBranch(branches[0].id)
+    }
+  }, [branches, selectedBranch])
 
   const handleSimulatePayment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -98,17 +144,28 @@ export default function Checkout() {
         throw new Error('Debes iniciar sesión para completar la compra')
       }
 
+      const orderBody: Record<string, unknown> = {
+        userId: user.id,
+        items: items.map((item) => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
+        paymentMethod: 'CREDIT_CARD',
+        shippingAmount: shipping,
+        deliveryMethod,
+      }
+
+      if (deliveryMethod === 'PICKUP') {
+        orderBody.branchId = selectedBranch
+      } else {
+        orderBody.shippingAddress = shippingAddress
+        orderBody.shippingCity = shippingCity
+        orderBody.shippingPostalCode = shippingPostalCode
+      }
+
       const orderRes = await fetchApi<ResponseDTO<OrderDTO>>('/api/orders', {
         method: 'POST',
-        body: JSON.stringify({
-          userId: user.id,
-          items: items.map((item) => ({
-            productId: item.product.id,
-            quantity: item.quantity,
-          })),
-          paymentMethod: 'CREDIT_CARD',
-          shippingAmount: shipping,
-        }),
+        body: JSON.stringify(orderBody),
       })
       const orderId = orderRes.dto?.id || ''
       setOrderNumber(orderId.slice(0, 8).toUpperCase())
@@ -123,14 +180,117 @@ export default function Checkout() {
     }
   }
 
+  const canProceedToDetails = () => {
+    if (deliveryMethod === 'PICKUP') return selectedBranch !== ''
+    return shippingAddress !== '' && shippingCity !== '' && shippingPostalCode !== ''
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
       {step !== 'success' && <StepIndicator currentStep={step} />}
 
       <AnimatePresence mode="wait">
-        {step === 'shipping' && (
+        {/* STEP 1: Delivery Method */}
+        {step === 'method' && (
           <motion.div
-            key="shipping"
+            key="method"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 }}
+            transition={{ duration: 0.3 }}
+            className="mx-auto max-w-lg space-y-6"
+          >
+            <h2 className="font-heading text-xl font-black text-[var(--text-primary)]">
+              Método de Entrega
+            </h2>
+
+            <div className="space-y-4">
+              {deliveryMethods.pickup && (
+                <button
+                  onClick={() => setDeliveryMethod('PICKUP')}
+                  className={`flex w-full items-center gap-4 rounded-2xl border-2 p-5 text-left transition-all ${
+                    deliveryMethod === 'PICKUP'
+                      ? 'border-[var(--accent)] bg-[var(--accent)]/5 shadow-md'
+                      : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--border-hover)]'
+                  }`}
+                >
+                  <div
+                    className={`flex h-14 w-14 items-center justify-center rounded-xl ${
+                      deliveryMethod === 'PICKUP'
+                        ? 'bg-[var(--accent)]/10 text-[var(--accent)]'
+                        : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
+                    }`}
+                  >
+                    <Store size={24} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-[var(--text-primary)]">Recoger en Sucursal</p>
+                    <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
+                      Elige la sucursal más cercana y recoge tu pedido
+                    </p>
+                    <p className="mt-1 text-xs font-semibold text-[var(--success)]">Gratis</p>
+                  </div>
+                  {deliveryMethod === 'PICKUP' && (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)]">
+                      <Check size={14} className="text-[var(--accent-text)]" />
+                    </div>
+                  )}
+                </button>
+              )}
+
+              {deliveryMethods.shipping && (
+                <button
+                  onClick={() => setDeliveryMethod('SHIPPING')}
+                  className={`flex w-full items-center gap-4 rounded-2xl border-2 p-5 text-left transition-all ${
+                    deliveryMethod === 'SHIPPING'
+                      ? 'border-[var(--accent)] bg-[var(--accent)]/5 shadow-md'
+                      : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--border-hover)]'
+                  }`}
+                >
+                  <div
+                    className={`flex h-14 w-14 items-center justify-center rounded-xl ${
+                      deliveryMethod === 'SHIPPING'
+                        ? 'bg-[var(--accent)]/10 text-[var(--accent)]'
+                        : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
+                    }`}
+                  >
+                    <Truck size={24} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-[var(--text-primary)]">Envío a Domicilio</p>
+                    <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
+                      Recibe tu pedido en la puerta de tu casa
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--text-secondary)]">
+                      {subtotal > 1500 ? (
+                        <span className="font-semibold text-[var(--success)]">Envío gratis</span>
+                      ) : (
+                        <>Envío: {formatCurrency(150)}</>
+                      )}
+                    </p>
+                  </div>
+                  {deliveryMethod === 'SHIPPING' && (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)]">
+                      <Check size={14} className="text-[var(--accent-text)]" />
+                    </div>
+                  )}
+                </button>
+              )}
+            </div>
+
+            <button
+              onClick={() => setStep('details')}
+              className="mt-6 h-12 w-full rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg"
+            >
+              Continuar
+            </button>
+          </motion.div>
+        )}
+
+        {/* STEP 2: Details (Branch or Address) */}
+        {step === 'details' && (
+          <motion.div
+            key="details"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 30 }}
@@ -138,74 +298,109 @@ export default function Checkout() {
             className="grid grid-cols-1 gap-8 md:grid-cols-2"
           >
             <div className="space-y-6">
-              <h2 className="font-heading text-xl font-black text-[var(--text-primary)]">
-                Dirección de Envío
-              </h2>
-              <form
-                className="space-y-4"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  setStep('payment')
-                }}
+              <button
+                onClick={() => setStep('method')}
+                className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
               >
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[var(--text-primary)]">Nombre</label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="Juan"
-                      className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
-                    />
+                <ArrowLeft size={16} /> Cambiar método
+              </button>
+
+              {deliveryMethod === 'PICKUP' ? (
+                <>
+                  <h2 className="font-heading text-xl font-black text-[var(--text-primary)]">
+                    Selecciona Sucursal
+                  </h2>
+                  <div className="space-y-3">
+                    {branches.map((branch) => (
+                      <button
+                        key={branch.id}
+                        onClick={() => setSelectedBranch(branch.id)}
+                        className={`flex w-full items-center gap-4 rounded-2xl border-2 p-4 text-left transition-all ${
+                          selectedBranch === branch.id
+                            ? 'border-[var(--accent)] bg-[var(--accent)]/5 shadow-md'
+                            : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--border-hover)]'
+                        }`}
+                      >
+                        <div
+                          className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+                            selectedBranch === branch.id
+                              ? 'bg-[var(--accent)]/10 text-[var(--accent)]'
+                              : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
+                          }`}
+                        >
+                          <Store size={20} />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-bold text-[var(--text-primary)]">{branch.name}</p>
+                          <p className="mt-0.5 text-xs text-[var(--text-secondary)]">{branch.address}</p>
+                          {branch.phone && (
+                            <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">{branch.phone}</p>
+                          )}
+                        </div>
+                        {selectedBranch === branch.id && (
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)]">
+                            <Check size={14} className="text-[var(--accent-text)]" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[var(--text-primary)]">Apellidos</label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="Pérez"
-                      className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
-                    />
+                </>
+              ) : (
+                <>
+                  <h2 className="font-heading text-xl font-black text-[var(--text-primary)]">
+                    Dirección de Envío
+                  </h2>
+                  <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-[var(--text-primary)]">Calle y Número</label>
+                      <input
+                        required
+                        type="text"
+                        placeholder="Av. Principal 123"
+                        value={shippingAddress}
+                        onChange={(e) => setShippingAddress(e.target.value)}
+                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-[var(--text-primary)]">Código Postal</label>
+                        <input
+                          required
+                          type="text"
+                          placeholder="31000"
+                          value={shippingPostalCode}
+                          onChange={(e) => setShippingPostalCode(e.target.value)}
+                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-[var(--text-primary)]">Ciudad</label>
+                        <input
+                          required
+                          type="text"
+                          placeholder="Chihuahua"
+                          value={shippingCity}
+                          onChange={(e) => setShippingCity(e.target.value)}
+                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-[var(--text-primary)]">Calle y Número</label>
-                  <input
-                    required
-                    type="text"
-                    placeholder="Av. Principal 123"
-                    className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[var(--text-primary)]">Código Postal</label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="31000"
-                      className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-[var(--text-primary)]">Ciudad</label>
-                    <input
-                      required
-                      type="text"
-                      placeholder="Chihuahua"
-                      className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
-                    />
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  className="mt-6 h-12 w-full rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg"
-                >
-                  Continuar al Pago
-                </button>
-              </form>
+                </>
+              )}
+
+              <button
+                onClick={() => setStep('payment')}
+                disabled={!canProceedToDetails()}
+                className="mt-6 h-12 w-full rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Continuar al Pago
+              </button>
             </div>
 
+            {/* Order Summary */}
             <div className="h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
               <h3 className="mb-4 font-heading text-lg font-black text-[var(--text-primary)]">Resumen</h3>
               <div className="scrollbar-hide mb-6 max-h-60 space-y-3 overflow-y-auto pr-2">
@@ -236,7 +431,7 @@ export default function Checkout() {
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-[var(--text-secondary)]">
-                  <span>Envío</span>
+                  <span>{deliveryMethod === 'PICKUP' ? 'Recogida' : 'Envío'}</span>
                   <span>{shipping === 0 ? 'Gratis' : formatCurrency(shipping)}</span>
                 </div>
                 <div className="flex justify-between pt-2 font-heading text-lg font-black text-[var(--text-primary)]">
@@ -248,6 +443,7 @@ export default function Checkout() {
           </motion.div>
         )}
 
+        {/* STEP 3: Payment */}
         {step === 'payment' && (
           <motion.div
             key="payment"
@@ -258,10 +454,10 @@ export default function Checkout() {
             className="mx-auto max-w-lg"
           >
             <button
-              onClick={() => setStep('shipping')}
+              onClick={() => setStep('details')}
               className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
             >
-              <ArrowLeft size={16} /> Volver a Envío
+              <ArrowLeft size={16} /> Volver a Detalles
             </button>
 
             <h2 className="mb-6 font-heading text-xl font-black text-[var(--text-primary)]">
@@ -369,6 +565,7 @@ export default function Checkout() {
           </motion.div>
         )}
 
+        {/* STEP 4: Success */}
         {step === 'success' && (
           <motion.div
             key="success"
@@ -415,8 +612,9 @@ export default function Checkout() {
               ¡Pago Exitoso!
             </h2>
             <p className="mb-10 text-sm text-[var(--text-secondary)]">
-              Tu orden ha sido confirmada. Te enviaremos un correo con los detalles del envío y
-              número de rastreo.
+              {deliveryMethod === 'PICKUP'
+                ? 'Tu orden está siendo preparada. Te notificaremos cuando esté lista para recoger.'
+                : 'Tu orden ha sido confirmada. Te enviaremos un correo con los detalles del envío.'}
             </p>
 
             <div className="mb-10 flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-left shadow-sm">

@@ -21,6 +21,9 @@ import type {
   TenantBillingSummaryDTO,
   RevenueReportDTO,
   PlatformSettingDTO,
+  BranchDTO,
+  TenantSettingDTO,
+  OrderDTO,
 } from '@/types'
 
 export async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -373,4 +376,24 @@ export const updatePlatformSettings = (entries: Record<string, string>) =>
   fetchApi<ResponseDTO<PlatformSettingDTO>>('/api/platform-settings', {
     method: 'PUT',
     body: JSON.stringify({ entries }),
+  })
+
+// --- Branches ---
+export const getBranches = () =>
+  fetchApi<ResponseDTO<BranchDTO[]>>('/api/branches')
+
+// --- Tenant Settings ---
+export const getTenantSettings = () =>
+  fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings')
+
+export const updateTenantSettings = (entries: Record<string, string>) =>
+  fetchApi<ResponseDTO<TenantSettingDTO>>('/api/tenant-settings', {
+    method: 'PUT',
+    body: JSON.stringify({ entries }),
+  })
+
+// --- Orders ---
+export const markOrderReady = (orderId: string) =>
+  fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${orderId}/ready`, {
+    method: 'PATCH',
   })

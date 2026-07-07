@@ -176,6 +176,12 @@ export interface OrderDTO {
   paymentStatus?: string
   createdAt?: string
   paymentDate?: string
+  deliveryMethod?: string
+  branchId?: string
+  branchName?: string
+  shippingAddress?: string
+  shippingCity?: string
+  shippingPostalCode?: string
 }
 
 export interface OrderItemDTO {
@@ -185,6 +191,21 @@ export interface OrderItemDTO {
   quantity: number
   unitPrice: number | string
   subtotal: number | string
+}
+
+export interface BranchDTO {
+  id: string
+  name: string
+  address: string
+  phone: string
+  isActive: boolean
+}
+
+export interface TenantSettingDTO {
+  key: string
+  value: string
+  type: string
+  description: string
 }
 
 export interface AuditLogDTO {

@@ -48,4 +48,6 @@ export type {
   TenantBillingSummaryDTO,
   RevenueReportDTO,
   PlatformSettingDTO,
+  BranchDTO,
+  TenantSettingDTO,
 } from './api'

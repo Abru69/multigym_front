@@ -3,7 +3,7 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 import { getTenantUrl } from '@/lib/tenant'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { DashboardLayout, type NavItem } from '@/components/layout/DashboardLayout'
-import { LayoutDashboard, Package, Users, Dumbbell, UserCheck, CreditCard, Calendar, DollarSign } from 'lucide-react'
+import { LayoutDashboard, Package, Users, Dumbbell, UserCheck, CreditCard, Calendar, DollarSign, Store, Truck, Settings } from 'lucide-react'
 
 const navItems: NavItem[] = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
@@ -12,6 +12,9 @@ const navItems: NavItem[] = [
   { to: '/admin/planes', icon: CreditCard, label: 'Planes' },
   { to: '/admin/suscripciones', icon: Calendar, label: 'Suscripciones' },
   { to: '/admin/pagos', icon: DollarSign, label: 'Pagos' },
+  { to: '/admin/recogidas', icon: Store, label: 'Recogidas' },
+  { to: '/admin/envios', icon: Truck, label: 'Envíos' },
+  { to: '/admin/entrega', icon: Settings, label: 'Métodos de Entrega' },
   { to: '/admin/inventario', icon: Package, label: 'Inventario' },
   { to: '/admin/ejercicios', icon: Dumbbell, label: 'Ejercicios y Rutinas' },
 ]

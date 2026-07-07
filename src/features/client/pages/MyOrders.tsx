@@ -19,6 +19,8 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Store,
+  Truck,
 } from 'lucide-react'
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -54,6 +56,7 @@ export default function MyOrders() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [sortField, setSortField] = useState<'date' | 'total'>('date')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [filterDelivery, setFilterDelivery] = useState<'ALL' | 'PICKUP' | 'SHIPPING'>('ALL')
 
   const loadOrders = async () => {
     try {
@@ -78,7 +81,9 @@ export default function MyOrders() {
   const completedCount = orders.filter((o) => o.status === 'COMPLETED').length
   const pendingCount = orders.filter((o) => o.status === 'PENDING').length
 
-  const sortedOrders = [...orders].sort((a, b) => {
+  const sortedOrders = [...orders]
+    .filter((o) => filterDelivery === 'ALL' || o.deliveryMethod === filterDelivery)
+    .sort((a, b) => {
     if (sortField === 'date') {
       const da = a.createdAt ? new Date(a.createdAt).getTime() : 0
       const db = b.createdAt ? new Date(b.createdAt).getTime() : 0
@@ -213,6 +218,24 @@ export default function MyOrders() {
         </button>
       </div>
 
+      {/* Delivery Filter */}
+      <div className="mb-4 flex items-center gap-2">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Entrega:</span>
+        {(['ALL', 'PICKUP', 'SHIPPING'] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilterDelivery(f)}
+            className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${
+              filterDelivery === f
+                ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]'
+                : 'border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)]'
+            }`}
+          >
+            {f === 'ALL' ? 'Todas' : f === 'PICKUP' ? <><Store size={10} /> Recogida</> : <><Truck size={10} /> Envío</>}
+          </button>
+        ))}
+      </div>
+
       {/* Orders List */}
       <div className="space-y-3">
         {sortedOrders.map((order, i) => {
@@ -246,6 +269,12 @@ export default function MyOrders() {
                       <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
                       {status.label}
                     </span>
+                    {order.deliveryMethod && (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--card)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-secondary)]">
+                        {order.deliveryMethod === 'PICKUP' ? <Store size={9} /> : <Truck size={9} />}
+                        {order.deliveryMethod === 'PICKUP' ? 'Recogida' : 'Envío'}
+                      </span>
+                    )}
                   </div>
                   <div className="mt-0.5 flex items-center gap-3 text-[11px] text-[var(--text-muted)]">
                     <span className="inline-flex items-center gap-1">
@@ -319,6 +348,34 @@ export default function MyOrders() {
                           <p className="text-xs text-[var(--text-muted)]">
                             Órdenes anteriores sin detalles de artículos
                           </p>
+                        </div>
+                      )}
+
+                      {/* Delivery Info */}
+                      {order.deliveryMethod && (
+                        <div className="mb-3 rounded-xl bg-[var(--surface)] px-3 py-2.5">
+                          <p className="text-[10px] font-medium text-[var(--text-muted)]">Método de entrega</p>
+                          <p className="mt-0.5 flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)]">
+                            {order.deliveryMethod === 'PICKUP' ? (
+                              <>
+                                <Store size={12} className="text-[var(--accent)]" />
+                                Recoger en sucursal
+                                {order.branchName && (
+                                  <span className="font-normal text-[var(--text-secondary)]"> — {order.branchName}</span>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <Truck size={12} className="text-[var(--accent)]" />
+                                Envío a domicilio
+                              </>
+                            )}
+                          </p>
+                          {order.deliveryMethod === 'SHIPPING' && order.shippingAddress && (
+                            <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                              {order.shippingAddress}{order.shippingCity ? `, ${order.shippingCity}` : ''}{order.shippingPostalCode ? ` CP ${order.shippingPostalCode}` : ''}
+                            </p>
+                          )}
                         </div>
                       )}
 
