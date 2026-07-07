@@ -27,6 +27,7 @@ export type {
   ExerciseDTO,
   WorkoutDTO,
   OrderDTO,
+  OrderItemDTO,
   AuditLogDTO,
   PaginatedResult,
   MemberListItemDTO,

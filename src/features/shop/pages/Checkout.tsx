@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCartStore } from '@/features/shop/store/cartStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { useToastStore } from '@/components/ui/Toast'
 import { fetchApi } from '@/lib/api'
-import type { ResponseDTO } from '@/types'
+import type { OrderDTO, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
   CheckCircle2,
@@ -73,6 +74,7 @@ function StepIndicator({ currentStep }: { currentStep: string }) {
 export default function Checkout() {
   const { items, total, clearCart } = useCartStore()
   const { user } = useAuthStore()
+  const addToast = useToastStore((s) => s.addToast)
   const navigate = useNavigate()
   const [step, setStep] = useState<'shipping' | 'payment' | 'success'>('shipping')
   const [loading, setLoading] = useState(false)
@@ -92,32 +94,30 @@ export default function Checkout() {
     e.preventDefault()
     setLoading(true)
     try {
-      const orderRes = await fetchApi<ResponseDTO<{ id: string }>>('/api/orders', {
+      if (!user?.id) {
+        throw new Error('Debes iniciar sesión para completar la compra')
+      }
+
+      const orderRes = await fetchApi<ResponseDTO<OrderDTO>>('/api/orders', {
         method: 'POST',
         body: JSON.stringify({
-          userId: user?.id || 'anonymous',
-          total: finalTotal,
+          userId: user.id,
+          items: items.map((item) => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+          })),
+          paymentMethod: 'CREDIT_CARD',
+          shippingAmount: shipping,
         }),
       })
       const orderId = orderRes.dto?.id || ''
       setOrderNumber(orderId.slice(0, 8).toUpperCase())
 
-      await fetchApi<ResponseDTO<unknown>>('/api/payments', {
-        method: 'POST',
-        body: JSON.stringify({
-          subscriptionId: orderId,
-          amount: finalTotal,
-          paymentMethod: 'TARJETA_CREDITO',
-          reference: `PAY-${Date.now()}`,
-        }),
-      })
-
       setStep('success')
       clearCart()
-    } catch {
-      setStep('success')
-      setOrderNumber(Math.random().toString(36).substr(2, 8).toUpperCase())
-      clearCart()
+    } catch (err) {
+      console.error('Checkout error:', err)
+      addToast(err instanceof Error ? err.message : 'Error al procesar el pago. Intenta de nuevo.', 'error')
     } finally {
       setLoading(false)
     }
@@ -304,6 +304,15 @@ export default function Checkout() {
                   </div>
 
                   <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-[var(--text-primary)]">Nombre en la Tarjeta</label>
+                      <input
+                        required
+                        type="text"
+                        placeholder="Como aparece en la tarjeta"
+                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm uppercase text-[var(--text-primary)] transition-all placeholder:normal-case placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                      />
+                    </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-[var(--text-primary)]">Número de Tarjeta</label>
                       <input

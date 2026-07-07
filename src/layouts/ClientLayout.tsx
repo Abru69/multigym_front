@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   Utensils,
   LogOut,
+  Package,
 } from 'lucide-react'
 import { getTenantUrl } from '@/lib/tenant'
 
@@ -19,6 +20,7 @@ const clientNav = [
   { to: '/app/rutinas', icon: Dumbbell, label: 'Rutinas' },
   { to: '/app/nutricion', icon: Utensils, label: 'Nutrición' },
   { to: '/app/progreso', icon: TrendingUp, label: 'Progreso' },
+  { to: '/app/mis-ordenes', icon: Package, label: 'Mis Órdenes' },
   { to: '/tienda', icon: ShoppingBag, label: 'Tienda' },
 ]
 

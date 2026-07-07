@@ -44,7 +44,7 @@ export default function ProductDetail() {
             ...found,
             slug: found.name.toLowerCase().replace(/ /g, '-'),
             brand: found.brand || 'MultiGym',
-            image: found.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=600&h=600&fit=crop',
+            image: found.imageUrl || found.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=600&h=600&fit=crop',
             category: found.category || 'proteinas',
             rating: found.rating || 5.0,
             reviewCount: found.reviewCount || 0,

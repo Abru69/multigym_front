@@ -54,6 +54,8 @@ function mapWorkoutToRoutine(w: WorkoutDTO, exercises: WorkoutExerciseListItemDT
       name: we.exercise.name,
       muscleGroup: (we.exercise.muscleGroup?.toLowerCase() || 'cuerpo-completo') as MuscleGroup,
       description: '',
+      imageUrl: we.exercise.imageUrl,
+      videoUrl: we.exercise.videoUrl,
       sets: we.sets,
       reps: we.reps,
       restSeconds: we.restSeconds,

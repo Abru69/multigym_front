@@ -101,7 +101,7 @@ export default function Inventory() {
           brand: 'MultiGym',
           category: 'proteinas',
           image:
-            'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=400&h=400&fit=crop',
+            p.imageUrl || p.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=400&h=400&fit=crop',
         }))
       )
     } catch (e) {

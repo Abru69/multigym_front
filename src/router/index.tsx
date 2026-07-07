@@ -21,6 +21,7 @@ const ActivateAccount = lazy(() => import('@/features/auth/pages/ActivateAccount
 const MyRoutines = lazy(() => import('@/features/client/pages/MyRoutines'))
 const Progress = lazy(() => import('@/features/client/pages/Progress'))
 const Nutrition = lazy(() => import('@/features/client/pages/Nutrition'))
+const MyOrders = lazy(() => import('@/features/client/pages/MyOrders'))
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('@/features/admin/pages/Dashboard'))
@@ -134,6 +135,7 @@ export const router = createBrowserRouter([
       { path: 'rutinas', element: withSuspense(MyRoutines) },
       { path: 'progreso', element: withSuspense(Progress) },
       { path: 'nutricion', element: withSuspense(Nutrition) },
+      { path: 'mis-ordenes', element: withSuspense(MyOrders) },
     ],
   },
 

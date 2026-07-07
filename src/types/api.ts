@@ -107,6 +107,7 @@ export interface ProductDTO {
   name: string
   price: number
   stock: number
+  imageUrl?: string
   brand?: string
   category?: string
   image?: string
@@ -125,6 +126,8 @@ export interface ExerciseDTO {
   id: string
   name: string
   muscleGroup: string
+  imageUrl?: string
+  videoUrl?: string
 }
 
 export interface PlatformUserDTO {
@@ -167,8 +170,21 @@ export interface OrderDTO {
   user?: UserDTO
   total: number | string
   status: string
+  items?: OrderItemDTO[]
+  paymentMethod?: string
+  paymentReference?: string
+  paymentStatus?: string
   createdAt?: string
   paymentDate?: string
+}
+
+export interface OrderItemDTO {
+  id: string
+  productId: string
+  productName: string
+  quantity: number
+  unitPrice: number | string
+  subtotal: number | string
 }
 
 export interface AuditLogDTO {

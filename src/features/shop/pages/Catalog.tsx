@@ -22,7 +22,7 @@ export default function Catalog() {
           slug: p.name.toLowerCase().replace(/ /g, '-'),
           brand: p.brand || 'MultiGym',
           category: (p.category || 'proteinas') as Product['category'],
-          image: p.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=400&h=400&fit=crop',
+          image: p.imageUrl || p.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=400&h=400&fit=crop',
           rating: p.rating || 5.0,
           reviewCount: p.reviewCount || 0,
           isAvailable: p.stock > 0,
