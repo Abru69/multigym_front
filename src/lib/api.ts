@@ -12,6 +12,12 @@ import type {
   PlatformUserRequestDTO,
   AuditLogDTO,
   PaginatedResult,
+  PlanDTO,
+  SubscriptionDTO,
+  PaymentDTO,
+  TenantBillingSummaryDTO,
+  RevenueReportDTO,
+  PlatformSettingDTO,
 } from '@/types'
 
 export async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -114,10 +120,13 @@ export const activateAccount = (data: { token: string; newPassword?: string }) =
     body: JSON.stringify(data),
   })
 
-export const getTenants = () => fetchApi<ResponseDTO<TenantDTO>>('/api/tenants')
+export const getTenants = () => fetchApi<ResponseDTO<PaginatedResult<TenantDTO>>>('/api/tenants')
 
 export const getTenantsSummary = () =>
   fetchApi<ResponseDTO<TenantSummaryDTO>>('/api/tenants/summary')
+
+export const getTenantBillingSummaries = () =>
+  fetchApi<ResponseDTO<TenantBillingSummaryDTO>>('/api/tenants/billing-summaries')
 
 export const createTenant = (data: TenantRequestDTO) =>
   fetchApi<ResponseDTO<TenantDTO>>('/api/tenants', {
@@ -131,9 +140,9 @@ export const deleteTenant = (tenantId: string) =>
 export const toggleTenantStatus = (tenantId: string) =>
   fetchApi<ResponseDTO<TenantDTO>>(`/api/tenants/${tenantId}/status`, { method: 'PATCH' })
 
-export const getSaasPlans = () => fetchApi<ResponseDTO<SaasPlanDTO>>('/api/saas-plans')
+export const getSaasPlans = () => fetchApi<ResponseDTO<PaginatedResult<SaasPlanDTO>>>('/api/saas-plans')
 
-export const getPlatformUsers = () => fetchApi<ResponseDTO<PlatformUserDTO>>('/platform-api/users')
+export const getPlatformUsers = () => fetchApi<ResponseDTO<PaginatedResult<PlatformUserDTO>>>('/platform-api/users')
 
 export const createPlatformUser = (data: PlatformUserRequestDTO) =>
   fetchApi<ResponseDTO<PlatformUserDTO>>('/platform-api/users', {
@@ -174,3 +183,24 @@ export const getAudits = (filters: AuditFilters = {}) => {
   params.set('size', String(filters.size ?? 20))
   return fetchApi<ResponseDTO<PaginatedResult<AuditLogDTO>>>(`/api/audits?${params.toString()}`)
 }
+
+export const getPlans = () => fetchApi<ResponseDTO<PlanDTO>>('/api/plans')
+
+export const getSubscriptions = () => fetchApi<ResponseDTO<SubscriptionDTO>>('/api/subscriptions')
+
+export const getPayments = () => fetchApi<ResponseDTO<PaymentDTO>>('/api/payments')
+
+export const getBillingSummary = (tenantId: string) =>
+  fetchApi<ResponseDTO<TenantBillingSummaryDTO>>(`/api/tenants/${tenantId}/billing/summary`)
+
+export const getRevenueReport = (tenantId: string) =>
+  fetchApi<ResponseDTO<RevenueReportDTO>>(`/api/tenants/${tenantId}/billing/revenue`)
+
+export const getPlatformSettings = () =>
+  fetchApi<ResponseDTO<PlatformSettingDTO>>('/api/platform-settings')
+
+export const updatePlatformSettings = (entries: Record<string, string>) =>
+  fetchApi<ResponseDTO<PlatformSettingDTO>>('/api/platform-settings', {
+    method: 'PUT',
+    body: JSON.stringify({ entries }),
+  })

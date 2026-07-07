@@ -142,14 +142,16 @@ export default function PlatformTenants() {
   }
 
   const stats = [
-    { label: 'Total', count: tenants.length, color: 'var(--text-secondary)' },
+    { label: 'Total', filterValue: 'ALL', count: tenants.length, color: 'var(--text-secondary)' },
     {
       label: 'Activos',
+      filterValue: 'ACTIVE',
       count: tenants.filter((t) => t.status === 'ACTIVE').length,
       color: 'var(--success)',
     },
     {
       label: 'Inactivos',
+      filterValue: 'INACTIVE',
       count: tenants.filter((t) => t.status === 'INACTIVE').length,
       color: 'var(--danger)',
     },
@@ -195,12 +197,10 @@ export default function PlatformTenants() {
             tabIndex={0}
             className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm transition-all"
             style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-            onClick={() =>
-              setFilter(s.label === 'Total' ? 'ALL' : s.label.toUpperCase().slice(0, -1))
-            }
+            onClick={() => setFilter(s.filterValue)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
-                setFilter(s.label === 'Total' ? 'ALL' : s.label.toUpperCase().slice(0, -1))
+                setFilter(s.filterValue)
               }
             }}
           >
@@ -521,12 +521,12 @@ export default function PlatformTenants() {
                   </div>
                 ))}
                 <div className="col-span-2">
-                  <label
+                  <p
                     className="mb-1.5 block text-xs font-semibold"
                     style={{ color: 'var(--detail)' }}
                   >
                     Datos del Administrador
-                  </label>
+                  </p>
                   <div className="h-px w-full" style={{ background: 'var(--border)' }} />
                 </div>
                 {[

@@ -1,36 +1,35 @@
-import { useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Save, Globe, Lock, Bell, AlertTriangle, RefreshCw, Clock } from 'lucide-react'
+import { Save, Globe, Lock, Bell, AlertTriangle, RefreshCw, Clock, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input as UIInput } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Card as UICard, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-export default function PlatformSettings() {
-  const [saved, setSaved] = useState(false)
-  const [cfg, setCfg] = useState({
-    platformName: 'MultiGym Platform',
-    domain: 'multigym.com',
-    supportEmail: 'soporte@multigym.com',
-    timezone: 'America/Mexico_City',
-    trialDays: 14,
-    defaultTrialPlan: 'STARTER',
-    requireCard: false,
-    trialEmail: true,
-    sessionTimeout: 480,
-    twoFactor: false,
-    logIp: true,
-    notifyNew: true,
-    notifyFail: true,
-    weeklyReport: false,
-    alertEmail: 'admin@saas.com',
+import { usePlatformSettingsStore } from '../store/platformSettingsStore'
+import type { LucideIcon } from 'lucide-react'
+
+function settingsToMap(settings: { key: string; value: string }[]): Record<string, string> {
+  const map: Record<string, string> = {}
+  settings.forEach((s) => {
+    map[s.key] = s.value
   })
+  return map
+}
 
-  const save = () => {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
-  }
-
-  const Toggle = ({ label, sub, checked, onChange }: any) => (
+function Toggle({
+  label,
+  sub,
+  settingKey,
+  local,
+  updateLocal,
+}: {
+  label: string
+  sub: string
+  settingKey: string
+  local: Record<string, string>
+  updateLocal: (key: string, value: string) => void
+}) {
+  return (
     <div className="flex items-center justify-between py-2">
       <div>
         <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -41,33 +40,68 @@ export default function PlatformSettings() {
         </p>
       </div>
       <button
-        onClick={onChange}
+        onClick={() => updateLocal(settingKey, local[settingKey] === 'true' ? 'false' : 'true')}
         className="relative h-6 w-11 rounded-full transition-colors"
-        style={{ background: checked ? 'var(--accent)' : 'var(--border)' }}
+        style={{ background: local[settingKey] === 'true' ? 'var(--accent)' : 'var(--border)' }}
       >
         <div
           className="absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform"
-          style={{ transform: checked ? 'translateX(20px)' : 'translateX(0)' }}
+          style={{
+            transform: local[settingKey] === 'true' ? 'translateX(20px)' : 'translateX(0)',
+          }}
         />
       </button>
     </div>
   )
+}
 
-  const Input = ({ label, type = 'text', ...props }: any) => (
+function SettingsInput({
+  label,
+  type = 'text',
+  settingKey,
+  local,
+  updateLocal,
+}: {
+  label: string
+  type?: string
+  settingKey: string
+  local: Record<string, string>
+  updateLocal: (key: string, value: string) => void
+}) {
+  return (
     <div className="space-y-1.5">
       <Label>{label}</Label>
-      <UIInput type={type} {...props} />
+      <UIInput
+        type={type}
+        value={local[settingKey] || ''}
+        onChange={(e) => updateLocal(settingKey, e.target.value)}
+      />
     </div>
   )
+}
 
-  const Select = ({ label, options, ...props }: any) => (
+function SettingsSelect({
+  label,
+  options,
+  settingKey,
+  local,
+  updateLocal,
+}: {
+  label: string
+  options: { label: string; value: string }[]
+  settingKey: string
+  local: Record<string, string>
+  updateLocal: (key: string, value: string) => void
+}) {
+  return (
     <div className="space-y-1.5">
       <Label>{label}</Label>
       <select
-        {...props}
+        value={local[settingKey] || ''}
+        onChange={(e) => updateLocal(settingKey, e.target.value)}
         className="border-border bg-background text-text-primary focus:ring-accent flex h-11 w-full appearance-none rounded-xl border px-4 py-2 text-sm transition-colors outline-none focus:ring-2"
       >
-        {options.map((o: any) => (
+        {options.map((o) => (
           <option key={o.value} value={o.value} className="bg-surface">
             {o.label}
           </option>
@@ -75,8 +109,18 @@ export default function PlatformSettings() {
       </select>
     </div>
   )
+}
 
-  const Card = ({ icon: Icon, title, children }: any) => (
+function SettingsCard({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: LucideIcon
+  title: string
+  children: React.ReactNode
+}) {
+  return (
     <UICard>
       <CardHeader className="border-border flex flex-row items-center gap-3 border-b pb-4">
         <div
@@ -90,6 +134,108 @@ export default function PlatformSettings() {
       <CardContent className="space-y-4 pt-6">{children}</CardContent>
     </UICard>
   )
+}
+
+export default function PlatformSettings() {
+  const { settings, plans, isLoading, isSaving, loadSettings, saveSettings } =
+    usePlatformSettingsStore()
+
+  const [local, setLocal] = useState<Record<string, string>>({})
+  const [saved, setSaved] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
+  const initializedRef = useRef(false)
+
+  useEffect(() => {
+    loadSettings()
+  }, [loadSettings])
+
+  useEffect(() => {
+    if (settings.length > 0 && !initializedRef.current) {
+      setLocal(settingsToMap(settings))
+      initializedRef.current = true
+    }
+  }, [settings])
+
+  const updateLocal = (key: string, value: string) => {
+    setLocal((prev) => ({ ...prev, [key]: value }))
+    setHasChanges(true)
+  }
+
+  const handleSave = async () => {
+    const entries: Record<string, string> = {}
+    settings.forEach((s) => {
+      if (local[s.key] !== undefined && local[s.key] !== s.value) {
+        entries[s.key] = local[s.key]
+      }
+    })
+
+    if (Object.keys(entries).length === 0) return
+
+    const ok = await saveSettings(entries)
+    if (ok) {
+      setSaved(true)
+      setHasChanges(false)
+      setTimeout(() => setSaved(false), 3000)
+    }
+  }
+
+  const handleReset = async () => {
+    const defaults: Record<string, string> = {
+      platform_name: 'MultiGym Platform',
+      platform_domain: 'multigym.com',
+      support_email: 'soporte@multigym.com',
+      timezone: 'America/Mexico_City',
+      trial_days: '14',
+      trial_default_plan_id: '',
+      trial_require_card: 'false',
+      trial_expiry_email: 'true',
+      session_timeout_minutes: '480',
+      require_2fa: 'false',
+      log_ip_addresses: 'true',
+      notification_email: 'admin@saas.com',
+      notify_new_tenant: 'true',
+      notify_failed_payment: 'true',
+      weekly_report: 'false',
+      maintenance_mode: 'false',
+    }
+    const ok = await saveSettings(defaults)
+    if (ok) {
+      setSaved(true)
+      setHasChanges(false)
+      initializedRef.current = false
+      setTimeout(() => setSaved(false), 3000)
+    }
+  }
+
+  const handleToggleMaintenance = async () => {
+    const current = local['maintenance_mode'] === 'true'
+    const nextValue = current ? 'false' : 'true'
+    const ok = await saveSettings({ maintenance_mode: nextValue })
+    if (ok) {
+      setLocal((prev) => ({ ...prev, maintenance_mode: nextValue }))
+      setSaved(true)
+      setHasChanges(false)
+      setTimeout(() => setSaved(false), 3000)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="animate-spin" size={32} style={{ color: 'var(--accent)' }} />
+      </div>
+    )
+  }
+
+  const planOptions = [
+    { label: 'Sin plan por defecto', value: '' },
+    ...plans
+      .filter((plan) => plan.isActive)
+      .map((plan) => ({
+        label: `${plan.name} - $${plan.price}/mes`,
+        value: plan.id,
+      })),
+  ]
 
   return (
     <div className="relative space-y-6 pb-12">
@@ -106,126 +252,112 @@ export default function PlatformSettings() {
           </p>
         </div>
         <Button
-          onClick={save}
-          className="from-accent to-detail gap-2 bg-gradient-to-br shadow-[0_10px_20px_rgba(0,0,255,0.2)] hover:-translate-y-0.5"
+          onClick={handleSave}
+          disabled={!hasChanges || isSaving}
+          className="from-accent to-detail gap-2 bg-gradient-to-br shadow-[0_10px_20px_rgba(0,0,255,0.2)] hover:-translate-y-0.5 disabled:opacity-50"
         >
-          <Save size={16} /> Guardar Cambios
+          {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          Guardar Cambios
         </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card icon={Globe} title="General">
-          <Input
-            label="Nombre de la plataforma"
-            value={cfg.platformName}
-            onChange={(e: any) => setCfg({ ...cfg, platformName: e.target.value })}
-          />
-          <Input
-            label="Dominio principal"
-            value={cfg.domain}
-            onChange={(e: any) => setCfg({ ...cfg, domain: e.target.value })}
-          />
-          <Input
-            label="Email de soporte"
-            type="email"
-            value={cfg.supportEmail}
-            onChange={(e: any) => setCfg({ ...cfg, supportEmail: e.target.value })}
-          />
-          <Select
+        <SettingsCard icon={Globe} title="General">
+          <SettingsInput label="Nombre de la plataforma" settingKey="platform_name" local={local} updateLocal={updateLocal} />
+          <SettingsInput label="Dominio principal" settingKey="platform_domain" local={local} updateLocal={updateLocal} />
+          <SettingsInput label="Email de soporte" type="email" settingKey="support_email" local={local} updateLocal={updateLocal} />
+          <SettingsSelect
             label="Zona horaria"
-            value={cfg.timezone}
-            onChange={(e: any) => setCfg({ ...cfg, timezone: e.target.value })}
+            settingKey="timezone"
+            local={local}
+            updateLocal={updateLocal}
             options={[
               { label: 'America/Mexico_City', value: 'America/Mexico_City' },
               { label: 'America/New_York', value: 'America/New_York' },
               { label: 'Europe/Madrid', value: 'Europe/Madrid' },
             ]}
           />
-        </Card>
+        </SettingsCard>
 
-        <Card icon={Clock} title="Período Trial">
-          <Input
-            label="Duración del trial (días)"
-            type="number"
-            value={cfg.trialDays}
-            onChange={(e: any) => setCfg({ ...cfg, trialDays: e.target.value })}
-          />
-          <Select
+        <SettingsCard icon={Clock} title="Período Trial">
+          <SettingsInput label="Duración del trial (días)" type="number" settingKey="trial_days" local={local} updateLocal={updateLocal} />
+          <SettingsSelect
             label="Plan por defecto en trial"
-            value={cfg.defaultTrialPlan}
-            onChange={(e: any) => setCfg({ ...cfg, defaultTrialPlan: e.target.value })}
-            options={[
-              { label: 'Starter', value: 'STARTER' },
-              { label: 'Pro', value: 'PRO' },
-            ]}
+            settingKey="trial_default_plan_id"
+            local={local}
+            updateLocal={updateLocal}
+            options={planOptions}
           />
           <div className="pt-2">
             <Toggle
               label="Requerir tarjeta"
               sub="Exigir método de pago al registrarse"
-              checked={cfg.requireCard}
-              onChange={() => setCfg({ ...cfg, requireCard: !cfg.requireCard })}
+              settingKey="trial_require_card"
+              local={local}
+              updateLocal={updateLocal}
             />
             <Toggle
               label="Email de expiración"
               sub="Notificar 3 días antes de expirar"
-              checked={cfg.trialEmail}
-              onChange={() => setCfg({ ...cfg, trialEmail: !cfg.trialEmail })}
+              settingKey="trial_expiry_email"
+              local={local}
+              updateLocal={updateLocal}
             />
           </div>
-        </Card>
+        </SettingsCard>
 
-        <Card icon={Lock} title="Seguridad">
-          <Input
+        <SettingsCard icon={Lock} title="Seguridad">
+          <SettingsInput
             label="Tiempo de sesión (minutos)"
             type="number"
-            value={cfg.sessionTimeout}
-            onChange={(e: any) => setCfg({ ...cfg, sessionTimeout: e.target.value })}
+            settingKey="session_timeout_minutes"
+            local={local}
+            updateLocal={updateLocal}
           />
           <div className="pt-2">
             <Toggle
               label="Autenticación 2FA"
               sub="Requerir 2FA para panel plataforma"
-              checked={cfg.twoFactor}
-              onChange={() => setCfg({ ...cfg, twoFactor: !cfg.twoFactor })}
+              settingKey="require_2fa"
+              local={local}
+              updateLocal={updateLocal}
             />
             <Toggle
               label="Registro de IPs"
               sub="Guardar IP en log de auditoría"
-              checked={cfg.logIp}
-              onChange={() => setCfg({ ...cfg, logIp: !cfg.logIp })}
+              settingKey="log_ip_addresses"
+              local={local}
+              updateLocal={updateLocal}
             />
           </div>
-        </Card>
+        </SettingsCard>
 
-        <Card icon={Bell} title="Notificaciones">
-          <Input
-            label="Email para alertas"
-            type="email"
-            value={cfg.alertEmail}
-            onChange={(e: any) => setCfg({ ...cfg, alertEmail: e.target.value })}
-          />
+        <SettingsCard icon={Bell} title="Notificaciones">
+          <SettingsInput label="Email para alertas" type="email" settingKey="notification_email" local={local} updateLocal={updateLocal} />
           <div className="pt-2">
             <Toggle
               label="Nuevo tenant"
               sub="Alerta al crear gimnasio"
-              checked={cfg.notifyNew}
-              onChange={() => setCfg({ ...cfg, notifyNew: !cfg.notifyNew })}
+              settingKey="notify_new_tenant"
+              local={local}
+              updateLocal={updateLocal}
             />
             <Toggle
               label="Pago fallido"
               sub="Alerta cuando falla un cobro"
-              checked={cfg.notifyFail}
-              onChange={() => setCfg({ ...cfg, notifyFail: !cfg.notifyFail })}
+              settingKey="notify_failed_payment"
+              local={local}
+              updateLocal={updateLocal}
             />
             <Toggle
               label="Reporte semanal"
               sub="Enviar resumen semanal"
-              checked={cfg.weeklyReport}
-              onChange={() => setCfg({ ...cfg, weeklyReport: !cfg.weeklyReport })}
+              settingKey="weekly_report"
+              local={local}
+              updateLocal={updateLocal}
             />
           </div>
-        </Card>
+        </SettingsCard>
       </div>
 
       {/* Danger Zone */}
@@ -246,6 +378,7 @@ export default function PlatformSettings() {
         </div>
         <div className="flex flex-wrap gap-3">
           <button
+            onClick={handleReset}
             className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors"
             style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
             onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-hover)')}
@@ -254,12 +387,16 @@ export default function PlatformSettings() {
             <RefreshCw size={14} /> Resetear Configuración
           </button>
           <button
+            onClick={handleToggleMaintenance}
             className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-colors"
             style={{ color: 'var(--error)', border: '1px solid var(--error)' }}
             onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--error-muted)')}
             onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
           >
-            <AlertTriangle size={14} /> Poner plataforma en mantenimiento
+            <AlertTriangle size={14} />{' '}
+            {local['maintenance_mode'] === 'true'
+              ? 'Desactivar mantenimiento'
+              : 'Poner plataforma en mantenimiento'}
           </button>
         </div>
       </div>

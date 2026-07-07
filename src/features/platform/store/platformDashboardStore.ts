@@ -143,9 +143,9 @@ export const usePlatformDashboardStore = create<PlatformDashboardStore>()((set) 
         getTenantsSummary(),
         getSaasPlans(),
       ])
-      const tenants = tenantsResponse?.lista || []
+      const tenants = tenantsResponse?.dto?.data || []
       const summary = summaryResponse?.dto
-      const plans = plansResponse?.lista || []
+      const plans = plansResponse?.dto?.data || []
 
       if (!summary) {
         throw new Error('No se recibió el resumen de tenants')

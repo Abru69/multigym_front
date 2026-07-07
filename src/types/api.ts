@@ -173,3 +173,59 @@ export interface PaginatedResult<T> {
   first: boolean
   last: boolean
 }
+
+export interface PlanDTO {
+  id: string
+  name: string
+  description: string | null
+  price: number
+  durationMonths: number
+  maxWorkoutsPerWeek: number | null
+  maxClasses: number | null
+  accessHours: string | null
+  features: string | null
+  isActive: boolean
+}
+
+export interface SubscriptionDTO {
+  id: string
+  member: MemberDTO
+  plan: PlanDTO
+  startDate: string
+  endDate: string
+  status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED'
+}
+
+export interface PaymentDTO {
+  id: string
+  subscriptionId: string
+  amount: number
+  paymentDate: string | null
+  paymentMethod: string
+  status: 'COMPLETED' | 'PENDING' | 'FAILED' | 'REFUNDED'
+  reference: string | null
+}
+
+export interface TenantBillingSummaryDTO {
+  tenantId: string
+  tenantName: string
+  totalPaid: number
+  activeSubscriptionId: string | null
+  activePlanName: string | null
+  paymentCount: number
+  lastPaymentDate: string | null
+}
+
+export interface RevenueReportDTO {
+  year: number
+  month: number
+  totalRevenue: number
+  paymentCount: number
+}
+
+export interface PlatformSettingDTO {
+  key: string
+  value: string
+  type: 'string' | 'number' | 'boolean'
+  description: string | null
+}

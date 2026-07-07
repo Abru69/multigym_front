@@ -28,4 +28,10 @@ export type {
   WorkoutDTO,
   AuditLogDTO,
   PaginatedResult,
+  PlanDTO,
+  SubscriptionDTO,
+  PaymentDTO,
+  TenantBillingSummaryDTO,
+  RevenueReportDTO,
+  PlatformSettingDTO,
 } from './api'
