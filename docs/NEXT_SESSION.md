@@ -1,19 +1,16 @@
 # Próximos Pasos
 
-**Última sesión:** 2026-07-07 — Audit Logs, toggles de estado, fix dropdowns
+**Última sesión:** 2026-07-07 — Delivery Methods (Checkout, Pickups, Shipments, Settings)
 
 ## Completado Reciente
 
-- ✅ **Platform Audit Logs** — Timeline con filtros, paginación, actividad reciente en dashboard
-- ✅ **Toggle rápido de estado** — Click badge en Gimnasios y Usuarios para activar/suspendir
-- ✅ **Fix dropdowns** — z-index, overflow, stopPropagation, cierre antes de acción
-- ✅ **Sort alfabético Gimnasios** — Prevents reorden al cambiar estado
-- ✅ **My Orders page** — `/app/mis-ordenes` con sort por fecha/total, expandible
-- ✅ **Checkout integrado** — Envía items+paymentMethod+shippingAmount al backend
-- ✅ **Image mapping** — imageUrl/videoUrl de ProductDTO a image/video
-- ✅ **Router + Navigation** — Ruta + link "Mis Órdenes" en ClientLayout
-- ✅ **Conexión de 30 endpoints** — Admin pages CRUD completo
-- ✅ **Dark Theme Near-Black** — `#0a0a0a` base, `#141414` cards, `#aaff00` accent
+- ✅ **Delivery Methods** — Checkout 3 pasos, Pickups admin, Shipments admin, DeliverySettings
+- ✅ **Checkout redesign** — Selección de método (recogida/envío), sucursal o dirección
+- ✅ **MyOrders** — Badge de método, filtro por tipo, muestra sucursal o dirección
+- ✅ **Pickups.tsx** — Vista admin pedidos recogida, "Marcar Listo" action
+- ✅ **Shipments.tsx** — Vista admin envíos con dirección de entrega
+- ✅ **DeliverySettings.tsx** — Toggle habilitar/deshabilitar por tenant
+- ✅ **Admin nav** — Recogidas, Envíos, Métodos de Entrega en sidebar
 
 ## Endpoints Faltantes en Backend (Mock Data en Frontend)
 

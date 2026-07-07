@@ -8,6 +8,32 @@ Formato: [YYYY-MM-DD]
 
 ### Completado
 
+- **Delivery Methods (Métodos de Entrega)**
+  - Checkout rediseñado: flujo de 3 pasos (método → detalles → pago)
+  - Selección de método: Recogida en Sucursal o Envío a Domicilio
+  - Recogida: selector de sucursal (.Branch) con nombre, dirección, teléfono
+  - Envío: formulario de dirección (calle, código postal, ciudad)
+  - MyOrders: badge de método de entrega, muestra sucursal o dirección, filtro por tipo
+  - Pickups.tsx: vista admin de pedidos de recogida, botón "Marcar Listo"
+  - Shipments.tsx: vista admin de envíos a domicilio con dirección
+  - DeliverySettings.tsx: toggle habilitar/deshabilitar recogida y envío por tenant
+  - AdminLayout: nav items para Recogidas, Envíos, Métodos de Entrega
+  - API: getBranches, getTenantSettings, updateTenantSettings, markOrderReady
+
+### Backend (multigym_back)
+
+- Branch entity + BranchController (`GET /api/branches`, `GET /api/branches/{id}`)
+- TenantSetting entity + TenantSettingController (`GET/PUT /api/tenant-settings`)
+- Order: +deliveryMethod, +branch (ManyToOne), +shipping fields
+- OrderDTO/OrderRequest: delivery fields (deliveryMethod, branchId, shipping*)
+- OrderMapper: maps delivery + branch info
+- OrderService: deliveryMethod filter, markReadyForPickup(), branch validation
+- OrderController: PATCH `/{id}/ready`, deliveryMethod query param
+- SecurityConfig: branches, tenant-settings, orders/ready rules
+- V5 branches, V6 order delivery fields, V7 tenant settings migrations
+
+### Completado
+
 - **Platform Audit Logs integrados**
   - `AuditLogDTO` y `PaginatedResult<T>` agregados a `api.ts`
   - `getAudits()` con 5 filtros: action, entityName, tenantId, fromDate, toDate + paginación

@@ -11,9 +11,9 @@
 | Lint               | ⚠️ Problemas preexistentes               |
 | Dark Theme         | ✅ Near-black (#0a0a0a) + accent #aaff00 |
 | API Integration    | ✅ 30+ endpoints conectados               |
-| Admin Pages        | ✅ 10 páginas                             |
+| Admin Pages        | ✅ 13 páginas (Dashboard, Inventario, Usuarios, Ejercicios, Miembros, Planes, Suscripciones, Pagos, Recogidas, Envíos, Métodos de Entrega, ...) |
 | Client Pages       | ✅ 4 páginas (Rutinas, Nutrición, Progreso, My Orders) |
-| Checkout           | ✅ Integrado con backend (items + payment)|
+| Checkout           | ✅ Integrado con backend + delivery methods (3 pasos)|
 | Missing Endpoints  | ⚠️ Progress y Nutrition sin backend       |
 
 ## Funcionalidades Recientes (2026-07-07)
@@ -26,9 +26,15 @@
 - Empty state con link a tienda
 
 ### Checkout
-- Envía `items[]`, `paymentMethod`, `shippingAmount` a `POST /api/orders`
-- Error handling: toast + consola, NO limpia carrito
-- Campo "Nombre en la Tarjeta" requerido
+- Flujo 3 pasos: método de entrega → detalles → pago
+- Recogida: selector de sucursal, sin costo de envío
+- Envío: formulario dirección, envío gratis >$1500, $150 si no
+- Envía `deliveryMethod`, `branchId` o `shippingAddress/City/PostalCode`
+
+### Delivery Methods (Admin)
+- **Recogidas** (`/admin/recogidas`): lista pedidos PICKUP, "Marcar Listo" para cambiar a COMPLETED
+- **Envíos** (`/admin/envios`): lista pedidos SHIPPING con dirección de entrega
+- **Métodos de Entrega** (`/admin/entrega`): toggle habilitar/deshabilitar recogida y envío por tenant
 
 ### Image Mapping
 - `imageUrl`/`videoUrl` de ProductDTO mapeados a `image`/`video`
