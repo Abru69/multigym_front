@@ -13,7 +13,7 @@ export function FormField({ label, required, error, children, htmlFor }: FormFie
     <div className="space-y-1.5">
       <label
         htmlFor={htmlFor}
-        className="block text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase"
+        className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider"
       >
         {label}
         {required && <span className="ml-1 text-[var(--error)]">*</span>}

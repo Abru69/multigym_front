@@ -27,12 +27,12 @@ export function SearchBar({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           aria-label={placeholder}
-          className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2 pr-10 pl-10 text-sm text-[var(--text-primary)] transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+          className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] py-2 pr-10 pl-10 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
         />
         {value && (
           <button
             onClick={() => onChange('')}
-            className="absolute top-1/2 right-3 -translate-y-1/2 text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
+            className="absolute top-1/2 right-3 -translate-y-1/2 rounded-lg p-1 text-[var(--text-muted)] transition-all hover:text-[var(--text-secondary)]"
             aria-label="Limpiar búsqueda"
           >
             <X size={14} />

@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AuthGuard } from './AuthGuard'
 import { AdminGuard } from './AdminGuard'
 import { PlatformGuard } from './PlatformGuard'
+import { TenantRouter } from './TenantRouter'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { ClientLayout } from '@/layouts/ClientLayout'
 import { AuthLayout } from '@/layouts/AuthLayout'
@@ -17,7 +18,6 @@ const ResetPassword = lazy(() => import('@/features/auth/pages/ResetPassword'))
 const ActivateAccount = lazy(() => import('@/features/auth/pages/ActivateAccount'))
 
 // Client Pages
-const Landing = lazy(() => import('@/features/landing/pages/LandingPage'))
 const MyRoutines = lazy(() => import('@/features/client/pages/MyRoutines'))
 const Progress = lazy(() => import('@/features/client/pages/Progress'))
 const Nutrition = lazy(() => import('@/features/client/pages/Nutrition'))
@@ -81,10 +81,10 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // Public Routes
+  // Root Route — Tenant-aware landing/dashboard
   {
     path: '/',
-    element: withSuspense(Landing),
+    element: <TenantRouter />,
   },
   {
     element: <AuthLayout />,

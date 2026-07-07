@@ -273,10 +273,7 @@ export default function PlatformLogs() {
                         </span>
                       )}
                       {log.metadata && (
-                        <span
-                          className="text-[10px]"
-                          style={{ color: 'var(--text-muted)' }}
-                        >
+                        <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                           {log.metadata}
                         </span>
                       )}

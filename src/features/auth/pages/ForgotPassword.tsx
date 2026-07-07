@@ -4,9 +4,12 @@ import { motion } from 'framer-motion'
 import { Mail, ArrowLeft, Loader2, CheckCircle, Building2 } from 'lucide-react'
 import { getTenantFromSubdomain } from '@/lib/tenant'
 import { resolveBranding } from '@/lib/tenantConfig'
+import { fetchApi } from '@/lib/api'
+import type { ResponseDTO } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
+
 export default function ForgotPassword() {
   const autoTenant = getTenantFromSubdomain()
   const branding = autoTenant ? resolveBranding(autoTenant) : null
@@ -29,20 +32,10 @@ export default function ForgotPassword() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
+      await fetchApi<ResponseDTO<unknown>>('/api/auth/reset-password', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Tenant-ID': effectiveTenant,
-        },
         body: JSON.stringify({ email }),
       })
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null)
-        throw new Error(data?.mensaje || 'No se pudo procesar la solicitud')
-      }
-
       setSent(true)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al enviar la solicitud')
@@ -54,24 +47,19 @@ export default function ForgotPassword() {
   if (sent) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-        <div
-          className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
-          style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}
-        >
-          <CheckCircle size={32} />
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent)]/10">
+          <CheckCircle size={32} className="text-[var(--accent)]" />
         </div>
-        <h2 className="mb-1 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+        <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">
           Revisa tu correo
         </h2>
-        <p className="mb-6 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          Si existe una cuenta con{' '}
-          <strong style={{ color: 'var(--text-secondary)' }}>{email}</strong>, recibirás un enlace
-          para restablecer tu contraseña.
+        <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">
+          Si existe una cuenta con <strong className="text-[var(--text-primary)]">{email}</strong>
+          , recibirás un enlace para restablecer tu contraseña.
         </p>
         <Link
           to="/login"
-          className="inline-flex items-center gap-2 text-xs font-semibold transition-colors hover:underline"
-          style={{ color: 'var(--text-muted)' }}
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
         >
           <ArrowLeft size={14} /> Volver al inicio de sesión
         </Link>
@@ -83,16 +71,15 @@ export default function ForgotPassword() {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
       <Link
         to="/login"
-        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold transition-colors hover:underline"
-        style={{ color: 'var(--text-muted)' }}
+        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
       >
         <ArrowLeft size={14} /> Volver
       </Link>
 
-      <h2 className="mb-1 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+      <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">
         Recuperar contraseña
       </h2>
-      <p className="mb-6 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+      <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">
         {autoTenant ? (
           <>
             Conectado a{' '}
@@ -105,14 +92,7 @@ export default function ForgotPassword() {
       </p>
 
       {error && (
-        <div
-          className="mb-4 rounded-lg border px-4 py-3 text-sm"
-          style={{
-            background: 'var(--error-muted)',
-            color: 'var(--danger)',
-            borderColor: 'var(--error)',
-          }}
-        >
+        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
           {error}
         </div>
       )}
@@ -124,8 +104,7 @@ export default function ForgotPassword() {
             <div className="relative">
               <Building2
                 size={16}
-                className="absolute top-1/2 left-3.5 -translate-y-1/2"
-                style={{ color: 'var(--text-muted)' }}
+                className="absolute top-1/2 left-3.5 -translate-y-1/2 text-[var(--text-muted)]"
               />
               <Input
                 type="text"
@@ -144,8 +123,7 @@ export default function ForgotPassword() {
           <div className="relative">
             <Mail
               size={16}
-              className="absolute top-1/2 left-3.5 -translate-y-1/2"
-              style={{ color: 'var(--text-muted)' }}
+              className="absolute top-1/2 left-3.5 -translate-y-1/2 text-[var(--text-muted)]"
             />
             <Input
               type="email"

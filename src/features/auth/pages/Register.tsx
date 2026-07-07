@@ -1,73 +1,60 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Building2, ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+
 export default function Register() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
       <Link
         to="/login"
-        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold transition-colors hover:underline"
-        style={{ color: 'var(--text-muted)' }}
+        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
       >
         <ArrowLeft size={14} />
         Volver al login
       </Link>
 
       <div className="text-center">
-        <div
-          className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl"
-          style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}
-        >
-          <Building2 size={32} />
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent)]/10">
+          <Building2 size={32} className="text-[var(--accent)]" />
         </div>
 
-        <h2 className="mb-1 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+        <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">
           Registro de Usuarios
         </h2>
 
-        <p className="mb-6 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+        <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">
           En nuestra plataforma, las cuentas de usuario son creadas por el{' '}
-          <strong style={{ color: 'var(--text-secondary)' }}>administrador de tu gimnasio</strong>.
+          <strong className="text-[var(--text-primary)]">administrador de tu gimnasio</strong>.
         </p>
 
-        <div
-          className="mb-6 flex flex-col gap-3 rounded-2xl border p-5 text-left"
-          style={{ background: 'var(--input-bg)', borderColor: 'var(--border)' }}
-        >
-          <p
-            className="text-xs font-bold tracking-wider uppercase"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            ¿Cómo obtener acceso?
-          </p>
-          <div className="space-y-2">
-            {[
-              'Contacta a la recepción de tu gimnasio',
-              'Solicita que te creen una cuenta con tu email',
-              'Recibirás tus credenciales de acceso',
-              'Inicia sesión con tu código de gimnasio',
-            ].map((step, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span
-                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black"
-                  style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}
-                >
-                  {i + 1}
-                </span>
-                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {step}
-                </span>
-              </div>
-            ))}
+        <div className="relative mb-6 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-left shadow-sm">
+          <div className="relative z-10 space-y-3">
+            <p className="text-xs font-bold tracking-wider text-[var(--text-muted)] uppercase">
+              ¿Cómo obtener acceso?
+            </p>
+            <div className="space-y-2">
+              {[
+                'Contacta a la recepción de tu gimnasio',
+                'Solicita que te creen una cuenta con tu email',
+                'Recibirás tus credenciales de acceso',
+                'Inicia sesión con tu código de gimnasio',
+              ].map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 text-[10px] font-black text-[var(--accent)]">
+                    {i + 1}
+                  </span>
+                  <span className="text-sm text-[var(--text-secondary)]">{step}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <Link
-          to="/login"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
-          style={{ background: 'var(--accent)', color: 'var(--accent-text)' }}
-        >
-          Ya tengo cuenta — Iniciar Sesión
+        <Link to="/login">
+          <Button className="w-full gap-2 rounded-2xl py-3 text-sm font-bold">
+            Ya tengo cuenta — Iniciar Sesión
+          </Button>
         </Link>
       </div>
     </motion.div>

@@ -8,6 +8,7 @@ import { resolveBranding } from '@/lib/tenantConfig'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
+
 export default function Login() {
   const autoTenant = getTenantFromSubdomain()
   const branding = autoTenant ? resolveBranding(autoTenant) : null
@@ -31,21 +32,23 @@ export default function Login() {
       return
     }
 
-    const ok = await login(email, password, effectiveTenant)
-    if (ok) {
-      const user = useAuthStore.getState().user
-      navigate(user?.role === 'admin' ? '/admin' : '/')
-    } else {
-      setError('Credenciales inválidas.')
+    try {
+      const ok = await login(email, password, effectiveTenant)
+      if (ok) {
+        const user = useAuthStore.getState().user
+        navigate(user?.role === 'admin' ? '/admin' : '/')
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Credenciales inválidas.')
     }
   }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-      <h2 className="mb-1 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+      <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">
         Bienvenido de vuelta
       </h2>
-      <p className="mb-6 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+      <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">
         {autoTenant ? (
           <>
             Conectado a{' '}
@@ -57,14 +60,7 @@ export default function Login() {
       </p>
 
       {error && (
-        <div
-          className="mb-4 rounded-lg border px-4 py-3 text-sm"
-          style={{
-            background: 'var(--error-muted)',
-            color: 'var(--danger)',
-            borderColor: 'var(--error)',
-          }}
-        >
+        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
           {error}
         </div>
       )}
@@ -76,8 +72,7 @@ export default function Login() {
             <div className="relative">
               <Building2
                 size={16}
-                className="absolute top-1/2 left-3.5 -translate-y-1/2"
-                style={{ color: 'var(--text-muted)' }}
+                className="absolute top-1/2 left-3.5 -translate-y-1/2 text-[var(--text-muted)]"
               />
               <Input
                 type="text"
@@ -88,7 +83,7 @@ export default function Login() {
                 required
               />
             </div>
-            <p className="mt-1.5 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+            <p className="mt-1.5 text-[10px] text-[var(--text-muted)]">
               O accede directamente desde{' '}
               <strong>tu-gym.localhost:{window.location.port || '5173'}</strong>
             </p>
@@ -119,8 +114,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
-              style={{ color: 'var(--text-muted)' }}
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -136,27 +130,25 @@ export default function Login() {
       <div className="mt-4 text-center">
         <Link
           to="/forgot-password"
-          className="text-xs font-semibold transition-colors hover:underline"
-          style={{ color: 'var(--text-muted)' }}
+          className="text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
         >
           ¿Olvidaste tu contraseña?
         </Link>
       </div>
 
       {!autoTenant && (
-        <p className="mt-6 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+        <p className="mt-6 text-center text-xs text-[var(--text-muted)]">
           ¿Eres administrador de plataforma?{' '}
           <a
             href={`${getPlatformUrl()}/platform/login`}
-            className="font-semibold"
-            style={{ color: 'var(--accent)' }}
+            className="font-semibold text-[var(--accent)] transition-colors hover:underline"
           >
             Ir al panel SaaS
           </a>
         </p>
       )}
 
-      <p className="mt-3 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+      <p className="mt-3 text-center text-xs text-[var(--text-muted)]">
         ¿No tienes cuenta? Contacta al administrador de tu gimnasio.
       </p>
     </motion.div>

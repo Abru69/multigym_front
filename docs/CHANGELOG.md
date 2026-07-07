@@ -4,6 +4,130 @@ Formato: [YYYY-MM-DD]
 
 ---
 
+## [2026-07-06]
+
+### Completado
+
+- **Rediseño Total del Frontend — Premium Gym Identity + Dark Theme**
+  - **Concepto visual**: Inspirado en Gold's Gym / Smart Fit — tipografía extra-condensed uppercase, layouts generosos, hero full-bleed, pricing 3 tiers con dark Pro card
+  - **Dark Theme Near-Black**: `--bg-primary: #0a0a0a`, `--card: #141414`, `--border: #222222`, accent neon green `#aaff00`
+  - **~439 reemplazos de colores hardcoded** en 37 archivos
+
+- **CSS Foundation** (`index.css`):
+  - Dark theme variables: `--bg-primary: #0a0a0a`, `--bg-secondary: #111111`, `--surface: #1a1a1a`, `--card: #141414`
+  - Text colors: `--text-primary: #f5f5f5`, `--text-secondary: #a0a0a0`, `--text-muted: #666666`
+  - Borders: `--border: #222222`, `--border-hover: #333333`
+  - Shadows profundas para dark mode (opacity 0.3-0.6)
+  - Nuevas utilidades: `section-padding`, `section-padding-lg`, `animate-marquee`, `animate-float`, `animate-scale-in`, `fade-in-down-anim`
+  - Body background: `var(--bg-primary)` (#0a0a0a)
+
+- **14 UI Components** — Dark theme: `bg-[var(--card)]`, `bg-[var(--surface)]`, `text-[var(--text-primary)]`, `border-[var(--border)]`, semantic colors con `bg-*-500/10`
+
+- **3 Layouts rediseñados**:
+  - `DashboardLayout.tsx` — Sidebar fijo 260px, nav vertical con iconos, main content offset `lg:ml-64`
+  - `AuthLayout.tsx` — Split layout: imagen gym izq + formulario der
+  - `ClientLayout.tsx` — Premium header con logo accent-box, nav con iconos, cart badge
+
+- **Landing** — Hero full-bleed `bg-black/60`, headline `font-heading text-8xl`, features alternados, pricing 3 tiers (dark Pro card), CTA `bg-gray-900`
+
+- **SaaSLanding** — Hero center-aligned con dashboard mockup, feature grid, pricing prominently
+
+- **6 Admin Pages**:
+  - `Dashboard.tsx` — KPIs gigantes `font-heading text-4xl font-black`, AreaChart con gradient, quick actions
+  - `Users.tsx` — Card grid 3 cols, avatar 56px, role badges, filter pills
+  - `Inventory.tsx` — Product card grid con imagen hover zoom, category pills, view toggle
+  - `Exercises.tsx` — Muscle group cards h-40 imagen, hover scale-110
+  - `RoutineBuilder.tsx` — Two-column: day tabs + library sidebar
+  - `RoutineLibrary.tsx` — Template cards con accent icon
+
+- **5 Shop Pages**:
+  - `Catalog.tsx` — font-heading title, category pills, ProductCard grid
+  - `Cart.tsx` — Two-column: items + sticky summary
+  - `Checkout.tsx` — 3-circle step indicator, credit card visual, confetti success
+  - `ProductDetail.tsx` — Gallery rounded-3xl, huge price, trust badges, nutrition table
+  - `ProductCard.tsx` — Hover zoom, slide-up add-to-cart button
+
+- **Client Pages**: `MyRoutines.tsx` — Calendar rounded-2xl, font-heading day names
+- **Auth Pages (5)** — font-heading titles, error boxes `bg-red-500/10 border-red-500/30`
+- **PlatformSettings** — Cards rounded-2xl, accent toggles
+
+- **Build**: `tsc --noEmit` ✅ | `vite build` ✅ (814ms)
+
+---
+
+## [2026-07-04]
+
+### Completado
+
+- **Admin Panel Glassmorphism + Depth Redesign**
+  - **Concepto visual**: "Frosted Gym" — Paneles de vidrio esmerilado sobre fondo oscuro profundo con acentos de gradiente vibrantes, sombras en capas, bordes luminosos y efectos de luz ambiental
+  - **CSS Foundation** (`index.css`): Variables glassmorphism v2 (`--glass-bg-subtle/medium/strong`, `--glass-border`, `--depth-1/2/3/4`, `--gradient-accent/glow/subtle`, `--ambient-glow`), utilidades `.glass-subtle`, `.glass-strong`, `.glass-card`, `.glass-btn-primary`, `.glass-badge`, `.depth-1/2/3/4`
+  - **Componentes UI rediseñados**:
+    - `Card.tsx` — `border-white/[0.06] bg-white/[0.03] backdrop-blur-xl`, hover con glow sutil
+    - `Badge.tsx` — Variantes glass (`glass`, `glass-accent`, `glass-error`, `glass-warning`), `backdrop-blur-md`
+    - `Button.tsx` — Variantes `glass`, `glass-accent`, primary con `bg-gradient-to-r`, `active:scale-[0.97]`
+    - `Modal.tsx` — `rounded-3xl`, `bg-white/[0.04] backdrop-blur-2xl`, overlay `bg-black/70 backdrop-blur-sm`
+    - `SearchBar.tsx` — `rounded-2xl bg-white/[0.04] backdrop-blur-xl`
+    - `EmptyState.tsx` — Icono con gradiente, `rounded-2xl border border-white/[0.06]`
+    - `ConfirmDialog.tsx` — Icono alerta con gradiente rojo, botones glass
+    - `AdminHeader.tsx` — Icono con gradiente `rounded-2xl`, título `font-black tracking-tight`
+  - **DashboardLayout.tsx** — Ambient glow `bg-[var(--ambient-glow)]`, nav links con underline+glow, mobile sidebar glass
+  - **6 páginas admin rediseñadas**:
+    - `Users.tsx` — Cards de usuario glass con gradient avatars, menú contextual glass
+    - `Inventory.tsx` — Tabla glass con `backdrop-blur-xl`, filas hover, badges glass
+    - `Exercises.tsx` — Muscle group cards glass, segmented tabs con gradiente
+    - `RoutineBuilder.tsx` — Exercise cards glass, day tabs con gradiente, detail inputs glass
+    - `RoutineLibrary.tsx` — Routine template cards glass
+    - `Dashboard.tsx` — Stats cards glass, chart tooltip glass, activity feed dots con glow
+  - **Build**: `tsc -b && vite build` y `prettier --write` pasan sin errores
+  - **Nota**: Todos los errores de lint son preexistentes (PlatformSettings, router/index, Checkout, ProductDetail)
+
+---
+
+## [2026-07-03]
+
+### Completado
+
+- **Critical Fix: Response Format Mismatch (lista → dto.data)**
+  - **Problema**: Backend retorna `PaginatedResult` en campo `dto`, frontend leía de `lista`
+  - **Solución**: Todos los componentes ahora leen de `response.dto.data`
+  - Archivos corregidos:
+    - `Users.tsx` - `response.dto?.data || []`
+    - `Dashboard.tsx` - `response.dto?.data || []` (users, workouts, orders)
+    - `Inventory.tsx` - `response.dto?.data || []`
+    - `Exercises.tsx` - `response.dto?.data || []`
+    - `RoutineBuilder.tsx` - `response.dto?.data || []` (exercises + users)
+    - `RoutineLibrary.tsx` - `response.dto?.data || []`
+    - `Catalog.tsx` - `response.dto?.data || []`
+    - `platformDashboardStore.ts` - `response?.dto?.data || []` (tenants + plans)
+    - `platformTenantsStore.ts` - `response?.dto?.data || []` (tenants + plans)
+    - `platformUsersStore.ts` - `response?.dto?.data || []`
+
+### Completado
+
+- **Backend API Validation & Frontend Fixes**
+  - Validación completa de endpoints backend vs expectativas frontend (55 endpoints en 17 controladores)
+  - Corregido `RoutineBuilder.tsx`: ruta `/api/tenant/user/getAll` → `/api/tenant/users` (plural coincidente con backend)
+  - Implementado `Dashboard.tsx` calculando métricas usando endpoints existentes (`/api/tenant/users`, `/api/workouts`, `/api/orders`) en lugar del inexistente `/api/tenant/dashboard`
+  - Agregado tipo `OrderDTO` a `src/types/api.ts` y `src/types/index.ts`
+  - Dashboard muestra: clientes activos, ventas del mes, rutinas creadas, clientes sin rutina
+  - Gráfico de ingresos mensuales calculado desde órdenes reales
+  - Feed de actividad generado desde usuarios, rutinas y órdenes recientes
+
+### Completado
+
+- **Auth Backend Integration — Login, Logout, Forgot Password, Reset Password**
+  - `api.ts`: Corregida URL de `activateAccount` (`/api/tenant/user/` → `/api/tenant/users/`)
+  - `api.ts`: Agregados `logout()` y `refreshToken()` que llaman `POST /api/auth/logout` y `POST /api/auth/refresh-token`
+  - `authStore.ts`: `logout()` ahora llama el endpoint backend antes de limpiar estado local
+  - `authStore.ts`: `login()` ahora lanza errores del backend en vez de retornar `false`
+  - `Login.tsx`: Muestra el mensaje real del backend (ej: "Invalid credentials", "Tenant not found") en vez de "Credenciales inválidas" genérico
+  - `ForgotPassword.tsx`: Migrado de `fetch()` raw a `fetchApi()` para consistencia
+  - `ResetPassword.tsx`: Migrado de `fetch()` raw a `fetchApi()`, eliminado input de tenant ID (backend resuelve desde token), minlength corregido a 8
+  - `AdminLayout.tsx`, `ClientLayout.tsx`, `TenantDashboard.tsx`, `Landing.tsx`: `handleLogout` actualizado a `async/await` para esperar la llamada al backend antes de redirigir
+
+---
+
 ## [2026-07-02]
 
 ### Completado

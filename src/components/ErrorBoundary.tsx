@@ -27,17 +27,17 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="bg-background flex min-h-screen items-center justify-center p-4 font-sans">
-          <div className="bg-surface border-border w-full max-w-md rounded-2xl border p-8 text-center shadow-xl">
+        <div className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4 font-sans">
+          <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center shadow-xl">
             <div className="bg-danger/10 text-danger mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full">
               <AlertTriangle size={32} />
             </div>
             <h1 className="mb-3 text-xl font-bold text-[var(--text-primary)]">Algo salió mal</h1>
-            <p className="text-text-secondary mb-6 text-sm">
+            <p className="mb-6 text-sm text-[var(--text-secondary)]">
               Ha ocurrido un error inesperado en la aplicación. Nuestro equipo técnico ha sido
               notificado.
             </p>
-            <div className="bg-background mb-6 overflow-x-auto rounded-lg p-4 text-left">
+            <div className="mb-6 overflow-x-auto rounded-lg bg-[var(--background)] p-4 text-left">
               <code className="text-danger font-mono text-xs">
                 {this.state.error?.message || 'Error desconocido'}
               </code>

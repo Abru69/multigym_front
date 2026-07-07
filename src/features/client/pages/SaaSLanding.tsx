@@ -11,13 +11,8 @@ import {
   Shield,
   Zap,
   Building2,
-  Loader2,
-  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Label } from '@/components/ui/Label'
-import { fetchApi } from '@/lib/api'
 
 const features = [
   {
@@ -99,14 +94,13 @@ const plans = [
   },
 ]
 
-// Stagger variants for Hero
 const heroStagger = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.15 } },
+  visible: { transition: { staggerChildren: 0.12 } },
 }
 const heroItem = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' as any } },
+  hidden: { opacity: 0, y: 25 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' as any } },
 }
 
 export default function SaaSLanding() {
@@ -117,56 +111,56 @@ export default function SaaSLanding() {
   }
 
   return (
-    <div className="bg-background min-h-screen overflow-x-hidden font-sans">
-      {/* Navigation */}
-      <nav className="bg-background/80 border-border fixed top-0 right-0 left-0 z-50 mx-auto flex w-full max-w-7xl items-center justify-between border-b px-6 py-4 backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black"
-            style={{
-              background: 'linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%)',
-              color: 'var(--accent-text)',
-            }}
-          >
-            MG
+    <div className="min-h-screen overflow-x-hidden bg-[var(--card)] font-sans">
+      {/* ─── NAV ────────────────────────────────────────────── */}
+      <nav className="fixed top-0 right-0 left-0 z-50 w-full border-b border-[var(--border)] bg-[var(--card)]/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-[var(--accent)] text-[var(--accent-text)] flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black shadow-md shadow-[var(--accent)]/20">
+              MG
+            </div>
+            <span className="font-heading text-lg font-black tracking-tight text-[var(--text-primary)]">
+              MULTIGYM <span className="text-[var(--accent)]">SAAS</span>
+            </span>
           </div>
-          <span className="font-heading text-xl font-black tracking-tight text-[var(--text-primary)]">
-            MULTIGYM <span className="text-accent">SAAS</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-6">
-          <a
-            href="#caracteristicas"
-            className="text-text-secondary hover:text-accent hidden text-sm font-semibold transition-colors md:block"
-          >
-            Características
-          </a>
-          <a
-            href="#precios"
-            className="text-text-secondary hover:text-accent hidden text-sm font-semibold transition-colors md:block"
-          >
-            Precios
-          </a>
-          <div className="bg-border hidden h-4 w-px md:block" />
-          <Link
-            to="/platform/login"
-            className="text-text-secondary hover:text-primary text-sm font-semibold transition-colors"
-          >
-            Portal Administrador
-          </Link>
-          <Button onClick={() => openRegistration('PRO')} className="hidden text-sm sm:flex">
-            Contactar Ventas
-          </Button>
+
+          <div className="hidden items-center gap-8 md:flex">
+            <a
+              href="#caracteristicas"
+              className="text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            >
+              Características
+            </a>
+            <a
+              href="#precios"
+              className="text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            >
+              Precios
+            </a>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              to="/platform/login"
+              className="hidden text-sm font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] sm:block"
+            >
+              Portal Administrador
+            </Link>
+            <Button
+              onClick={() => openRegistration('PRO')}
+              className="rounded-xl px-6 py-2.5 text-sm font-bold"
+            >
+              Contactar Ventas
+            </Button>
+          </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden pt-20">
-        {/* Background Effects */}
+      {/* ─── HERO ────────────────────────────────────────────── */}
+      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[var(--bg-primary)] pt-20">
         <div className="absolute inset-0 z-0 overflow-hidden">
-          <div className="bg-primary/20 pointer-events-none absolute top-1/4 left-1/4 h-[500px] w-[500px] rounded-full blur-[120px]" />
-          <div className="bg-accent/15 pointer-events-none absolute right-1/4 bottom-1/4 h-[400px] w-[400px] rounded-full blur-[100px]" />
-          <div className="pointer-events-none absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+          <div className="pointer-events-none absolute top-1/4 left-1/4 h-[500px] w-[500px] rounded-full bg-[var(--accent)]/5 blur-[120px]" />
+          <div className="pointer-events-none absolute right-1/4 bottom-1/4 h-[400px] w-[400px] rounded-full bg-[var(--accent)]/3 blur-[100px]" />
         </div>
 
         <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
@@ -177,29 +171,26 @@ export default function SaaSLanding() {
             className="flex flex-col items-center"
           >
             <motion.div variants={heroItem} className="mb-6">
-              <span className="border-accent/30 bg-accent/10 text-accent inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold tracking-widest uppercase">
-                <Zap size={14} />
-                La Plataforma Definitiva
+              <span className="inline-flex items-center rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-5 py-2 text-xs font-bold uppercase tracking-widest text-[var(--accent-text)]">
+                LA PLATAFORMA DEFINITIVA
               </span>
             </motion.div>
 
             <motion.h1
               variants={heroItem}
-              className="font-heading mb-8 text-5xl leading-[1.05] font-black tracking-tight text-[var(--text-primary)] sm:text-6xl md:text-8xl"
+              className="font-heading text-6xl sm:text-7xl lg:text-8xl font-black uppercase text-[var(--text-primary)] leading-[0.95] tracking-tight"
             >
-              ESCALA TU GIMNASIO <br />
-              <span className="from-accent to-primary bg-gradient-to-r bg-clip-text text-transparent">
-                A OTRO NIVEL
-              </span>
+              ESCALE SU
+              <br />
+              <span className="text-[var(--accent)]">GIMNASIO</span>
             </motion.h1>
 
             <motion.p
               variants={heroItem}
-              className="text-text-secondary mx-auto mb-10 max-w-3xl text-lg leading-relaxed font-medium sm:text-xl"
+              className="mx-auto mt-8 mb-10 max-w-3xl text-xl text-[var(--text-secondary)] leading-relaxed"
             >
               La solución "todo en uno" para dueños de gimnasios. Administra sedes, diseña rutinas
-              interactivas, vende suplementación y fideliza a tus atletas bajo tu propia marca y
-              subdominio personalizado.
+              interactivas, vende suplementación y fideliza a tus atletas bajo tu propia marca.
             </motion.p>
 
             <motion.div
@@ -208,70 +199,66 @@ export default function SaaSLanding() {
             >
               <Button
                 onClick={() => openRegistration('PRO')}
-                size="lg"
-                className="accent-glow w-full gap-2 text-base tracking-wider uppercase sm:w-auto"
+                className="bg-[var(--accent)] text-[var(--accent-text)] px-8 py-4 rounded-xl font-bold text-base uppercase tracking-wider hover:brightness-110 shadow-lg shadow-[var(--accent)]/20 w-full sm:w-auto"
               >
-                Contactar al Administrador <ChevronRight size={18} strokeWidth={3} />
+                Contactar Ventas
+                <ChevronRight size={18} strokeWidth={3} />
               </Button>
               <Button
                 onClick={() => {
                   document.getElementById('precios')?.scrollIntoView({ behavior: 'smooth' })
                 }}
                 variant="outline"
-                size="lg"
-                className="w-full text-base tracking-wider uppercase sm:w-auto"
+                className="border-2 border-[var(--border)] text-[var(--text-primary)] px-8 py-4 rounded-xl font-bold text-base uppercase tracking-wider hover:border-[var(--text-primary)] w-full sm:w-auto"
               >
-                Ver Planes y Precios
+                Ver Planes
               </Button>
             </motion.div>
           </motion.div>
         </div>
 
-        {/* Dashboard Preview Mockup */}
+        {/* Dashboard mockup */}
         <motion.div
-          initial={{ opacity: 0, y: 100 }}
+          initial={{ opacity: 0, y: 80 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.5, ease: 'easeOut' }}
-          className="relative z-10 mx-auto mt-20 w-full max-w-6xl px-6"
+          transition={{ duration: 0.9, delay: 0.5 }}
+          className="relative z-10 mx-auto mt-20 w-full max-w-5xl px-6"
         >
-          <div className="border-border bg-surface/50 glass-card overflow-hidden rounded-2xl border p-2 shadow-2xl backdrop-blur-xl">
-            <div className="bg-background border-border/50 relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl border">
-              <div className="absolute inset-0 flex flex-col">
-                <div className="border-border bg-surface flex h-12 items-center gap-2 border-b px-4">
-                  <div className="flex gap-1.5">
-                    <div className="bg-danger/80 h-3 w-3 rounded-full" />
-                    <div className="bg-warning/80 h-3 w-3 rounded-full" />
-                    <div className="bg-success/80 h-3 w-3 rounded-full" />
-                  </div>
-                  <div className="bg-background border-border text-text-muted mx-auto flex h-6 w-64 items-center rounded-md border px-3 font-mono text-[10px]">
-                    <Shield size={10} className="mr-2 inline" /> tugimnasio.multigym.com
-                  </div>
+          <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-2xl shadow-black/5">
+            <div className="flex aspect-[16/9] flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]">
+              <div className="flex h-12 items-center gap-2 border-b border-[var(--border)] bg-[var(--card)] px-4">
+                <div className="flex gap-1.5">
+                  <div className="h-3 w-3 rounded-full bg-red-400" />
+                  <div className="h-3 w-3 rounded-full bg-yellow-400" />
+                  <div className="h-3 w-3 rounded-full bg-green-400" />
                 </div>
-                <div className="from-surface to-background relative flex flex-1 items-center justify-center overflow-hidden bg-gradient-to-br">
-                  {/* Abstract representation of the dashboard */}
-                  <div className="grid w-full max-w-4xl grid-cols-3 gap-6 p-8">
-                    <div className="col-span-2 space-y-6">
-                      <div className="bg-surface border-border flex h-32 flex-col gap-3 rounded-xl border p-4">
-                        <div className="bg-text-muted/20 h-4 w-32 rounded" />
-                        <div className="flex flex-1 items-end gap-2">
-                          {[40, 70, 45, 90, 65, 85, 100].map((h, i) => (
-                            <div
-                              key={i}
-                              className="bg-accent/80 flex-1 rounded-t-sm"
-                              style={{ height: `${h}%` }}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="bg-surface border-border h-40 rounded-xl border p-4" />
-                        <div className="bg-surface border-border h-40 rounded-xl border p-4" />
+                <div className="mx-auto flex h-6 w-64 items-center rounded-md border border-[var(--border)] bg-[var(--card)] px-3 font-mono text-[10px] text-[var(--text-muted)]">
+                  <Shield size={10} className="mr-2 inline" /> tugimnasio.multigym.com
+                </div>
+              </div>
+              <div className="relative flex flex-1 items-center justify-center bg-[var(--bg-secondary)]">
+                <div className="grid w-full max-w-4xl grid-cols-3 gap-6 p-8">
+                  <div className="col-span-2 space-y-6">
+                    <div className="flex h-32 flex-col gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
+                      <div className="h-4 w-32 rounded bg-gray-200" />
+                      <div className="flex flex-1 items-end gap-2">
+                        {[40, 70, 45, 90, 65, 85, 100].map((h, i) => (
+                          <div
+                            key={i}
+                            className="flex-1 rounded-t-sm bg-[var(--accent)]"
+                            style={{ height: `${h}%`, opacity: 0.3 + (i * 0.09) }}
+                          />
+                        ))}
                       </div>
                     </div>
-                    <div className="col-span-1 space-y-6">
-                      <div className="bg-surface border-border h-48 rounded-xl border p-4" />
-                      <div className="bg-surface border-border h-24 rounded-xl border p-4" />
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="h-40 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4" />
+                      <div className="h-40 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4" />
                     </div>
+                  </div>
+                  <div className="col-span-1 space-y-6">
+                    <div className="h-48 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4" />
+                    <div className="h-24 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4" />
                   </div>
                 </div>
               </div>
@@ -280,15 +267,18 @@ export default function SaaSLanding() {
         </motion.div>
       </section>
 
-      {/* Logos Section */}
-      <section className="border-border bg-surface/30 border-b py-12">
+      {/* ─── LOGOS ────────────────────────────────────────────── */}
+      <section className="border-y border-[var(--border)] bg-[var(--bg-secondary)] py-12">
         <div className="mx-auto max-w-7xl px-6 text-center">
-          <p className="text-text-muted mb-8 text-sm font-bold tracking-widest uppercase">
+          <p className="mb-8 text-sm font-bold uppercase tracking-widest text-[var(--text-muted)]">
             Confiado por más de 500 gimnasios en todo el mundo
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 opacity-50 grayscale transition-all duration-500 hover:grayscale-0 md:gap-16">
+          <div className="flex flex-wrap items-center justify-center gap-8 opacity-40 grayscale transition-all duration-500 hover:grayscale-0 md:gap-16">
             {['FitZone', 'Iron Temple', 'PowerGym', 'Alpha Fitness', 'Zeus Gym'].map((logo) => (
-              <div key={logo} className="font-heading text-text-secondary text-2xl font-black">
+              <div
+                key={logo}
+                className="font-heading text-2xl font-black text-[var(--text-muted)]"
+              >
                 {logo}
               </div>
             ))}
@@ -296,16 +286,18 @@ export default function SaaSLanding() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="caracteristicas" className="relative py-24 sm:py-32">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="mb-20 text-center">
-            <h2 className="font-heading mb-4 text-4xl font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-5xl">
-              Control <span className="text-accent">Absoluto</span>
+      {/* ─── FEATURES ─────────────────────────────────────────── */}
+      <section id="caracteristicas" className="bg-[var(--card)]">
+        <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32">
+          <div className="mb-16 text-center">
+            <span className="mb-3 inline-block text-sm font-bold uppercase tracking-widest text-[var(--accent)]">
+              Características
+            </span>
+            <h2 className="font-heading text-4xl sm:text-5xl font-black text-[var(--text-primary)]">
+              Control <span className="text-[var(--accent)]">Absoluto</span>
             </h2>
-            <p className="text-text-secondary mx-auto max-w-2xl text-lg">
-              Todo lo que necesitas para operar, crecer y escalar tu negocio fitness. Sin
-              complicaciones tecnológicas, enfócate en tus clientes.
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-[var(--text-secondary)]">
+              Todo lo que necesitas para operar, crecer y escalar tu negocio fitness.
             </p>
           </div>
 
@@ -313,89 +305,105 @@ export default function SaaSLanding() {
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="group bg-surface border-border hover:border-accent/50 rounded-2xl border p-8 transition-all duration-300"
+                viewport={{ once: true, margin: '-80px' }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-[var(--shadow-sm)] transition-all duration-300 hover:shadow-[var(--shadow-lg)] hover:-translate-y-1"
               >
-                <div className="bg-background border-border group-hover:bg-accent/10 mb-6 flex h-14 w-14 items-center justify-center rounded-xl border transition-all duration-300 group-hover:scale-110">
-                  <f.icon size={28} className="text-accent" strokeWidth={1.5} />
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent)]/10 transition-transform duration-300 group-hover:scale-110">
+                  <f.icon size={26} className="text-[var(--accent)]" strokeWidth={2} />
                 </div>
-                <h3 className="font-heading mb-3 text-xl font-bold tracking-tight text-[var(--text-primary)]">
+                <h3 className="font-heading mb-2 text-xl font-bold text-[var(--text-primary)]">
                   {f.title}
                 </h3>
-                <p className="text-text-secondary text-sm leading-relaxed">{f.desc}</p>
+                <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{f.desc}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="precios" className="bg-surface/50 border-border relative border-y py-24">
-        <div className="from-primary/10 via-background to-background pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))]" />
-
-        <div className="relative z-10 mx-auto max-w-7xl px-6">
+      {/* ─── PRICING ──────────────────────────────────────────── */}
+      <section id="precios" className="bg-[var(--bg-secondary)]">
+        <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32">
           <div className="mb-16 text-center">
-            <h2 className="font-heading mb-6 text-4xl font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-5xl">
-              Planes <span className="text-accent">Transparentes</span>
+            <span className="mb-3 inline-block text-sm font-bold uppercase tracking-widest text-[var(--accent)]">
+              Precios
+            </span>
+            <h2 className="font-heading text-4xl sm:text-5xl font-black text-[var(--text-primary)]">
+              Planes <span className="text-[var(--accent)]">Transparentes</span>
             </h2>
-
-            <p className="text-text-secondary text-base font-bold">
+            <p className="mt-4 text-base font-semibold text-[var(--text-muted)]">
               Pago único anual en Pesos Mexicanos (MXN). Sin comisiones ocultas.
             </p>
           </div>
 
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-3">
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
             {plans.map((p) => {
               const price = p.price
               return (
                 <div
                   key={p.name}
-                  className={`relative flex flex-col rounded-3xl p-8 transition-transform duration-300 hover:-translate-y-2 ${
+                  className={`relative flex flex-col overflow-hidden rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 ${
                     p.featured
-                      ? 'bg-surface border-accent shadow-glow border-2'
-                      : 'bg-surface border-border border'
+                      ? 'bg-[var(--text-primary)] text-white shadow-2xl scale-[1.04]'
+                      : 'bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-md)]'
                   }`}
                 >
                   {p.featured && (
-                    <div className="bg-accent text-accent-text absolute -top-4 left-1/2 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-black tracking-widest uppercase shadow-lg">
+                    <div className="absolute top-0 left-0 right-0 bg-[var(--accent)] px-4 py-1.5 text-center text-xs font-black uppercase tracking-widest text-[var(--accent-text)]">
                       Más Popular
                     </div>
                   )}
 
-                  <h3 className="font-heading mb-2 text-2xl font-bold text-[var(--text-primary)]">
-                    {p.name}
-                  </h3>
-                  <p className="text-text-secondary mb-6 min-h-[40px] text-sm">{p.desc}</p>
+                  <div className={p.featured ? 'pt-4' : ''}>
+                    <h3 className="font-heading text-xl font-bold text-[var(--text-primary)]">
+                      {p.name}
+                    </h3>
+                    <p className={`mt-2 mb-6 text-sm ${p.featured ? 'text-white/60' : 'text-[var(--text-secondary)]'}`}>
+                      {p.desc}
+                    </p>
 
-                  <div className="mb-8 flex items-end gap-1">
-                    <span className="font-heading text-4xl font-black text-[var(--text-primary)] lg:text-5xl">
-                      ${price.toLocaleString('es-MX')}
-                    </span>
-                    <span className="text-text-muted mb-2 font-bold">MXN /año</span>
+                    <div className="mb-8 flex items-baseline gap-1">
+                      <span className="font-heading text-5xl font-black text-[var(--text-primary)]">
+                        ${price.toLocaleString('es-MX')}
+                      </span>
+                      <span className={`text-sm font-medium ${p.featured ? 'text-white/50' : 'text-[var(--text-muted)]'}`}>
+                        MXN/año
+                      </span>
+                    </div>
+
+                    <ul className="mb-8 flex-1 space-y-3">
+                      {p.features.map((feat, i) => (
+                        <li key={i} className="flex items-center gap-3 text-sm">
+                          <svg
+                            className={`h-4 w-4 shrink-0 ${p.featured ? 'text-[var(--accent)]' : 'text-[var(--success)]'}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={3}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className={p.featured ? 'text-white/80' : 'text-[var(--text-secondary)]'}>
+                            {feat}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button
+                      onClick={() => openRegistration(p.id)}
+                      className={`w-full rounded-xl py-3 text-sm font-bold uppercase tracking-wider ${
+                        p.featured
+                          ? 'bg-[var(--accent)] text-[var(--accent-text)] hover:brightness-110 shadow-lg shadow-[var(--accent)]/20'
+                          : 'border-2 border-[var(--border)] text-[var(--text-primary)] hover:border-[var(--text-primary)]'
+                      }`}
+                    >
+                      Contactar Ventas
+                    </Button>
                   </div>
-
-                  <ul className="mb-8 flex-1 space-y-4">
-                    {p.features.map((f, i) => (
-                      <li
-                        key={i}
-                        className="flex items-start gap-3 text-sm font-medium text-[var(--text-secondary)]"
-                      >
-                        <CheckCircle size={18} className="text-accent mt-0.5 shrink-0" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button
-                    variant={p.featured ? 'default' : 'outline'}
-                    className="h-12 w-full text-sm tracking-wider uppercase"
-                    onClick={() => openRegistration(p.id)}
-                  >
-                    Contactar Ventas
-                  </Button>
                 </div>
               )
             })}
@@ -403,57 +411,61 @@ export default function SaaSLanding() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 sm:py-32">
-        <div className="mx-auto max-w-4xl px-6 text-center">
-          <h2 className="font-heading mb-6 text-4xl font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-6xl">
-            LLEVA TU NEGOCIO AL <span className="text-accent">FUTURO</span>
+      {/* ─── CTA ──────────────────────────────────────────────── */}
+      <section className="bg-[var(--text-primary)]">
+        <div className="mx-auto max-w-4xl px-6 py-24 text-center sm:py-32">
+          <h2 className="font-heading text-4xl sm:text-6xl font-black uppercase text-white leading-tight">
+            LLEVA TU NEGOCIO AL
+            <br />
+            <span className="text-[var(--accent)]">FUTURO</span>
           </h2>
-          <p className="text-text-secondary mx-auto mb-10 max-w-2xl text-lg">
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-white/60">
             Únete a la plataforma SaaS que está revolucionando la forma en que los gimnasios
             interactúan con sus clientes.
           </p>
-          <Button
-            onClick={() => openRegistration('PRO')}
-            size="lg"
-            className="accent-glow h-14 gap-3 px-10 text-base tracking-wider uppercase"
-          >
-            Contactar al Administrador <ChevronRight size={20} strokeWidth={3} />
-          </Button>
+          <div className="mt-10">
+            <Button
+              onClick={() => openRegistration('PRO')}
+              className="bg-[var(--accent)] text-[var(--accent-text)] px-10 py-4 rounded-xl font-bold text-base uppercase tracking-wider hover:brightness-110 shadow-xl shadow-[var(--accent)]/20"
+            >
+              Contactar al Administrador
+              <ChevronRight size={20} strokeWidth={3} />
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-border bg-surface border-t py-12">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 md:flex-row">
-          <div className="flex items-center gap-2">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded text-xs font-black"
-              style={{
-                background: 'linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%)',
-                color: 'var(--accent-text)',
-              }}
-            >
+      {/* ─── FOOTER ────────────────────────────────────────────── */}
+      <footer className="border-t border-[var(--border)] bg-[var(--surface)]">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 py-10 sm:flex-row">
+          <div className="flex items-center gap-3">
+            <div className="bg-[var(--accent)] text-[var(--accent-text)] flex h-9 w-9 items-center justify-center rounded-lg text-xs font-black">
               MG
             </div>
-            <span className="font-heading font-bold tracking-tight text-[var(--text-primary)]">
+            <span className="font-heading text-sm font-bold tracking-tight text-[var(--text-primary)]">
               MULTIGYM SAAS
             </span>
           </div>
-          <p className="text-text-muted text-center text-sm font-medium md:text-left">
+          <p className="text-center text-sm font-medium text-[var(--text-muted)] sm:text-left">
             © {new Date().getFullYear()} MultiGym Platform. Todos los derechos reservados.
           </p>
           <div className="flex gap-6 text-sm font-medium">
             <Link
               to="/platform/login"
-              className="text-text-muted hover:text-accent transition-colors"
+              className="text-[var(--text-muted)] transition-colors hover:text-[var(--accent)]"
             >
               Login Propietarios
             </Link>
-            <a href="#" className="text-text-muted hover:text-accent transition-colors">
+            <a
+              href="#"
+              className="text-[var(--text-muted)] transition-colors hover:text-[var(--accent)]"
+            >
               Soporte
             </a>
-            <a href="#" className="text-text-muted hover:text-accent transition-colors">
+            <a
+              href="#"
+              className="text-[var(--text-muted)] transition-colors hover:text-[var(--accent)]"
+            >
               Términos
             </a>
           </div>

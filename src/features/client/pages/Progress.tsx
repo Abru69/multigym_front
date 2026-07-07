@@ -42,12 +42,10 @@ export default function Progress() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+        <h1 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">
           Mi Progreso
         </h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Seguimiento de tu transformación
-        </p>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">Seguimiento de tu transformación</p>
       </div>
 
       {/* Summary cards */}
@@ -79,16 +77,11 @@ export default function Progress() {
             key={s.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-4 text-center"
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+            className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-center backdrop-blur-xl"
           >
             <s.icon size={20} className="mx-auto mb-2" style={{ color: s.color }} />
-            <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-              {s.value}
-            </p>
-            <p className="mt-0.5 text-[10px]" style={{ color: 'var(--text-muted)' }}>
-              {s.label}
-            </p>
+            <p className="text-lg font-black text-[var(--text-primary)]">{s.value}</p>
+            <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">{s.label}</p>
             <p className="mt-1 text-[10px] font-medium" style={{ color: s.color }}>
               {s.change}
             </p>
@@ -101,16 +94,13 @@ export default function Progress() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="rounded-2xl p-5"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 backdrop-blur-xl"
       >
-        <h3 className="mb-4 font-semibold" style={{ color: 'var(--text-primary)' }}>
-          Evolución de Peso
-        </h3>
+        <h3 className="mb-4 font-semibold text-[var(--text-primary)]">Evolución de Peso</h3>
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={weightData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
               <XAxis
                 dataKey="date"
                 tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
@@ -123,11 +113,13 @@ export default function Progress() {
               />
               <Tooltip
                 contentStyle={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-lg)',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '16px',
                   color: 'var(--text-primary)',
                   fontSize: 12,
+                  backdropFilter: 'blur(24px)',
+                  boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
                 }}
               />
               <Line
@@ -157,16 +149,13 @@ export default function Progress() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-2xl p-5"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+          className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 backdrop-blur-xl"
         >
-          <h3 className="mb-4 font-semibold" style={{ color: 'var(--text-primary)' }}>
-            Medidas Corporales (cm)
-          </h3>
+          <h3 className="mb-4 font-semibold text-[var(--text-primary)]">Medidas Corporales (cm)</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData}>
-                <PolarGrid stroke="var(--border)" />
+                <PolarGrid stroke="rgba(255,255,255,0.06)" />
                 <PolarAngleAxis
                   dataKey="subject"
                   tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
@@ -190,21 +179,17 @@ export default function Progress() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="rounded-2xl p-5"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 backdrop-blur-xl"
       >
-        <h3 className="mb-4 font-semibold" style={{ color: 'var(--text-primary)' }}>
-          Historial
-        </h3>
+        <h3 className="mb-4 font-semibold text-[var(--text-primary)]">Historial</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)' }}>
+              <tr className="border-b border-[var(--border)]">
                 {['Fecha', 'Peso', '% Grasa', 'Pecho', 'Cintura', 'Cadera'].map((h) => (
                   <th
                     key={h}
-                    className="pb-3 text-left text-xs font-medium"
-                    style={{ color: 'var(--text-muted)' }}
+                    className="pb-3 text-left text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase"
                   >
                     {h}
                   </th>
@@ -213,25 +198,13 @@ export default function Progress() {
             </thead>
             <tbody>
               {mockProgress.map((p) => (
-                <tr key={p.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td className="py-3" style={{ color: 'var(--text-secondary)' }}>
-                    {formatDateShort(p.date)}
-                  </td>
-                  <td className="py-3 font-medium" style={{ color: 'var(--text-primary)' }}>
-                    {p.weight} kg
-                  </td>
-                  <td className="py-3" style={{ color: 'var(--text-secondary)' }}>
-                    {p.bodyFat}%
-                  </td>
-                  <td className="py-3" style={{ color: 'var(--text-secondary)' }}>
-                    {p.measurements?.chest} cm
-                  </td>
-                  <td className="py-3" style={{ color: 'var(--text-secondary)' }}>
-                    {p.measurements?.waist} cm
-                  </td>
-                  <td className="py-3" style={{ color: 'var(--text-secondary)' }}>
-                    {p.measurements?.hips} cm
-                  </td>
+                <tr key={p.id} className="border-b border-[var(--border)]">
+                  <td className="py-3 text-[var(--text-secondary)]">{formatDateShort(p.date)}</td>
+                  <td className="py-3 font-medium text-[var(--text-primary)]">{p.weight} kg</td>
+                  <td className="py-3 text-[var(--text-secondary)]">{p.bodyFat}%</td>
+                  <td className="py-3 text-[var(--text-secondary)]">{p.measurements?.chest} cm</td>
+                  <td className="py-3 text-[var(--text-secondary)]">{p.measurements?.waist} cm</td>
+                  <td className="py-3 text-[var(--text-secondary)]">{p.measurements?.hips} cm</td>
                 </tr>
               ))}
             </tbody>

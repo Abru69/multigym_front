@@ -3,11 +3,69 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCartStore } from '@/features/shop/store/cartStore'
 import { formatCurrency } from '@/lib/utils'
-import { CheckCircle2, Loader2, ArrowLeft, CreditCard, Lock, Package } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Label } from '@/components/ui/Label'
-import { Card, CardContent } from '@/components/ui/Card'
+import {
+  CheckCircle2,
+  Loader2,
+  ArrowLeft,
+  CreditCard,
+  Lock,
+  Package,
+  Check,
+  MapPin,
+} from 'lucide-react'
+
+const STEPS = [
+  { key: 'shipping', label: 'Envío', icon: MapPin },
+  { key: 'payment', label: 'Pago', icon: CreditCard },
+  { key: 'success', label: 'Confirmación', icon: CheckCircle2 },
+] as const
+
+function StepIndicator({ currentStep }: { currentStep: string }) {
+  const getStepIndex = (s: string) => {
+    if (s === 'shipping') return 0
+    if (s === 'payment') return 1
+    return 2
+  }
+  const idx = getStepIndex(currentStep)
+
+  return (
+    <div className="mb-12 flex items-center justify-center">
+      <div className="flex items-center gap-0">
+        {STEPS.map((s, i) => (
+          <div key={s.key} className="flex items-center">
+            <div className="flex flex-col items-center gap-2">
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 ${
+                  i < idx
+                    ? 'bg-[var(--success)] text-white shadow-sm'
+                    : i === idx
+                      ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-md'
+                      : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
+                }`}
+              >
+                {i < idx ? <Check size={20} /> : i + 1}
+              </div>
+              <span
+                className={`text-xs font-semibold ${
+                  i <= idx ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'
+                }`}
+              >
+                {s.label}
+              </span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div
+                className={`mx-3 mb-6 h-0.5 w-16 transition-colors duration-300 sm:w-24 ${
+                  i < idx ? 'bg-[var(--success)]' : 'bg-[var(--border)]'
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function Checkout() {
   const { items, total, clearCart } = useCartStore()
@@ -27,7 +85,6 @@ export default function Checkout() {
   const handleSimulatePayment = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // Simulate network request
     await new Promise((r) => setTimeout(r, 2000))
     setLoading(false)
     setStep('success')
@@ -35,47 +92,21 @@ export default function Checkout() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      {/* Steps Progress */}
-      {step !== 'success' && (
-        <div className="mb-10 flex items-center justify-center">
-          <div className="flex items-center gap-3">
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${step === 'shipping' || step === 'payment' ? 'bg-[var(--accent)] text-[var(--accent-text)]' : 'bg-[var(--surface)] text-[var(--text-muted)]'}`}
-            >
-              1
-            </div>
-            <span
-              className={`text-sm font-medium ${step === 'shipping' || step === 'payment' ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}
-            >
-              Envío
-            </span>
-            <div className="h-0.5 w-10 bg-[var(--border)]" />
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${step === 'payment' ? 'bg-[var(--accent)] text-[var(--accent-text)]' : 'bg-[var(--surface)] text-[var(--text-muted)]'}`}
-            >
-              2
-            </div>
-            <span
-              className={`text-sm font-medium ${step === 'payment' ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}
-            >
-              Pago
-            </span>
-          </div>
-        </div>
-      )}
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
+      {step !== 'success' && <StepIndicator currentStep={step} />}
 
       <AnimatePresence mode="wait">
         {step === 'shipping' && (
           <motion.div
             key="shipping"
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
+            exit={{ opacity: 0, x: 30 }}
+            transition={{ duration: 0.3 }}
             className="grid grid-cols-1 gap-8 md:grid-cols-2"
           >
             <div className="space-y-6">
-              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              <h2 className="font-heading text-xl font-black text-[var(--text-primary)]">
                 Dirección de Envío
               </h2>
               <form
@@ -87,41 +118,68 @@ export default function Checkout() {
               >
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label>Nombre</Label>
-                    <Input required type="text" placeholder="Juan" />
+                    <label className="text-xs font-semibold text-[var(--text-primary)]">Nombre</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="Juan"
+                      className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                    />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Apellidos</Label>
-                    <Input required type="text" placeholder="Pérez" />
+                    <label className="text-xs font-semibold text-[var(--text-primary)]">Apellidos</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="Pérez"
+                      className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                    />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Calle y Número</Label>
-                  <Input required type="text" placeholder="Av. Principal 123" />
+                  <label className="text-xs font-semibold text-[var(--text-primary)]">Calle y Número</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="Av. Principal 123"
+                    className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label>Código Postal</Label>
-                    <Input required type="text" placeholder="31000" />
+                    <label className="text-xs font-semibold text-[var(--text-primary)]">Código Postal</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="31000"
+                      className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                    />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Ciudad</Label>
-                    <Input required type="text" placeholder="Chihuahua" />
+                    <label className="text-xs font-semibold text-[var(--text-primary)]">Ciudad</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="Chihuahua"
+                      className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                    />
                   </div>
                 </div>
-                <Button type="submit" className="mt-6 h-12 w-full text-base">
+                <button
+                  type="submit"
+                  className="mt-6 h-12 w-full rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg"
+                >
                   Continuar al Pago
-                </Button>
+                </button>
               </form>
             </div>
 
-            {/* Order Summary Sidebar */}
-            <div className="h-fit rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6">
-              <h3 className="mb-4 text-lg font-bold text-[var(--text-primary)]">Resumen</h3>
+            <div className="h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+              <h3 className="mb-4 font-heading text-lg font-black text-[var(--text-primary)]">Resumen</h3>
               <div className="scrollbar-hide mb-6 max-h-60 space-y-3 overflow-y-auto pr-2">
                 {items.map((item) => (
                   <div key={item.product.id} className="flex gap-3">
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-[var(--background)]">
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-[var(--surface-hover)]">
                       <img
                         src={item.product.image}
                         alt={item.product.name}
@@ -149,7 +207,7 @@ export default function Checkout() {
                   <span>Envío</span>
                   <span>{shipping === 0 ? 'Gratis' : formatCurrency(shipping)}</span>
                 </div>
-                <div className="flex justify-between pt-2 text-lg font-bold text-[var(--text-primary)]">
+                <div className="flex justify-between pt-2 font-heading text-lg font-black text-[var(--text-primary)]">
                   <span>Total</span>
                   <span>{formatCurrency(finalTotal)}</span>
                 </div>
@@ -161,78 +219,111 @@ export default function Checkout() {
         {step === 'payment' && (
           <motion.div
             key="payment"
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="mx-auto max-w-md"
+            exit={{ opacity: 0, x: 30 }}
+            transition={{ duration: 0.3 }}
+            className="mx-auto max-w-lg"
           >
-            <Button variant="ghost" onClick={() => setStep('shipping')} className="mb-6 -ml-4">
-              <ArrowLeft size={16} className="mr-2" /> Volver a Envío
-            </Button>
-            <h2 className="mb-6 text-xl font-bold text-[var(--text-primary)]">
+            <button
+              onClick={() => setStep('shipping')}
+              className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            >
+              <ArrowLeft size={16} /> Volver a Envío
+            </button>
+
+            <h2 className="mb-6 font-heading text-xl font-black text-[var(--text-primary)]">
               Información de Pago
             </h2>
 
-            <form onSubmit={handleSimulatePayment} className="space-y-4">
-              <div
-                className="relative mb-6 overflow-hidden rounded-xl border border-[var(--accent)] p-4"
-                style={{ background: 'var(--accent-muted)' }}
-              >
-                <div className="mb-4 flex items-center gap-3">
-                  <CreditCard size={20} className="text-[var(--accent)]" />
-                  <span className="font-semibold text-[var(--text-primary)]">
-                    Tarjeta de Crédito / Débito
-                  </span>
+            <form onSubmit={handleSimulatePayment} className="space-y-5">
+              <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+                <div className="border-b border-[var(--border)] bg-[var(--surface)] px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10">
+                      <CreditCard size={18} className="text-[var(--accent)]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-[var(--text-primary)]">Tarjeta de Crédito / Débito</p>
+                      <p className="text-xs text-[var(--text-muted)]">Ingresa los datos de tu tarjeta</p>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="relative z-10 space-y-4">
-                  <div className="space-y-1.5">
-                    <Label>Número de Tarjeta</Label>
-                    <Input
-                      required
-                      type="text"
-                      maxLength={19}
-                      placeholder="0000 0000 0000 0000"
-                      className="font-mono"
-                    />
+                <div className="p-6">
+                  <div className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-800 to-gray-900 p-6 text-white shadow-lg">
+                    <div className="mb-6 flex items-center justify-between">
+                      <div className="h-8 w-12 rounded bg-white/20" />
+                      <CreditCard size={24} className="text-white/60" />
+                    </div>
+                    <p className="mb-6 font-mono text-lg tracking-widest">
+                      **** **** **** ****
+                    </p>
+                    <div className="flex justify-between text-xs">
+                      <div>
+                        <p className="text-white/50">TITULAR</p>
+                        <p className="font-semibold">TU NOMBRE</p>
+                      </div>
+                      <div>
+                        <p className="text-white/50">VENCE</p>
+                        <p className="font-semibold">MM/AA</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+
+                  <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <Label>Vencimiento</Label>
-                      <Input
+                      <label className="text-xs font-semibold text-[var(--text-primary)]">Número de Tarjeta</label>
+                      <input
                         required
                         type="text"
-                        maxLength={5}
-                        placeholder="MM/YY"
-                        className="font-mono"
+                        maxLength={19}
+                        placeholder="0000 0000 0000 0000"
+                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label>CVC</Label>
-                      <Input
-                        required
-                        type="password"
-                        maxLength={4}
-                        placeholder="•••"
-                        className="font-mono"
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-[var(--text-primary)]">Vencimiento</label>
+                        <input
+                          required
+                          type="text"
+                          maxLength={5}
+                          placeholder="MM/YY"
+                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-[var(--text-primary)]">CVC</label>
+                        <input
+                          required
+                          type="password"
+                          maxLength={4}
+                          placeholder="•••"
+                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="text-text-muted mb-6 flex items-center justify-center gap-2 text-xs">
+              <div className="flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">
                 <Lock size={12} />
                 <span>Pago procesado de forma segura</span>
               </div>
 
-              <Button type="submit" disabled={loading} className="h-12 w-full gap-2 text-base">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+              >
                 {loading ? (
                   <Loader2 size={18} className="animate-spin" />
                 ) : (
                   `Pagar ${formatCurrency(finalTotal)}`
                 )}
-              </Button>
+              </button>
             </form>
           </motion.div>
         )}
@@ -242,33 +333,69 @@ export default function Checkout() {
             key="success"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
             className="mx-auto max-w-md py-10 text-center"
           >
-            <div
-              className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full"
-              style={{ background: 'var(--accent-muted)' }}
-            >
-              <CheckCircle2 size={40} className="text-[var(--success)]" />
+            <div className="relative mx-auto mb-8">
+              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[var(--success)]/10">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                >
+                  <CheckCircle2 size={48} className="text-[var(--success)]" />
+                </motion.div>
+              </div>
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                  animate={{
+                    opacity: [0, 1, 0],
+                    scale: [0, 1.5, 0],
+                    x: (Math.random() - 0.5) * 200,
+                    y: (Math.random() - 0.5) * 200,
+                  }}
+                  transition={{ delay: 0.3 + i * 0.1, duration: 0.8 }}
+                  className="absolute left-1/2 top-1/2 h-2 w-2 rounded-full"
+                  style={{
+                    backgroundColor:
+                      i % 3 === 0
+                        ? 'var(--accent)'
+                        : i % 3 === 1
+                          ? 'var(--success)'
+                          : '#fbbf24',
+                  }}
+                />
+              ))}
             </div>
-            <h2 className="mb-2 text-2xl font-bold text-[var(--text-primary)]">¡Pago Exitoso!</h2>
-            <p className="mb-8 text-sm text-[var(--text-secondary)]">
+
+            <h2 className="mb-3 font-heading text-2xl font-black text-[var(--text-primary)]">
+              ¡Pago Exitoso!
+            </h2>
+            <p className="mb-10 text-sm text-[var(--text-secondary)]">
               Tu orden ha sido confirmada. Te enviaremos un correo con los detalles del envío y
               número de rastreo.
             </p>
-            <div className="mb-8 flex items-center gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 text-left">
-              <div className="flex h-10 w-10 items-center justify-center rounded bg-[var(--background)] text-[var(--text-muted)]">
-                <Package size={20} />
+
+            <div className="mb-10 flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-left shadow-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--surface-hover)]">
+                <Package size={20} className="text-[var(--text-muted)]" />
               </div>
               <div>
                 <p className="mb-0.5 text-xs text-[var(--text-muted)]">Número de Orden</p>
-                <p className="font-mono text-sm font-semibold text-[var(--text-primary)]">
+                <p className="font-mono text-sm font-bold text-[var(--text-primary)]">
                   #{Math.random().toString(36).substr(2, 9).toUpperCase()}
                 </p>
               </div>
             </div>
-            <Button variant="outline" onClick={() => navigate('/tienda')} className="mt-8 w-full">
+
+            <button
+              onClick={() => navigate('/tienda')}
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--card)] py-3.5 text-sm font-bold text-[var(--text-primary)] transition-all hover:border-[var(--border)] hover:bg-[var(--surface-hover)]"
+            >
               Volver a la Tienda
-            </Button>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

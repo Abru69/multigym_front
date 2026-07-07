@@ -1,63 +1,45 @@
-import { Outlet, Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { Outlet } from 'react-router-dom'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
-import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 export function AuthLayout() {
   const { branding } = useTenantBranding()
 
   return (
-    <div
-      className="relative flex min-h-screen items-center justify-center p-4"
-      style={{
-        background: `
-          radial-gradient(ellipse at 20% 50%, var(--accent-muted) 0%, transparent 50%),
-          radial-gradient(ellipse at 80% 20%, var(--accent-muted) 0%, transparent 50%),
-          var(--bg-primary)
-        `,
-      }}
-    >
-      {/* Theme toggle in corner */}
-      <div className="absolute top-4 right-4 z-10">
-        <ThemeToggle />
+    <div className="flex min-h-screen">
+      {/* Left Side - Image (hidden on mobile, visible lg+) */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gray-900">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              'url(https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1000&h=1200&fit=crop)',
+          }}
+        />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 flex flex-col justify-end p-12">
+          <h1 className="text-4xl font-black tracking-tight text-white mb-2">
+            {branding.name || 'MULTIGYM'}
+          </h1>
+          <p className="text-lg text-white/70">{branding.tagline || 'La plataforma para tu gimnasio'}</p>
+        </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-md"
-      >
-        {/* Logo */}
-        <Link to="/" className="mb-8 flex items-center justify-center gap-3">
-          <div
-            className="flex h-12 w-12 items-center justify-center rounded-xl text-lg font-black"
-            style={{ background: 'var(--accent)', color: 'var(--accent-text)' }}
-          >
-            {branding.logoAbbr}
+      {/* Right Side - Form */}
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-[var(--card)] p-6 sm:p-8">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="mb-8 flex items-center justify-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent)] text-lg font-black text-[var(--accent-text)]">
+              {branding.logoAbbr}
+            </div>
+            <span className="text-xl font-black tracking-tight text-[var(--text-primary)]">
+              {branding.name || 'MULTIGYM'}
+            </span>
           </div>
-          <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
-              {branding.name}
-            </h1>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              {branding.tagline}
-            </p>
-          </div>
-        </Link>
 
-        {/* Card */}
-        <div
-          className="rounded-2xl p-6 sm:p-8"
-          style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-lg)',
-          }}
-        >
           <Outlet />
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }

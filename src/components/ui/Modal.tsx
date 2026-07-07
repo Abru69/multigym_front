@@ -57,7 +57,7 @@ export function Modal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
@@ -66,7 +66,7 @@ export function Modal({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
             className={cn(
-              'relative w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl',
+              'relative w-full overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-xl)]',
               sizeClasses[size],
               className
             )}
@@ -75,7 +75,9 @@ export function Modal({
               <div className="flex items-start justify-between p-6 pb-0">
                 <div>
                   {title && (
-                    <h2 className="text-lg font-semibold text-[var(--text-primary)]">{title}</h2>
+                    <h2 className="font-heading text-lg font-black tracking-tight text-[var(--text-primary)]">
+                      {title}
+                    </h2>
                   )}
                   {description && (
                     <p className="mt-1 text-sm text-[var(--text-secondary)]">{description}</p>
@@ -84,7 +86,7 @@ export function Modal({
                 {showClose && (
                   <button
                     onClick={onClose}
-                    className="rounded-lg p-1 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    className="rounded-xl p-2 text-[var(--text-muted)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                     aria-label="Cerrar"
                   >
                     <X size={18} />

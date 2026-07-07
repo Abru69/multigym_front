@@ -23,23 +23,23 @@ export function ConfirmDialog({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
       <div className="flex items-start gap-4">
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[var(--error)]/10">
-          <AlertTriangle size={20} className="text-[var(--error)]" aria-hidden="true" />
+        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-red-400">
+          <AlertTriangle size={20} aria-hidden="true" />
         </div>
-        <p className="text-sm text-[var(--text-secondary)]">{message}</p>
+        <p className="text-sm leading-relaxed text-[var(--text-secondary)]">{message}</p>
       </div>
       <div className="mt-6 flex justify-end gap-3">
         <button
           onClick={onClose}
           disabled={isLoading}
-          className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:opacity-50"
+          className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] active:scale-[0.97] disabled:opacity-50"
         >
           Cancelar
         </button>
         <button
           onClick={onConfirm}
           disabled={isLoading}
-          className="rounded-xl bg-[var(--error)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
+          className="rounded-xl bg-[var(--error)] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[var(--error-hover)] active:scale-[0.97] disabled:opacity-50"
         >
           {isLoading ? 'Eliminando...' : confirmLabel}
         </button>

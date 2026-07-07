@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
 import { Dumbbell, Plus, Edit2, Trash2, Layers } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { useToastStore } from '@/components/ui/Toast'
-import { getExercises, createExercise } from '@/lib/api'
+import { getExercises, createExercise, fetchApi } from '@/lib/api'
+import type { ResponseDTO } from '@/types'
 import { MUSCLE_GROUPS } from '@/data/constants'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
-import { EmptyState } from '../components/EmptyState'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
 import RoutineLibrary from './RoutineLibrary'
@@ -63,12 +63,14 @@ export default function Exercises() {
   const [isCreatingGroup, setIsCreatingGroup] = useState(false)
   const [newGroupForm, setNewGroupForm] = useState({ name: '', description: '', imageUrl: '' })
   const [newGroupErrors, setNewGroupErrors] = useState<Record<string, string>>({})
+  const [editingExercise, setEditingExercise] = useState<Exercise | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Exercise | null>(null)
 
   const loadExercises = useCallback(async () => {
     try {
       setIsLoading(true)
       const response = await getExercises()
-      setExercisesList(response.lista || [])
+      setExercisesList(response.dto?.data || [])
     } catch (e) {
       console.error(e)
     } finally {
@@ -149,26 +151,57 @@ export default function Exercises() {
     setNewGroupForm({ name: '', description: '', imageUrl: '' })
   }
 
+  const handleEditExercise = async () => {
+    if (!editingExercise || !formName.trim()) return
+    setIsSaving(true)
+    try {
+      await fetchApi(`/api/exercises/${editingExercise.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ name: formName.trim(), muscleGroup: selectedGroup! }),
+      })
+      addToast('Ejercicio actualizado', 'success')
+      loadExercises()
+      setEditingExercise(null)
+      setFormName('')
+    } catch (e: unknown) {
+      addToast(e instanceof Error ? e.message : 'Error al actualizar', 'error')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleDeleteExercise = async () => {
+    if (!deleteTarget) return
+    try {
+      await fetchApi(`/api/exercises/${deleteTarget.id}`, { method: 'DELETE' })
+      setExercisesList(exercisesList.filter((e) => e.id !== deleteTarget.id))
+      addToast(`${deleteTarget.name} eliminado`, 'success')
+    } catch (e: unknown) {
+      addToast(e instanceof Error ? e.message : 'Error al eliminar', 'error')
+    } finally {
+      setDeleteTarget(null)
+    }
+  }
+
   return (
     <div className="space-y-6">
-      {/* Tabs */}
-      <div className="flex w-full shrink-0 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1 shadow-sm sm:w-fit">
+      <div className="flex w-full shrink-0 rounded-xl bg-[var(--surface)] p-1 sm:w-fit">
         <button
           onClick={() => handleTabChange('exercises')}
-          className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all sm:px-6 ${
+          className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all sm:px-6 ${
             activeTab === 'exercises'
-              ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-md'
-              : 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+              ? 'bg-[var(--card)] shadow-sm text-[var(--text-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           }`}
         >
           Grupos Musculares
         </button>
         <button
           onClick={() => handleTabChange('routines')}
-          className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-all sm:px-6 ${
+          className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all sm:px-6 ${
             activeTab === 'routines'
-              ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-md'
-              : 'text-[var(--text-muted)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+              ? 'bg-[var(--card)] shadow-sm text-[var(--text-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
           }`}
         >
           Plantillas de Rutinas
@@ -184,7 +217,7 @@ export default function Exercises() {
             action={
               <button
                 onClick={() => setIsCreatingGroup(true)}
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+                className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
               >
                 <Plus size={16} /> Agregar Grupo
               </button>
@@ -194,31 +227,30 @@ export default function Exercises() {
           {isLoading ? (
             <LoadingState text="Cargando ejercicios..." />
           ) : ALL_GROUPS.length === 0 ? (
-            <EmptyState
-              icon={Dumbbell}
-              title="Sin grupos musculares"
-              description="Crea tu primer grupo muscular para organizar los ejercicios."
-              action={
-                <button
-                  onClick={() => setIsCreatingGroup(true)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)]"
-                >
-                  <Plus size={16} /> Crear Grupo
-                </button>
-              }
-            />
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)]/50 py-20">
+              <Dumbbell size={48} className="mb-4 text-[var(--text-muted)]" />
+              <h3 className="text-lg font-bold text-[var(--text-primary)]">
+                Sin grupos musculares
+              </h3>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
+                Crea tu primer grupo muscular para organizar los ejercicios.
+              </p>
+              <button
+                onClick={() => setIsCreatingGroup(true)}
+                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
+              >
+                <Plus size={16} /> Crear Grupo
+              </button>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {ALL_GROUPS.map((group, idx) => {
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {ALL_GROUPS.map((group) => {
                 const count = exercisesList.filter((e) => e.muscleGroup === group.name).length
                 return (
-                  <motion.div
+                  <div
                     key={group.name}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05 }}
                     onClick={() => setSelectedGroup(group.name)}
-                    className="group cursor-pointer overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-lg transition-all hover:border-[var(--accent)]/30 hover:shadow-xl"
+                    className="group cursor-pointer overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] transition-all hover:shadow-lg"
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
@@ -229,38 +261,38 @@ export default function Exercises() {
                     }}
                     aria-label={`Ver ejercicios de ${group.name}`}
                   >
-                    {group.imageUrl ? (
-                      <div className="relative h-32 overflow-hidden">
+                    <div className="relative h-40 overflow-hidden bg-[var(--surface)]">
+                      {group.imageUrl ? (
                         <img
                           src={group.imageUrl}
                           alt={group.name}
-                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                           loading="lazy"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      </div>
-                    ) : (
-                      <div className="flex h-32 items-center justify-center bg-[var(--bg-secondary)]">
-                        <Dumbbell
-                          size={32}
-                          className="text-[var(--text-muted)] opacity-40"
-                          aria-hidden="true"
-                        />
-                      </div>
-                    )}
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <Dumbbell
+                            size={40}
+                            className="text-[var(--accent)] opacity-40"
+                            aria-hidden="true"
+                          />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    </div>
 
-                    <div className="p-4">
-                      <h3 className="text-sm font-bold text-[var(--text-primary)]">{group.name}</h3>
-                      <p className="mt-1 line-clamp-2 text-xs text-[var(--text-muted)]">
+                    <div className="p-5">
+                      <h3 className="font-heading text-lg font-bold text-[var(--text-primary)]">{group.name}</h3>
+                      <p className="mt-1 text-sm text-[var(--text-secondary)] line-clamp-2">
                         {group.description || 'Explora los ejercicios de este grupo muscular.'}
                       </p>
-                      <div className="mt-3 inline-flex rounded-lg bg-[var(--accent)]/10 px-2.5 py-1">
-                        <span className="text-[10px] font-bold text-[var(--accent)]">
+                      <div className="mt-3">
+                        <span className="inline-flex items-center rounded-full bg-[var(--accent)]/10 px-3 py-1 text-xs font-bold text-[var(--accent-text)]">
                           {count} {count === 1 ? 'ejercicio' : 'ejercicios'}
                         </span>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 )
               })}
             </div>
@@ -270,7 +302,13 @@ export default function Exercises() {
           <Modal
             isOpen={!!selectedGroup}
             onClose={closeModal}
-            title={isCreating ? 'Nuevo Ejercicio' : `Ejercicios: ${selectedGroup}`}
+            title={
+              isCreating
+                ? editingExercise
+                  ? 'Editar Ejercicio'
+                  : 'Nuevo Ejercicio'
+                : `Ejercicios: ${selectedGroup}`
+            }
             size="lg"
           >
             {isCreating ? (
@@ -288,7 +326,7 @@ export default function Exercises() {
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="Ej. Press de Banca Inclinado"
                     autoFocus
-                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                   />
                 </FormField>
                 <FormField
@@ -302,26 +340,34 @@ export default function Exercises() {
                     type="text"
                     value={selectedGroup || ''}
                     disabled
-                    className="h-10 w-full cursor-not-allowed rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 text-sm text-[var(--text-muted)] opacity-60"
+                    className="h-10 w-full cursor-not-allowed rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-muted)] opacity-60"
                   />
                 </FormField>
                 <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
                   <button
-                    onClick={() => setIsCreating(false)}
+                    onClick={() => {
+                      setIsCreating(false)
+                      setEditingExercise(null)
+                      setFormName('')
+                    }}
                     disabled={isSaving}
-                    className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:opacity-50"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] active:scale-[0.97] disabled:opacity-50"
                   >
                     Cancelar
                   </button>
                   <button
-                    onClick={handleSave}
+                    onClick={editingExercise ? handleEditExercise : handleSave}
                     disabled={isSaving}
-                    className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
                   >
                     {isSaving && (
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--accent-text)]/30 border-t-[var(--accent-text)]" />
                     )}
-                    {isSaving ? 'Guardando...' : 'Guardar Ejercicio'}
+                    {isSaving
+                      ? 'Guardando...'
+                      : editingExercise
+                        ? 'Actualizar'
+                        : 'Guardar Ejercicio'}
                   </button>
                 </div>
               </div>
@@ -336,76 +382,71 @@ export default function Exercises() {
                   />
                   <button
                     onClick={() => setIsCreating(true)}
-                    className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+                    className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
                   >
                     <Plus size={16} /> Nuevo
                   </button>
                 </div>
 
                 {filteredExercises.length === 0 ? (
-                  <EmptyState
-                    icon={Dumbbell}
-                    title="Sin ejercicios"
-                    description={
-                      search
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Dumbbell size={40} className="mb-3 text-[var(--text-muted)]" />
+                    <h4 className="font-bold text-[var(--text-primary)]">Sin ejercicios</h4>
+                    <p className="mt-1 text-sm text-[var(--text-muted)]">
+                      {search
                         ? 'No se encontraron ejercicios con ese nombre.'
-                        : 'No hay ejercicios en este grupo. Crea el primero.'
-                    }
-                    action={
-                      !search ? (
-                        <button
-                          onClick={() => setIsCreating(true)}
-                          className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-text)]"
-                        >
-                          <Plus size={16} /> Crear Ejercicio
-                        </button>
-                      ) : undefined
-                    }
-                  />
+                        : 'No hay ejercicios en este grupo. Crea el primero.'}
+                    </p>
+                    {!search && (
+                      <button
+                        onClick={() => setIsCreating(true)}
+                        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
+                      >
+                        <Plus size={16} /> Crear Ejercicio
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="space-y-2">
-                    <AnimatePresence>
-                      {filteredExercises.map((exercise) => (
-                        <motion.div
-                          key={exercise.id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="group flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 transition-colors hover:bg-[var(--surface-hover)]"
-                        >
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]">
-                            <Dumbbell
-                              size={18}
-                              className="text-[var(--text-muted)]"
-                              aria-hidden="true"
-                            />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-bold text-[var(--text-primary)]">
-                              {exercise.name}
-                            </p>
-                          </div>
-                          <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                            <button
-                              onClick={() => addToast('Edición próximamente disponible', 'warning')}
-                              className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--accent)]/10 hover:text-[var(--accent)]"
-                              aria-label={`Editar ${exercise.name}`}
-                            >
-                              <Edit2 size={14} />
-                            </button>
-                            <button
-                              onClick={() =>
-                                addToast('Eliminación próximamente disponible', 'warning')
-                              }
-                              className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
-                              aria-label={`Eliminar ${exercise.name}`}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
+                    {filteredExercises.map((exercise) => (
+                      <div
+                        key={exercise.id}
+                        className="group flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 transition-all hover:bg-[var(--surface-hover)]"
+                      >
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--surface)]">
+                          <Dumbbell
+                            size={18}
+                            className="text-[var(--accent)]"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-bold text-[var(--text-primary)]">
+                            {exercise.name}
+                          </p>
+                        </div>
+                        <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                          <button
+                            onClick={() => {
+                              setEditingExercise(exercise)
+                              setFormName(exercise.name)
+                              setIsCreating(true)
+                            }}
+                            className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--accent)]"
+                            aria-label={`Editar ${exercise.name}`}
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button
+                            onClick={() => setDeleteTarget(exercise)}
+                            className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] transition-all hover:bg-red-500/10 hover:text-red-400"
+                            aria-label={`Eliminar ${exercise.name}`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -433,7 +474,7 @@ export default function Exercises() {
                   onChange={(e) => setNewGroupForm({ ...newGroupForm, name: e.target.value })}
                   placeholder="Ej. Antebrazos"
                   autoFocus
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
               <FormField label="Descripción" htmlFor="group-desc">
@@ -445,7 +486,7 @@ export default function Exercises() {
                     setNewGroupForm({ ...newGroupForm, description: e.target.value })
                   }
                   placeholder="Ej. Ejercicios para fortalecer el agarre."
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
               <FormField label="URL de Imagen" htmlFor="group-img">
@@ -455,25 +496,35 @@ export default function Exercises() {
                   value={newGroupForm.imageUrl}
                   onChange={(e) => setNewGroupForm({ ...newGroupForm, imageUrl: e.target.value })}
                   placeholder="https://images.unsplash.com/..."
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
               <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
                 <button
                   onClick={() => setIsCreatingGroup(false)}
-                  className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] active:scale-[0.97]"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSaveNewGroup}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
                 >
                   Guardar
                 </button>
               </div>
             </div>
           </Modal>
+
+          {/* Delete Confirmation */}
+          <ConfirmDialog
+            isOpen={!!deleteTarget}
+            onClose={() => setDeleteTarget(null)}
+            onConfirm={handleDeleteExercise}
+            title="Eliminar ejercicio"
+            message={`¿Estás seguro de eliminar "${deleteTarget?.name}"? Esta acción no se puede deshacer.`}
+            confirmLabel="Eliminar"
+          />
         </>
       ) : (
         <RoutineLibrary />

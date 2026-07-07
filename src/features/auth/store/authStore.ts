@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { User, ResponseDTO, LoginResponse, UserDTO } from '@/types'
-import { fetchApi } from '@/lib/api'
+import { fetchApi, logout as apiLogout } from '@/lib/api'
 
 interface AuthStore {
   user: User | null
@@ -10,7 +10,7 @@ interface AuthStore {
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password: string, tenantId: string) => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
   register: (name: string, email: string, password: string) => Promise<boolean>
 }
 
@@ -62,13 +62,20 @@ export const useAuthStore = create<AuthStore>()(
           }
         } catch (error) {
           console.error('Login failed:', error)
+          set({ isLoading: false })
+          throw error
         }
 
         set({ isLoading: false })
         return false
       },
 
-      logout: () => {
+      logout: async () => {
+        try {
+          await apiLogout()
+        } catch {
+          // Ignore logout errors — still clear local state
+        }
         set({ user: null, token: null, tenantId: null, isAuthenticated: false })
       },
 

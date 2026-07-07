@@ -1,27 +1,28 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { fetchApi } from '@/lib/api'
 import {
   UserPlus,
-  Mail,
-  Phone,
-  ShieldCheck,
   Dumbbell,
   Trash2,
   MoreVertical,
   Edit2,
+  ShieldCheck,
+  ChevronRight,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/ui/Modal'
+import { Input } from '@/components/ui/Input'
 import { useToastStore } from '@/components/ui/Toast'
+import { DropdownMenu, DropdownItem, DropdownSeparator } from '@/components/ui/DropdownMenu'
 import type { ResponseDTO, UserDTO } from '@/types'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
-import { EmptyState } from '../components/EmptyState'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
+
+type RoleFilter = 'ALL' | 'ADMIN' | 'CLIENT'
 
 export default function UsersPage() {
   const navigate = useNavigate()
@@ -30,10 +31,10 @@ export default function UsersPage() {
   const [clients, setClients] = useState<UserDTO[]>([])
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search)
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL')
   const [showModal, setShowModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserDTO | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<UserDTO | null>(null)
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
@@ -52,9 +53,9 @@ export default function UsersPage() {
     try {
       setIsLoading(true)
       setError('')
-      const response = await fetchApi<ResponseDTO<UserDTO>>('/api/tenant/user/getAll')
-      if (response && response.lista) {
-        setClients(response.lista)
+      const response = await fetchApi<ResponseDTO<{ data: UserDTO[] }>>('/api/tenant/users')
+      if (response?.dto?.data) {
+        setClients(response.dto.data)
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al cargar usuarios')
@@ -67,21 +68,17 @@ export default function UsersPage() {
     loadUsers()
   }, [loadUsers])
 
-  useEffect(() => {
-    const handleClickOutside = () => setOpenMenuId(null)
-    if (openMenuId) {
-      document.addEventListener('click', handleClickOutside)
-      return () => document.removeEventListener('click', handleClickOutside)
-    }
-  }, [openMenuId])
-
   const filtered = useMemo(() => {
     const term = debouncedSearch.toLowerCase()
     return clients.filter((u) => {
       const name = u.memberDTO?.name || u.email
-      return name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)
+      const matchesSearch =
+        name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)
+      const matchesRole =
+        roleFilter === 'ALL' || u.role === roleFilter
+      return matchesSearch && matchesRole
     })
-  }, [clients, debouncedSearch])
+  }, [clients, debouncedSearch, roleFilter])
 
   const activeCount = useMemo(() => clients.filter((c) => c.isActive).length, [clients])
 
@@ -96,11 +93,10 @@ export default function UsersPage() {
 
   const handleSaveUser = async () => {
     if (!validateForm()) return
-
     setIsSaving(true)
     try {
       if (selectedUser) {
-        await fetchApi<UserDTO>(`/api/tenant/user/update/${selectedUser.id}`, {
+        await fetchApi(`/api/tenant/users/${selectedUser.id}`, {
           method: 'PUT',
           body: JSON.stringify({
             name: form.name,
@@ -113,7 +109,7 @@ export default function UsersPage() {
         })
         addToast('Usuario actualizado correctamente', 'success')
       } else {
-        await fetchApi<ResponseDTO<unknown>>('/api/tenant/user', {
+        await fetchApi(`/api/tenant/users`, {
           method: 'POST',
           body: JSON.stringify({
             name: form.name,
@@ -154,13 +150,11 @@ export default function UsersPage() {
     setFormErrors({})
     setSelectedUser(user)
     setShowModal(true)
-    setOpenMenuId(null)
   }
 
   const toggleStatus = async (user: UserDTO) => {
-    setOpenMenuId(null)
     try {
-      await fetchApi<UserDTO>(`/api/tenant/user/${user.id}/status`, { method: 'PATCH' })
+      await fetchApi(`/api/tenant/users/${user.id}/status`, { method: 'PATCH' })
       setClients(clients.map((c) => (c.id === user.id ? { ...c, isActive: !c.isActive } : c)))
       addToast(
         `${user.memberDTO?.name || user.email} ${user.isActive ? 'desactivado' : 'activado'}`,
@@ -174,7 +168,7 @@ export default function UsersPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return
     try {
-      await fetchApi(`/api/tenant/user/delete/${deleteTarget.id}`, { method: 'DELETE' })
+      await fetchApi(`/api/tenant/users/${deleteTarget.id}`, { method: 'DELETE' })
       setClients(clients.filter((c) => c.id !== deleteTarget.id))
       addToast(`${deleteTarget.memberDTO?.name || deleteTarget.email} eliminado`, 'success')
     } catch (err: unknown) {
@@ -186,34 +180,63 @@ export default function UsersPage() {
 
   const getName = (user: UserDTO) => user.memberDTO?.name || user.email.split('@')[0]
 
+  const getInitials = (user: UserDTO) => {
+    const name = getName(user)
+    return name
+      .split(' ')
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase()
+  }
+
+  const roleFilters: { key: RoleFilter; label: string }[] = [
+    { key: 'ALL', label: 'Todos' },
+    { key: 'ADMIN', label: 'Admin' },
+    { key: 'CLIENT', label: 'Cliente' },
+  ]
+
   return (
-    <div className="space-y-6">
-      <AdminHeader
-        title="Clientes"
-        subtitle={`${clients.length} usuarios registrados — ${activeCount} activos`}
-        icon={ShieldCheck}
-        action={
-          <button
-            onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+    <div style={{ fontFamily: 'var(--font-body)' }} className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1
+            style={{ fontFamily: 'var(--font-heading)' }}
+            className="text-2xl font-black"
           >
-            <UserPlus size={16} /> Nuevo Usuario
-          </button>
-        }
-      />
+            Clientes
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            {clients.length} usuarios registrados — {activeCount} activos
+          </p>
+        </div>
+        <button
+          onClick={openCreate}
+          className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+          style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+        >
+          <UserPlus size={16} /> Nuevo Cliente
+        </button>
+      </div>
 
       {error && (
-        <div className="flex items-center gap-3 rounded-xl border border-[var(--error)]/20 bg-[var(--error)]/10 px-4 py-3">
-          <p className="flex-1 text-sm text-[var(--error)]">{error}</p>
+        <div
+          className="flex items-center gap-3 rounded-xl px-4 py-3"
+          style={{ border: '1px solid #fecaca', backgroundColor: '#fef2f2' }}
+        >
+          <p className="flex-1 text-sm" style={{ color: '#b91c1c' }}>{error}</p>
           <button
             onClick={loadUsers}
-            className="text-sm font-semibold text-[var(--error)] hover:underline"
+            className="text-sm font-semibold hover:underline"
+            style={{ color: '#b91c1c' }}
           >
             Reintentar
           </button>
         </div>
       )}
 
+      {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <SearchBar
           value={search}
@@ -221,149 +244,199 @@ export default function UsersPage() {
           placeholder="Buscar por nombre o email..."
           className="flex-1"
         />
-        <div className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5">
-          <ShieldCheck size={16} className="text-[var(--success)]" aria-hidden="true" />
-          <span className="text-sm font-semibold text-[var(--text-primary)]">
-            Activos: {activeCount}
+        <div className="flex items-center gap-2">
+          {roleFilters.map((rf) => (
+            <button
+              key={rf.key}
+              onClick={() => setRoleFilter(rf.key)}
+              className="rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200"
+              style={{
+                backgroundColor:
+                  roleFilter === rf.key ? 'var(--accent)' : 'var(--card)',
+                color:
+                  roleFilter === rf.key ? 'var(--accent-text)' : 'var(--text-secondary)',
+                border:
+                  roleFilter === rf.key
+                    ? '1px solid var(--accent)'
+                    : '1px solid var(--border)',
+              }}
+            >
+              {rf.label}
+            </button>
+          ))}
+          <span
+            className="ml-2 inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-bold"
+            style={{
+              backgroundColor: 'var(--accent)',
+              color: 'var(--accent-text)',
+            }}
+          >
+            {filtered.length}
           </span>
         </div>
       </div>
 
+      {/* User Cards Grid */}
       {isLoading ? (
         <LoadingState text="Cargando usuarios..." />
       ) : filtered.length === 0 ? (
-        <EmptyState
-          icon={UserPlus}
-          title="No hay usuarios"
-          description="Comienza agregando tu primer cliente al gimnasio."
-          action={
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)]"
-            >
-              <UserPlus size={16} /> Agregar Usuario
-            </button>
-          }
-        />
+        <div
+          className="flex flex-col items-center justify-center rounded-2xl py-16"
+          style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+        >
+          <UserPlus size={48} style={{ color: 'var(--text-muted)' }} className="mb-4" />
+          <p
+            className="text-lg font-bold mb-1"
+            style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
+          >
+            No hay usuarios
+          </p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Comienza agregando tu primer cliente al gimnasio.
+          </p>
+        </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((user, i) => (
-            <motion.div
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filtered.map((user) => (
+            <div
               key={user.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
-              className="group rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 transition-all hover:border-[var(--accent)]/30 hover:shadow-lg"
+              onClick={() => openEdit(user)}
+              className="group bg-[var(--card)] rounded-2xl p-5 transition-all duration-200 cursor-pointer"
+              style={{
+                border: '1px solid var(--border)',
+                borderLeftWidth: 3,
+                borderLeftColor:
+                  user.role === 'ADMIN' ? 'var(--accent)' : 'var(--border)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06)'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = 'none'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
             >
-              <div className="mb-4 flex items-start justify-between">
+              <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
+                  {/* Avatar */}
                   <div
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold"
+                    className="flex items-center justify-center rounded-full flex-shrink-0"
                     style={{
-                      background: user.isActive ? 'var(--accent-muted)' : 'var(--error-muted)',
-                      color: user.isActive ? 'var(--success)' : 'var(--error)',
+                      width: 56,
+                      height: 56,
+                      backgroundColor: 'var(--accent)',
+                      color: 'var(--accent-text)',
+                      fontFamily: 'var(--font-heading)',
                     }}
                   >
-                    {getName(user).slice(0, 2).toUpperCase()}
+                    <span className="text-lg font-black">{getInitials(user)}</span>
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-[var(--text-primary)]">
+                    <p
+                      className="text-sm font-bold truncate"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
                       {getName(user)}
                     </p>
-                    <p className="truncate text-xs text-[var(--text-muted)]">{user.email}</p>
+                    <p
+                      className="text-xs truncate"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {user.email}
+                    </p>
                   </div>
                 </div>
-                <div className="relative">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setOpenMenuId(openMenuId === user.id ? null : user.id)
-                    }}
-                    className="rounded-lg p-1.5 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                    aria-label="Más opciones"
-                    aria-expanded={openMenuId === user.id}
-                  >
-                    <MoreVertical size={16} />
-                  </button>
-                  <AnimatePresence>
-                    {openMenuId === user.id && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="absolute right-0 z-50 mt-1 w-48 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] py-1 shadow-xl"
+
+                {/* Dropdown */}
+                <div onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu
+                    trigger={
+                      <button
+                        className="rounded-lg p-1.5 transition-all duration-200"
+                        style={{
+                          border: '1px solid transparent',
+                          color: 'var(--text-muted)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = 'var(--border)'
+                          e.currentTarget.style.color = 'var(--text-primary)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = 'transparent'
+                          e.currentTarget.style.color = 'var(--text-muted)'
+                        }}
+                        aria-label="Más opciones"
                       >
-                        <button
-                          onClick={() => openEdit(user)}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
-                        >
-                          <Edit2 size={14} /> Editar
-                        </button>
-                        <button
-                          onClick={() =>
-                            navigate(`/admin/ejercicios?tab=routines&userId=${user.id}`)
-                          }
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--accent)] hover:bg-[var(--surface-hover)]"
-                        >
-                          <Dumbbell size={14} /> Crear Rutina
-                        </button>
-                        <button
-                          onClick={() => toggleStatus(user)}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
-                        >
-                          {user.isActive ? '⏸ Desactivar' : '▶ Activar'}
-                        </button>
-                        <div className="my-1 h-px bg-[var(--border)]" />
-                        <button
-                          onClick={() => {
-                            setOpenMenuId(null)
-                            setDeleteTarget(user)
-                          }}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--error)] hover:bg-[var(--error)]/10"
-                        >
-                          <Trash2 size={14} /> Eliminar
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                        <MoreVertical size={16} />
+                      </button>
+                    }
+                  >
+                    <DropdownItem onClick={() => openEdit(user)}>
+                      <Edit2 size={14} /> Editar
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() =>
+                        navigate(`/admin/ejercicios?tab=routines&userId=${user.id}`)
+                      }
+                      className="text-[var(--accent-text)]"
+                    >
+                      <Dumbbell size={14} /> Crear Rutina
+                    </DropdownItem>
+                    <DropdownItem onClick={() => toggleStatus(user)}>
+                      {user.isActive ? '⏸ Desactivar' : '▶ Activar'}
+                    </DropdownItem>
+                    <DropdownSeparator />
+                    <DropdownItem danger onClick={() => setDeleteTarget(user)}>
+                      <Trash2 size={14} /> Eliminar
+                    </DropdownItem>
+                  </DropdownMenu>
                 </div>
               </div>
 
-              <div className="mb-3 flex items-center gap-2">
+              {/* Badges */}
+              <div className="flex items-center gap-2 mt-3">
                 <span
-                  className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                  className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
                   style={{
-                    background: user.isActive ? 'var(--accent-muted)' : 'var(--error-muted)',
-                    color: user.isActive ? 'var(--success)' : 'var(--error)',
+                    backgroundColor:
+                      user.role === 'ADMIN' ? 'rgba(170,255,0,0.15)' : '#f1f5f9',
+                    color:
+                      user.role === 'ADMIN' ? 'var(--accent-text)' : 'var(--text-secondary)',
+                  }}
+                >
+                  {user.role === 'ADMIN' ? 'Admin' : 'Cliente'}
+                </span>
+                <span
+                  className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                  style={{
+                    backgroundColor: user.isActive ? '#f0fdf4' : '#fef2f2',
+                    color: user.isActive ? '#16a34a' : '#dc2626',
                   }}
                 >
                   {user.isActive ? 'Activo' : 'Inactivo'}
                 </span>
-                <span className="rounded-full bg-[var(--surface-hover)] px-2.5 py-0.5 text-xs font-semibold text-[var(--text-secondary)]">
-                  {user.role}
+              </div>
+
+              {/* Bottom row */}
+              <div
+                className="flex items-center justify-between mt-3 pt-3"
+                style={{ borderTop: '1px solid #f1f5f9' }}
+              >
+                <span
+                  className="text-xs font-medium"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  {user.memberDTO?.phone || 'Sin teléfono'}
+                </span>
+                <span
+                  className="text-xs font-semibold flex items-center gap-1 transition-opacity duration-200 opacity-0 group-hover:opacity-100"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  Ver detalles <ChevronRight size={12} />
                 </span>
               </div>
-
-              <div className="mb-4 space-y-1.5">
-                <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                  <Mail size={12} className="flex-shrink-0" aria-hidden="true" />
-                  <span className="truncate">{user.email}</span>
-                </div>
-                {user.memberDTO?.phone && (
-                  <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-                    <Phone size={12} className="flex-shrink-0" aria-hidden="true" />
-                    <span>{user.memberDTO.phone}</span>
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={() => navigate(`/admin/ejercicios?tab=routines&userId=${user.id}`)}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-transparent py-2 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
-              >
-                <Dumbbell size={14} /> Crear Rutina
-              </button>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}
@@ -377,24 +450,22 @@ export default function UsersPage() {
       >
         <div className="space-y-4">
           <FormField label="Nombre Completo" htmlFor="user-name">
-            <input
+            <Input
               id="user-name"
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="Ej: Juan Pérez"
-              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
             />
           </FormField>
 
           <FormField label="Teléfono" htmlFor="user-phone">
-            <input
+            <Input
               id="user-phone"
               type="text"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="Ej: 555-1234"
-              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
             />
           </FormField>
 
@@ -404,39 +475,49 @@ export default function UsersPage() {
             htmlFor="user-email"
             error={formErrors.email}
           >
-            <input
+            <Input
               id="user-email"
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               placeholder="usuario@ejemplo.com"
-              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+              error={!!formErrors.email}
             />
           </FormField>
 
           <FormField
-            label={selectedUser ? 'Contraseña (dejar vacío para no cambiar)' : 'Contraseña'}
+            label={
+              selectedUser
+                ? 'Contraseña (dejar vacío para no cambiar)'
+                : 'Contraseña'
+            }
             required={!selectedUser}
             htmlFor="user-password"
             error={formErrors.password}
           >
-            <input
+            <Input
               id="user-password"
               type="password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               placeholder="••••••••"
-              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+              error={!!formErrors.password}
             />
           </FormField>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField label="Rol" htmlFor="user-role">
               <select
                 id="user-role"
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="flex h-11 w-full appearance-none rounded-xl px-4 py-2 text-sm transition-all duration-200 hover:border-[var(--border)] focus:ring-2 focus:outline-none"
+                style={{
+                  border: '1px solid var(--border)',
+                  backgroundColor: 'var(--card)',
+                  color: 'var(--text-primary)',
+                  '--tw-ring-color': 'var(--accent)',
+                } as React.CSSProperties}
               >
                 <option value="CLIENT">Cliente</option>
                 <option value="ADMIN">Administrador</option>
@@ -449,29 +530,47 @@ export default function UsersPage() {
                   type="checkbox"
                   checked={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.checked })}
-                  className="h-4 w-4 rounded border-[var(--border)] accent-[var(--accent)]"
+                  className="h-4 w-4 rounded"
+                  style={{ accentColor: 'var(--accent)' }}
                 />
-                <span className="text-sm font-semibold text-[var(--text-primary)]">Activo</span>
+                <span
+                  className="text-sm font-semibold"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  Activo
+                </span>
               </label>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+        <div
+          className="mt-6 flex justify-end gap-3 pt-4"
+          style={{ borderTop: '1px solid var(--border)' }}
+        >
           <button
             onClick={() => setShowModal(false)}
             disabled={isSaving}
-            className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:opacity-50"
-          >
-            Cancelar
+            className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
+            style={{
+              border: '1px solid var(--border)',
+backgroundColor: 'var(--card)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                Cancelar
           </button>
           <button
             onClick={handleSaveUser}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+            style={{
+              backgroundColor: 'var(--accent)',
+              color: 'var(--accent-text)',
+            }}
           >
             {isSaving && (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }} />
             )}
             Guardar
           </button>

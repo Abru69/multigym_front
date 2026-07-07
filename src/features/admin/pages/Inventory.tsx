@@ -1,17 +1,25 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { productCategories } from '@/data/products'
-import { getProducts, createProduct } from '@/lib/api'
+import { getProducts, createProduct, fetchApi } from '@/lib/api'
+import type { ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
-import { Plus, Edit2, Trash2, Package, AlertCircle, Image as ImageIcon } from 'lucide-react'
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Package,
+  AlertCircle,
+  Image as ImageIcon,
+  LayoutGrid,
+  List,
+} from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { useToastStore } from '@/components/ui/Toast'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
-import { EmptyState } from '../components/EmptyState'
-import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { useDebounce } from '@/hooks/useDebounce'
 
 interface ProductItem {
@@ -26,11 +34,37 @@ interface ProductItem {
   image: string
 }
 
+const categoryBadgeClass: Record<string, string> = {
+  proteinas: 'bg-blue-500/10 text-blue-400',
+  creatinas: 'bg-purple-500/10 text-purple-400',
+  preworkout: 'bg-orange-500/10 text-orange-400',
+  vitaminas: 'bg-green-500/10 text-green-400',
+  accesorios: 'bg-cyan-500/10 text-cyan-400',
+}
+
+const categoryLabel: Record<string, string> = {
+  proteinas: 'Proteínas',
+  creatinas: 'Creatinas',
+  preworkout: 'Pre-Workout',
+  vitaminas: 'Vitaminas',
+  accesorios: 'Accesorios',
+}
+
+const filterPills = [
+  { value: 'all', label: 'Todos' },
+  { value: 'proteinas', label: 'Proteínas' },
+  { value: 'creatina', label: 'Creatinas' },
+  { value: 'pre-entrenos', label: 'Pre-Workout' },
+  { value: 'vitaminas', label: 'Vitaminas' },
+  { value: 'accesorios', label: 'Accesorios' },
+]
+
 export default function Inventory() {
   const addToast = useToastStore((s) => s.addToast)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search)
   const [category, setCategory] = useState('all')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showModal, setShowModal] = useState(false)
   const [productsList, setProductsList] = useState<ProductItem[]>([])
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null)
@@ -55,7 +89,7 @@ export default function Inventory() {
     try {
       setIsLoading(true)
       const response = await getProducts()
-      const apiProducts = response.lista || []
+      const apiProducts = response.dto?.data || []
       setProductsList(
         apiProducts.map((p) => ({
           id: p.id,
@@ -129,7 +163,15 @@ export default function Inventory() {
     setIsSaving(true)
     try {
       if (editingProduct) {
-        addToast('Edición de productos próximamente disponible', 'warning')
+        await fetchApi<ResponseDTO<unknown>>(`/api/products/${editingProduct.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            name: form.name,
+            price: parseFloat(form.price) || 0,
+            stock: parseInt(form.stock) || 0,
+          }),
+        })
+        addToast('Producto actualizado correctamente', 'success')
       } else {
         await createProduct({
           name: form.name,
@@ -137,8 +179,8 @@ export default function Inventory() {
           stock: parseInt(form.stock) || 0,
         })
         addToast('Producto creado correctamente', 'success')
-        loadProducts()
       }
+      loadProducts()
       setShowModal(false)
     } catch (err: unknown) {
       addToast(err instanceof Error ? err.message : 'Error al guardar', 'error')
@@ -155,6 +197,17 @@ export default function Inventory() {
     }
   }
 
+  const getStockColor = (stock: number) => {
+    if (stock === 0) return 'bg-red-500'
+    if (stock < 10) return 'bg-amber-500'
+    return 'bg-emerald-500'
+  }
+
+  const getStockText = (stock: number) => {
+    if (stock === 0) return 'Sin stock'
+    return `${stock} unidades`
+  }
+
   return (
     <div className="space-y-6">
       <AdminHeader
@@ -164,7 +217,7 @@ export default function Inventory() {
         action={
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
           >
             <Plus size={16} /> Nuevo Producto
           </button>
@@ -178,163 +231,193 @@ export default function Inventory() {
           placeholder="Buscar por nombre o marca..."
           className="flex-1"
         />
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          aria-label="Filtrar por categoría"
-          className="h-10 appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 pr-10 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-            backgroundPosition: 'right 0.5rem center',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: '1.5em 1.5em',
-          }}
-        >
-          {productCategories.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
-            </option>
+
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {filterPills.map((pill) => (
+            <button
+              key={pill.value}
+              onClick={() => setCategory(pill.value)}
+              className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                category === pill.value
+                  ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-sm'
+                  : 'bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              {pill.label}
+            </button>
           ))}
-        </select>
+        </div>
+
+        <div className="hidden items-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--card)] p-1 sm:flex">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`rounded-lg p-2 transition-all ${
+              viewMode === 'grid'
+                ? 'bg-[var(--accent)]/10 text-[var(--accent-text)]'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+            }`}
+            aria-label="Vista cuadrícula"
+          >
+            <LayoutGrid size={16} />
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`rounded-lg p-2 transition-all ${
+              viewMode === 'list'
+                ? 'bg-[var(--accent)]/10 text-[var(--accent-text)]'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+            }`}
+            aria-label="Vista lista"
+          >
+            <List size={16} />
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
         <LoadingState text="Cargando inventario..." />
       ) : filtered.length === 0 ? (
-        <EmptyState
-          icon={Package}
-          title="Inventario vacío"
-          description="No se encontraron productos con esos filtros."
-          action={
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)]"
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)]/50 py-20">
+          <Package size={48} className="mb-4 text-[var(--text-muted)]" />
+          <h3 className="text-lg font-bold text-[var(--text-primary)]">Inventario vacío</h3>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
+            No se encontraron productos con esos filtros.
+          </p>
+          <button
+            onClick={openCreate}
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
+          >
+            <Plus size={16} /> Agregar primer producto
+          </button>
+        </div>
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filtered.map((product) => (
+            <div
+              key={product.id}
+              className="group overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] transition-all hover:shadow-lg"
             >
-              <Plus size={16} /> Agregar Producto
-            </button>
-          }
-        />
+              <div className="relative aspect-square overflow-hidden bg-[var(--surface)]">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/30 group-hover:opacity-100">
+                  <button
+                    onClick={() => openEdit(product)}
+                    className="rounded-xl bg-[var(--card)] p-2.5 text-[var(--text-primary)] shadow-lg transition-all hover:bg-[var(--accent)] hover:text-[var(--accent-text)]"
+                    aria-label={`Editar ${product.name}`}
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    onClick={() => setDeleteTarget(product)}
+                    className="rounded-xl bg-[var(--card)] p-2.5 text-[var(--text-primary)] shadow-lg transition-all hover:bg-red-500/10 hover:text-red-400"
+                    aria-label={`Eliminar ${product.name}`}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-5">
+                <div className="mb-2">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      categoryBadgeClass[product.category] ?? 'bg-[var(--surface)] text-[var(--text-secondary)]'
+                    }`}
+                  >
+                    {categoryLabel[product.category] ?? product.category}
+                  </span>
+                </div>
+
+                <h3 className="truncate font-semibold text-[var(--text-primary)]">{product.name}</h3>
+                <p className="mt-0.5 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  {product.brand}
+                </p>
+
+                <p className="mt-3 font-heading text-2xl font-black text-[var(--text-primary)]">
+                  {formatCurrency(product.price)}
+                </p>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${getStockColor(product.stock)}`} />
+                  <span className="text-xs font-semibold text-[var(--text-secondary)]">
+                    {getStockText(product.stock)}
+                  </span>
+                  {product.stock < 10 && product.stock > 0 && (
+                    <AlertCircle size={12} className="text-amber-500" />
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
-          <div className="overflow-x-auto">
-            <table className="w-full" aria-label="Inventario de productos">
-              <thead>
-                <tr className="border-b border-[var(--border)] bg-[var(--bg-secondary)]">
-                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Producto
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Categoría
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Precio
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Stock
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Estado
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold tracking-wider text-[var(--text-secondary)] uppercase">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border)]">
-                <AnimatePresence>
-                  {filtered.map((product) => (
-                    <motion.tr
-                      key={product.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="group transition-colors hover:bg-[var(--surface-hover)]"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-[var(--surface-hover)]">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="h-full w-full object-cover"
-                              loading="lazy"
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-[var(--text-primary)]">
-                              {product.name}
-                            </p>
-                            <p className="text-[10px] font-semibold tracking-wider text-[var(--text-muted)] uppercase">
-                              {product.brand}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="rounded-lg bg-[var(--surface-hover)] px-2.5 py-1 text-[10px] font-bold tracking-wider text-[var(--text-secondary)] uppercase">
-                          {product.category}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold text-[var(--text-primary)]">
-                        {formatCurrency(product.price)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="text-sm font-bold"
-                            style={{
-                              color:
-                                product.stock < 10 ? 'var(--warning)' : 'var(--text-secondary)',
-                            }}
-                          >
-                            {product.stock} uds
-                          </span>
-                          {product.stock < 10 && (
-                            <AlertCircle
-                              size={14}
-                              className="text-[var(--warning)]"
-                              aria-hidden="true"
-                            />
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className="rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase"
-                          style={{
-                            background: product.isAvailable
-                              ? 'var(--accent-muted)'
-                              : 'var(--error-muted)',
-                            color: product.isAvailable ? 'var(--success)' : 'var(--error)',
-                          }}
-                        >
-                          {product.isAvailable ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                          <button
-                            onClick={() => openEdit(product)}
-                            className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                            aria-label={`Editar ${product.name}`}
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => setDeleteTarget(product)}
-                            className="rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
-                            aria-label={`Eliminar ${product.name}`}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              </tbody>
-            </table>
-          </div>
+        <div className="space-y-2">
+          {filtered.map((product) => (
+            <div
+              key={product.id}
+              className="group flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition-all hover:shadow-md"
+            >
+              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-[var(--surface)]">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="truncate font-semibold text-[var(--text-primary)]">{product.name}</h3>
+                  <span
+                    className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      categoryBadgeClass[product.category] ?? 'bg-[var(--surface)] text-[var(--text-secondary)]'
+                    }`}
+                  >
+                    {categoryLabel[product.category] ?? product.category}
+                  </span>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  {product.brand}
+                </p>
+              </div>
+
+              <div className="hidden text-right sm:block">
+                <p className="font-heading text-lg font-black text-[var(--text-primary)]">
+                  {formatCurrency(product.price)}
+                </p>
+              </div>
+
+              <div className="hidden items-center gap-2 sm:flex">
+                <span className={`h-2 w-2 rounded-full ${getStockColor(product.stock)}`} />
+                <span className="text-xs font-semibold text-[var(--text-secondary)]">
+                  {getStockText(product.stock)}
+                </span>
+              </div>
+
+              <div className="flex shrink-0 gap-1">
+                <button
+                  onClick={() => openEdit(product)}
+                  className="rounded-lg border border-[var(--border)] p-2 text-[var(--text-muted)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                  aria-label={`Editar ${product.name}`}
+                >
+                  <Edit2 size={16} />
+                </button>
+                <button
+                  onClick={() => setDeleteTarget(product)}
+                  className="rounded-lg border border-[var(--border)] p-2 text-[var(--text-muted)] transition-all hover:bg-red-500/10 hover:text-red-400"
+                  aria-label={`Eliminar ${product.name}`}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -346,14 +429,13 @@ export default function Inventory() {
         size="lg"
       >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
-          {/* Image Upload */}
           <div className="md:col-span-2">
             <FormField label="Imagen del Producto">
               <div
-                className={`relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors ${
+                className={`group relative flex h-64 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed transition-all ${
                   dragActive
                     ? 'border-[var(--accent)] bg-[var(--accent)]/5'
-                    : 'border-[var(--border)] bg-[var(--bg-secondary)]'
+                    : 'border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/5'
                 }`}
                 onDragOver={(e) => {
                   e.preventDefault()
@@ -384,25 +466,23 @@ export default function Inventory() {
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="h-full w-full rounded-xl object-cover"
+                      className="h-full w-full object-cover"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 opacity-0 transition-opacity hover:opacity-100">
-                      <span className="rounded-full bg-black/50 px-3 py-1.5 text-xs font-bold text-white">
-                        Cambiar
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                      <span className="rounded-full bg-black/50 px-4 py-2 text-xs font-bold text-white">
+                        Cambiar imagen
                       </span>
                     </div>
                   </>
                 ) : (
                   <div className="text-center">
-                    <ImageIcon
-                      size={32}
-                      className="mx-auto mb-2 text-[var(--text-muted)] opacity-50"
-                      aria-hidden="true"
-                    />
-                    <p className="text-xs font-bold text-[var(--text-primary)]">
+                    <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--surface)]">
+                      <ImageIcon size={28} className="text-[var(--text-muted)]" />
+                    </div>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">
                       Arrastra o haz clic
                     </p>
-                    <p className="mt-1 text-[10px] text-[var(--text-muted)]">PNG, JPG hasta 5MB</p>
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">PNG, JPG hasta 5MB</p>
                   </div>
                 )}
                 <input
@@ -416,7 +496,6 @@ export default function Inventory() {
             </FormField>
           </div>
 
-          {/* Fields */}
           <div className="space-y-4 md:col-span-3">
             <FormField
               label="Nombre del Producto"
@@ -430,7 +509,7 @@ export default function Inventory() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Ej: Gold Standard Whey 5lbs"
-                className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
 
@@ -447,7 +526,7 @@ export default function Inventory() {
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
                   placeholder="0.00"
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
               <FormField label="Stock" required error={formErrors.stock} htmlFor="prod-stock">
@@ -457,7 +536,7 @@ export default function Inventory() {
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}
                   placeholder="0"
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
             </div>
@@ -468,7 +547,7 @@ export default function Inventory() {
                   id="prod-category"
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 >
                   {productCategories
                     .filter((c) => c.value !== 'all')
@@ -486,7 +565,7 @@ export default function Inventory() {
                   value={form.brand}
                   onChange={(e) => setForm({ ...form, brand: e.target.value })}
                   placeholder="Ej: Optimum Nutrition"
-                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
             </div>
@@ -498,7 +577,7 @@ export default function Inventory() {
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={3}
                 placeholder="Características principales..."
-                className="min-h-[80px] w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="min-h-[80px] w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
           </div>
@@ -508,17 +587,17 @@ export default function Inventory() {
           <button
             onClick={() => setShowModal(false)}
             disabled={isSaving}
-            className="rounded-xl border border-[var(--border)] bg-transparent px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] disabled:opacity-50"
+            className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] active:scale-[0.97] disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
           >
             {isSaving && (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--accent-text)]/30 border-t-[var(--accent-text)]" />
             )}
             {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
           </button>
@@ -529,9 +608,17 @@ export default function Inventory() {
       <ConfirmDialog
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        onConfirm={() => {
-          addToast('Eliminación de productos próximamente disponible', 'warning')
-          setDeleteTarget(null)
+        onConfirm={async () => {
+          if (!deleteTarget) return
+          try {
+            await fetchApi(`/api/products/${deleteTarget.id}`, { method: 'DELETE' })
+            setProductsList(productsList.filter((p) => p.id !== deleteTarget.id))
+            addToast(`${deleteTarget.name} eliminado`, 'success')
+          } catch (err: unknown) {
+            addToast(err instanceof Error ? err.message : 'Error al eliminar', 'error')
+          } finally {
+            setDeleteTarget(null)
+          }
         }}
         title="Eliminar producto"
         message={`¿Estás seguro de eliminar "${deleteTarget?.name}"? Esta acción no se puede deshacer.`}

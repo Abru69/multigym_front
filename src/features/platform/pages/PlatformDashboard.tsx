@@ -79,15 +79,8 @@ interface Activity {
 }
 
 export default function PlatformDashboard() {
-  const {
-    metrics,
-    recentTenants,
-    growthData,
-    planDistribution,
-    isLoading,
-    error,
-    loadDashboard,
-  } = usePlatformDashboardStore()
+  const { metrics, recentTenants, growthData, planDistribution, isLoading, error, loadDashboard } =
+    usePlatformDashboardStore()
 
   const [activity, setActivity] = useState<Activity[]>([])
 

@@ -150,6 +150,15 @@ export interface WorkoutDTO {
   }>
 }
 
+export interface OrderDTO {
+  id: string
+  user?: UserDTO
+  total: number | string
+  status: string
+  createdAt?: string
+  paymentDate?: string
+}
+
 export interface AuditLogDTO {
   id: string
   tenantId: string | null
