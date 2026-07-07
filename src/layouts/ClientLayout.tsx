@@ -105,14 +105,14 @@ export function ClientLayout() {
                       <img
                         src={user.avatar}
                         className="h-full w-full object-cover"
-                        alt={user.name}
+                        alt={user.name ?? ''}
                       />
                     ) : (
                       <User size={12} />
                     )}
                   </div>
                   <span className="hidden truncate sm:block">
-                    {user?.name.split(' ')[0]}
+                    {user?.name?.split(' ')[0] ?? 'User'}
                   </span>
                 </button>
 
@@ -126,7 +126,7 @@ export function ClientLayout() {
                     >
                       <div className="border-b border-[var(--border)] px-4 py-3">
                         <p className="text-sm font-bold text-[var(--text-primary)]">
-                          {user?.name}
+                          {user?.name ?? ''}
                         </p>
                         <p className="text-xs text-[var(--text-secondary)]">{user?.email}</p>
                       </div>

@@ -43,12 +43,15 @@ export function DashboardLayout({
       <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-64 lg:flex-col bg-[var(--card)] border-r border-[var(--border)]">
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 py-6">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)] text-sm font-black text-[var(--accent-text)]">
-            MG
+          {logo}
+          <div>
+            <span className="text-sm font-bold tracking-tight text-[var(--text-primary)]">
+              {title}
+            </span>
+            <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--accent)] uppercase">
+              {subtitle}
+            </p>
           </div>
-          <span className="text-base font-bold tracking-tight text-[var(--text-primary)]">
-            MULTIGYM
-          </span>
         </div>
 
         {/* Nav */}
@@ -118,12 +121,15 @@ export function DashboardLayout({
             >
               <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-5">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)] text-sm font-black text-[var(--accent-text)]">
-                    MG
+                  {logo}
+                  <div>
+                    <span className="text-sm font-bold tracking-tight text-[var(--text-primary)]">
+                      {title}
+                    </span>
+                    <p className="text-[10px] font-bold tracking-[0.2em] text-[var(--accent)] uppercase">
+                      {subtitle}
+                    </p>
                   </div>
-                  <span className="text-base font-bold tracking-tight text-[var(--text-primary)]">
-                    MULTIGYM
-                  </span>
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}

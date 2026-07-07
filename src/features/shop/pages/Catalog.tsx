@@ -19,15 +19,17 @@ export default function Catalog() {
           name: p.name,
           price: p.price,
           stock: p.stock,
-          isAvailable: p.stock > 0,
           slug: p.name.toLowerCase().replace(/ /g, '-'),
-          brand: 'MultiGym',
-          rating: 5.0,
-          reviewCount: 0,
-          image:
-            'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&q=80&w=800',
-          category: 'proteinas',
-          description: 'Producto premium cargado desde backend.',
+          brand: p.brand || 'MultiGym',
+          category: p.category || 'proteinas',
+          image: p.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=400&h=400&fit=crop',
+          rating: p.rating || 5.0,
+          reviewCount: p.reviewCount || 0,
+          isAvailable: p.stock > 0,
+          description: p.description || 'Producto premium de alta calidad.',
+          flavor: p.flavor || '',
+          weight: p.weight || '',
+          tags: p.tags || [],
         }))
         setProducts(mapped)
       })

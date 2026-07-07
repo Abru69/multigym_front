@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { mockProducts } from '@/data/products'
+import { fetchApi } from '@/lib/api'
+import type { ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import { useCartStore } from '@/features/shop/store/cartStore'
 import {
@@ -23,7 +24,8 @@ export default function ProductDetail() {
   const cartItems = useCartStore((s) => s.items)
   const updateQuantity = useCartStore((s) => s.updateQuantity)
 
-  const product = mockProducts.find((p) => p.slug === slug)
+  const [product, setProduct] = useState<any>(null)
+  const [productLoading, setProductLoading] = useState(true)
   const cartItem = cartItems.find((i) => i.product.id === product?.id)
   const initialQuantity = cartItem ? cartItem.quantity : 1
   const [quantity, setQuantity] = useState(initialQuantity)
@@ -31,6 +33,55 @@ export default function ProductDetail() {
   useEffect(() => {
     if (cartItem) setQuantity(cartItem.quantity)
   }, [cartItem])
+
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!slug) return
+      try {
+        setProductLoading(true)
+        const response = await fetchApi<ResponseDTO<any>>(`/api/products?search=${slug}`)
+        const products = response.dto?.data || []
+        const found = products.find((p: any) =>
+          p.name.toLowerCase().replace(/ /g, '-') === slug
+        )
+        if (found) {
+          setProduct({
+            ...found,
+            slug: found.name.toLowerCase().replace(/ /g, '-'),
+            brand: found.brand || 'MultiGym',
+            image: found.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=600&h=600&fit=crop',
+            category: found.category || 'proteinas',
+            rating: found.rating || 5.0,
+            reviewCount: found.reviewCount || 0,
+            isAvailable: found.stock > 0,
+            description: found.description || 'Producto premium de alta calidad.',
+            nutritionFacts: found.nutritionFacts || [],
+          })
+        } else {
+          const { mockProducts } = await import('@/data/products')
+          setProduct(mockProducts.find((p: any) => p.slug === slug) || null)
+        }
+      } catch {
+        try {
+          const { mockProducts } = await import('@/data/products')
+          setProduct(mockProducts.find((p: any) => p.slug === slug) || null)
+        } catch {
+          setProduct(null)
+        }
+      } finally {
+        setProductLoading(false)
+      }
+    }
+    loadProduct()
+  }, [slug])
+
+  if (productLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+      </div>
+    )
+  }
 
   if (!product) {
     return (
@@ -52,8 +103,9 @@ export default function ProductDetail() {
     if (cartItem) {
       updateQuantity(product.id, quantity)
     } else {
-      for (let i = 0; i < quantity; i++) {
-        addItem(product)
+      addItem(product)
+      if (quantity > 1) {
+        updateQuantity(product.id, quantity)
       }
     }
   }
@@ -105,7 +157,7 @@ export default function ProductDetail() {
                   className={
                     i < Math.floor(product.rating)
                       ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-200'
+                      : 'text-[var(--border)]'
                   }
                 />
               ))}

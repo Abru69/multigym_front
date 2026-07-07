@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCartStore } from '@/features/shop/store/cartStore'
@@ -72,15 +72,19 @@ export default function Checkout() {
   const navigate = useNavigate()
   const [step, setStep] = useState<'shipping' | 'payment' | 'success'>('shipping')
   const [loading, setLoading] = useState(false)
+  const [orderNumber] = useState(() =>
+    Math.random().toString(36).substr(2, 9).toUpperCase()
+  )
 
   const subtotal = total()
   const shipping = subtotal > 1500 ? 0 : 150
   const finalTotal = subtotal + shipping
 
-  if (items.length === 0 && step !== 'success') {
-    navigate('/tienda/carrito')
-    return null
-  }
+  useEffect(() => {
+    if (items.length === 0 && step !== 'success') {
+      navigate('/tienda/carrito')
+    }
+  }, [items.length, step, navigate])
 
   const handleSimulatePayment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -385,7 +389,7 @@ export default function Checkout() {
               <div>
                 <p className="mb-0.5 text-xs text-[var(--text-muted)]">Número de Orden</p>
                 <p className="font-mono text-sm font-bold text-[var(--text-primary)]">
-                  #{Math.random().toString(36).substr(2, 9).toUpperCase()}
+                  #{orderNumber}
                 </p>
               </div>
             </div>

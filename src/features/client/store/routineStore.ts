@@ -48,9 +48,20 @@ export const useRoutineStore = create<RoutineStore>()(
           // const response = await fetchApi<ResponseDTO<Routine>>('/api/tenant/routines')
           set({
             routines: mockRoutines,
-            currentRoutine: mockRoutines[0] ?? null,
             isLoading: false,
           })
+          // Restore currentRoutine from persisted ID
+          const state = get()
+          if (state.currentRoutineId && mockRoutines.length > 0) {
+            const savedRoutine = mockRoutines.find(r => r.id === state.currentRoutineId)
+            if (savedRoutine) {
+              set({ currentRoutine: savedRoutine })
+            } else if (!state.currentRoutine) {
+              set({ currentRoutine: mockRoutines[0] })
+            }
+          } else if (!state.currentRoutine && mockRoutines.length > 0) {
+            set({ currentRoutine: mockRoutines[0] })
+          }
         } catch (err) {
           set({
             error: err instanceof Error ? err.message : 'Error loading routines',
@@ -109,7 +120,6 @@ export const useRoutineStore = create<RoutineStore>()(
     {
       name: 'routine-storage',
       partialize: (state) => ({
-        selectedDay: state.selectedDay,
         currentRoutineId: state.currentRoutine?.id,
       }),
     }
