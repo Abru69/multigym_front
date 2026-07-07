@@ -107,6 +107,18 @@ export interface ProductDTO {
   name: string
   price: number
   stock: number
+  brand?: string
+  category?: string
+  image?: string
+  rating?: number
+  reviewCount?: number
+  description?: string
+  flavor?: string
+  weight?: string
+  tags?: string[]
+  nutritionFacts?: Array<{ label: string; value: string; dailyValue?: string }>
+  servingSize?: string
+  servings?: number
 }
 
 export interface ExerciseDTO {
@@ -204,6 +216,8 @@ export interface PlanListItemDTO {
   isActive: boolean
 }
 
+export type PlanDTO = PlanListItemDTO
+
 export interface SubscriptionListItemDTO {
   id: string
   member: MemberListItemDTO | null
@@ -287,4 +301,47 @@ export interface WorkoutLogRequest {
   workoutId: string
   durationMinutes: number
   caloriesBurned: number
+}
+
+export interface SubscriptionDTO {
+  id: string
+  member: MemberDTO
+  plan: PlanDTO
+  startDate: string
+  endDate: string
+  status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED'
+}
+
+export interface PaymentDTO {
+  id: string
+  subscriptionId: string
+  amount: number
+  paymentDate: string | null
+  paymentMethod: string
+  status: 'COMPLETED' | 'PENDING' | 'FAILED' | 'REFUNDED'
+  reference: string | null
+}
+
+export interface TenantBillingSummaryDTO {
+  tenantId: string
+  tenantName: string
+  totalPaid: number
+  activeSubscriptionId: string | null
+  activePlanName: string | null
+  paymentCount: number
+  lastPaymentDate: string | null
+}
+
+export interface RevenueReportDTO {
+  year: number
+  month: number
+  totalRevenue: number
+  paymentCount: number
+}
+
+export interface PlatformSettingDTO {
+  key: string
+  value: string
+  type: 'string' | 'number' | 'boolean'
+  description: string | null
 }

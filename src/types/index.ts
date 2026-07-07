@@ -41,4 +41,10 @@ export type {
   PaymentRequest,
   WorkoutExerciseRequest,
   WorkoutLogRequest,
+  PlanDTO,
+  SubscriptionDTO,
+  PaymentDTO,
+  TenantBillingSummaryDTO,
+  RevenueReportDTO,
+  PlatformSettingDTO,
 } from './api'

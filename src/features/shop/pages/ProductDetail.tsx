@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { fetchApi } from '@/lib/api'
-import type { ResponseDTO } from '@/types'
+import type { Product, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import { useCartStore } from '@/features/shop/store/cartStore'
 import {
@@ -12,7 +12,6 @@ import {
   Plus,
   Star,
   Info,
-  Package,
   ShieldCheck,
   Truck,
   Lock,
@@ -24,15 +23,11 @@ export default function ProductDetail() {
   const cartItems = useCartStore((s) => s.items)
   const updateQuantity = useCartStore((s) => s.updateQuantity)
 
-  const [product, setProduct] = useState<any>(null)
+  const [product, setProduct] = useState<Product | null>(null)
   const [productLoading, setProductLoading] = useState(true)
   const cartItem = cartItems.find((i) => i.product.id === product?.id)
   const initialQuantity = cartItem ? cartItem.quantity : 1
   const [quantity, setQuantity] = useState(initialQuantity)
-
-  useEffect(() => {
-    if (cartItem) setQuantity(cartItem.quantity)
-  }, [cartItem])
 
   useEffect(() => {
     const loadProduct = async () => {

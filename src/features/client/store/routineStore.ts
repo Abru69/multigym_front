@@ -20,6 +20,7 @@ const ALL_DAYS: DayOfWeek[] = ['lunes', 'martes', 'miercoles', 'jueves', 'vierne
 interface RoutineStore {
   routines: Routine[]
   currentRoutine: Routine | null
+  currentRoutineId?: string
   selectedDay: DayOfWeek
   isLoading: boolean
   error: string | null

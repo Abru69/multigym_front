@@ -18,6 +18,9 @@ import type {
   PaymentListItemDTO,
   WorkoutExerciseListItemDTO,
   WorkoutLogListItemDTO,
+  TenantBillingSummaryDTO,
+  RevenueReportDTO,
+  PlatformSettingDTO,
 } from '@/types'
 
 export async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -138,6 +141,9 @@ export const getTenants = () => fetchApi<ResponseDTO<PaginatedResult<TenantDTO>>
 
 export const getTenantsSummary = () =>
   fetchApi<ResponseDTO<TenantSummaryDTO>>('/api/tenants/summary')
+
+export const getTenantBillingSummaries = () =>
+  fetchApi<ResponseDTO<TenantBillingSummaryDTO>>('/api/tenants/billing-summaries')
 
 export const createTenant = (data: TenantRequestDTO) =>
   fetchApi<ResponseDTO<TenantDTO>>('/api/tenants', {
@@ -353,3 +359,18 @@ export const getAudits = (filters: AuditFilters = {}) => {
   params.set('size', String(filters.size ?? 20))
   return fetchApi<ResponseDTO<PaginatedResult<AuditLogDTO>>>(`/api/audits?${params.toString()}`)
 }
+
+export const getBillingSummary = (tenantId: string) =>
+  fetchApi<ResponseDTO<TenantBillingSummaryDTO>>(`/api/tenants/${tenantId}/billing/summary`)
+
+export const getRevenueReport = (tenantId: string) =>
+  fetchApi<ResponseDTO<RevenueReportDTO>>(`/api/tenants/${tenantId}/billing/revenue`)
+
+export const getPlatformSettings = () =>
+  fetchApi<ResponseDTO<PlatformSettingDTO>>('/api/platform-settings')
+
+export const updatePlatformSettings = (entries: Record<string, string>) =>
+  fetchApi<ResponseDTO<PlatformSettingDTO>>('/api/platform-settings', {
+    method: 'PUT',
+    body: JSON.stringify({ entries }),
+  })
