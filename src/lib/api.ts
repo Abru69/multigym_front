@@ -77,7 +77,20 @@ export async function fetchApi<T>(url: string, options: RequestInit = {}): Promi
     headers.set('Authorization', `Bearer ${token}`)
   }
 
-  const tenantId = getTenantFromSubdomain()
+  let tenantId = getTenantFromSubdomain()
+  if (!tenantId) {
+    const tenantData = localStorage.getItem('auth-storage')
+    if (tenantData) {
+      try {
+        const parsed = JSON.parse(tenantData)
+        if (parsed.state && parsed.state.tenantId) {
+          tenantId = parsed.state.tenantId
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
   if (tenantId && !headers.has('X-Tenant-ID')) {
     headers.set('X-Tenant-ID', tenantId)
   }
