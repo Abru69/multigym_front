@@ -57,7 +57,7 @@ export function Modal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
@@ -66,38 +66,35 @@ export function Modal({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
             className={cn(
-              'relative w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-2xl',
+              'relative w-full overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-xl)]',
               sizeClasses[size],
               className
             )}
           >
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent" />
-            <div className="relative z-[1]">
-              {(title || showClose) && (
-                <div className="flex items-start justify-between p-6 pb-0">
-                  <div>
-                    {title && (
-                      <h2 className="font-heading text-lg font-black tracking-tight text-[var(--text-primary)]">
-                        {title}
-                      </h2>
-                    )}
-                    {description && (
-                      <p className="mt-1 text-sm text-[var(--text-secondary)]">{description}</p>
-                    )}
-                  </div>
-                  {showClose && (
-                    <button
-                      onClick={onClose}
-                      className="rounded-xl p-2 text-[var(--text-muted)] transition-all hover:bg-white/[0.06] hover:text-[var(--text-primary)]"
-                      aria-label="Cerrar"
-                    >
-                      <X size={18} />
-                    </button>
+            {(title || showClose) && (
+              <div className="flex items-start justify-between p-6 pb-0">
+                <div>
+                  {title && (
+                    <h2 className="font-heading text-lg font-black tracking-tight text-[var(--text-primary)]">
+                      {title}
+                    </h2>
+                  )}
+                  {description && (
+                    <p className="mt-1 text-sm text-[var(--text-secondary)]">{description}</p>
                   )}
                 </div>
-              )}
-              <div className="p-6">{children}</div>
-            </div>
+                {showClose && (
+                  <button
+                    onClick={onClose}
+                    className="rounded-xl p-2 text-[var(--text-muted)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    aria-label="Cerrar"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+              </div>
+            )}
+            <div className="p-6">{children}</div>
           </motion.div>
         </div>
       )}

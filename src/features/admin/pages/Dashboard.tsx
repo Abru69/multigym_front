@@ -1,30 +1,25 @@
 import { useState, useEffect, useCallback } from 'react'
-import { motion } from 'framer-motion'
 import {
   Users,
-  ShoppingBag,
+  DollarSign,
   Dumbbell,
+  AlertCircle,
   ArrowUpRight,
-  Zap,
-  Activity,
+  ChevronRight,
   Package,
-  TrendingUp,
-  UserX,
-  UserCheck,
+  Calendar,
 } from 'lucide-react'
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
 import { useNavigate } from 'react-router-dom'
 import { fetchApi } from '@/lib/api'
 import type { ResponseDTO, UserDTO, WorkoutDTO, OrderDTO } from '@/types'
-import { AdminHeader } from '../components/AdminHeader'
 import { LoadingState } from '../components/LoadingState'
 
 interface DashboardData {
@@ -38,12 +33,6 @@ interface DashboardData {
   clientsWithoutWorkoutChange: string
   salesData: Array<{ month: string; ventas: number }>
   recentActivity: Array<{ text: string; time: string; type: string }>
-}
-
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 }
 
 export default function AdminDashboard() {
@@ -82,9 +71,13 @@ export default function AdminDashboard() {
       const currentYear = now.getFullYear()
       const monthlyOrders = orders.filter((o) => {
         const orderDate = new Date(o.createdAt || o.paymentDate || '')
-        return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear
+        return (
+          orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear
+        )
       })
-      const monthlySalesTotal = monthlyOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0)
+      const monthlySalesTotal = monthlyOrders.reduce(
+        (sum, o) => sum + (Number(o.total) || 0), 0
+      )
 
       const salesData = generateSalesData(orders)
       const recentActivity = generateRecentActivity(users, workouts, orders)
@@ -96,8 +89,8 @@ export default function AdminDashboard() {
         clientsWithoutWorkout,
         activeClientsChange: '+12%',
         monthlySalesChange: '+8%',
-        totalWorkoutsChange: '+5%',
-        clientsWithoutWorkoutChange: clientsWithoutWorkout > 0 ? `-${clientsWithoutWorkout}` : '0',
+        totalWorkoutsChange: '+5',
+        clientsWithoutWorkoutChange: clientsWithoutWorkout > 0 ? `${clientsWithoutWorkout}` : '0',
         salesData,
         recentActivity,
       })
@@ -117,10 +110,11 @@ export default function AdminDashboard() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
-          <p className="mb-4 text-[var(--error)]">{error || 'No se pudo cargar el dashboard'}</p>
+          <p className="mb-4" style={{ color: 'var(--error)' }}>{error || 'No se pudo cargar el dashboard'}</p>
           <button
             onClick={loadDashboard}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
           >
             Reintentar
           </button>
@@ -129,323 +123,440 @@ export default function AdminDashboard() {
     )
   }
 
-  const stats = [
+  const clientsWithRoutine = data.activeClients - data.clientsWithoutWorkout
+  const coveragePercent =
+    data.activeClients > 0
+      ? Math.round((clientsWithRoutine / data.activeClients) * 100)
+      : 0
+
+  const kpiCards = [
     {
       label: 'Clientes Activos',
-      value: data.activeClients.toString(),
+      value: data.activeClients.toLocaleString(),
       change: data.activeClientsChange,
+      changeLabel: 'este mes',
+      changePositive: true,
       icon: Users,
-      color: 'var(--accent)',
-      href: '/admin/usuarios',
+      iconBg: '#eff6ff',
+      iconColor: '#3b82f6',
     },
     {
       label: 'Ventas del Mes',
       value: data.monthlySales,
       change: data.monthlySalesChange,
-      icon: ShoppingBag,
-      color: 'var(--success)',
-      href: '/admin/inventario',
+      changeLabel: 'este mes',
+      changePositive: true,
+      icon: DollarSign,
+      iconBg: '#f0fdf4',
+      iconColor: '#22c55e',
     },
     {
       label: 'Rutinas Creadas',
-      value: data.totalWorkouts.toString(),
+      value: data.totalWorkouts.toLocaleString(),
       change: data.totalWorkoutsChange,
+      changeLabel: 'esta semana',
+      changePositive: true,
       icon: Dumbbell,
-      color: 'var(--warning)',
-      href: '/admin/ejercicios',
+      iconBg: '#faf5ff',
+      iconColor: '#a855f7',
     },
     {
       label: 'Sin Rutina Activa',
-      value: data.clientsWithoutWorkout.toString(),
+      value: data.clientsWithoutWorkout.toLocaleString(),
       change: data.clientsWithoutWorkoutChange,
-      icon: Zap,
-      color: 'var(--error)',
-      href: '/admin/usuarios',
+      changeLabel: 'requieren atención',
+      changePositive: false,
+      icon: AlertCircle,
+      iconBg: '#fff7ed',
+      iconColor: '#f97316',
     },
   ]
 
   return (
-    <div className="space-y-8">
-      <AdminHeader
-        title="Dashboard"
-        subtitle="Resumen general y control operativo"
-        action={
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => navigate('/admin/usuarios')}
-              className="inline-flex items-center gap-2 rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-4 py-2.5 text-sm font-semibold text-[var(--accent)] backdrop-blur-xl transition-all hover:bg-[var(--accent)]/20"
-            >
-              <Users size={14} /> Nuevo Cliente
-            </button>
-            <button
-              onClick={() => navigate('/admin/ejercicios?tab=routines')}
-              className="inline-flex items-center gap-2 rounded-2xl border border-[var(--warning)]/20 bg-[var(--warning)]/10 px-4 py-2.5 text-sm font-semibold text-[var(--warning)] backdrop-blur-xl transition-all hover:bg-[var(--warning)]/20"
-            >
-              <Dumbbell size={14} /> Crear Rutina
-            </button>
-            <button
-              onClick={() => navigate('/admin/inventario')}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
-            >
-              <Package size={14} /> Agregar Producto
-            </button>
-          </div>
-        }
-      />
-
-      {/* Stats Grid */}
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={stagger}
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-      >
-        {stats.map((s) => (
-          <motion.div
-            key={s.label}
-            variants={fadeUp}
-            onClick={() => navigate(s.href)}
-            className="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-6 backdrop-blur-xl transition-all duration-300 hover:border-white/[0.1] hover:shadow-[var(--depth-3)]"
+    <div style={{ fontFamily: 'var(--font-body)' }} className="space-y-6">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {kpiCards.map((card) => (
+          <div
+            key={card.label}
+            className="bg-[var(--card)] rounded-2xl p-6 transition-shadow duration-200"
+            style={{ border: '1px solid var(--border)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.06)')}
+            onMouseLeave={(e) => (e.currentTarget.style.boxShadow = 'none')}
           >
-            <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.03] to-transparent" />
-            <div className="absolute -top-8 -right-8 opacity-5 transition-transform duration-300 group-hover:scale-110 group-hover:opacity-8">
-              <s.icon size={100} style={{ color: s.color }} />
-            </div>
-            <div className="relative flex items-start justify-between">
+            <div className="flex items-start justify-between">
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)]/50 backdrop-blur-xl"
-                style={{ color: s.color }}
+                className="flex items-center justify-center rounded-full"
+                style={{ width: 40, height: 40, backgroundColor: card.iconBg }}
               >
-                <s.icon size={24} />
+                <card.icon size={20} style={{ color: card.iconColor }} />
               </div>
-              <span className="inline-flex items-center gap-1 rounded-full border border-white/[0.08] bg-[var(--card)]/80 px-2.5 py-1 text-xs font-semibold text-[var(--success)] backdrop-blur-xl">
-                {s.change} <ArrowUpRight size={12} />
+              <span
+                className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+                style={{
+                  backgroundColor: card.changePositive ? '#f0fdf4' : '#fff7ed',
+                  color: card.changePositive ? '#16a34a' : '#ea580c',
+                }}
+              >
+                {card.change} <ArrowUpRight size={12} />
               </span>
             </div>
-            <div className="relative mt-4">
-              <p className="font-heading text-3xl font-black tracking-tight text-[var(--text-primary)]">
-                {s.value}
+            <div className="mt-4">
+              <p
+                style={{ fontFamily: 'var(--font-heading)' }}
+                className="text-4xl font-black"
+              >
+                {card.value}
               </p>
-              <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">{s.label}</p>
+              <p className="mt-1 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                {card.label}
+              </p>
             </div>
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+      </div>
 
-      {/* Revenue Chart - Full Width */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-6 backdrop-blur-xl"
-      >
-        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.03] to-transparent" />
-        <div className="relative mb-6 flex items-center justify-between">
-          <h3 className="text-lg font-bold tracking-tight text-[var(--text-primary)]">
-            Ingresos Mensuales
-          </h3>
-          <Activity size={18} className="text-[var(--accent)]" aria-hidden="true" />
-        </div>
-        <div className="relative h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data.salesData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis
-                dataKey="month"
-                tick={{ fill: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}
-                axisLine={false}
-                tickLine={false}
-                dy={10}
-              />
-              <YAxis
-                tick={{ fill: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => `$${v / 1000}k`}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '12px',
-                  color: 'var(--text-primary)',
-                  fontSize: 13,
-                  fontWeight: 'bold',
-                  backdropFilter: 'blur(24px)',
-                  boxShadow: 'var(--depth-3)',
-                }}
-                itemStyle={{ color: 'var(--accent)' }}
-                formatter={(value) => [`$${Number(value).toLocaleString()} MXN`, 'Ventas']}
-              />
-              <Line
-                type="monotone"
-                dataKey="ventas"
-                stroke="url(#accentGradient)"
-                strokeWidth={4}
-                dot={{
-                  fill: 'rgba(255,255,255,0.04)',
-                  stroke: 'var(--accent)',
-                  strokeWidth: 3,
-                  r: 6,
-                }}
-                activeDot={{
-                  r: 8,
-                  fill: 'var(--accent)',
-                  stroke: 'rgba(255,255,255,0.1)',
-                  strokeWidth: 2,
-                }}
-              />
-              <defs>
-                <linearGradient id="accentGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="var(--accent)" />
-                  <stop offset="100%" stopColor="var(--detail)" />
-                </linearGradient>
-              </defs>
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </motion.div>
-
-      {/* Activity Feed + Distribution */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Activity Feed */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-6 backdrop-blur-xl"
+      {/* Chart + Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4">
+        {/* Revenue Chart */}
+        <div
+          className="bg-[var(--card)] rounded-2xl p-6"
+          style={{ border: '1px solid var(--border)' }}
         >
-          <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.03] to-transparent" />
-          <h3 className="relative mb-6 text-lg font-bold tracking-tight text-[var(--text-primary)]">
-            Actividad en Vivo
+          <div className="flex items-center justify-between mb-6">
+            <h3
+              style={{ fontFamily: 'var(--font-heading)' }}
+              className="text-lg font-bold"
+            >
+              Ingresos Mensuales
+            </h3>
+            <div
+              className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium"
+              style={{
+                border: '1px solid var(--border)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              <Calendar size={14} />
+              <span>Ene 2026 — Jul 2026</span>
+            </div>
+          </div>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.salesData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="gradientAccent" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.25} />
+                    <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="month"
+                  tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
+                  axisLine={false}
+                  tickLine={false}
+                  dy={10}
+                />
+                <YAxis
+                  tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `$${v / 1000}k`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '12px',
+                    color: '#0f172a',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+                  }}
+                  itemStyle={{ color: 'var(--accent)' }}
+                  formatter={(value) => [
+                    `$${Number(value).toLocaleString()} MXN`,
+                    'Ventas',
+                  ]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="ventas"
+                  stroke="var(--accent)"
+                  strokeWidth={3}
+                  fill="url(#gradientAccent)"
+                  dot={{
+                    fill: '#ffffff',
+                    stroke: 'var(--accent)',
+                    strokeWidth: 3,
+                    r: 5,
+                  }}
+                  activeDot={{
+                    r: 7,
+                    fill: 'var(--accent)',
+                    stroke: '#ffffff',
+                    strokeWidth: 2,
+                  }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div
+          className="bg-[var(--card)] rounded-2xl p-6"
+          style={{ border: '1px solid var(--border)' }}
+        >
+          <h3
+            style={{ fontFamily: 'var(--font-heading)' }}
+            className="text-lg font-bold mb-4"
+          >
+            Acciones Rápidas
           </h3>
-          <div className="relative space-y-0">
+          <div className="space-y-3">
+            <button
+              onClick={() => navigate('/admin/usuarios')}
+              className="group flex w-full items-center gap-4 rounded-xl p-4 transition-all duration-200"
+              style={{ border: '1px solid var(--border)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#22c55e')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
+            >
+              <div
+                className="flex items-center justify-center rounded-full"
+                style={{ width: 44, height: 44, backgroundColor: '#f0fdf4' }}
+              >
+                <Users size={20} style={{ color: '#22c55e' }} />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Nuevo Cliente
+                </p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  Registrar usuario
+                </p>
+              </div>
+              <ChevronRight
+                size={18}
+                className="transition-transform duration-200 group-hover:translate-x-1"
+                style={{ color: 'var(--text-muted)' }}
+              />
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/ejercicios?tab=routines')}
+              className="group flex w-full items-center gap-4 rounded-xl p-4 transition-all duration-200"
+              style={{ border: '1px solid var(--border)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#a855f7')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
+            >
+              <div
+                className="flex items-center justify-center rounded-full"
+                style={{ width: 44, height: 44, backgroundColor: '#faf5ff' }}
+              >
+                <Dumbbell size={20} style={{ color: '#a855f7' }} />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Crear Rutina
+                </p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  Diseñar entrenamiento
+                </p>
+              </div>
+              <ChevronRight
+                size={18}
+                className="transition-transform duration-200 group-hover:translate-x-1"
+                style={{ color: 'var(--text-muted)' }}
+              />
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/inventario')}
+              className="group flex w-full items-center gap-4 rounded-xl p-4 transition-all duration-200"
+              style={{ border: '1px solid var(--border)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#3b82f6')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
+            >
+              <div
+                className="flex items-center justify-center rounded-full"
+                style={{ width: 44, height: 44, backgroundColor: '#eff6ff' }}
+              >
+                <Package size={20} style={{ color: '#3b82f6' }} />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Agregar Producto
+                </p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  Gestionar inventario
+                </p>
+              </div>
+              <ChevronRight
+                size={18}
+                className="transition-transform duration-200 group-hover:translate-x-1"
+                style={{ color: 'var(--text-muted)' }}
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Activity + Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4">
+        {/* Recent Activity */}
+        <div
+          className="bg-[var(--card)] rounded-2xl"
+          style={{ border: '1px solid var(--border)' }}
+        >
+          <div className="flex items-center justify-between px-6 py-4">
+            <h3
+              style={{ fontFamily: 'var(--font-heading)' }}
+              className="text-lg font-bold"
+            >
+              Actividad Reciente
+            </h3>
+            <button
+              className="text-sm font-semibold transition-colors duration-200"
+              style={{ color: 'var(--accent)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+            >
+              Ver todo
+            </button>
+          </div>
+          <div className="divide-y" style={{ borderColor: '#f1f5f9' }}>
             {data.recentActivity.map((a, i) => {
               const dotColor =
                 a.type === 'shop'
-                  ? 'var(--success)'
+                  ? '#22c55e'
                   : a.type === 'user'
-                    ? 'var(--warning)'
-                    : 'var(--accent)'
-              const isAccent = a.type === 'routine'
+                    ? '#f59e0b'
+                    : '#3b82f6'
               return (
-                <div key={`${a.text}-${i}`} className="flex gap-3">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className="h-3 w-3 rounded-full"
-                      style={{
-                        background: dotColor,
-                        boxShadow: isAccent
-                          ? `0 0 8px rgba(66,204,99,0.3), 0 0 10px ${dotColor}80`
-                          : `0 0 10px ${dotColor}80`,
-                      }}
-                    />
-                    {i < data.recentActivity.length - 1 && (
-                      <div className="w-px flex-1 bg-[var(--surface-hover)]" />
-                    )}
-                  </div>
-                  <div className="pb-4">
-                    <p className="text-sm font-medium text-[var(--text-primary)]">{a.text}</p>
-                    <p className="mt-0.5 text-xs text-[var(--text-muted)]">{a.time}</p>
-                  </div>
+                <div
+                  key={`${a.text}-${i}`}
+                  className="flex items-center gap-3 px-6 py-3.5"
+                  style={{ borderBottom: '1px solid #f8fafc' }}
+                >
+                  <div
+                    className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: dotColor }}
+                  />
+                  <p
+                    className="flex-1 text-sm font-medium truncate"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
+                    {a.text}
+                  </p>
+                  <span
+                    className="text-xs flex-shrink-0"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    {a.time}
+                  </span>
                 </div>
               )
             })}
             {data.recentActivity.length === 0 && (
-              <p className="py-8 text-center text-sm text-[var(--text-muted)]">
+              <p className="py-12 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
                 No hay actividad reciente.
               </p>
             )}
           </div>
-        </motion.div>
+        </div>
 
-        {/* Distribution - Users by Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] p-6 backdrop-blur-xl"
+        {/* Distribution */}
+        <div
+          className="bg-[var(--card)] rounded-2xl p-6"
+          style={{ border: '1px solid var(--border)' }}
         >
-          <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/[0.03] to-transparent" />
-          <h3 className="relative mb-6 text-lg font-bold tracking-tight text-[var(--text-primary)]">
+          <h3
+            style={{ fontFamily: 'var(--font-heading)' }}
+            className="text-lg font-bold mb-5"
+          >
             Distribución de Usuarios
           </h3>
-          <div className="relative space-y-5">
-            <div className="group flex items-center justify-between rounded-xl border border-white/[0.04] bg-white/[0.02] p-4 transition-all duration-200 hover:border-white/[0.08] hover:bg-white/[0.04]">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--success)]/20 bg-[var(--success)]/10">
-                  <UserCheck size={18} className="text-[var(--success)]" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">
-                    Con Rutina Activa
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)]">Clientes entrenando</p>
-                </div>
+                <div
+                  className="h-3 w-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: 'var(--success)' }}
+                />
+                <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                  Admins
+                </span>
               </div>
-              <span className="font-heading text-2xl font-black tracking-tight text-[var(--success)]">
-                {data.activeClients - data.clientsWithoutWorkout}
+              <span
+                className="text-sm font-bold"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                {data.activeClients > 0 ? Math.max(1, Math.floor(data.activeClients * 0.05)) : 0}
               </span>
             </div>
 
-            <div className="group flex items-center justify-between rounded-xl border border-white/[0.04] bg-white/[0.02] p-4 transition-all duration-200 hover:border-white/[0.08] hover:bg-white/[0.04]">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--error)]/20 bg-[var(--error)]/10">
-                  <UserX size={18} className="text-[var(--error)]" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">
-                    Sin Rutina Activa
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)]">Requieren seguimiento</p>
-                </div>
+                <div
+                  className="h-3 w-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: '#3b82f6' }}
+                />
+                <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                  Clientes con rutina
+                </span>
               </div>
-              <span className="font-heading text-2xl font-black tracking-tight text-[var(--error)]">
+              <span
+                className="text-sm font-bold"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                {clientsWithRoutine}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className="h-3 w-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: '#f97316' }}
+                />
+                <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                  Clientes sin rutina
+                </span>
+              </div>
+              <span
+                className="text-sm font-bold"
+                style={{ color: 'var(--text-primary)' }}
+              >
                 {data.clientsWithoutWorkout}
               </span>
             </div>
 
-            <div className="group flex items-center justify-between rounded-xl border border-white/[0.04] bg-white/[0.02] p-4 transition-all duration-200 hover:border-white/[0.08] hover:bg-white/[0.04]">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--warning)]/20 bg-[var(--warning)]/10">
-                  <TrendingUp size={18} className="text-[var(--warning)]" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--text-primary)]">Total Rutinas</p>
-                  <p className="text-xs text-[var(--text-muted)]">En el sistema</p>
-                </div>
-              </div>
-              <span className="font-heading text-2xl font-black tracking-tight text-[var(--warning)]">
-                {data.totalWorkouts}
-              </span>
-            </div>
-
             {/* Progress bar */}
-            <div className="pt-2">
-              <div className="mb-2 flex items-center justify-between text-xs text-[var(--text-muted)]">
-                <span>Tasa de cobertura</span>
-                <span className="font-semibold text-[var(--text-primary)]">
-                  {data.activeClients > 0
-                    ? `${Math.round(((data.activeClients - data.clientsWithoutWorkout) / data.activeClients) * 100)}%`
-                    : '0%'}
+            <div className="pt-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                  Cobertura de rutinas
+                </span>
+                <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                  {coveragePercent}%
                 </span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
+              <div
+                className="h-2.5 overflow-hidden rounded-full"
+                style={{ backgroundColor: '#f1f5f9' }}
+              >
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--success)] transition-all duration-700"
+                  className="h-full rounded-full transition-all duration-700"
                   style={{
-                    width: `${
-                      data.activeClients > 0
-                        ? ((data.activeClients - data.clientsWithoutWorkout) / data.activeClients) *
-                          100
-                        : 0
-                    }%`,
+                    width: `${coveragePercent}%`,
+                    backgroundColor: 'var(--accent)',
                   }}
                 />
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )
@@ -453,25 +564,11 @@ export default function AdminDashboard() {
 
 function generateSalesData(orders: OrderDTO[]): Array<{ month: string; ventas: number }> {
   const months = [
-    'Ene',
-    'Feb',
-    'Mar',
-    'Abr',
-    'May',
-    'Jun',
-    'Jul',
-    'Ago',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dic',
+    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+    'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
   ]
-  const now = new Date()
   const salesByMonth: Record<string, number> = {}
-
-  months.forEach((m) => {
-    salesByMonth[m] = 0
-  })
+  months.forEach((m) => { salesByMonth[m] = 0 })
 
   orders.forEach((order) => {
     const date = new Date(order.createdAt || order.paymentDate || '')
@@ -481,10 +578,7 @@ function generateSalesData(orders: OrderDTO[]): Array<{ month: string; ventas: n
     }
   })
 
-  return months.map((month) => ({
-    month,
-    ventas: salesByMonth[month] || 0,
-  }))
+  return months.map((month) => ({ month, ventas: salesByMonth[month] || 0 }))
 }
 
 function generateRecentActivity(
@@ -494,34 +588,29 @@ function generateRecentActivity(
 ): Array<{ text: string; time: string; type: string }> {
   const activities: Array<{ text: string; time: string; type: string }> = []
 
-  const recentUsers = users
-    .slice(-3)
-    .reverse()
-    .map((u) => ({
+  users.slice(-3).reverse().forEach((u) => {
+    activities.push({
       text: `Nuevo usuario registrado: ${u.memberDTO?.name || u.email}`,
       time: 'Reciente',
       type: 'user',
-    }))
+    })
+  })
 
-  const recentWorkouts = workouts
-    .slice(-3)
-    .reverse()
-    .map((w) => ({
+  workouts.slice(-3).reverse().forEach((w) => {
+    activities.push({
       text: `Rutina creada: ${w.title}`,
       time: 'Reciente',
       type: 'routine',
-    }))
+    })
+  })
 
-  const recentOrders = orders
-    .slice(-3)
-    .reverse()
-    .map((o) => ({
+  orders.slice(-3).reverse().forEach((o) => {
+    activities.push({
       text: `Orden procesada: $${Number(o.total).toLocaleString('es-MX')}`,
       time: 'Reciente',
       type: 'shop',
-    }))
-
-  activities.push(...recentUsers, ...recentWorkouts, ...recentOrders)
+    })
+  })
 
   return activities.slice(0, 8)
 }

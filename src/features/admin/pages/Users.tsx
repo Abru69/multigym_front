@@ -1,14 +1,19 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { fetchApi } from '@/lib/api'
-import { UserPlus, ShieldCheck, Dumbbell, Trash2, MoreVertical, Edit2 } from 'lucide-react'
+import {
+  UserPlus,
+  Dumbbell,
+  Trash2,
+  MoreVertical,
+  Edit2,
+  ShieldCheck,
+  ChevronRight,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/ui/Modal'
-import { DataTable, type DataTableColumn } from '@/components/ui/DataTable'
-import { Avatar } from '@/components/ui/Avatar'
-import { Badge } from '@/components/ui/Badge'
-import { DropdownMenu, DropdownItem, DropdownSeparator } from '@/components/ui/DropdownMenu'
 import { Input } from '@/components/ui/Input'
 import { useToastStore } from '@/components/ui/Toast'
+import { DropdownMenu, DropdownItem, DropdownSeparator } from '@/components/ui/DropdownMenu'
 import type { ResponseDTO, UserDTO } from '@/types'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
@@ -17,6 +22,8 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
 
+type RoleFilter = 'ALL' | 'ADMIN' | 'CLIENT'
+
 export default function UsersPage() {
   const navigate = useNavigate()
   const addToast = useToastStore((s) => s.addToast)
@@ -24,6 +31,7 @@ export default function UsersPage() {
   const [clients, setClients] = useState<UserDTO[]>([])
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search)
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL')
   const [showModal, setShowModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UserDTO | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<UserDTO | null>(null)
@@ -64,9 +72,13 @@ export default function UsersPage() {
     const term = debouncedSearch.toLowerCase()
     return clients.filter((u) => {
       const name = u.memberDTO?.name || u.email
-      return name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)
+      const matchesSearch =
+        name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)
+      const matchesRole =
+        roleFilter === 'ALL' || u.role === roleFilter
+      return matchesSearch && matchesRole
     })
-  }, [clients, debouncedSearch])
+  }, [clients, debouncedSearch, roleFilter])
 
   const activeCount = useMemo(() => clients.filter((c) => c.isActive).length, [clients])
 
@@ -81,7 +93,6 @@ export default function UsersPage() {
 
   const handleSaveUser = async () => {
     if (!validateForm()) return
-
     setIsSaving(true)
     try {
       if (selectedUser) {
@@ -169,119 +180,63 @@ export default function UsersPage() {
 
   const getName = (user: UserDTO) => user.memberDTO?.name || user.email.split('@')[0]
 
-  const columns: DataTableColumn<UserDTO>[] = useMemo(
-    () => [
-      {
-        key: 'usuario',
-        label: 'Usuario',
-        sortable: true,
-        render: (user) => (
-          <div className="flex items-center gap-3">
-            <Avatar name={getName(user)} size="sm" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-[var(--text-primary)]">
-                {getName(user)}
-              </p>
-              <p className="truncate text-xs text-[var(--text-muted)]">{user.email}</p>
-            </div>
-          </div>
-        ),
-      },
-      {
-        key: 'role',
-        label: 'Rol',
-        sortable: true,
-        render: (user) => (
-          <Badge variant={user.role === 'ADMIN' ? 'glass-accent' : 'glass'}>
-            {user.role === 'ADMIN' ? 'Admin' : 'Cliente'}
-          </Badge>
-        ),
-      },
-      {
-        key: 'isActive',
-        label: 'Estado',
-        sortable: true,
-        render: (user) => (
-          <Badge variant={user.isActive ? 'success' : 'destructive'}>
-            {user.isActive ? 'Activo' : 'Inactivo'}
-          </Badge>
-        ),
-      },
-      {
-        key: 'phone',
-        label: 'Teléfono',
-        render: (user) => (
-          <span className="text-[var(--text-secondary)]">{user.memberDTO?.phone || '—'}</span>
-        ),
-      },
-      {
-        key: 'acciones',
-        label: 'Acciones',
-        className: 'w-[50px]',
-        render: (user) => (
-          <DropdownMenu
-            trigger={
-              <button
-                onClick={(e) => e.stopPropagation()}
-                className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-1.5 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--text-primary)]"
-                aria-label="Más opciones"
-              >
-                <MoreVertical size={16} />
-              </button>
-            }
-          >
-            <DropdownItem onClick={() => openEdit(user)}>
-              <Edit2 size={14} /> Editar
-            </DropdownItem>
-            <DropdownItem
-              onClick={() => navigate(`/admin/ejercicios?tab=routines&userId=${user.id}`)}
-              className="text-[var(--accent)]"
-            >
-              <Dumbbell size={14} /> Crear Rutina
-            </DropdownItem>
-            <DropdownItem onClick={() => toggleStatus(user)}>
-              {user.isActive ? '⏸ Desactivar' : '▶ Activar'}
-            </DropdownItem>
-            <DropdownSeparator />
-            <DropdownItem danger onClick={() => setDeleteTarget(user)}>
-              <Trash2 size={14} /> Eliminar
-            </DropdownItem>
-          </DropdownMenu>
-        ),
-      },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [clients]
-  )
+  const getInitials = (user: UserDTO) => {
+    const name = getName(user)
+    return name
+      .split(' ')
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase()
+  }
+
+  const roleFilters: { key: RoleFilter; label: string }[] = [
+    { key: 'ALL', label: 'Todos' },
+    { key: 'ADMIN', label: 'Admin' },
+    { key: 'CLIENT', label: 'Cliente' },
+  ]
 
   return (
-    <div className="space-y-6">
-      <AdminHeader
-        title="Clientes"
-        subtitle={`${clients.length} usuarios registrados — ${activeCount} activos`}
-        icon={ShieldCheck}
-        action={
-          <button
-            onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
+    <div style={{ fontFamily: 'var(--font-body)' }} className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1
+            style={{ fontFamily: 'var(--font-heading)' }}
+            className="text-2xl font-black"
           >
-            <UserPlus size={16} /> Nuevo Usuario
-          </button>
-        }
-      />
+            Clientes
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
+            {clients.length} usuarios registrados — {activeCount} activos
+          </p>
+        </div>
+        <button
+          onClick={openCreate}
+          className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+          style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+        >
+          <UserPlus size={16} /> Nuevo Cliente
+        </button>
+      </div>
 
       {error && (
-        <div className="flex items-center gap-3 rounded-2xl border border-[var(--error)]/20 bg-[var(--error)]/10 px-4 py-3 backdrop-blur-xl">
-          <p className="flex-1 text-sm text-[var(--error)]">{error}</p>
+        <div
+          className="flex items-center gap-3 rounded-xl px-4 py-3"
+          style={{ border: '1px solid #fecaca', backgroundColor: '#fef2f2' }}
+        >
+          <p className="flex-1 text-sm" style={{ color: '#b91c1c' }}>{error}</p>
           <button
             onClick={loadUsers}
-            className="text-sm font-semibold text-[var(--error)] hover:underline"
+            className="text-sm font-semibold hover:underline"
+            style={{ color: '#b91c1c' }}
           >
             Reintentar
           </button>
         </div>
       )}
 
+      {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <SearchBar
           value={search}
@@ -289,25 +244,201 @@ export default function UsersPage() {
           placeholder="Buscar por nombre o email..."
           className="flex-1"
         />
-        <div className="flex items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 backdrop-blur-xl">
-          <ShieldCheck size={16} className="text-[var(--success)]" aria-hidden="true" />
-          <span className="text-sm font-semibold text-[var(--text-primary)]">
-            Activos: {activeCount}
+        <div className="flex items-center gap-2">
+          {roleFilters.map((rf) => (
+            <button
+              key={rf.key}
+              onClick={() => setRoleFilter(rf.key)}
+              className="rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200"
+              style={{
+                backgroundColor:
+                  roleFilter === rf.key ? 'var(--accent)' : 'var(--card)',
+                color:
+                  roleFilter === rf.key ? 'var(--accent-text)' : 'var(--text-secondary)',
+                border:
+                  roleFilter === rf.key
+                    ? '1px solid var(--accent)'
+                    : '1px solid var(--border)',
+              }}
+            >
+              {rf.label}
+            </button>
+          ))}
+          <span
+            className="ml-2 inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-bold"
+            style={{
+              backgroundColor: 'var(--accent)',
+              color: 'var(--accent-text)',
+            }}
+          >
+            {filtered.length}
           </span>
         </div>
       </div>
 
+      {/* User Cards Grid */}
       {isLoading ? (
         <LoadingState text="Cargando usuarios..." />
+      ) : filtered.length === 0 ? (
+        <div
+          className="flex flex-col items-center justify-center rounded-2xl py-16"
+          style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+        >
+          <UserPlus size={48} style={{ color: 'var(--text-muted)' }} className="mb-4" />
+          <p
+            className="text-lg font-bold mb-1"
+            style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
+          >
+            No hay usuarios
+          </p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Comienza agregando tu primer cliente al gimnasio.
+          </p>
+        </div>
       ) : (
-        <DataTable<UserDTO>
-          columns={columns}
-          data={filtered}
-          keyExtractor={(user) => user.id}
-          emptyIcon={UserPlus}
-          emptyTitle="No hay usuarios"
-          emptyDescription="Comienza agregando tu primer cliente al gimnasio."
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filtered.map((user) => (
+            <div
+              key={user.id}
+              onClick={() => openEdit(user)}
+              className="group bg-[var(--card)] rounded-2xl p-5 transition-all duration-200 cursor-pointer"
+              style={{
+                border: '1px solid var(--border)',
+                borderLeftWidth: 3,
+                borderLeftColor:
+                  user.role === 'ADMIN' ? 'var(--accent)' : 'var(--border)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06)'
+                e.currentTarget.style.transform = 'translateY(-1px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = 'none'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  {/* Avatar */}
+                  <div
+                    className="flex items-center justify-center rounded-full flex-shrink-0"
+                    style={{
+                      width: 56,
+                      height: 56,
+                      backgroundColor: 'var(--accent)',
+                      color: 'var(--accent-text)',
+                      fontFamily: 'var(--font-heading)',
+                    }}
+                  >
+                    <span className="text-lg font-black">{getInitials(user)}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p
+                      className="text-sm font-bold truncate"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {getName(user)}
+                    </p>
+                    <p
+                      className="text-xs truncate"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Dropdown */}
+                <div onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu
+                    trigger={
+                      <button
+                        className="rounded-lg p-1.5 transition-all duration-200"
+                        style={{
+                          border: '1px solid transparent',
+                          color: 'var(--text-muted)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = 'var(--border)'
+                          e.currentTarget.style.color = 'var(--text-primary)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = 'transparent'
+                          e.currentTarget.style.color = 'var(--text-muted)'
+                        }}
+                        aria-label="Más opciones"
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+                    }
+                  >
+                    <DropdownItem onClick={() => openEdit(user)}>
+                      <Edit2 size={14} /> Editar
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() =>
+                        navigate(`/admin/ejercicios?tab=routines&userId=${user.id}`)
+                      }
+                      className="text-[var(--accent-text)]"
+                    >
+                      <Dumbbell size={14} /> Crear Rutina
+                    </DropdownItem>
+                    <DropdownItem onClick={() => toggleStatus(user)}>
+                      {user.isActive ? '⏸ Desactivar' : '▶ Activar'}
+                    </DropdownItem>
+                    <DropdownSeparator />
+                    <DropdownItem danger onClick={() => setDeleteTarget(user)}>
+                      <Trash2 size={14} /> Eliminar
+                    </DropdownItem>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              {/* Badges */}
+              <div className="flex items-center gap-2 mt-3">
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+                  style={{
+                    backgroundColor:
+                      user.role === 'ADMIN' ? 'rgba(170,255,0,0.15)' : '#f1f5f9',
+                    color:
+                      user.role === 'ADMIN' ? 'var(--accent-text)' : 'var(--text-secondary)',
+                  }}
+                >
+                  {user.role === 'ADMIN' ? 'Admin' : 'Cliente'}
+                </span>
+                <span
+                  className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                  style={{
+                    backgroundColor: user.isActive ? '#f0fdf4' : '#fef2f2',
+                    color: user.isActive ? '#16a34a' : '#dc2626',
+                  }}
+                >
+                  {user.isActive ? 'Activo' : 'Inactivo'}
+                </span>
+              </div>
+
+              {/* Bottom row */}
+              <div
+                className="flex items-center justify-between mt-3 pt-3"
+                style={{ borderTop: '1px solid #f1f5f9' }}
+              >
+                <span
+                  className="text-xs font-medium"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  {user.memberDTO?.phone || 'Sin teléfono'}
+                </span>
+                <span
+                  className="text-xs font-semibold flex items-center gap-1 transition-opacity duration-200 opacity-0 group-hover:opacity-100"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  Ver detalles <ChevronRight size={12} />
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Create/Edit Modal */}
@@ -355,7 +486,11 @@ export default function UsersPage() {
           </FormField>
 
           <FormField
-            label={selectedUser ? 'Contraseña (dejar vacío para no cambiar)' : 'Contraseña'}
+            label={
+              selectedUser
+                ? 'Contraseña (dejar vacío para no cambiar)'
+                : 'Contraseña'
+            }
             required={!selectedUser}
             htmlFor="user-password"
             error={formErrors.password}
@@ -376,7 +511,13 @@ export default function UsersPage() {
                 id="user-role"
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="flex h-11 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--text-primary)] transition-all duration-300 hover:border-[var(--border-hover)] focus-visible:border-[var(--accent)] focus-visible:shadow-[0_0_16px_rgba(66,204,99,0.08)] focus-visible:ring-2 focus-visible:ring-[var(--accent)]/20 focus-visible:outline-none"
+                className="flex h-11 w-full appearance-none rounded-xl px-4 py-2 text-sm transition-all duration-200 hover:border-[var(--border)] focus:ring-2 focus:outline-none"
+                style={{
+                  border: '1px solid var(--border)',
+                  backgroundColor: 'var(--card)',
+                  color: 'var(--text-primary)',
+                  '--tw-ring-color': 'var(--accent)',
+                } as React.CSSProperties}
               >
                 <option value="CLIENT">Cliente</option>
                 <option value="ADMIN">Administrador</option>
@@ -389,29 +530,47 @@ export default function UsersPage() {
                   type="checkbox"
                   checked={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.checked })}
-                  className="h-4 w-4 rounded border-[var(--border)] accent-[var(--accent)]"
+                  className="h-4 w-4 rounded"
+                  style={{ accentColor: 'var(--accent)' }}
                 />
-                <span className="text-sm font-semibold text-[var(--text-primary)]">Activo</span>
+                <span
+                  className="text-sm font-semibold"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  Activo
+                </span>
               </label>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+        <div
+          className="mt-6 flex justify-end gap-3 pt-4"
+          style={{ borderTop: '1px solid var(--border)' }}
+        >
           <button
             onClick={() => setShowModal(false)}
             disabled={isSaving}
-            className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
-          >
-            Cancelar
+            className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
+            style={{
+              border: '1px solid var(--border)',
+backgroundColor: 'var(--card)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                Cancelar
           </button>
           <button
             onClick={handleSaveUser}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+            style={{
+              backgroundColor: 'var(--accent)',
+              color: 'var(--accent-text)',
+            }}
           >
             {isSaving && (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }} />
             )}
             Guardar
           </button>

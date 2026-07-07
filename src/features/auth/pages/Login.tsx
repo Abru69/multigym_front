@@ -8,6 +8,7 @@ import { resolveBranding } from '@/lib/tenantConfig'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
+
 export default function Login() {
   const autoTenant = getTenantFromSubdomain()
   const branding = autoTenant ? resolveBranding(autoTenant) : null
@@ -44,10 +45,10 @@ export default function Login() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-      <h2 className="mb-1 text-xl font-black tracking-tight text-[var(--text-primary)]">
+      <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">
         Bienvenido de vuelta
       </h2>
-      <p className="mb-6 text-sm leading-relaxed text-[var(--text-muted)]">
+      <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">
         {autoTenant ? (
           <>
             Conectado a{' '}
@@ -59,7 +60,7 @@ export default function Login() {
       </p>
 
       {error && (
-        <div className="mb-4 rounded-2xl border border-[var(--error)]/20 bg-[var(--error)]/10 px-4 py-3 text-sm text-[var(--error)] backdrop-blur-xl">
+        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
           {error}
         </div>
       )}

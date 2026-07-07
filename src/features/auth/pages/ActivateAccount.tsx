@@ -7,6 +7,7 @@ import { activateAccount } from '@/lib/api'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
+
 export default function ActivateAccount() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') || ''
@@ -56,13 +57,13 @@ export default function ActivateAccount() {
   if (success) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 shadow-[0_0_16px_rgba(66,204,99,0.15)]">
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent)]/10">
           <CheckCircle size={32} className="text-[var(--accent)]" />
         </div>
-        <h2 className="mb-1 text-xl font-black tracking-tight text-[var(--text-primary)]">
+        <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">
           ¡Cuenta Activada!
         </h2>
-        <p className="mb-6 text-sm leading-relaxed text-[var(--text-muted)]">
+        <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">
           Tu cuenta ha sido activada correctamente. Ya puedes iniciar sesión en la plataforma.
         </p>
         <Link to="/login">
@@ -85,19 +86,19 @@ export default function ActivateAccount() {
       </Link>
 
       <div className="mb-2 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 shadow-[0_0_12px_rgba(66,204,99,0.15)]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent)]/10">
           <UserCheck size={20} className="text-[var(--accent)]" />
         </div>
-        <h2 className="text-xl font-black tracking-tight text-[var(--text-primary)]">
+        <h2 className="font-heading text-2xl font-black text-[var(--text-primary)]">
           Activa tu cuenta
         </h2>
       </div>
-      <p className="mt-2 text-sm leading-relaxed text-[var(--text-muted)]">
+      <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
         Establece una contraseña segura para terminar de activar tu cuenta.
       </p>
 
       {error && (
-        <div className="mb-4 rounded-2xl border border-[var(--error)]/20 bg-[var(--error)]/10 px-4 py-3 text-sm text-[var(--error)] backdrop-blur-xl">
+        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
           {error}
         </div>
       )}

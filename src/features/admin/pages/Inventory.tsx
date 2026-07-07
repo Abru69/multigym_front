@@ -3,9 +3,17 @@ import { productCategories } from '@/data/products'
 import { getProducts, createProduct, fetchApi } from '@/lib/api'
 import type { ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
-import { Plus, Edit2, Trash2, Package, AlertCircle, Image as ImageIcon } from 'lucide-react'
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Package,
+  AlertCircle,
+  Image as ImageIcon,
+  LayoutGrid,
+  List,
+} from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
-import { DataTable, type DataTableColumn } from '@/components/ui/DataTable'
 import { useToastStore } from '@/components/ui/Toast'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
@@ -27,11 +35,11 @@ interface ProductItem {
 }
 
 const categoryBadgeClass: Record<string, string> = {
-  proteinas: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  creatinas: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  preworkout: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-  vitaminas: 'bg-green-500/10 text-green-400 border-green-500/20',
-  accesorios: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+  proteinas: 'bg-blue-500/10 text-blue-400',
+  creatinas: 'bg-purple-500/10 text-purple-400',
+  preworkout: 'bg-orange-500/10 text-orange-400',
+  vitaminas: 'bg-green-500/10 text-green-400',
+  accesorios: 'bg-cyan-500/10 text-cyan-400',
 }
 
 const categoryLabel: Record<string, string> = {
@@ -42,11 +50,21 @@ const categoryLabel: Record<string, string> = {
   accesorios: 'Accesorios',
 }
 
+const filterPills = [
+  { value: 'all', label: 'Todos' },
+  { value: 'proteinas', label: 'Proteínas' },
+  { value: 'creatina', label: 'Creatinas' },
+  { value: 'pre-entrenos', label: 'Pre-Workout' },
+  { value: 'vitaminas', label: 'Vitaminas' },
+  { value: 'accesorios', label: 'Accesorios' },
+]
+
 export default function Inventory() {
   const addToast = useToastStore((s) => s.addToast)
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search)
   const [category, setCategory] = useState('all')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showModal, setShowModal] = useState(false)
   const [productsList, setProductsList] = useState<ProductItem[]>([])
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null)
@@ -179,121 +197,16 @@ export default function Inventory() {
     }
   }
 
-  const columns: DataTableColumn<ProductItem>[] = useMemo(
-    () => [
-      {
-        key: 'name',
-        label: 'Producto',
-        sortable: true,
-        render: (item) => (
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)]">
-              <img
-                src={item.image}
-                alt={item.name}
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-[var(--text-primary)]">{item.name}</p>
-              <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
-                {item.brand}
-              </p>
-            </div>
-          </div>
-        ),
-      },
-      {
-        key: 'category',
-        label: 'Categoría',
-        render: (item) => (
-          <span
-            className={`inline-flex items-center rounded-lg border px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase ${
-              categoryBadgeClass[item.category] ?? 'border-gray-500/20 bg-gray-500/10 text-gray-400'
-            }`}
-          >
-            {categoryLabel[item.category] ?? item.category}
-          </span>
-        ),
-      },
-      {
-        key: 'price',
-        label: 'Precio',
-        sortable: true,
-        render: (item) => (
-          <span className="text-sm font-semibold text-[var(--text-primary)]">
-            {formatCurrency(item.price)}
-          </span>
-        ),
-      },
-      {
-        key: 'stock',
-        label: 'Stock',
-        sortable: true,
-        render: (item) => (
-          <div className="flex items-center gap-2">
-            <span
-              className="text-sm font-bold"
-              style={{
-                color: item.stock < 10 ? 'var(--error)' : 'var(--success)',
-              }}
-            >
-              {item.stock} uds
-            </span>
-            {item.stock < 10 && (
-              <AlertCircle size={14} className="text-[var(--error)]" aria-hidden="true" />
-            )}
-          </div>
-        ),
-      },
-      {
-        key: 'isAvailable',
-        label: 'Estado',
-        render: (item) => (
-          <span
-            className="inline-flex items-center rounded-full border border-white/[0.08] bg-[var(--card)]/80 px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase backdrop-blur-xl"
-            style={{
-              color: item.isAvailable ? 'var(--success)' : 'var(--error)',
-            }}
-          >
-            {item.isAvailable ? 'Activo' : 'Inactivo'}
-          </span>
-        ),
-      },
-      {
-        key: 'actions',
-        label: 'Acciones',
-        headerClassName: 'text-right',
-        className: 'text-right',
-        render: (item) => (
-          <div className="flex items-center justify-end gap-1">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                openEdit(item)
-              }}
-              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-white/[0.08] hover:text-[var(--text-primary)]"
-              aria-label={`Editar ${item.name}`}
-            >
-              <Edit2 size={16} />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setDeleteTarget(item)
-              }}
-              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] backdrop-blur-md transition-all hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
-              aria-label={`Eliminar ${item.name}`}
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        ),
-      },
-    ],
-    []
-  )
+  const getStockColor = (stock: number) => {
+    if (stock === 0) return 'bg-red-500'
+    if (stock < 10) return 'bg-amber-500'
+    return 'bg-emerald-500'
+  }
+
+  const getStockText = (stock: number) => {
+    if (stock === 0) return 'Sin stock'
+    return `${stock} unidades`
+  }
 
   return (
     <div className="space-y-6">
@@ -304,7 +217,7 @@ export default function Inventory() {
         action={
           <button
             onClick={openCreate}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
           >
             <Plus size={16} /> Nuevo Producto
           </button>
@@ -318,38 +231,194 @@ export default function Inventory() {
           placeholder="Buscar por nombre o marca..."
           className="flex-1"
         />
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          aria-label="Filtrar por categoría"
-          className="h-11 appearance-none rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 pr-10 text-sm text-[var(--text-primary)] backdrop-blur-xl focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-            backgroundPosition: 'right 0.5rem center',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: '1.5em 1.5em',
-          }}
-        >
-          {productCategories.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
-            </option>
+
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {filterPills.map((pill) => (
+            <button
+              key={pill.value}
+              onClick={() => setCategory(pill.value)}
+              className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                category === pill.value
+                  ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-sm'
+                  : 'bg-[var(--surface-hover)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              {pill.label}
+            </button>
           ))}
-        </select>
+        </div>
+
+        <div className="hidden items-center gap-1 rounded-xl border border-[var(--border)] bg-[var(--card)] p-1 sm:flex">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`rounded-lg p-2 transition-all ${
+              viewMode === 'grid'
+                ? 'bg-[var(--accent)]/10 text-[var(--accent-text)]'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+            }`}
+            aria-label="Vista cuadrícula"
+          >
+            <LayoutGrid size={16} />
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`rounded-lg p-2 transition-all ${
+              viewMode === 'list'
+                ? 'bg-[var(--accent)]/10 text-[var(--accent-text)]'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+            }`}
+            aria-label="Vista lista"
+          >
+            <List size={16} />
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
         <LoadingState text="Cargando inventario..." />
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)]/50 py-20">
+          <Package size={48} className="mb-4 text-[var(--text-muted)]" />
+          <h3 className="text-lg font-bold text-[var(--text-primary)]">Inventario vacío</h3>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
+            No se encontraron productos con esos filtros.
+          </p>
+          <button
+            onClick={openCreate}
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
+          >
+            <Plus size={16} /> Agregar primer producto
+          </button>
+        </div>
+      ) : viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filtered.map((product) => (
+            <div
+              key={product.id}
+              className="group overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] transition-all hover:shadow-lg"
+            >
+              <div className="relative aspect-square overflow-hidden bg-[var(--surface)]">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/30 group-hover:opacity-100">
+                  <button
+                    onClick={() => openEdit(product)}
+                    className="rounded-xl bg-[var(--card)] p-2.5 text-[var(--text-primary)] shadow-lg transition-all hover:bg-[var(--accent)] hover:text-[var(--accent-text)]"
+                    aria-label={`Editar ${product.name}`}
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    onClick={() => setDeleteTarget(product)}
+                    className="rounded-xl bg-[var(--card)] p-2.5 text-[var(--text-primary)] shadow-lg transition-all hover:bg-red-500/10 hover:text-red-400"
+                    aria-label={`Eliminar ${product.name}`}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-5">
+                <div className="mb-2">
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      categoryBadgeClass[product.category] ?? 'bg-[var(--surface)] text-[var(--text-secondary)]'
+                    }`}
+                  >
+                    {categoryLabel[product.category] ?? product.category}
+                  </span>
+                </div>
+
+                <h3 className="truncate font-semibold text-[var(--text-primary)]">{product.name}</h3>
+                <p className="mt-0.5 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  {product.brand}
+                </p>
+
+                <p className="mt-3 font-heading text-2xl font-black text-[var(--text-primary)]">
+                  {formatCurrency(product.price)}
+                </p>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${getStockColor(product.stock)}`} />
+                  <span className="text-xs font-semibold text-[var(--text-secondary)]">
+                    {getStockText(product.stock)}
+                  </span>
+                  {product.stock < 10 && product.stock > 0 && (
+                    <AlertCircle size={12} className="text-amber-500" />
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={filtered}
-          keyExtractor={(item) => item.id}
-          onRowClick={openEdit}
-          emptyIcon={Package}
-          emptyTitle="Inventario vacío"
-          emptyDescription="No se encontraron productos con esos filtros."
-        />
+        <div className="space-y-2">
+          {filtered.map((product) => (
+            <div
+              key={product.id}
+              className="group flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition-all hover:shadow-md"
+            >
+              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-[var(--surface)]">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="truncate font-semibold text-[var(--text-primary)]">{product.name}</h3>
+                  <span
+                    className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      categoryBadgeClass[product.category] ?? 'bg-[var(--surface)] text-[var(--text-secondary)]'
+                    }`}
+                  >
+                    {categoryLabel[product.category] ?? product.category}
+                  </span>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  {product.brand}
+                </p>
+              </div>
+
+              <div className="hidden text-right sm:block">
+                <p className="font-heading text-lg font-black text-[var(--text-primary)]">
+                  {formatCurrency(product.price)}
+                </p>
+              </div>
+
+              <div className="hidden items-center gap-2 sm:flex">
+                <span className={`h-2 w-2 rounded-full ${getStockColor(product.stock)}`} />
+                <span className="text-xs font-semibold text-[var(--text-secondary)]">
+                  {getStockText(product.stock)}
+                </span>
+              </div>
+
+              <div className="flex shrink-0 gap-1">
+                <button
+                  onClick={() => openEdit(product)}
+                  className="rounded-lg border border-[var(--border)] p-2 text-[var(--text-muted)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                  aria-label={`Editar ${product.name}`}
+                >
+                  <Edit2 size={16} />
+                </button>
+                <button
+                  onClick={() => setDeleteTarget(product)}
+                  className="rounded-lg border border-[var(--border)] p-2 text-[var(--text-muted)] transition-all hover:bg-red-500/10 hover:text-red-400"
+                  aria-label={`Eliminar ${product.name}`}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Create/Edit Modal */}
@@ -360,14 +429,13 @@ export default function Inventory() {
         size="lg"
       >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
-          {/* Image Upload */}
           <div className="md:col-span-2">
             <FormField label="Imagen del Producto">
               <div
-                className={`relative flex h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-all ${
+                className={`group relative flex h-64 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed transition-all ${
                   dragActive
                     ? 'border-[var(--accent)] bg-[var(--accent)]/5'
-                    : 'border-[var(--border)] bg-[var(--surface)]'
+                    : 'border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/5'
                 }`}
                 onDragOver={(e) => {
                   e.preventDefault()
@@ -398,25 +466,23 @@ export default function Inventory() {
                     <img
                       src={imagePreview}
                       alt="Preview"
-                      className="h-full w-full rounded-2xl object-cover"
+                      className="h-full w-full object-cover"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/40 opacity-0 transition-opacity hover:opacity-100">
-                      <span className="rounded-full bg-black/50 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-md">
-                        Cambiar
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                      <span className="rounded-full bg-black/50 px-4 py-2 text-xs font-bold text-white">
+                        Cambiar imagen
                       </span>
                     </div>
                   </>
                 ) : (
                   <div className="text-center">
-                    <ImageIcon
-                      size={32}
-                      className="mx-auto mb-2 text-[var(--accent)] opacity-50"
-                      aria-hidden="true"
-                    />
-                    <p className="text-xs font-bold text-[var(--text-primary)]">
+                    <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--surface)]">
+                      <ImageIcon size={28} className="text-[var(--text-muted)]" />
+                    </div>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">
                       Arrastra o haz clic
                     </p>
-                    <p className="mt-1 text-[10px] text-[var(--text-muted)]">PNG, JPG hasta 5MB</p>
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">PNG, JPG hasta 5MB</p>
                   </div>
                 )}
                 <input
@@ -430,7 +496,6 @@ export default function Inventory() {
             </FormField>
           </div>
 
-          {/* Fields */}
           <div className="space-y-4 md:col-span-3">
             <FormField
               label="Nombre del Producto"
@@ -444,7 +509,7 @@ export default function Inventory() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Ej: Gold Standard Whey 5lbs"
-                className="h-10 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
 
@@ -461,7 +526,7 @@ export default function Inventory() {
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
                   placeholder="0.00"
-                  className="h-10 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
               <FormField label="Stock" required error={formErrors.stock} htmlFor="prod-stock">
@@ -471,7 +536,7 @@ export default function Inventory() {
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}
                   placeholder="0"
-                  className="h-10 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
             </div>
@@ -482,7 +547,7 @@ export default function Inventory() {
                   id="prod-category"
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="h-10 w-full appearance-none rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 >
                   {productCategories
                     .filter((c) => c.value !== 'all')
@@ -500,7 +565,7 @@ export default function Inventory() {
                   value={form.brand}
                   onChange={(e) => setForm({ ...form, brand: e.target.value })}
                   placeholder="Ej: Optimum Nutrition"
-                  className="h-10 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                  className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
               </FormField>
             </div>
@@ -512,7 +577,7 @@ export default function Inventory() {
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={3}
                 placeholder="Características principales..."
-                className="min-h-[80px] w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text-primary)] backdrop-blur-xl placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+                className="min-h-[80px] w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
               />
             </FormField>
           </div>
@@ -522,17 +587,17 @@ export default function Inventory() {
           <button
             onClick={() => setShowModal(false)}
             disabled={isSaving}
-            className="rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97] disabled:opacity-50"
+            className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] active:scale-[0.97] disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(66,204,99,0.25)] transition-all hover:shadow-[0_0_32px_rgba(66,204,99,0.4)] active:scale-[0.97]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
           >
             {isSaving && (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--accent-text)]/30 border-t-[var(--accent-text)]" />
             )}
             {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
           </button>

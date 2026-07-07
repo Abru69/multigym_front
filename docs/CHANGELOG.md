@@ -4,6 +4,57 @@ Formato: [YYYY-MM-DD]
 
 ---
 
+## [2026-07-06]
+
+### Completado
+
+- **Rediseño Total del Frontend — Premium Gym Identity + Dark Theme**
+  - **Concepto visual**: Inspirado en Gold's Gym / Smart Fit — tipografía extra-condensed uppercase, layouts generosos, hero full-bleed, pricing 3 tiers con dark Pro card
+  - **Dark Theme Near-Black**: `--bg-primary: #0a0a0a`, `--card: #141414`, `--border: #222222`, accent neon green `#aaff00`
+  - **~439 reemplazos de colores hardcoded** en 37 archivos
+
+- **CSS Foundation** (`index.css`):
+  - Dark theme variables: `--bg-primary: #0a0a0a`, `--bg-secondary: #111111`, `--surface: #1a1a1a`, `--card: #141414`
+  - Text colors: `--text-primary: #f5f5f5`, `--text-secondary: #a0a0a0`, `--text-muted: #666666`
+  - Borders: `--border: #222222`, `--border-hover: #333333`
+  - Shadows profundas para dark mode (opacity 0.3-0.6)
+  - Nuevas utilidades: `section-padding`, `section-padding-lg`, `animate-marquee`, `animate-float`, `animate-scale-in`, `fade-in-down-anim`
+  - Body background: `var(--bg-primary)` (#0a0a0a)
+
+- **14 UI Components** — Dark theme: `bg-[var(--card)]`, `bg-[var(--surface)]`, `text-[var(--text-primary)]`, `border-[var(--border)]`, semantic colors con `bg-*-500/10`
+
+- **3 Layouts rediseñados**:
+  - `DashboardLayout.tsx` — Sidebar fijo 260px, nav vertical con iconos, main content offset `lg:ml-64`
+  - `AuthLayout.tsx` — Split layout: imagen gym izq + formulario der
+  - `ClientLayout.tsx` — Premium header con logo accent-box, nav con iconos, cart badge
+
+- **Landing** — Hero full-bleed `bg-black/60`, headline `font-heading text-8xl`, features alternados, pricing 3 tiers (dark Pro card), CTA `bg-gray-900`
+
+- **SaaSLanding** — Hero center-aligned con dashboard mockup, feature grid, pricing prominently
+
+- **6 Admin Pages**:
+  - `Dashboard.tsx` — KPIs gigantes `font-heading text-4xl font-black`, AreaChart con gradient, quick actions
+  - `Users.tsx` — Card grid 3 cols, avatar 56px, role badges, filter pills
+  - `Inventory.tsx` — Product card grid con imagen hover zoom, category pills, view toggle
+  - `Exercises.tsx` — Muscle group cards h-40 imagen, hover scale-110
+  - `RoutineBuilder.tsx` — Two-column: day tabs + library sidebar
+  - `RoutineLibrary.tsx` — Template cards con accent icon
+
+- **5 Shop Pages**:
+  - `Catalog.tsx` — font-heading title, category pills, ProductCard grid
+  - `Cart.tsx` — Two-column: items + sticky summary
+  - `Checkout.tsx` — 3-circle step indicator, credit card visual, confetti success
+  - `ProductDetail.tsx` — Gallery rounded-3xl, huge price, trust badges, nutrition table
+  - `ProductCard.tsx` — Hover zoom, slide-up add-to-cart button
+
+- **Client Pages**: `MyRoutines.tsx` — Calendar rounded-2xl, font-heading day names
+- **Auth Pages (5)** — font-heading titles, error boxes `bg-red-500/10 border-red-500/30`
+- **PlatformSettings** — Cards rounded-2xl, accent toggles
+
+- **Build**: `tsc --noEmit` ✅ | `vite build` ✅ (814ms)
+
+---
+
 ## [2026-07-04]
 
 ### Completado

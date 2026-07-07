@@ -61,13 +61,13 @@ export default function ResetPassword() {
   if (success) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 shadow-[0_0_16px_rgba(66,204,99,0.15)]">
+        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent)]/10">
           <CheckCircle size={32} className="text-[var(--accent)]" />
         </div>
-        <h2 className="mb-1 text-xl font-black tracking-tight text-[var(--text-primary)]">
+        <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">
           Contraseña actualizada
         </h2>
-        <p className="mb-6 text-sm leading-relaxed text-[var(--text-muted)]">
+        <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">
           Tu contraseña ha sido restablecida correctamente. Ya puedes iniciar sesión con tu nueva
           contraseña.
         </p>
@@ -90,15 +90,15 @@ export default function ResetPassword() {
         Volver al login
       </Link>
 
-      <h2 className="mb-1 text-xl font-black tracking-tight text-[var(--text-primary)]">
+      <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">
         Nueva contraseña
       </h2>
-      <p className="mb-6 text-sm leading-relaxed text-[var(--text-muted)]">
+      <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">
         Ingresa tu nueva contraseña para restablecer el acceso a tu cuenta.
       </p>
 
       {error && (
-        <div className="mb-4 rounded-2xl border border-[var(--error)]/20 bg-[var(--error)]/10 px-4 py-3 text-sm text-[var(--error)] backdrop-blur-xl">
+        <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
           {error}
         </div>
       )}

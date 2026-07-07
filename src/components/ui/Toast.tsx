@@ -33,16 +33,10 @@ const icons = {
   warning: AlertCircle,
 }
 
-const typeClasses = {
-  success: 'border-[var(--success)]/30 bg-[var(--success)]/10',
-  error: 'border-[var(--error)]/30 bg-[var(--error)]/10',
-  warning: 'border-[var(--warning)]/30 bg-[var(--warning)]/10',
-}
-
 const iconClasses = {
-  success: 'text-[var(--success)]',
-  error: 'text-[var(--error)]',
-  warning: 'text-[var(--warning)]',
+  success: 'text-green-500',
+  error: 'text-red-500',
+  warning: 'text-amber-500',
 }
 
 function ToastContainer() {
@@ -59,10 +53,7 @@ function ToastContainer() {
               initial={{ opacity: 0, x: 50, scale: 0.95 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 50, scale: 0.95 }}
-              className={cn(
-                'flex min-w-[280px] items-center gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-xl',
-                typeClasses[toast.type]
-              )}
+              className="flex min-w-[280px] items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 shadow-[var(--shadow-lg)]"
             >
               <Icon size={18} className={iconClasses[toast.type]} />
               <span className="flex-1 text-sm text-[var(--text-primary)]">{toast.message}</span>

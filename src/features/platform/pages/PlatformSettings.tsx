@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Input as UIInput } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { Card as UICard, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+
 export default function PlatformSettings() {
   const [saved, setSaved] = useState(false)
   const [cfg, setCfg] = useState({
@@ -31,10 +32,10 @@ export default function PlatformSettings() {
   }
 
   const Toggle = ({ label, sub, checked, onChange }: any) => (
-    <div className="flex items-center justify-between py-2">
+    <div className="flex items-center justify-between py-2.5">
       <div>
         <p className="text-sm font-semibold text-[var(--text-primary)]">{label}</p>
-        <p className="text-xs text-[var(--text-muted)]">{sub}</p>
+        <p className="text-xs text-[var(--text-secondary)]">{sub}</p>
       </div>
       <button
         onClick={onChange}
@@ -42,7 +43,7 @@ export default function PlatformSettings() {
         style={{ background: checked ? 'var(--accent)' : 'var(--border)' }}
       >
         <div
-          className="absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform"
+          className="absolute top-1 left-1 h-4 w-4 rounded-full bg-[var(--card)] transition-transform"
           style={{ transform: checked ? 'translateX(20px)' : 'translateX(0)' }}
         />
       </button>
@@ -61,10 +62,10 @@ export default function PlatformSettings() {
       <Label>{label}</Label>
       <select
         {...props}
-        className="flex h-11 w-full appearance-none rounded-xl border border-white/[0.08] bg-[var(--card)] px-4 py-2 text-sm text-[var(--text-primary)] backdrop-blur-xl transition-colors outline-none focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20"
+        className="flex h-11 w-full appearance-none rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm text-[var(--text-primary)] transition-colors outline-none focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20"
       >
         {options.map((o: any) => (
-          <option key={o.value} value={o.value} className="bg-[var(--surface)]">
+          <option key={o.value} value={o.value} className="bg-[var(--card)]">
             {o.label}
           </option>
         ))}
@@ -73,15 +74,15 @@ export default function PlatformSettings() {
   )
 
   const Card = ({ icon: Icon, title, children }: any) => (
-    <UICard>
-      <CardHeader className="flex flex-row items-center gap-3 border-b border-white/[0.06] pb-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--accent)]/10 to-[var(--accent)]/5 text-[var(--accent)]">
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+      <div className="mb-5 flex items-center gap-3 border-b border-[var(--border)] pb-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
           <Icon size={16} />
         </div>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 pt-6">{children}</CardContent>
-    </UICard>
+        <h3 className="font-heading text-sm font-black text-[var(--text-primary)]">{title}</h3>
+      </div>
+      <div className="space-y-4">{children}</div>
+    </div>
   )
 
   return (
@@ -91,13 +92,13 @@ export default function PlatformSettings() {
           <h1 className="font-heading text-2xl font-black tracking-tight text-[var(--text-primary)]">
             Configuración de Plataforma
           </h1>
-          <p className="mt-0.5 text-sm text-[var(--text-muted)]">
+          <p className="mt-0.5 text-sm text-[var(--text-secondary)]">
             Ajustes globales del sistema SaaS
           </p>
         </div>
         <Button
           onClick={save}
-          className="gap-2 shadow-[0_0_16px_rgba(66,204,99,0.3)] hover:-translate-y-0.5"
+          className="gap-2 shadow-sm hover:-translate-y-0.5"
         >
           <Save size={16} /> Guardar Cambios
         </Button>
@@ -218,27 +219,23 @@ export default function PlatformSettings() {
         </Card>
       </div>
 
-      {/* Danger Zone */}
-      <div className="relative overflow-hidden rounded-2xl border border-[var(--error)]/30 bg-gradient-to-br from-[var(--error)]/5 to-[var(--error)]/10 p-6 backdrop-blur-xl">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent" />
-        <div className="relative z-10">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--error)]/15">
-              <AlertTriangle size={18} className="text-[var(--error)]" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-[var(--error)]">Zona de Peligro</h3>
-              <p className="text-xs text-[var(--text-muted)]">Estas acciones son irreversibles.</p>
-            </div>
+      <div className="rounded-2xl border-2 border-red-500/30 bg-[var(--card)] p-6">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10">
+            <AlertTriangle size={18} className="text-[var(--error)]" />
           </div>
-          <div className="flex flex-wrap gap-3">
-            <button className="flex items-center gap-2 rounded-xl border border-white/[0.08] bg-[var(--card)] px-4 py-2.5 text-xs font-semibold text-[var(--text-secondary)] backdrop-blur-xl transition-all hover:bg-white/[0.08] active:scale-[0.97]">
-              <RefreshCw size={14} /> Resetear Configuración
-            </button>
-            <button className="flex items-center gap-2 rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-2.5 text-xs font-semibold text-[var(--error)] backdrop-blur-xl transition-all hover:bg-[var(--error)]/15 active:scale-[0.97]">
-              <AlertTriangle size={14} /> Poner plataforma en mantenimiento
-            </button>
+          <div>
+            <h3 className="font-heading text-sm font-bold text-[var(--error)]">Zona de Peligro</h3>
+            <p className="text-xs text-[var(--text-secondary)]">Estas acciones son irreversibles.</p>
           </div>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-xs font-semibold text-[var(--text-secondary)] transition-all hover:bg-[var(--surface-hover)] active:scale-[0.97]">
+            <RefreshCw size={14} /> Resetear Configuración
+          </button>
+          <button className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-xs font-semibold text-[var(--error)] transition-all hover:bg-red-500/10 active:scale-[0.97]">
+            <AlertTriangle size={14} /> Poner plataforma en mantenimiento
+          </button>
         </div>
       </div>
 
@@ -248,7 +245,7 @@ export default function PlatformSettings() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed right-6 bottom-6 z-50 flex items-center gap-2 rounded-xl border border-white/[0.08] bg-[var(--card)] px-4 py-3 text-sm font-semibold text-[var(--text-primary)] shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+            className="fixed right-6 bottom-6 z-50 flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm font-semibold text-[var(--text-primary)] shadow-lg"
           >
             <span className="text-[var(--success)]">✔</span> Configuración guardada correctamente
           </motion.div>

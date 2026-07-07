@@ -1,22 +1,31 @@
 # Próximos Pasos
 
-**Última sesión:** 2026-07-02 — Platform Users integrado con backend
+**Última sesión:** 2026-07-06 — Rediseño total + Dark Theme near-black
 
 ## Completado Reciente
 
-- ✅ Platform Dashboard — datos reales con `GET /api/tenants`
-- ✅ Platform Tenants — CRUD completo con backend (listar, crear, toggle status, eliminar)
-- ✅ Platform Users — CRUD completo con backend (listar, crear, editar, toggle status, eliminar)
-- ✅ SaaS Plans — resolución de planes desde `GET /api/saas-plans`
+- ✅ **Dark Theme Near-Black** — `#0a0a0a` base, `#141414` cards, `#aaff00` accent
+- ✅ **Rediseño Total** — 37 archivos, ~439 reemplazos, estructuras nuevas
+- ✅ **Landing** — Hero full-bleed, pricing 3 tiers, alternating features
+- ✅ **Admin** — Card-based Users, product grid Inventory, two-column RoutineBuilder
+- ✅ **Shop** — ProductCard hover zoom, Cart two-column, Checkout step indicator
+- ✅ **Layouts** — Sidebar fijo, Auth split layout, Client premium header
+- ✅ Platform Dashboard, Tenants, Users — CRUD completo con backend
+- ✅ SaaS Plans — resolución desde `GET /api/saas-plans`
 
 ## Prioridad Alta
 
-1. **Fix Lint Errors (132)**
+1. **Verificar UI en navegador**
+   - Ejecutar `npm run dev` y revisar todas las páginas
+   - Verificar que no queden colores hardcoded en `bg-white`, `text-gray-900`, etc.
+   - Probar mobile responsive
+
+2. **Fix Lint Errors (132)**
    - `react-refresh/only-export-components` — Considerar agregar `/* eslint-disable */` temporalmente o mover exports
    - `@typescript-eslint/no-unused-vars` — Eliminar imports/variables no usadas
    - `jsx-a11y` — Agregar aria-labels y keyboard handlers
 
-2. **Tests Unitarios**
+3. **Tests Unitarios**
    - Configurar Vitest o Jest
    - Tests para stores (authStore, cartStore, routineStore, platformTenantsStore, platformUsersStore)
    - Tests para componentes UI (Modal, Toast, ConfirmDialog)

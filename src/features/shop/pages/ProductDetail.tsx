@@ -13,8 +13,9 @@ import {
   Info,
   Package,
   ShieldCheck,
+  Truck,
+  Lock,
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
 
 export default function ProductDetail() {
   const { slug } = useParams()
@@ -34,10 +35,13 @@ export default function ProductDetail() {
   if (!product) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-        <h2 className="mb-2 text-2xl font-bold text-[var(--text-primary)]">
+        <h2 className="mb-3 font-heading text-2xl font-black text-[var(--text-primary)]">
           Producto no encontrado
         </h2>
-        <Link to="/tienda" className="text-sm font-medium text-[var(--accent)]">
+        <Link
+          to="/tienda"
+          className="text-sm font-semibold text-[var(--accent)]"
+        >
           Volver a la tienda
         </Link>
       </div>
@@ -55,50 +59,64 @@ export default function ProductDetail() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 sm:py-8">
+    <div className="mx-auto max-w-6xl space-y-12 px-4 py-8 sm:py-12">
       <Link
         to="/tienda"
         className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
       >
-        <ChevronLeft size={16} /> Volver al catálogo
+        <ChevronLeft size={18} /> Volver al catálogo
       </Link>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-16">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="space-y-4"
+          transition={{ duration: 0.4 }}
         >
-          <div className="aspect-square overflow-hidden rounded-3xl border border-white/[0.06] bg-gradient-to-br from-[var(--card)] to-[var(--surface)] backdrop-blur-xl">
-            <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+          <div className="aspect-square overflow-hidden rounded-3xl bg-[var(--surface-hover)]">
+            <img
+              src={product.image}
+              alt={product.name}
+              className="h-full w-full object-cover"
+            />
           </div>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4 }}
           className="flex flex-col"
         >
-          <span className="mb-2 text-xs font-bold tracking-wider text-[var(--accent)] uppercase">
+          <span className="mb-3 text-xs font-bold tracking-widest text-[var(--accent)] uppercase">
             {product.brand}
           </span>
-          <h1 className="mb-4 text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
+
+          <h1 className="mb-4 font-heading text-3xl font-black text-[var(--text-primary)] sm:text-4xl">
             {product.name}
           </h1>
 
           <div className="mb-6 flex items-center gap-4 border-b border-[var(--border)] pb-6">
-            <div
-              className="flex items-center gap-1 text-sm font-medium"
-              style={{ color: 'var(--warning)' }}
-            >
-              <Star size={16} fill="currentColor" />
-              {product.rating}{' '}
-              <span className="text-[var(--text-muted)]">({product.reviewCount})</span>
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  size={16}
+                  className={
+                    i < Math.floor(product.rating)
+                      ? 'fill-yellow-400 text-yellow-400'
+                      : 'text-gray-200'
+                  }
+                />
+              ))}
+              <span className="ml-1 text-sm font-medium text-[var(--text-secondary)]">
+                ({product.reviewCount})
+              </span>
             </div>
-            <div className="h-1 w-1 rounded-full bg-[var(--surface-hover)]" />
+            <div className="h-1 w-1 rounded-full bg-gray-200" />
             <span
-              className="text-sm font-medium"
-              style={{ color: product.isAvailable ? 'var(--success)' : 'var(--danger)' }}
+              className="text-sm font-semibold"
+              style={{ color: product.isAvailable ? 'var(--success)' : '#ef4444' }}
             >
               {product.isAvailable ? 'En stock' : 'Agotado'}
             </span>
@@ -110,7 +128,7 @@ export default function ProductDetail() {
                 {formatCurrency(product.originalPrice)}
               </span>
             )}
-            <span className="text-4xl font-black text-[var(--text-primary)]">
+            <span className="font-heading text-4xl font-black text-[var(--text-primary)]">
               {formatCurrency(product.price)}
             </span>
           </div>
@@ -119,48 +137,48 @@ export default function ProductDetail() {
             {product.description}
           </p>
 
-          <div className="mt-auto space-y-4">
+          <div className="mt-auto space-y-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 items-center rounded-xl border border-[var(--border)] bg-[var(--surface)] px-2">
-                <Button
-                  variant="outline"
+              <div className="flex items-center overflow-hidden rounded-full border border-[var(--border)]">
+                <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="h-10 w-10 border-none p-0"
+                  className="flex h-14 w-14 items-center justify-center text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                 >
-                  <Minus size={16} />
-                </Button>
-                <span className="w-12 text-center font-bold text-[var(--text-primary)]">
+                  <Minus size={18} />
+                </button>
+                <span className="w-12 text-center font-heading text-lg font-black text-[var(--text-primary)]">
                   {quantity}
                 </span>
-                <Button
-                  variant="outline"
+                <button
                   onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  className="h-10 w-10 border-none p-0"
+                  className="flex h-14 w-14 items-center justify-center text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                 >
-                  <Plus size={16} />
-                </Button>
+                  <Plus size={18} />
+                </button>
               </div>
 
-              <Button
+              <button
                 onClick={handleAddToCart}
                 disabled={!product.isAvailable}
-                className="h-14 flex-1 gap-2 text-base"
+                className="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ShoppingCart size={20} />
                 {cartItem ? 'Actualizar Carrito' : 'Agregar al Carrito'}
-              </Button>
+              </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-6">
+            <div className="grid grid-cols-3 gap-3 pt-4">
               {[
                 { icon: ShieldCheck, text: 'Garantía de calidad' },
-                { icon: Package, text: 'Envío seguro' },
+                { icon: Truck, text: 'Envío seguro' },
+                { icon: Lock, text: 'Pago encriptado' },
               ].map((f) => (
                 <div
                   key={f.text}
-                  className="flex items-center gap-2 text-xs font-medium text-[var(--text-muted)]"
+                  className="flex flex-col items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-4 text-center"
                 >
-                  <f.icon size={16} /> {f.text}
+                  <f.icon size={18} className="text-[var(--accent)]" />
+                  <span className="text-[11px] font-medium text-[var(--text-secondary)]">{f.text}</span>
                 </div>
               ))}
             </div>
@@ -172,11 +190,15 @@ export default function ProductDetail() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="mt-16 border-t border-[var(--border)] pt-16"
+        className="border-t border-[var(--border)] pt-12"
       >
-        <div className="mb-8 flex items-center gap-2">
-          <Info size={24} className="text-[var(--accent)]" />
-          <h2 className="text-xl font-bold text-[var(--text-primary)]">Información Nutricional</h2>
+        <div className="mb-8 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10">
+            <Info size={20} className="text-[var(--accent)]" />
+          </div>
+          <h2 className="font-heading text-xl font-black text-[var(--text-primary)]">
+            Información Nutricional
+          </h2>
         </div>
 
         {product.nutritionFacts && product.nutritionFacts.length > 0 ? (
@@ -196,11 +218,13 @@ export default function ProductDetail() {
                   </strong>
                 </span>
               </div>
-              <div className="overflow-hidden rounded-2xl border border-white/[0.06]">
+              <div className="overflow-hidden rounded-2xl border border-[var(--border)]">
                 {product.nutritionFacts.map((fact, i) => (
                   <div
                     key={fact.label}
-                    className={`flex justify-between p-4 text-sm ${i % 2 === 0 ? 'bg-[var(--card)]' : 'bg-[var(--surface)]'}`}
+                    className={`flex justify-between p-4 text-sm ${
+                      i % 2 === 0 ? 'bg-[var(--card)]' : 'bg-[var(--surface)]'
+                    }`}
                   >
                     <span className="font-medium text-[var(--text-primary)]">{fact.label}</span>
                     <div className="text-right">
@@ -215,8 +239,9 @@ export default function ProductDetail() {
                 ))}
               </div>
             </div>
+
             <div>
-              <h3 className="mb-3 font-semibold text-[var(--text-primary)]">
+              <h3 className="mb-4 font-heading font-bold text-[var(--text-primary)]">
                 Detalles del producto
               </h3>
               <ul className="space-y-3 text-sm">
@@ -229,10 +254,10 @@ export default function ProductDetail() {
                     d.value && (
                       <li
                         key={d.label}
-                        className="flex justify-between border-b border-white/[0.06] pb-2"
+                        className="flex justify-between border-b border-[var(--border)] pb-3"
                       >
                         <span className="text-[var(--text-muted)]">{d.label}</span>
-                        <span className="font-medium text-[var(--text-primary)] capitalize">
+                        <span className="font-medium capitalize text-[var(--text-primary)]">
                           {d.value}
                         </span>
                       </li>

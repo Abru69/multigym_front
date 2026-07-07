@@ -39,7 +39,7 @@ function Avatar({ src, name, size = 'md', className }: AvatarProps) {
         src={src}
         alt={name}
         className={cn(
-          'rounded-full object-cover ring-2 ring-white/[0.06]',
+          'rounded-full object-cover ring-2 ring-white',
           sizeClasses[size],
           className
         )}
@@ -50,7 +50,7 @@ function Avatar({ src, name, size = 'md', className }: AvatarProps) {
   return (
     <div
       className={cn(
-        'flex items-center justify-center rounded-full font-semibold ring-2',
+        'flex items-center justify-center rounded-full font-semibold ring-2 ring-white',
         sizeClasses[size],
         colorPalette[colorIndex],
         className

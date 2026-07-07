@@ -34,7 +34,7 @@ function DropdownMenu({ trigger, children, align = 'right', className }: Dropdow
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              'absolute z-50 mt-2 min-w-[180px] overflow-hidden rounded-xl border border-white/[0.08] bg-[var(--card)]/90 shadow-[0_16px_48px_rgba(0,0,0,0.5)] backdrop-blur-2xl',
+              'absolute z-50 mt-2 min-w-[180px] overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-lg)]',
               align === 'right' ? 'right-0' : 'left-0',
               className
             )}
@@ -60,7 +60,7 @@ function DropdownItem({ children, onClick, className, danger }: DropdownItemProp
       onClick={onClick}
       className={cn(
         'flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm transition-colors',
-        'hover:bg-white/[0.04]',
+        'hover:bg-[var(--surface-hover)]',
         danger ? 'text-[var(--error)]' : 'text-[var(--text-primary)]',
         className
       )}
@@ -71,7 +71,7 @@ function DropdownItem({ children, onClick, className, danger }: DropdownItemProp
 }
 
 function DropdownSeparator() {
-  return <div className="my-1 h-px bg-white/[0.06]" />
+  return <div className="my-1 h-px bg-[var(--surface-hover)]" />
 }
 
 export { DropdownMenu, DropdownItem, DropdownSeparator }

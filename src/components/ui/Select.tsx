@@ -13,10 +13,10 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       <select
         ref={ref}
         className={cn(
-          'flex h-11 w-full appearance-none rounded-xl border bg-[var(--surface)] px-4 pr-10 text-sm text-[var(--text-primary)] transition-all duration-300 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+          'flex h-11 w-full appearance-none rounded-xl border bg-[var(--card)] px-4 pr-10 text-sm text-[var(--text-primary)] transition-all duration-300 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
           error
             ? 'border-[var(--error)] focus:border-[var(--error)] focus:ring-2 focus:ring-[var(--error)]/20'
-            : 'border-[var(--border)] hover:border-[var(--border-hover)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20',
+            : 'border-[var(--border)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20',
           className
         )}
         style={{

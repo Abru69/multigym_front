@@ -81,7 +81,7 @@ function DataTable<T>({
 
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] py-16 backdrop-blur-xl">
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] py-16 shadow-[var(--shadow-sm)]">
         {EmptyIcon && <EmptyIcon size={48} className="mb-4 text-[var(--text-muted)] opacity-40" />}
         <p className="font-heading text-lg font-bold text-[var(--text-primary)]">{emptyTitle}</p>
         <p className="mt-1 text-sm text-[var(--text-muted)]">{emptyDescription}</p>
@@ -92,19 +92,19 @@ function DataTable<T>({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-xl',
+        'overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-sm)]',
         className
       )}
     >
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className={cn('border-b border-[var(--border)]', headerClassName)}>
+            <tr className={cn('bg-[var(--surface)] border-b border-[var(--border)]', headerClassName)}>
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    'px-4 py-3.5 text-left text-xs font-bold tracking-wider text-[var(--text-muted)] uppercase',
+                    'px-4 py-3.5 text-left text-xs font-bold tracking-wider text-[var(--text-secondary)] uppercase',
                     col.sortable && 'cursor-pointer select-none hover:text-[var(--text-secondary)]',
                     col.headerClassName
                   )}
@@ -130,18 +130,16 @@ function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[var(--border)]">
+          <tbody>
             {sortedData.map((item, index) => (
               <tr
                 key={keyExtractor(item)}
                 onClick={onRowClick ? () => onRowClick(item) : undefined}
                 className={cn(
-                  'table-row-glow transition-all duration-200',
+                  'border-b border-[var(--border)] bg-[var(--card)] transition-colors duration-200 hover:bg-[var(--surface-hover)]',
                   onRowClick && 'cursor-pointer',
-                  index % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.01]',
                   rowClassName
                 )}
-                style={{ animationDelay: `${index * 30}ms` }}
               >
                 {columns.map((col) => (
                   <td key={col.key} className={cn('px-4 py-3.5 text-sm', col.className)}>
