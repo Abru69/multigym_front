@@ -21,7 +21,9 @@ import {
   ArrowDown,
   Store,
   Truck,
+  QrCode,
 } from 'lucide-react'
+import { PickupVoucher } from '@/features/client/components/PickupVoucher'
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
   COMPLETED: { label: 'Completada', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
@@ -58,6 +60,7 @@ export default function MyOrders() {
   const [sortField, setSortField] = useState<'date' | 'total'>('date')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [filterDelivery, setFilterDelivery] = useState<'ALL' | 'PICKUP' | 'SHIPPING'>('ALL')
+  const [voucherOrder, setVoucherOrder] = useState<OrderDTO | null>(null)
 
   const loadOrders = async () => {
     try {
@@ -389,6 +392,13 @@ export default function MyOrders() {
                            <p className="mt-0.5 text-[11px] text-blue-600">
                              Pasa a recoger tu pedido mostrando este comprobante.
                            </p>
+                           <button
+                             onClick={() => setVoucherOrder(order)}
+                             className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-blue-700"
+                           >
+                             <QrCode size={12} />
+                             Ver Comprobante
+                           </button>
                          </div>
                        )}
 
@@ -435,6 +445,15 @@ export default function MyOrders() {
           )
         })}
       </div>
+
+      {/* Pickup Voucher Modal */}
+      {voucherOrder && (
+        <PickupVoucher
+          isOpen={!!voucherOrder}
+          onClose={() => setVoucherOrder(null)}
+          order={voucherOrder}
+        />
+      )}
     </div>
   )
 }
