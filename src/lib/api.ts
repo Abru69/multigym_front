@@ -12,7 +12,6 @@ import type {
   PlatformUserRequestDTO,
   AuditLogDTO,
   PaginatedResult,
-  MemberListItemDTO,
   PlanListItemDTO,
   SubscriptionListItemDTO,
   PaymentListItemDTO,
@@ -196,24 +195,6 @@ export const togglePlatformUserStatus = (id: string) =>
 
 export const deletePlatformUser = (id: string) =>
   fetchApi<ResponseDTO<unknown>>(`/platform-api/users/${id}`, { method: 'DELETE' })
-
-// --- Members ---
-export const getMembers = () =>
-  fetchApi<ResponseDTO<PaginatedResult<MemberListItemDTO>>>('/api/members')
-export const createMember = (data: { userId: string; name: string; phone: string }) =>
-  fetchApi<ResponseDTO<MemberListItemDTO>>('/api/members', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  })
-export const updateMember = (id: string, data: { name: string; phone: string }) =>
-  fetchApi<ResponseDTO<MemberListItemDTO>>(`/api/members/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  })
-export const deleteMember = (id: string) =>
-  fetchApi<ResponseDTO<unknown>>(`/api/members/${id}`, { method: 'DELETE' })
-export const getMemberById = (id: string) =>
-  fetchApi<ResponseDTO<MemberListItemDTO>>(`/api/members/${id}`)
 
 // --- Plans ---
 export const getPlans = () =>
