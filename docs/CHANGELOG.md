@@ -8,10 +8,18 @@ Formato: [YYYY-MM-DD]
 
 ### Completado
 
-- **Rediseño Total del Frontend — Premium Gym Identity + Dark Theme**
-  - **Concepto visual**: Inspirado en Gold's Gym / Smart Fit — tipografía extra-condensed uppercase, layouts generosos, hero full-bleed, pricing 3 tiers con dark Pro card
-  - **Dark Theme Near-Black**: `--bg-primary: #0a0a0a`, `--card: #141414`, `--border: #222222`, accent neon green `#aaff00`
-  - **~439 reemplazos de colores hardcoded** en 37 archivos
+- **Conexión de 30 endpoints restantes al frontend**
+  - **Types**: +12 DTO/Request types — `MemberListItemDTO`, `PlanListItemDTO`, `SubscriptionListItemDTO`, `PaymentListItemDTO`, `WorkoutExerciseListItemDTO`, `WorkoutLogListItemDTO` + 6 Request types
+  - **API**: +17 funciones — `getMembers`, `createMember`, `updateMember`, `deleteMember`, `getMemberById`, `getPlans`, `createPlan`, `updatePlan`, `deletePlan`, `togglePlanStatus`, `getPlanById`, `getSubscriptions`, `createSubscription`, `cancelSubscription`, `getSubscriptionsByMember`, `getPayments`, `createPayment`, `getPaymentsBySubscription`, `getWorkoutExercises`, `createWorkoutExercise`, `updateWorkoutExercise`, `deleteWorkoutExercise`, `getWorkoutLogs`, `createWorkoutLog`, `updateWorkoutLog`
+  - **4 páginas admin creadas**: Members.tsx, Plans.tsx, Subscriptions.tsx, Payments.tsx
+  - **routineStore.ts**: `loadRoutines()` ahora llama `GET /api/workouts` + `GET /api/workout-exercises/{id}` en vez de mockRoutines
+  - **Checkout.tsx**: `handleSimulatePayment` ahora crea orden real via `POST /api/orders` + `POST /api/payments`
+  - **AdminLayout.tsx**: +4 nav items (Miembros, Planes, Suscripciones, Pagos)
+  - **Router**: +4 lazy routes bajo `/admin/`
+  - Build: `tsc --noEmit` ✅ | `vite build` ✅ (1.76s)
+
+- **Dark Theme Near-Black** — `#0a0a0a` base, `#141414` cards, `#aaff00` accent
+- **Rediseño Total** — 37 archivos, ~439 reemplazos, estructuras nuevas
 
 - **CSS Foundation** (`index.css`):
   - Dark theme variables: `--bg-primary: #0a0a0a`, `--bg-secondary: #111111`, `--surface: #1a1a1a`, `--card: #141414`

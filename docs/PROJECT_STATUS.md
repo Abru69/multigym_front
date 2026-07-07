@@ -6,14 +6,14 @@
 
 | Área               | Estado                                    |
 | ------------------ | ----------------------------------------- |
-| Build              | ✅ Passing (814ms)                        |
+| Build              | ✅ Passing (1.76s)                        |
 | TypeScript         | ✅ `tsc --noEmit` clean                   |
 | Lint               | ⚠️ 134 problemas (preexistentes)          |
 | Dark Theme         | ✅ Near-black (#0a0a0a) + accent #aaff00 |
 | Rediseño Total     | ✅ 37 archivos, ~439 reemplazos           |
-| Admin Redesign     | ✅ Completo (card-based, no tables)       |
-| Landing Page       | ✅ Completo (full-bleed hero, pricing)    |
-| CSS Migration      | ✅ Completo                               |
+| API Integration    | ✅ 30 endpoints conectados                |
+| Admin Pages        | ✅ 10 páginas (6 originales + 4 nuevas)   |
+| Missing Endpoints  | ⚠️ Progress y Nutrition sin backend       |
 
 ## Paleta de Colores (Dark Theme)
 
@@ -115,6 +115,55 @@
 - **Auth (5)** — font-heading titles, dark error boxes
 - **PlatformSettings** — Cards rounded-2xl, accent toggles
 - **14 UI Components** — Dark theme aplicado
+
+### Fase 10 — Conexión de 30 Endpoints (2026-07-06)
+
+- **Types**: +12 DTO/Request types — MemberListItemDTO, PlanListItemDTO, SubscriptionListItemDTO, PaymentListItemDTO, WorkoutExerciseListItemDTO, WorkoutLogListItemDTO + 6 Request types
+- **API**: +17 funciones — Members (5), Plans (6), Subscriptions (4), Payments (3), WorkoutExercises (4), WorkoutLogs (3)
+- **4 páginas admin creadas**:
+  - `Members.tsx` — GET/PUT/DELETE /api/members
+  - `Plans.tsx` — GET/POST/PUT/DELETE/PATCH /api/plans
+  - `Subscriptions.tsx` — GET/POST/PATCH /api/subscriptions
+  - `Payments.tsx` — GET/POST /api/payments
+- **routineStore.ts**: `loadRoutines()` llama `GET /api/workouts` + `GET /api/workout-exercises/{id}` (fallback a mockRoutines si falla)
+- **Checkout.tsx**: `handleSimulatePayment` crea orden real via `POST /api/orders` + `POST /api/payments`
+- **AdminLayout.tsx**: +4 nav items (Miembros, Planes, Suscripciones, Pagos)
+- **Router**: +4 lazy routes bajo `/admin/`
+- Build: `tsc --noEmit` ✅ | `vite build` ✅ (1.76s)
+
+## Endpoints Faltantes en Backend
+
+### Progress.tsx — Datos físicos del usuario
+
+**El frontend muestra:** peso, % grasa corporal, medidas corporales (pecho, cintura, cadera, brazos, piernas)
+
+**El backend `WorkoutLogDTO` solo tiene:** `durationMinutes`, `caloriesBurned`, `completedAt`
+
+**Campos necesarios en el DTO:**
+```java
+public record ProgressDTO(
+    UUID id, UUID memberId, LocalDate date,
+    BigDecimal weight, BigDecimal bodyFat,
+    Integer chest, Integer waist, Integer hips, Integer arms, Integer legs,
+    String notes
+) {}
+```
+
+**Endpoints necesarios:**
+- `GET /api/progress/member/{memberId}` — listar progreso
+- `POST /api/progress` — registrar dato físico
+- `PUT /api/progress/{id}` — editar registro
+- `DELETE /api/progress/{id}` — eliminar registro
+
+### Nutrition.tsx — Plan de nutrición
+
+**El frontend muestra:** macros diarios, plan de comidas (4 comidas), seguimiento de agua
+
+**Necesita:** `NutritionController` completo nuevo con `NutritionPlanDTO`, `MealDTO`, `FoodItemDTO`
+
+### Miembro Creación — Formulario completo
+
+**Problema:** `POST /api/members` requiere un `userId` existente. Necesita integrar creación de User + Member en un solo flujo.
 
 ## Pendiente
 

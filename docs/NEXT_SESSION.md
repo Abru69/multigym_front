@@ -1,64 +1,145 @@
 # Próximos Pasos
 
-**Última sesión:** 2026-07-06 — Rediseño total + Dark Theme near-black
+**Última sesión:** 2026-07-06 — Conexión de 30 endpoints restantes al frontend
 
 ## Completado Reciente
 
+- ✅ **Conexión de endpoints** — 30 endpoints conectados, 16 nuevas funciones API
+- ✅ **4 páginas admin creadas** — Members, Plans, Subscriptions, Payments
+- ✅ **routineStore conectado** — loadRoutines() llama API en vez de mockRoutines
+- ✅ **Checkout conectado** — Crea orden real via POST /api/orders + POST /api/payments
 - ✅ **Dark Theme Near-Black** — `#0a0a0a` base, `#141414` cards, `#aaff00` accent
 - ✅ **Rediseño Total** — 37 archivos, ~439 reemplazos, estructuras nuevas
-- ✅ **Landing** — Hero full-bleed, pricing 3 tiers, alternating features
-- ✅ **Admin** — Card-based Users, product grid Inventory, two-column RoutineBuilder
-- ✅ **Shop** — ProductCard hover zoom, Cart two-column, Checkout step indicator
-- ✅ **Layouts** — Sidebar fijo, Auth split layout, Client premium header
 - ✅ Platform Dashboard, Tenants, Users — CRUD completo con backend
 - ✅ SaaS Plans — resolución desde `GET /api/saas-plans`
 
+## Endpoints Faltantes en Backend (Mock Data en Frontend)
+
+### 1. Progress.tsx — Datos físicos del usuario
+
+**Necesita:** `GET /api/progress/{memberId}` o `GET /api/workout-logs/{workoutId}` extendido
+
+El frontend muestra: peso, % grasa corporal, medidas corporales (pecho, cintura, cadera, brazos, piernas).
+El backend actual `WorkoutLogDTO` solo tiene: `durationMinutes`, `caloriesBurned`, `completedAt`.
+
+**Campos necesarios en el DTO:**
+```java
+public record ProgressDTO(
+    UUID id,
+    UUID memberId,
+    LocalDate date,
+    BigDecimal weight,
+    BigDecimal bodyFat,
+    Integer chest,    // cm
+    Integer waist,    // cm
+    Integer hips,     // cm
+    Integer arms,     // cm
+    Integer legs,     // cm
+    String notes
+) {}
+```
+
+**Endpoints necesarios:**
+- `GET /api/progress/member/{memberId}` — listar progreso de un miembro
+- `POST /api/progress` — registrar nuevo dato físico
+- `PUT /api/progress/{id}` — editar registro
+- `DELETE /api/progress/{id}` — eliminar registro
+
+### 2. Nutrition.tsx — Plan de nutrición
+
+**Necesita:** `NutritionController` completo nuevo
+
+El frontend muestra: macros diarios (calorías, proteína, carbohidratos, grasas), plan de comidas (4 comidas), seguimiento de agua.
+
+**DTOs necesarios:**
+```java
+public record NutritionPlanDTO(
+    UUID id,
+    UUID memberId,
+    Integer targetCalories,
+    Integer targetProtein,
+    Integer targetCarbs,
+    Integer targetFats,
+    List<MealDTO> meals,
+    String notes
+) {}
+
+public record MealDTO(
+    UUID id,
+    String name,          // "Desayuno", "Comida", etc.
+    List<FoodItemDTO> foods,
+    Integer calories,
+    Integer protein,
+    Integer carbs,
+    Integer fats
+) {}
+```
+
+**Endpoints necesarios:**
+- `GET /api/nutrition/member/{memberId}` — plan de nutrición del miembro
+- `POST /api/nutrition` — crear plan
+- `PUT /api/nutrition/{id}` — actualizar plan
+- `DELETE /api/nutrition/{id}` — eliminar plan
+- `POST /api/nutrition/{planId}/meals` — agregar comida
+- `PUT /api/nutrition/meals/{mealId}` — actualizar comida
+
+### 3. Miembro Creación — Formulario completo
+
+**Problema:** Members.tsx solo tiene lectura/edición, no creación.
+
+El backend `POST /api/members` requiere un `userId` existente. Para crear un miembro completo se necesita:
+1. Primero: `POST /api/tenant/users` → obtener userId
+2. Luego: `POST /api/members` con ese userId
+
+**Necesita:** Integrar el formulario de Users.tsx con la creación de miembros, o crear un flujo de "Crear Miembro" que combine ambos pasos.
+
+### 4. Subscription por Miembro — Perfil de miembro
+
+**Endpoint existe:** `GET /api/subscriptions/member/{memberId}`
+
+**Falta:** Página de detalle de miembro que muestre:
+- Datos personales
+- Suscripción activa
+- Historial de pagos
+- Rutina asignada
+
+### 5. Payment por Suscripción — Historial de pagos
+
+**Endpoint existe:** `GET /api/payments/subscription/{subscriptionId}`
+
+**Falta:** Vista de detalle de suscripción que muestre:
+- Historial de pagos de esa suscripción
+- Estado de la suscripción
+- Fechas de inicio/fin
+
 ## Prioridad Alta
 
-1. **Verificar UI en navegador**
-   - Ejecutar `npm run dev` y revisar todas las páginas
-   - Verificar que no queden colores hardcoded en `bg-white`, `text-gray-900`, etc.
-   - Probar mobile responsive
-
-2. **Fix Lint Errors (132)**
-   - `react-refresh/only-export-components` — Considerar agregar `/* eslint-disable */` temporalmente o mover exports
-   - `@typescript-eslint/no-unused-vars` — Eliminar imports/variables no usadas
-   - `jsx-a11y` — Agregar aria-labels y keyboard handlers
-
-3. **Tests Unitarios**
-   - Configurar Vitest o Jest
-   - Tests para stores (authStore, cartStore, routineStore, platformTenantsStore, platformUsersStore)
-   - Tests para componentes UI (Modal, Toast, ConfirmDialog)
+1. **Crear endpoints de Progress** — Necesario para que Progress.tsx deje de usar mock data
+2. **Crear endpoints de Nutrition** — Necesario para que Nutrition.tsx deje de usar mock data
+3. **Integrar creación de miembros** — Formulario que combine User + Member
+4. **Verificar UI en navegador** — Ejecutar `npm run dev` y probar las 4 páginas nuevas
 
 ## Prioridad Media
 
-3. **Integración API Backend — Módulos Restantes**
-   - Platform Billing — conectar con datos reales
-   - Platform Logs — conectar con datos reales
-   - Admin Users — CRUD con backend
-   - Admin Inventory — CRUD con backend
-   - Client Routines — conectar con backend
+5. **Fix Lint Errors (132)**
+   - `react-refresh/only-export-components`
+   - `@typescript-eslint/no-unused-vars`
+   - `jsx-a11y`
 
-4. **Performance Optimization**
-   - Agregar `React.memo()` donde sea necesario
-   - Evaluar `useMemo` en listas grandes (Inventory, Users)
-   - Lazy loading de imágenes con `loading="lazy"`
-
-5. **PWA Setup**
-   - Service worker
-   - Manifest
-   - Offline support básico
+6. **Performance Optimization**
+   - `React.memo()` donde sea necesario
+   - `useMemo` en listas grandes
+   - Lazy loading de imágenes
 
 ## Prioridad Baja
 
-6. **Accesibilidad (a11y)**
-   - Auditoría completa
-   - Focus management
-   - Screen reader testing
+7. **Tests Unitarios**
+   - Vitest o Jest
+   - Tests para stores y componentes UI
 
-7. **Internacionalización (i18n)**
-   - Soporte multi-idioma
+8. **PWA Setup**
+   - Service worker, manifest, offline support
 
 ## Bloqueado
 
-- (Ninguno en este momento)
+- Progress.tsx y Nutrition.tsx — sin endpoints backend, se quedan como mock data hasta que se creen los controladores Java
