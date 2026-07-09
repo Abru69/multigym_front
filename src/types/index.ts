@@ -6,7 +6,6 @@ export type {
   Routine,
   RoutineDay,
   DayOfWeek,
-  ProgressEntry,
 } from './exercise'
 export type {
   ResponseDTO,

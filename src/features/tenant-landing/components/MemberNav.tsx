@@ -1,9 +1,8 @@
 import { NavLink } from 'react-router-dom'
-import { Dumbbell, TrendingUp, ShoppingBag, User } from 'lucide-react'
+import { Dumbbell, ShoppingBag, User } from 'lucide-react'
 
 const navItems = [
   { to: '/app/rutinas', icon: Dumbbell, label: 'Rutinas' },
-  { to: '/app/progreso', icon: TrendingUp, label: 'Progreso' },
   { to: '/tienda', icon: ShoppingBag, label: 'Tienda' },
   { to: '/app/nutricion', icon: User, label: 'Perfil' },
 ]

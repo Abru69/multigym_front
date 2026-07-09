@@ -1,4 +1,4 @@
-import type { Routine, ProgressEntry } from '@/types'
+import type { Routine } from '@/types'
 import { mockExercises } from './exercises'
 
 const ex = mockExercises
@@ -61,48 +61,5 @@ export const mockRoutines: Routine[] = [
         exercises: [],
       },
     ],
-  },
-]
-
-export const mockProgress: ProgressEntry[] = [
-  {
-    id: 'p-1',
-    userId: 'client-001',
-    date: '2025-01-15',
-    weight: 82.5,
-    bodyFat: 22,
-    measurements: { chest: 102, waist: 88, hips: 100, arms: 34, legs: 58 },
-  },
-  {
-    id: 'p-2',
-    userId: 'client-001',
-    date: '2025-02-15',
-    weight: 81.0,
-    bodyFat: 21,
-    measurements: { chest: 103, waist: 86, hips: 99, arms: 34.5, legs: 58 },
-  },
-  {
-    id: 'p-3',
-    userId: 'client-001',
-    date: '2025-03-15',
-    weight: 79.5,
-    bodyFat: 19.5,
-    measurements: { chest: 103, waist: 84, hips: 98, arms: 35, legs: 59 },
-  },
-  {
-    id: 'p-4',
-    userId: 'client-001',
-    date: '2025-04-15',
-    weight: 78.0,
-    bodyFat: 18,
-    measurements: { chest: 104, waist: 82, hips: 97, arms: 35.5, legs: 59 },
-  },
-  {
-    id: 'p-5',
-    userId: 'client-001',
-    date: '2025-05-10',
-    weight: 77.0,
-    bodyFat: 17,
-    measurements: { chest: 105, waist: 80, hips: 96, arms: 36, legs: 60 },
   },
 ]

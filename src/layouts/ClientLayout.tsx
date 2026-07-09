@@ -6,7 +6,6 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import {
   Dumbbell,
-  TrendingUp,
   ShoppingBag,
   User,
   ShoppingCart,
@@ -19,7 +18,6 @@ import { getTenantUrl } from '@/lib/tenant'
 const clientNav = [
   { to: '/app/rutinas', icon: Dumbbell, label: 'Rutinas' },
   { to: '/app/nutricion', icon: Utensils, label: 'Nutrición' },
-  { to: '/app/progreso', icon: TrendingUp, label: 'Progreso' },
   { to: '/app/mis-ordenes', icon: Package, label: 'Mis Órdenes' },
   { to: '/tienda', icon: ShoppingBag, label: 'Tienda' },
 ]

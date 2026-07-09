@@ -43,20 +43,6 @@ export interface RoutineDay {
 }
 
 export type DayOfWeek =
-  'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo'
-
-export interface ProgressEntry {
-  id: string
-  userId: string
-  date: string
-  weight?: number
-  bodyFat?: number
-  measurements?: {
-    chest?: number
-    waist?: number
-    hips?: number
-    arms?: number
-    legs?: number
-  }
+  | 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo'
   notes?: string
 }
