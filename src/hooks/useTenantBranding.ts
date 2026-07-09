@@ -22,16 +22,28 @@ export function useTenantBranding() {
     // Tailwind @theme variables
     root.style.setProperty('--color-accent', colors.accent)
     root.style.setProperty('--color-accent-hover', colors.accentHover)
+    root.style.setProperty('--color-accent-light', colors.accentLight)
     root.style.setProperty('--color-accent-muted', colors.accentMuted)
-    root.style.setProperty('--color-accent-text', colors.accentText)
     root.style.setProperty('--color-detail', colors.detail)
 
     // :root fallback variables
     root.style.setProperty('--accent', colors.accent)
     root.style.setProperty('--accent-hover', colors.accentHover)
+    root.style.setProperty('--accent-light', colors.accentLight)
     root.style.setProperty('--accent-muted', colors.accentMuted)
-    root.style.setProperty('--accent-text', colors.accentText)
     root.style.setProperty('--detail', colors.detail)
+
+    // accent-text: dark in light mode, accentText in dark mode
+    const applyAccentText = () => {
+      const isDark = root.getAttribute('data-theme') !== 'light'
+      root.style.setProperty('--accent-text', isDark ? colors.accentText : '#1c1917')
+      root.style.setProperty('--color-accent-text', isDark ? colors.accentText : '#1c1917')
+    }
+    applyAccentText()
+
+    // Watch for theme changes
+    const observer = new MutationObserver(applyAccentText)
+    observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] })
 
     // Update glow shadow
     root.style.setProperty('--shadow-glow', `0 0 20px ${colors.accentMuted}`)
@@ -40,15 +52,18 @@ export function useTenantBranding() {
     document.title = `${branding.name} | ${branding.tagline}`
 
     return () => {
+      observer.disconnect()
       // Cleanup: remove inline styles when unmounting (optional)
       const props = [
         '--color-accent',
         '--color-accent-hover',
+        '--color-accent-light',
         '--color-accent-muted',
         '--color-accent-text',
         '--color-detail',
         '--accent',
         '--accent-hover',
+        '--accent-light',
         '--accent-muted',
         '--accent-text',
         '--detail',

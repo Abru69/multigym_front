@@ -5,7 +5,6 @@ import type { OrderDTO, OrderItemDTO, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
   Package,
-  CreditCard,
   Calendar,
   CheckCircle2,
   Clock,
@@ -13,8 +12,6 @@ import {
   ChevronDown,
   ChevronUp,
   ShoppingBag,
-  Banknote,
-  Hash,
   RefreshCw,
   ArrowUpDown,
   ArrowUp,
@@ -25,12 +22,12 @@ import {
 } from 'lucide-react'
 import { PickupVoucher } from '@/features/client/components/PickupVoucher'
 
-const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  COMPLETED: { label: 'Completada', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
-  PENDING: { label: 'Pendiente', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
-  READY: { label: 'Listo para Recoger', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', dot: 'bg-blue-500' },
-  FAILED: { label: 'Fallida', color: 'text-red-700', bg: 'bg-red-50 border-red-200', dot: 'bg-red-500' },
-  CANCELLED: { label: 'Cancelada', color: 'text-gray-500', bg: 'bg-gray-50 border-gray-200', dot: 'bg-gray-400' },
+const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
+  COMPLETED: { label: 'Completada', color: 'var(--success, #22c55e)', dot: 'bg-[var(--success, #22c55e)]' },
+  PENDING: { label: 'Pendiente', color: 'var(--warning, #f59e0b)', dot: 'bg-[var(--warning, #f59e0b)]' },
+  READY: { label: 'Listo', color: 'var(--info, #3b82f6)', dot: 'bg-[var(--info, #3b82f6)]' },
+  FAILED: { label: 'Fallida', color: 'var(--error, #ef4444)', dot: 'bg-[var(--error, #ef4444)]' },
+  CANCELLED: { label: 'Cancelada', color: 'var(--text-muted)', dot: 'bg-[var(--text-muted)]' },
 }
 
 const paymentIcons: Record<string, string> = {
@@ -83,19 +80,18 @@ export default function MyOrders() {
     .filter((o) => o.status === 'COMPLETED')
     .reduce((sum, o) => sum + Number(o.total), 0)
   const completedCount = orders.filter((o) => o.status === 'COMPLETED').length
-  const pendingCount = orders.filter((o) => o.status === 'PENDING').length
 
   const sortedOrders = [...orders]
     .filter((o) => filterDelivery === 'ALL' || o.deliveryMethod === filterDelivery)
     .sort((a, b) => {
-    if (sortField === 'date') {
-      const da = a.createdAt ? new Date(a.createdAt).getTime() : 0
-      const db = b.createdAt ? new Date(b.createdAt).getTime() : 0
-      return sortDir === 'desc' ? db - da : da - db
-    }
-    const diff = Number(a.total) - Number(b.total)
-    return sortDir === 'desc' ? -diff : diff
-  })
+      if (sortField === 'date') {
+        const da = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const db = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        return sortDir === 'desc' ? db - da : da - db
+      }
+      const diff = Number(a.total) - Number(b.total)
+      return sortDir === 'desc' ? -diff : diff
+    })
 
   const toggleSort = (field: 'date' | 'total') => {
     if (sortField === field) {
@@ -110,7 +106,7 @@ export default function MyOrders() {
     return (
       <div className="flex h-80 items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
           <p className="text-xs text-[var(--text-muted)]">Cargando órdenes...</p>
         </div>
       </div>
@@ -120,14 +116,16 @@ export default function MyOrders() {
   if (error) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50">
-          <AlertCircle size={32} className="text-red-400" />
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface)]">
+          <AlertCircle size={28} className="text-[var(--error, #ef4444)]" />
         </div>
-        <h3 className="mb-1 font-heading text-lg font-bold text-[var(--text-primary)]">Error al cargar</h3>
-        <p className="mb-4 text-sm text-[var(--text-secondary)]">{error}</p>
+        <h3 className="mb-1 text-base font-black text-[var(--text-primary)]">
+          Error al cargar
+        </h3>
+        <p className="mb-4 text-sm text-[var(--text-muted)]">{error}</p>
         <button
           onClick={loadOrders}
-          className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-bold text-[var(--accent-text)] transition hover:opacity-90 active:scale-[0.97]"
         >
           <RefreshCw size={14} />
           Reintentar
@@ -139,18 +137,18 @@ export default function MyOrders() {
   if (orders.length === 0) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-[var(--accent)]/10 to-[var(--accent)]/5">
-          <ShoppingBag size={36} className="text-[var(--accent)]" />
+        <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--surface)]">
+          <ShoppingBag size={32} className="text-[var(--accent)]" />
         </div>
-        <h3 className="mb-2 font-heading text-xl font-black text-[var(--text-primary)]">
+        <h3 className="mb-2 text-lg font-black text-[var(--text-primary)]">
           Sin órdenes aún
         </h3>
-        <p className="mx-auto max-w-sm text-sm leading-relaxed text-[var(--text-secondary)]">
-          Tus compras aparecerán aquí después de realizar tu primera orden en la tienda.
+        <p className="mx-auto max-w-sm text-sm text-[var(--text-muted)]">
+          Tus compras aparecerán aquí después de realizar tu primera orden.
         </p>
         <a
           href="/tienda"
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-[var(--accent-text)] transition hover:opacity-90 active:scale-[0.97]"
         >
           <ShoppingBag size={14} />
           Ir a la Tienda
@@ -160,14 +158,15 @@ export default function MyOrders() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6 sm:py-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="mx-auto max-w-2xl px-4 py-8">
+      {/* Header */}
+      <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="font-heading text-2xl font-black text-[var(--text-primary)]">
+          <h1 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">
             Mis Órdenes
           </h1>
-          <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-            {orders.length} orden{orders.length !== 1 ? 'es' : ''} en total
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
+            {orders.length} orden{orders.length !== 1 ? 'es' : ''}
           </p>
         </div>
         <button
@@ -179,108 +178,127 @@ export default function MyOrders() {
         </button>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary */}
       <div className="mb-6 grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 text-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Total</p>
-          <p className="mt-0.5 font-heading text-lg font-black text-[var(--text-primary)]">{orders.length}</p>
-        </div>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 text-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-600">Completadas</p>
-          <p className="mt-0.5 font-heading text-lg font-black text-emerald-700">{completedCount}</p>
-        </div>
-        <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 text-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-amber-600">Gastado</p>
-          <p className="mt-0.5 font-heading text-lg font-black text-amber-700">{formatCurrency(totalSpent)}</p>
-        </div>
+        {[
+          { label: 'Total', value: orders.length, color: 'var(--text-primary)' },
+          { label: 'Completadas', value: completedCount, color: 'var(--success, #22c55e)' },
+          { label: 'Gastado', value: formatCurrency(totalSpent), color: 'var(--accent)' },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-center"
+          >
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+              {stat.label}
+            </p>
+            <p
+              className="mt-1 text-xl font-black"
+              style={{ color: stat.color }}
+            >
+              {stat.value}
+            </p>
+          </div>
+        ))}
       </div>
 
-      {/* Sort Controls */}
-      <div className="mb-4 flex items-center gap-2">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Ordenar:</span>
-        <button
-          onClick={() => toggleSort('date')}
-          className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${
-            sortField === 'date'
-              ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]'
-              : 'border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)]'
-          }`}
-        >
-          {sortField === 'date' ? (sortDir === 'desc' ? <ArrowDown size={10} /> : <ArrowUp size={10} />) : <ArrowUpDown size={10} />}
-          Fecha
-        </button>
-        <button
-          onClick={() => toggleSort('total')}
-          className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${
-            sortField === 'total'
-              ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]'
-              : 'border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)]'
-          }`}
-        >
-          {sortField === 'total' ? (sortDir === 'desc' ? <ArrowDown size={10} /> : <ArrowUp size={10} />) : <ArrowUpDown size={10} />}
-          Total
-        </button>
-      </div>
-
-      {/* Delivery Filter */}
-      <div className="mb-4 flex items-center gap-2">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Entrega:</span>
-        {(['ALL', 'PICKUP', 'SHIPPING'] as const).map((f) => (
+      {/* Filters */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+          Entrega:
+        </span>
+        {([
+          { key: 'ALL', label: 'Todas' },
+          { key: 'PICKUP', label: 'Recogida', icon: Store },
+          { key: 'SHIPPING', label: 'Envío', icon: Truck },
+        ] as const).map((f) => (
           <button
-            key={f}
-            onClick={() => setFilterDelivery(f)}
-            className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition ${
-              filterDelivery === f
+            key={f.key}
+            onClick={() => setFilterDelivery(f.key)}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold transition ${
+              filterDelivery === f.key
                 ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]'
                 : 'border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)]'
             }`}
           >
-            {f === 'ALL' ? 'Todas' : f === 'PICKUP' ? <><Store size={10} /> Recogida</> : <><Truck size={10} /> Envío</>}
+            {f.icon && <f.icon size={10} />}
+            {f.label}
           </button>
         ))}
+
+        <div className="ml-auto flex items-center gap-1.5">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+            Ordenar:
+          </span>
+          {(['date', 'total'] as const).map((field) => (
+            <button
+              key={field}
+              onClick={() => toggleSort(field)}
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-bold transition ${
+                sortField === field
+                  ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]'
+                  : 'border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)]'
+              }`}
+            >
+              {sortField === field ? (
+                sortDir === 'desc' ? <ArrowDown size={10} /> : <ArrowUp size={10} />
+              ) : (
+                <ArrowUpDown size={10} />
+              )}
+              {field === 'date' ? 'Fecha' : 'Total'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Orders List */}
+      {/* Orders */}
       <div className="space-y-3">
         {sortedOrders.map((order, i) => {
           const status = statusConfig[order.status] || statusConfig.PENDING
           const items = (order as OrderDTO & { items?: OrderItemDTO[] }).items || []
           const isExpanded = expandedId === order.id
-          const itemCount = items.length
 
           return (
             <motion.div
               key={order.id}
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04, duration: 0.3 }}
-              className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition hover:shadow-md"
+              transition={{ delay: i * 0.03, duration: 0.25 }}
+              className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] transition-all hover:shadow-sm"
             >
-              {/* Header Row */}
+              {/* Header */}
               <button
                 onClick={() => setExpandedId(isExpanded ? null : order.id!)}
                 className="flex w-full items-center gap-3 px-4 py-3.5 text-left sm:px-5"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--surface-hover)]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--surface)]">
                   <Package size={18} className="text-[var(--text-muted)]" />
                 </div>
+
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold text-[var(--text-primary)]">
-                      Orden #{order.id?.slice(0, 8).toUpperCase()}
+                      #{order.id?.slice(0, 8).toUpperCase()}
                     </p>
-                    <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${status.bg} ${status.color}`}>
+                    <span
+                      className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-bold"
+                      style={{
+                        color: status.color,
+                        borderColor: `color-mix(in srgb, ${status.color} 25%, transparent)`,
+                        backgroundColor: `color-mix(in srgb, ${status.color} 8%, transparent)`,
+                      }}
+                    >
                       <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
                       {status.label}
                     </span>
                     {order.deliveryMethod && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--card)] px-2 py-0.5 text-[10px] font-semibold text-[var(--text-secondary)]">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-2 py-0.5 text-[10px] font-bold text-[var(--text-secondary)]">
                         {order.deliveryMethod === 'PICKUP' ? <Store size={9} /> : <Truck size={9} />}
                         {order.deliveryMethod === 'PICKUP' ? 'Recogida' : 'Envío'}
                       </span>
                     )}
                   </div>
-                  <div className="mt-0.5 flex items-center gap-3 text-[11px] text-[var(--text-muted)]">
+                  <div className="mt-1 flex items-center gap-3 text-[11px] text-[var(--text-muted)]">
                     <span className="inline-flex items-center gap-1">
                       <Calendar size={10} />
                       {formatDate(order.createdAt)}
@@ -289,41 +307,40 @@ export default function MyOrders() {
                       <Clock size={10} />
                       {formatTime(order.createdAt)}
                     </span>
-                    {itemCount > 0 && (
+                    {items.length > 0 && (
                       <span className="inline-flex items-center gap-1">
                         <ShoppingBag size={10} />
-                        {itemCount} art{itemCount !== 1 ? 'ículos' : 'ículo'}
+                        {items.length} art{items.length !== 1 ? 'ículos' : 'ículo'}
                       </span>
                     )}
                   </div>
                 </div>
+
                 <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <p className="font-heading text-base font-black text-[var(--text-primary)]">
-                      {formatCurrency(Number(order.total))}
-                    </p>
-                  </div>
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--surface-hover)] text-[var(--text-muted)]">
+                  <p className="text-base font-black text-[var(--text-primary)]">
+                    {formatCurrency(Number(order.total))}
+                  </p>
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--surface)] text-[var(--text-muted)]">
                     {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   </div>
                 </div>
               </button>
 
-              {/* Expanded Details */}
+              {/* Expanded */}
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                    transition={{ duration: 0.2, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
                     <div className="border-t border-[var(--border)] px-4 pt-3 pb-4 sm:px-5">
                       {/* Items */}
-                      {items.length > 0 ? (
+                      {items.length > 0 && (
                         <div className="mb-3">
-                          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                          <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
                             Artículos
                           </p>
                           <div className="space-y-2">
@@ -347,95 +364,105 @@ export default function MyOrders() {
                             ))}
                           </div>
                         </div>
-                      ) : (
-                        <div className="mb-3 rounded-xl bg-[var(--surface)] px-3 py-4 text-center">
-                          <p className="text-xs text-[var(--text-muted)]">
-                            Órdenes anteriores sin detalles de artículos
+                      )}
+
+                      {/* Delivery Info */}
+                      {order.deliveryMethod && (
+                        <div className="mb-3 rounded-xl bg-[var(--surface)] px-3 py-2.5">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                            Entrega
                           </p>
+                          <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-[var(--text-primary)]">
+                            {order.deliveryMethod === 'PICKUP' ? (
+                              <>
+                                <Store size={12} className="text-[var(--accent)]" />
+                                Recoger en sucursal
+                                {order.branchName && (
+                                  <span className="font-normal text-[var(--text-secondary)]">
+                                    — {order.branchName}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <Truck size={12} className="text-[var(--accent)]" />
+                                Envío a domicilio
+                              </>
+                            )}
+                          </p>
+                          {order.deliveryMethod === 'SHIPPING' && order.shippingAddress && (
+                            <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                              {order.shippingAddress}
+                              {order.shippingCity ? `, ${order.shippingCity}` : ''}
+                              {order.shippingPostalCode ? ` CP ${order.shippingPostalCode}` : ''}
+                            </p>
+                          )}
                         </div>
                       )}
 
-                       {/* Delivery Info */}
-                       {order.deliveryMethod && (
-                         <div className="mb-3 rounded-xl bg-[var(--surface)] px-3 py-2.5">
-                           <p className="text-[10px] font-medium text-[var(--text-muted)]">Método de entrega</p>
-                           <p className="mt-0.5 flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)]">
-                             {order.deliveryMethod === 'PICKUP' ? (
-                               <>
-                                 <Store size={12} className="text-[var(--accent)]" />
-                                 Recoger en sucursal
-                                 {order.branchName && (
-                                   <span className="font-normal text-[var(--text-secondary)]"> — {order.branchName}</span>
-                                 )}
-                               </>
-                             ) : (
-                               <>
-                                 <Truck size={12} className="text-[var(--accent)]" />
-                                 Envío a domicilio
-                               </>
-                             )}
-                           </p>
-                           {order.deliveryMethod === 'SHIPPING' && order.shippingAddress && (
-                             <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
-                               {order.shippingAddress}{order.shippingCity ? `, ${order.shippingCity}` : ''}{order.shippingPostalCode ? ` CP ${order.shippingPostalCode}` : ''}
-                             </p>
-                           )}
-                         </div>
-                       )}
+                      {/* READY */}
+                      {order.status === 'READY' && (
+                        <div className="mb-3 rounded-xl border border-[var(--info, #3b82f6)]/20 bg-[var(--info, #3b82f6)]/5 px-3 py-2.5">
+                          <p className="text-xs font-bold text-[var(--info, #3b82f6)]">
+                            Tu pedido está listo para recoger
+                            {order.branchName ? ` en ${order.branchName}` : ''}.
+                          </p>
+                          <button
+                            onClick={() => setVoucherOrder(order)}
+                            className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[var(--info, #3b82f6)] px-3 py-1.5 text-xs font-bold text-white transition hover:opacity-90"
+                          >
+                            <QrCode size={12} />
+                            Ver Comprobante
+                          </button>
+                        </div>
+                      )}
 
-                       {/* READY Message */}
-                       {order.status === 'READY' && (
-                         <div className="mb-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5">
-                           <p className="text-xs font-bold text-blue-700">
-                             Tu pedido esta listo para recoger en{order.branchName ? ` ${order.branchName}` : ' la sucursal'}.
-                           </p>
-                           <p className="mt-0.5 text-[11px] text-blue-600">
-                             Pasa a recoger tu pedido mostrando este comprobante.
-                           </p>
-                           <button
-                             onClick={() => setVoucherOrder(order)}
-                             className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-blue-700"
-                           >
-                             <QrCode size={12} />
-                             Ver Comprobante
-                           </button>
-                         </div>
-                       )}
-
-                      {/* Payment Info */}
+                      {/* Payment */}
                       <div className="grid grid-cols-2 gap-2">
                         {order.paymentMethod && (
                           <div className="rounded-xl bg-[var(--surface)] px-3 py-2">
-                            <p className="text-[10px] font-medium text-[var(--text-muted)]">Método de pago</p>
-                            <p className="mt-0.5 flex items-center gap-1.5 text-xs font-semibold text-[var(--text-primary)]">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                              Pago
+                            </p>
+                            <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-[var(--text-primary)]">
                               <span>{paymentIcons[order.paymentMethod] || '💳'}</span>
                               {order.paymentMethod.replace('_', ' ')}
                             </p>
                           </div>
                         )}
-                        {order.paymentReference && (
-                          <div className="rounded-xl bg-[var(--surface)] px-3 py-2">
-                            <p className="text-[10px] font-medium text-[var(--text-muted)]">Referencia</p>
-                            <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold font-mono text-[var(--text-primary)]">
-                              <Hash size={10} className="text-[var(--text-muted)]" />
-                              {order.paymentReference.slice(0, 20)}
-                            </p>
-                          </div>
-                        )}
                         <div className="rounded-xl bg-[var(--surface)] px-3 py-2">
-                          <p className="text-[10px] font-medium text-[var(--text-muted)]">Pago</p>
-                          <p className={`mt-0.5 text-xs font-semibold ${
-                            order.paymentStatus === 'COMPLETED' ? 'text-emerald-600' : 'text-amber-600'
-                          }`}>
-                            {order.paymentStatus || 'PENDING'}
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                            Estado
+                          </p>
+                          <p
+                            className="mt-1 text-xs font-bold"
+                            style={{
+                              color: order.paymentStatus === 'COMPLETED'
+                                ? 'var(--success, #22c55e)'
+                                : 'var(--warning, #f59e0b)',
+                            }}
+                          >
+                            {order.paymentStatus || 'Pendiente'}
                           </p>
                         </div>
                         <div className="rounded-xl bg-[var(--surface)] px-3 py-2">
-                          <p className="text-[10px] font-medium text-[var(--text-muted)]">Total pagado</p>
-                          <p className="mt-0.5 text-xs font-bold text-[var(--text-primary)]">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                            Total
+                          </p>
+                          <p className="mt-1 text-xs font-black text-[var(--text-primary)]">
                             {formatCurrency(Number(order.total))}
                           </p>
                         </div>
+                        {order.paymentReference && (
+                          <div className="rounded-xl bg-[var(--surface)] px-3 py-2">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                              Referencia
+                            </p>
+                            <p className="mt-1 truncate text-xs font-mono font-bold text-[var(--text-primary)]">
+                              {order.paymentReference.slice(0, 16)}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>

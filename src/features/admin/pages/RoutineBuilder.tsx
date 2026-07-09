@@ -14,7 +14,7 @@ import {
 import { Modal } from '@/components/ui/Modal'
 import { useToastStore } from '@/components/ui/Toast'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { getExercises, createExercise, createWorkout, fetchApi } from '@/lib/api'
+import { getExercises, createExercise, createWorkout, updateWorkout, fetchApi } from '@/lib/api'
 import { MUSCLE_GROUPS } from '@/data/constants'
 import { SearchBar } from '../components/SearchBar'
 import { FormField } from '../components/FormField'
@@ -341,13 +341,18 @@ export default function RoutineBuilder({
         title: routineName,
         startsAt: new Date().toISOString(),
         endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        exercises: exercisesPayload,
       }
-      await createWorkout(payload)
-      addToast(
-        `Plantilla "${routineName}" guardada en la biblioteca general exitosamente.`,
-        'success'
-      )
+
+      if (editingRoutine?.id) {
+        await updateWorkout(editingRoutine.id, payload)
+        addToast(`Plantilla "${routineName}" actualizada exitosamente.`, 'success')
+      } else {
+        await createWorkout({ ...payload, exercises: exercisesPayload })
+        addToast(
+          `Plantilla "${routineName}" guardada en la biblioteca general exitosamente.`,
+          'success'
+        )
+      }
     } catch (e: unknown) {
       addToast(e instanceof Error ? e.message : 'Error guardando plantilla', 'error')
     } finally {

@@ -48,6 +48,7 @@ export interface TenantBranding {
   colors: {
     accent: string
     accentHover: string
+    accentLight: string
     accentMuted: string
     accentText: string
     detail: string
@@ -126,11 +127,12 @@ export const DEFAULT_BRANDING: TenantBranding = {
   ctaButtonGuest: 'Crear Cuenta Gratis',
 
   colors: {
-    accent: '#0000ff',
-    accentHover: '#0000cc',
-    accentMuted: 'rgba(0, 0, 255, 0.15)',
+    accent: '#f97316',
+    accentHover: '#e8590c',
+    accentLight: '#fdba74',
+    accentMuted: '#431407',
     accentText: '#ffffff',
-    detail: '#ffff00',
+    detail: '#f97316',
   },
 
   heroVideo: '/vid_sup.mp4',
@@ -208,11 +210,12 @@ export const TENANT_CONFIGS: Record<string, Partial<TenantBranding>> = {
     ctaHeadingGuest: '¿LISTO PARA EL RETO?',
 
     colors: {
-      accent: '#0000ff',
-      accentHover: '#0000cc',
-      accentMuted: 'rgba(0, 0, 255, 0.15)',
+      accent: '#f97316',
+      accentHover: '#e8590c',
+      accentLight: '#fdba74',
+      accentMuted: '#431407',
       accentText: '#ffffff',
-      detail: '#ffff00',
+      detail: '#f97316',
     },
 
     heroVideo: '/vid_sup.mp4',
@@ -299,11 +302,12 @@ export const TENANT_CONFIGS: Record<string, Partial<TenantBranding>> = {
     ctaButtonGuest: 'Registrarme Gratis',
 
     colors: {
-      accent: '#e53e3e',
-      accentHover: '#c53030',
-      accentMuted: 'rgba(229, 62, 62, 0.15)',
+      accent: '#f97316',
+      accentHover: '#e8590c',
+      accentLight: '#fdba74',
+      accentMuted: '#431407',
       accentText: '#ffffff',
-      detail: '#fc8181',
+      detail: '#f97316',
     },
 
     schedule: {
@@ -388,11 +392,12 @@ export const TENANT_CONFIGS: Record<string, Partial<TenantBranding>> = {
     ctaButtonGuest: 'Unirme Ahora',
 
     colors: {
-      accent: '#38b2ac',
-      accentHover: '#2c9a94',
-      accentMuted: 'rgba(56, 178, 172, 0.15)',
+      accent: '#f97316',
+      accentHover: '#e8590c',
+      accentLight: '#fdba74',
+      accentMuted: '#431407',
       accentText: '#ffffff',
-      detail: '#81e6d9',
+      detail: '#f97316',
     },
 
     schedule: {

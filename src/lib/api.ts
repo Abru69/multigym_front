@@ -23,6 +23,16 @@ import type {
   BranchDTO,
   TenantSettingDTO,
   OrderDTO,
+  MemberListItemDTO,
+  MemberRequest,
+  SaasPlanRequest,
+  SubscriptionPlanChangeRequest,
+  OrderRequest,
+  OrderStatusRequest,
+  WorkoutRequest,
+  HealthDTO,
+  ReadinessDTO,
+  UserDTO,
 } from '@/types'
 
 export async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -95,6 +105,13 @@ export async function fetchApi<T>(url: string, options: RequestInit = {}): Promi
   }
 
   const response = await fetch(url, { ...options, headers })
+
+  if (response.status === 401) {
+    localStorage.removeItem('auth-storage')
+    localStorage.removeItem('platform-auth')
+    window.location.href = '/login'
+    throw new Error('Sesión expirada. Por favor inicia sesión de nuevo.')
+  }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => null)
@@ -374,11 +391,11 @@ export const updatePlatformSettings = (entries: Record<string, string>) =>
 
 // --- Branches ---
 export const getBranches = () =>
-  fetchApi<ResponseDTO<BranchDTO[]>>('/api/branches')
+  fetchApi<ResponseDTO<BranchDTO>>('/api/branches')
 
 // --- Tenant Settings ---
 export const getTenantSettings = () =>
-  fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings')
+  fetchApi<ResponseDTO<TenantSettingDTO>>('/api/tenant-settings')
 
 export const updateTenantSettings = (entries: Record<string, string>) =>
   fetchApi<ResponseDTO<TenantSettingDTO>>('/api/tenant-settings', {
@@ -401,3 +418,137 @@ export const cancelOrder = (orderId: string) =>
   fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${orderId}/cancel`, {
     method: 'PATCH',
   })
+
+// --- Health ---
+export const getHealth = () => fetchApi<ResponseDTO<HealthDTO>>('/api/health')
+export const getReadiness = () => fetchApi<ResponseDTO<ReadinessDTO>>('/api/readiness')
+
+// --- Members ---
+export const getMembers = () =>
+  fetchApi<ResponseDTO<PaginatedResult<MemberListItemDTO>>>('/api/members')
+export const getMemberById = (id: string) =>
+  fetchApi<ResponseDTO<MemberListItemDTO>>(`/api/members/${id}`)
+export const createMember = (data: MemberRequest) =>
+  fetchApi<ResponseDTO<MemberListItemDTO>>('/api/members', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const updateMember = (id: string, data: MemberRequest) =>
+  fetchApi<ResponseDTO<MemberListItemDTO>>(`/api/members/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+export const deleteMember = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/members/${id}`, { method: 'DELETE' })
+
+// --- Exercises (detail) ---
+export const getExerciseById = (id: string) =>
+  fetchApi<ResponseDTO<ExerciseDTO>>(`/api/exercises/${id}`)
+
+// --- Workouts (detail + update) ---
+export const getWorkoutById = (id: string) =>
+  fetchApi<ResponseDTO<WorkoutDTO>>(`/api/workouts/${id}`)
+export const updateWorkout = (id: string, data: WorkoutRequest) =>
+  fetchApi<ResponseDTO<WorkoutDTO>>(`/api/workouts/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+
+// --- Workout Exercises (detail) ---
+export const getWorkoutExerciseDetail = (id: string) =>
+  fetchApi<ResponseDTO<WorkoutExerciseListItemDTO>>(`/api/workout-exercises/detail/${id}`)
+
+// --- Workout Logs (delete) ---
+export const deleteWorkoutLog = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/workout-logs/${id}`, { method: 'DELETE' })
+
+// --- Subscriptions (update, plan change, delete, detail, expired) ---
+export const updateSubscription = (
+  id: string,
+  data: { memberId: string; planId: string; startDate: string; endDate: string }
+) =>
+  fetchApi<ResponseDTO<SubscriptionListItemDTO>>(`/api/subscriptions/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+export const changeSubscriptionPlan = (id: string, data: SubscriptionPlanChangeRequest) =>
+  fetchApi<ResponseDTO<SubscriptionListItemDTO>>(`/api/subscriptions/${id}/plan`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+export const deleteSubscription = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/subscriptions/${id}`, { method: 'DELETE' })
+export const getSubscriptionById = (id: string) =>
+  fetchApi<ResponseDTO<SubscriptionListItemDTO>>(`/api/subscriptions/${id}`)
+export const getExpiredSubscriptions = () =>
+  fetchApi<ResponseDTO<SubscriptionListItemDTO[]>>('/api/subscriptions/expired')
+
+// --- Payments (update, delete, detail) ---
+export const updatePayment = (
+  id: string,
+  data: { subscriptionId: string; amount: number; paymentMethod: string; reference?: string }
+) =>
+  fetchApi<ResponseDTO<PaymentListItemDTO>>(`/api/payments/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+export const deletePayment = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/payments/${id}`, { method: 'DELETE' })
+export const getPaymentById = (id: string) =>
+  fetchApi<ResponseDTO<PaymentListItemDTO>>(`/api/payments/${id}`)
+
+// --- Orders (list, my, detail, update, status, delete) ---
+export const getOrders = () =>
+  fetchApi<ResponseDTO<PaginatedResult<OrderDTO>>>('/api/orders')
+export const getMyOrders = () =>
+  fetchApi<ResponseDTO<PaginatedResult<OrderDTO>>>('/api/orders/my')
+export const getOrderById = (id: string) =>
+  fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${id}`)
+export const updateOrder = (id: string, data: OrderRequest) =>
+  fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+export const updateOrderStatus = (id: string, data: OrderStatusRequest) =>
+  fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+export const deleteOrder = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/orders/${id}`, { method: 'DELETE' })
+
+// --- SaaS Plans (detail, create, update, delete, toggle) ---
+export const getSaasPlanById = (id: string) =>
+  fetchApi<ResponseDTO<SaasPlanDTO>>(`/api/saas-plans/${id}`)
+export const createSaasPlan = (data: SaasPlanRequest) =>
+  fetchApi<ResponseDTO<SaasPlanDTO>>('/api/saas-plans', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const updateSaasPlan = (id: string, data: SaasPlanRequest) =>
+  fetchApi<ResponseDTO<SaasPlanDTO>>(`/api/saas-plans/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+export const deleteSaasPlan = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/saas-plans/${id}`, { method: 'DELETE' })
+export const toggleSaasPlanStatus = (id: string) =>
+  fetchApi<ResponseDTO<SaasPlanDTO>>(`/api/saas-plans/${id}/status`, { method: 'PATCH' })
+
+// --- Tenants (detail, expired) ---
+export const getTenantById = (tenantId: string) =>
+  fetchApi<ResponseDTO<TenantDTO>>(`/api/tenants/${tenantId}`)
+export const getExpiredTenants = () =>
+  fetchApi<ResponseDTO<TenantDTO[]>>('/api/tenants/expired')
+
+// --- Branches (detail) ---
+export const getBranchById = (id: string) =>
+  fetchApi<ResponseDTO<BranchDTO>>(`/api/branches/${id}`)
+
+// --- Tenant Users (detail) ---
+export const getTenantUserById = (userId: string) =>
+  fetchApi<ResponseDTO<UserDTO>>(`/api/tenant/users/${userId}`)
+
+// --- Client Members (excludes admins) ---
+export const getClientUsers = () =>
+  fetchApi<ResponseDTO<PaginatedResult<UserDTO>>>('/api/tenant/users?role=CLIENT&isActive=true&size=9999')

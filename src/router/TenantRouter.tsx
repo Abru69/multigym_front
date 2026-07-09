@@ -1,10 +1,8 @@
 import { lazy, Suspense } from 'react'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
-import { useAuthStore } from '@/features/auth/store/authStore'
 import { Spinner } from '@/components/ui/Spinner'
 
 const TenantLandingPage = lazy(() => import('@/features/tenant-landing/pages/TenantLandingPage'))
-const TenantDashboard = lazy(() => import('@/features/tenant-landing/pages/TenantDashboard'))
 const Landing = lazy(() => import('@/features/landing/pages/LandingPage'))
 
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -21,7 +19,6 @@ const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
 
 export function TenantRouter() {
   const { isTenantContext } = useTenantBranding()
-  const { isAuthenticated } = useAuthStore()
 
   // No tenant subdomain — show main MultiGym SaaS landing
   if (!isTenantContext) {
@@ -32,16 +29,7 @@ export function TenantRouter() {
     )
   }
 
-  // Tenant subdomain + authenticated — show member dashboard
-  if (isAuthenticated) {
-    return (
-      <SuspenseWrapper>
-        <TenantDashboard />
-      </SuspenseWrapper>
-    )
-  }
-
-  // Tenant subdomain + not authenticated — show tenant landing
+  // Tenant subdomain — always show tenant landing (auth-aware)
   return (
     <SuspenseWrapper>
       <TenantLandingPage />

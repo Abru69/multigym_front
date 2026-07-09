@@ -211,18 +211,20 @@ export default function PlatformLogin() {
             </button>
           </form>
 
-          {/* Hint */}
-          <div
-            className="mt-6 rounded-xl p-3 text-center text-xs"
-            style={{
-              background: 'var(--input-bg)',
-              border: '1px solid var(--border)',
-              color: 'var(--text-muted)',
-            }}
-          >
-            <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Demo: </span>
-            admin@saas.com / admin123
-          </div>
+          {/* Hint (dev only) */}
+          {import.meta.env.DEV && (
+            <div
+              className="mt-6 rounded-xl p-3 text-center text-xs"
+              style={{
+                background: 'var(--input-bg)',
+                border: '1px solid var(--border)',
+                color: 'var(--text-muted)',
+              }}
+            >
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Demo: </span>
+              admin@saas.com / admin123
+            </div>
+          )}
         </div>
       </motion.div>
     </div>

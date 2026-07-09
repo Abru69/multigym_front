@@ -1,14 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { getPayments, createPayment } from '@/lib/api'
-import { Plus, DollarSign } from 'lucide-react'
+import { getPayments, createPayment, updatePayment, deletePayment, getSubscriptions } from '@/lib/api'
+import { Plus, DollarSign, Edit2, Trash2 } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { useToastStore } from '@/components/ui/Toast'
 import { formatCurrency } from '@/lib/utils'
-import type { PaymentListItemDTO } from '@/types'
+import type { PaymentListItemDTO, SubscriptionListItemDTO } from '@/types'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
 
@@ -18,12 +20,15 @@ export default function PaymentsPage() {
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search)
   const [showModal, setShowModal] = useState(false)
+  const [editingPay, setEditingPay] = useState<PaymentListItemDTO | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<PaymentListItemDTO | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
 
   const [form, setForm] = useState({ subscriptionId: '', amount: '', paymentMethod: 'EFECTIVO', reference: '' })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [subscriptionsList, setSubscriptionsList] = useState<SubscriptionListItemDTO[]>([])
 
   const loadPayments = useCallback(async () => {
     try {
@@ -42,6 +47,9 @@ export default function PaymentsPage() {
 
   useEffect(() => {
     loadPayments()
+    getSubscriptions().then((res) => {
+      if (res?.dto?.data) setSubscriptionsList(res.dto.data)
+    }).catch(() => {})
   }, [loadPayments])
 
   const filtered = useMemo(() => {
@@ -59,7 +67,7 @@ export default function PaymentsPage() {
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {}
-    if (!form.subscriptionId) errors.subscriptionId = 'ID de suscripción requerido'
+    if (!form.subscriptionId) errors.subscriptionId = 'Selecciona una suscripción'
     if (!form.amount || Number(form.amount) <= 0) errors.amount = 'Monto inválido'
     if (!form.paymentMethod) errors.paymentMethod = 'Método de pago requerido'
     setFormErrors(errors)
@@ -84,6 +92,59 @@ export default function PaymentsPage() {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleEdit = async () => {
+    if (!editingPay || !validateForm()) return
+    setIsSaving(true)
+    try {
+      await updatePayment(editingPay.id, {
+        subscriptionId: form.subscriptionId,
+        amount: parseFloat(form.amount),
+        paymentMethod: form.paymentMethod,
+        reference: form.reference || undefined,
+      })
+      addToast('Pago actualizado correctamente', 'success')
+      setShowModal(false)
+      setEditingPay(null)
+      loadPayments()
+    } catch (err: unknown) {
+      addToast(err instanceof Error ? err.message : 'Error al actualizar pago', 'error')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    try {
+      await deletePayment(deleteTarget.id)
+      setPayments(payments.filter((p) => p.id !== deleteTarget.id))
+      addToast('Pago eliminado correctamente', 'success')
+    } catch (err: unknown) {
+      addToast(err instanceof Error ? err.message : 'Error al eliminar pago', 'error')
+    } finally {
+      setDeleteTarget(null)
+    }
+  }
+
+  const openEditModal = (pay: PaymentListItemDTO) => {
+    setEditingPay(pay)
+    setForm({
+      subscriptionId: pay.subscriptionId,
+      amount: String(pay.amount),
+      paymentMethod: pay.paymentMethod,
+      reference: pay.reference || '',
+    })
+    setFormErrors({})
+    setShowModal(true)
+  }
+
+  const openCreateModal = () => {
+    setEditingPay(null)
+    setForm({ subscriptionId: '', amount: '', paymentMethod: 'EFECTIVO', reference: '' })
+    setFormErrors({})
+    setShowModal(true)
   }
 
   const statusColor = (status: string) => {
@@ -119,7 +180,7 @@ export default function PaymentsPage() {
         icon={DollarSign}
         action={
           <button
-            onClick={() => { setForm({ subscriptionId: '', amount: '', paymentMethod: 'EFECTIVO', reference: '' }); setFormErrors({}); setShowModal(true) }}
+            onClick={() => openCreateModal()}
             className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
             style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
           >
@@ -150,7 +211,7 @@ export default function PaymentsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
-                {['Monto', 'Método', 'Estado', 'Referencia', 'Fecha', 'ID Suscripción'].map((h) => (
+                {['Monto', 'Método', 'Estado', 'Referencia', 'Fecha', 'ID Suscripción', 'Acciones'].map((h) => (
                   <th key={h} className="px-5 py-3.5 text-left text-xs font-bold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>{h}</th>
                 ))}
               </tr>
@@ -170,6 +231,26 @@ export default function PaymentsPage() {
                     <td className="px-5 py-3.5" style={{ color: 'var(--text-secondary)' }}>{pay.reference || '—'}</td>
                     <td className="px-5 py-3.5" style={{ color: 'var(--text-secondary)' }}>{formatDate(pay.paymentDate)}</td>
                     <td className="px-5 py-3.5 font-mono text-xs" style={{ color: 'var(--text-muted)' }}>{pay.subscriptionId.slice(0, 8)}...</td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => openEditModal(pay)}
+                          className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                          style={{ color: 'var(--accent)' }}
+                          title="Editar"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget(pay)}
+                          className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                          style={{ color: '#9ca3af' }}
+                          title="Eliminar"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 )
               })}
@@ -178,10 +259,20 @@ export default function PaymentsPage() {
         </div>
       )}
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Registrar Pago" size="md">
+      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingPay(null) }} title={editingPay ? 'Editar Pago' : 'Registrar Pago'} size="md">
         <div className="space-y-4">
-          <FormField label="ID de Suscripción" required htmlFor="pay-sub" error={formErrors.subscriptionId}>
-            <Input id="pay-sub" type="text" value={form.subscriptionId} onChange={(e) => setForm({ ...form, subscriptionId: e.target.value })} placeholder="UUID de la suscripción" error={!!formErrors.subscriptionId} />
+          <FormField label="Suscripción" required htmlFor="pay-sub" error={formErrors.subscriptionId}>
+            <Select
+              id="pay-sub"
+              value={form.subscriptionId}
+              onChange={(e) => setForm({ ...form, subscriptionId: e.target.value })}
+              options={subscriptionsList.map((s) => ({
+                value: s.id,
+                label: `${s.member?.name || 'N/A'} — ${s.plan?.name || 'N/A'}`,
+              }))}
+              placeholder="Selecciona una suscripción"
+              error={!!formErrors.subscriptionId}
+            />
           </FormField>
           <FormField label="Monto" required htmlFor="pay-amount" error={formErrors.amount}>
             <Input id="pay-amount" type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0.00" error={!!formErrors.amount} />
@@ -205,15 +296,23 @@ export default function PaymentsPage() {
           </FormField>
         </div>
         <div className="mt-6 flex justify-end gap-3 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-          <button onClick={() => setShowModal(false)} disabled={isSaving} className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}>
+          <button onClick={() => { setShowModal(false); setEditingPay(null) }} disabled={isSaving} className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}>
             Cancelar
           </button>
-          <button onClick={handleCreate} disabled={isSaving} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
+          <button onClick={editingPay ? handleEdit : handleCreate} disabled={isSaving} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
             {isSaving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }} />}
-            Registrar
+            {editingPay ? 'Guardar' : 'Registrar'}
           </button>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Eliminar pago"
+        message={`¿Eliminar permanentemente el pago de ${formatCurrency(deleteTarget?.amount || 0)}? Esta acción no se puede deshacer.`}
+      />
     </div>
   )
 }

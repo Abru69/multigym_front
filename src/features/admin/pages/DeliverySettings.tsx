@@ -26,7 +26,7 @@ export default function DeliverySettings() {
     try {
       setLoading(true)
       const res = await fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings')
-      const list = res.dto?.lista || []
+      const list = res.lista || []
       setSettings(list)
 
       const pickup = list.find((s) => s.key === 'delivery_pickup_enabled')
@@ -53,10 +53,10 @@ export default function DeliverySettings() {
       await fetchApi('/api/tenant-settings', {
         method: 'PUT',
         body: JSON.stringify({
-          entries: [
-            { key: 'delivery_pickup_enabled', value: String(pickupEnabled) },
-            { key: 'delivery_shipping_enabled', value: String(shippingEnabled) },
-          ],
+          entries: {
+            delivery_pickup_enabled: String(pickupEnabled),
+            delivery_shipping_enabled: String(shippingEnabled),
+          },
         }),
       })
       setSaved(true)

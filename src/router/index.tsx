@@ -21,6 +21,7 @@ const ActivateAccount = lazy(() => import('@/features/auth/pages/ActivateAccount
 const MyRoutines = lazy(() => import('@/features/client/pages/MyRoutines'))
 const Nutrition = lazy(() => import('@/features/client/pages/Nutrition'))
 const MyOrders = lazy(() => import('@/features/client/pages/MyOrders'))
+const MemberProfile = lazy(() => import('@/features/client/pages/MemberProfile'))
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('@/features/admin/pages/Dashboard'))
@@ -45,6 +46,7 @@ const PlatformLogin = lazy(() => import('@/features/platform/pages/PlatformLogin
 const PlatformDashboard = lazy(() => import('@/features/platform/pages/PlatformDashboard'))
 const PlatformTenants = lazy(() => import('@/features/platform/pages/PlatformTenants'))
 const PlatformUsers = lazy(() => import('@/features/platform/pages/PlatformUsers'))
+const PlatformSaaSPlans = lazy(() => import('@/features/platform/pages/PlatformSaaSPlans'))
 const PlatformBilling = lazy(() => import('@/features/platform/pages/PlatformBilling'))
 const PlatformLogs = lazy(() => import('@/features/platform/pages/PlatformLogs'))
 const PlatformSettings = lazy(() => import('@/features/platform/pages/PlatformSettings'))
@@ -81,6 +83,7 @@ export const router = createBrowserRouter([
       { index: true, element: withSuspense(PlatformDashboard) },
       { path: 'tenants', element: withSuspense(PlatformTenants) },
       { path: 'users', element: withSuspense(PlatformUsers) },
+      { path: 'saas-plans', element: withSuspense(PlatformSaaSPlans) },
       { path: 'billing', element: withSuspense(PlatformBilling) },
       { path: 'logs', element: withSuspense(PlatformLogs) },
       { path: 'settings', element: withSuspense(PlatformSettings) },
@@ -138,6 +141,7 @@ export const router = createBrowserRouter([
       { path: 'rutinas', element: withSuspense(MyRoutines) },
       { path: 'nutricion', element: withSuspense(Nutrition) },
       { path: 'mis-ordenes', element: withSuspense(MyOrders) },
+      { path: 'perfil', element: withSuspense(MemberProfile) },
     ],
   },
 

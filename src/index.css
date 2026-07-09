@@ -22,6 +22,7 @@
 
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-accent-light: var(--accent-light);
   --color-accent-muted: var(--accent-muted);
   --color-accent-text: var(--accent-text);
   --color-detail: var(--detail);
@@ -53,19 +54,20 @@
   --text-primary: #f5f5f5;
   --text-secondary: #a0a0a0;
   --text-muted: #666666;
-  --text-on-primary: #0a0a0a;
+  --text-on-primary: #ffffff;
 
-  --primary: #aaff00;
-  --primary-hover: #8ae600;
-  --primary-light: #d4ff66;
+  --primary: #f97316;
+  --primary-hover: #e8590c;
+  --primary-light: #fdba74;
 
   --secondary: #1a1a1a;
 
-  --accent: #aaff00;
-  --accent-hover: #8ae600;
-  --accent-muted: rgba(170, 255, 0, 0.10);
-  --accent-text: #0a0a0a;
-  --detail: #aaff00;
+  --accent: #f97316;
+  --accent-hover: #e8590c;
+  --accent-light: #fdba74;
+  --accent-muted: #431407;
+  --accent-text: #ffffff;
+  --detail: #f97316;
 
   --border: #222222;
   --border-hover: #333333;
@@ -76,7 +78,7 @@
   --warning-hover: #d97706;
   --error: #ef4444;
   --error-hover: #dc2626;
-  --error-muted: rgba(239, 68, 68, 0.12);
+  --error-muted: #450a0a;
   --info: #3b82f6;
 
   --radius-sm: 0.375rem;
@@ -91,8 +93,8 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
 
   --sidebar-bg: #111111;
-  --sidebar-active: rgba(170, 255, 0, 0.10);
-  --sidebar-active-text: #aaff00;
+  --sidebar-active: #431407;
+  --sidebar-active-text: #f97316;
 
   --overlay: rgba(0, 0, 0, 0.7);
   --input-bg: #1a1a1a;
@@ -103,8 +105,8 @@
   --depth-3: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
   --depth-4: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
 
-  --gradient-accent: linear-gradient(135deg, #aaff00 0%, #8ae600 100%);
-  --gradient-accent-subtle: linear-gradient(135deg, rgba(170, 255, 0, 0.08) 0%, rgba(170, 255, 0, 0.02) 100%);
+  --gradient-accent: linear-gradient(135deg, #f97316 0%, #e8590c 100%);
+  --gradient-accent-subtle: linear-gradient(135deg, #431407 0%, #1a0802 100%);
 
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -120,6 +122,80 @@
   --muscle-abdomen: #f97316;
   --muscle-cardio: #ef4444;
   --muscle-cuerpo-completo: #6366f1;
+}
+
+/* ===== LIGHT THEME ===== */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-primary: #ffffff;
+  --bg-secondary: #fafaf9;
+  --surface: #f5f5f4;
+  --surface-hover: #e7e5e4;
+  --surface-active: #d6d3d1;
+  --card: #ffffff;
+
+  --text-primary: #1c1917;
+  --text-secondary: #57534e;
+  --text-muted: #a8a29e;
+  --text-on-primary: #ffffff;
+
+  --primary: #f97316;
+  --primary-hover: #e8590c;
+  --primary-light: #fed7aa;
+
+  --secondary: #f5f5f4;
+
+  --accent: #f97316;
+  --accent-hover: #e8590c;
+  --accent-light: #fed7aa;
+  --accent-muted: #fff7ed;
+  --accent-text: #1c1917;
+  --detail: #f97316;
+
+  --border: #e7e5e4;
+  --border-hover: #d6d3d1;
+
+  --success: #16a34a;
+  --success-hover: #15803d;
+  --warning: #d97706;
+  --warning-hover: #b45309;
+  --error: #dc2626;
+  --error-hover: #b91c1c;
+  --error-muted: #fef2f2;
+  --info: #2563eb;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+
+  --sidebar-bg: #fafaf9;
+  --sidebar-active: #fff7ed;
+  --sidebar-active-text: #f97316;
+
+  --overlay: rgba(0, 0, 0, 0.3);
+  --input-bg: #ffffff;
+  --header-bg: #ffffff;
+
+  --depth-1: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --depth-2: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --depth-3: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.06);
+  --depth-4: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+
+  --gradient-accent: linear-gradient(135deg, #f97316 0%, #e8590c 100%);
+  --gradient-accent-subtle: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+
+  --muscle-pecho: #ef4444;
+  --muscle-espalda: #2563eb;
+  --muscle-hombros: #d97706;
+  --muscle-biceps: #7c3aed;
+  --muscle-triceps: #db2777;
+  --muscle-piernas: #16a34a;
+  --muscle-gluteos: #0891b2;
+  --muscle-abdomen: #ea580c;
+  --muscle-cardio: #ef4444;
+  --muscle-cuerpo-completo: #4f46e5;
 }
 
 /* ===== BASE ===== */
@@ -177,14 +253,14 @@ select option {
 
 /* ===== CUSTOM UTILITIES ===== */
 @utility text-gradient {
-  background: linear-gradient(135deg, #16a34a 0%, #059669 100%);
+  background: linear-gradient(135deg, #e8590c 0%, #ea580c 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 @utility text-gradient-strong {
-  background: linear-gradient(135deg, #aaff00 0%, #22c55e 50%, #16a34a 100%);
+  background: linear-gradient(135deg, #f97316 0%, #e8590c 50%, #c2410c 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

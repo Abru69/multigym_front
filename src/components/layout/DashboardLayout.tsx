@@ -1,8 +1,9 @@
 import { useState, type ReactNode } from 'react'
 import { Outlet, NavLink, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, LogOut, ChevronDown } from 'lucide-react'
+import { Menu, X, LogOut, ChevronDown, Sun, Moon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTheme } from '@/hooks/useTheme'
 
 export interface NavItem {
   to: string
@@ -36,6 +37,7 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const { isDark, toggleTheme } = useTheme()
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-secondary)]">
@@ -91,6 +93,13 @@ export function DashboardLayout({
               </p>
             </div>
           </div>
+          <button
+            onClick={toggleTheme}
+            className="flex w-full items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+          >
+            {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            {isDark ? 'Modo Claro' : 'Modo Oscuro'}
+          </button>
           <button
             onClick={onLogout}
             className="flex w-full items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
@@ -176,6 +185,13 @@ export function DashboardLayout({
                   </div>
                 </div>
                 <button
+                  onClick={toggleTheme}
+                  className="flex w-full items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                >
+                  {isDark ? <Sun size={16} /> : <Moon size={16} />}
+                  {isDark ? 'Modo Claro' : 'Modo Oscuro'}
+                </button>
+                <button
                   onClick={onLogout}
                   className="flex w-full items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-[var(--text-secondary)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                 >
@@ -237,6 +253,16 @@ export function DashboardLayout({
                     </p>
                   </div>
                   <button
+                    onClick={() => {
+                      toggleTheme()
+                      setDropdownOpen(false)
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)]"
+                  >
+                    {isDark ? <Sun size={14} /> : <Moon size={14} />}
+                    {isDark ? 'Modo Claro' : 'Modo Oscuro'}
+                  </button>
+                  <button
                     onClick={onLogout}
                     className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-400 transition-all hover:bg-red-500/10"
                   >
@@ -297,6 +323,16 @@ export function DashboardLayout({
                         {user?.email ?? 'user@email.com'}
                       </p>
                     </div>
+                    <button
+                      onClick={() => {
+                        toggleTheme()
+                        setDropdownOpen(false)
+                      }}
+                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)]"
+                    >
+                      {isDark ? <Sun size={14} /> : <Moon size={14} />}
+                      {isDark ? 'Modo Claro' : 'Modo Oscuro'}
+                    </button>
                     <button
                       onClick={onLogout}
                       className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-400 transition-all hover:bg-red-500/10"

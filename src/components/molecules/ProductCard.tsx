@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import type { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import { useCartStore } from '@/features/shop/store/cartStore'
+import { useAuthStore } from '@/features/auth/store/authStore'
 import { ShoppingCart, Star } from 'lucide-react'
 
 interface ProductCardProps {
@@ -12,6 +13,16 @@ interface ProductCardProps {
 
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem)
+  const navigate = useNavigate()
+  const { isAuthenticated } = useAuthStore()
+
+  const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      navigate('/login')
+      return
+    }
+    if (product.isAvailable) addItem(product)
+  }
 
   return (
     <motion.div
@@ -50,7 +61,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             whileTap={{ scale: 0.95 }}
             onClick={(e) => {
               e.preventDefault()
-              if (product.isAvailable) addItem(product)
+              handleAddToCart()
             }}
             disabled={!product.isAvailable}
             className="flex w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-lg transition-colors hover:bg-[var(--accent)]/90 disabled:cursor-not-allowed disabled:opacity-50"

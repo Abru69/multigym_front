@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { fetchApi } from '@/lib/api'
 import type { Product, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import { useCartStore } from '@/features/shop/store/cartStore'
+import { useAuthStore } from '@/features/auth/store/authStore'
 import {
   ChevronLeft,
   ShoppingCart,
@@ -19,9 +20,11 @@ import {
 
 export default function ProductDetail() {
   const { slug } = useParams()
+  const navigate = useNavigate()
   const addItem = useCartStore((s) => s.addItem)
   const cartItems = useCartStore((s) => s.items)
   const updateQuantity = useCartStore((s) => s.updateQuantity)
+  const { isAuthenticated } = useAuthStore()
 
   const [product, setProduct] = useState<Product | null>(null)
   const [productLoading, setProductLoading] = useState(true)
@@ -95,6 +98,10 @@ export default function ProductDetail() {
   }
 
   const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      navigate('/login')
+      return
+    }
     if (cartItem) {
       updateQuantity(product.id, quantity)
     } else {

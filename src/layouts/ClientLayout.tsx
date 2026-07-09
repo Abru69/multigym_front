@@ -12,20 +12,25 @@ import {
   Utensils,
   LogOut,
   Package,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import { getTenantUrl } from '@/lib/tenant'
+import { useTheme } from '@/hooks/useTheme'
 
 const clientNav = [
   { to: '/app/rutinas', icon: Dumbbell, label: 'Rutinas' },
   { to: '/app/nutricion', icon: Utensils, label: 'Nutrición' },
-  { to: '/app/mis-ordenes', icon: Package, label: 'Mis Órdenes' },
+  { to: '/app/mis-ordenes', icon: Package, label: 'Órdenes' },
   { to: '/tienda', icon: ShoppingBag, label: 'Tienda' },
+  { to: '/app/perfil', icon: User, label: 'Perfil' },
 ]
 
 export function ClientLayout() {
   const cartCount = useCartStore((s) => s.itemCount())
   const { isAuthenticated, user, logout, tenantId } = useAuthStore()
   const { branding } = useTenantBranding()
+  const { isDark, toggleTheme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
@@ -138,6 +143,15 @@ export function ClientLayout() {
                         className="block w-full px-4 py-2.5 text-left text-sm font-medium text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)]"
                       >
                         Mi Portal
+                      </button>
+                      <button
+                        onClick={() => {
+                          toggleTheme()
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)]"
+                      >
+                        {isDark ? <Sun size={14} /> : <Moon size={14} />}
+                        {isDark ? 'Modo Claro' : 'Modo Oscuro'}
                       </button>
                       <div className="my-1 h-px bg-[var(--surface-hover)]" />
                       <button

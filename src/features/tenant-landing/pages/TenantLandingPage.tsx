@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Zap } from 'lucide-react'
+import { Zap, Dumbbell, ShoppingBag, Package, LogOut } from 'lucide-react'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { TenantHero } from '../components/TenantHero'
@@ -10,9 +10,14 @@ import { TenantFooter } from '../components/TenantFooter'
 
 export default function TenantLandingPage() {
   const { branding, tenantId } = useTenantBranding()
-  const { isAuthenticated, user } = useAuthStore()
+  const { isAuthenticated, user, logout } = useAuthStore()
 
   const portalLink = user?.role === 'admin' ? '/admin' : '/app/rutinas'
+
+  const handleLogout = async () => {
+    await logout()
+    window.location.reload()
+  }
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -44,16 +49,53 @@ export default function TenantLandingPage() {
             >
               Planes
             </a>
+            <Link
+              to="/tienda"
+              className="text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            >
+              Tienda
+            </Link>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {isAuthenticated ? (
-              <Link
-                to={portalLink}
-                className="rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 active:scale-[0.98]"
-              >
-                Mi Portal
-              </Link>
+              <>
+                <nav className="hidden items-center gap-1 sm:flex">
+                  <Link
+                    to="/app/rutinas"
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                  >
+                    <Dumbbell size={14} />
+                    Rutinas
+                  </Link>
+                  <Link
+                    to="/tienda"
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                  >
+                    <ShoppingBag size={14} />
+                    Tienda
+                  </Link>
+                  <Link
+                    to="/app/mis-ordenes"
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                  >
+                    <Package size={14} />
+                    Mis Órdenes
+                  </Link>
+                </nav>
+                <Link
+                  to={portalLink}
+                  className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-text)] shadow-sm transition-all hover:brightness-110 active:scale-[0.98]"
+                >
+                  Mi Portal
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                >
+                  <LogOut size={14} />
+                </button>
+              </>
             ) : (
               <>
                 <Link

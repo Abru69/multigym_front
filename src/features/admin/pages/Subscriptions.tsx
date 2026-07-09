@@ -1,10 +1,20 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { getSubscriptions, createSubscription, cancelSubscription } from '@/lib/api'
-import { Plus, XCircle, Calendar } from 'lucide-react'
+import {
+  getSubscriptions,
+  createSubscription,
+  cancelSubscription,
+  updateSubscription,
+  changeSubscriptionPlan,
+  deleteSubscription,
+  getClientUsers,
+  getPlans,
+} from '@/lib/api'
+import { Plus, XCircle, Calendar, Edit2, Trash2, RefreshCw } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import { useToastStore } from '@/components/ui/Toast'
-import type { SubscriptionListItemDTO, PlanListItemDTO } from '@/types'
+import type { SubscriptionListItemDTO, MemberListItemDTO, PlanListItemDTO } from '@/types'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
@@ -18,13 +28,19 @@ export default function SubscriptionsPage() {
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search)
   const [showModal, setShowModal] = useState(false)
+  const [editingSub, setEditingSub] = useState<SubscriptionListItemDTO | null>(null)
   const [cancelTarget, setCancelTarget] = useState<SubscriptionListItemDTO | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<SubscriptionListItemDTO | null>(null)
+  const [planChangeTarget, setPlanChangeTarget] = useState<SubscriptionListItemDTO | null>(null)
+  const [newPlanId, setNewPlanId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
 
   const [form, setForm] = useState({ memberId: '', planId: '', startDate: '', endDate: '' })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [members, setMembers] = useState<MemberListItemDTO[]>([])
+  const [plans, setPlans] = useState<PlanListItemDTO[]>([])
 
   const loadData = useCallback(async () => {
     try {
@@ -43,6 +59,24 @@ export default function SubscriptionsPage() {
 
   useEffect(() => {
     loadData()
+    getClientUsers().then((res) => {
+      if (res?.dto?.data) {
+        setMembers(
+          res.dto.data
+            .filter((u) => u.memberDTO)
+            .map((u) => ({
+              id: u.memberDTO!.id,
+              name: u.memberDTO!.name,
+              phone: u.memberDTO!.phone,
+              email: u.email,
+              isActive: u.isActive,
+            }))
+        )
+      }
+    }).catch(() => {})
+    getPlans().then((res) => {
+      if (res?.dto?.data) setPlans(res.dto.data)
+    }).catch(() => {})
   }, [loadData])
 
   const filtered = useMemo(() => {
@@ -98,6 +132,75 @@ export default function SubscriptionsPage() {
     }
   }
 
+  const handleEdit = async () => {
+    if (!editingSub || !validateForm()) return
+    setIsSaving(true)
+    try {
+      await updateSubscription(editingSub.id, {
+        memberId: form.memberId,
+        planId: form.planId,
+        startDate: form.startDate,
+        endDate: form.endDate,
+      })
+      addToast('Suscripción actualizada', 'success')
+      setShowModal(false)
+      setEditingSub(null)
+      loadData()
+    } catch (err: unknown) {
+      addToast(err instanceof Error ? err.message : 'Error al actualizar', 'error')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handlePlanChange = async () => {
+    if (!planChangeTarget || !newPlanId) return
+    setIsSaving(true)
+    try {
+      await changeSubscriptionPlan(planChangeTarget.id, { planId: newPlanId })
+      addToast('Plan cambiado correctamente', 'success')
+      setPlanChangeTarget(null)
+      setNewPlanId('')
+      loadData()
+    } catch (err: unknown) {
+      addToast(err instanceof Error ? err.message : 'Error al cambiar plan', 'error')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    try {
+      await deleteSubscription(deleteTarget.id)
+      setSubscriptions(subscriptions.filter((s) => s.id !== deleteTarget.id))
+      addToast('Suscripción eliminada', 'success')
+    } catch (err: unknown) {
+      addToast(err instanceof Error ? err.message : 'Error al eliminar', 'error')
+    } finally {
+      setDeleteTarget(null)
+    }
+  }
+
+  const openEditModal = (sub: SubscriptionListItemDTO) => {
+    setEditingSub(sub)
+    setForm({
+      memberId: sub.member?.id || '',
+      planId: sub.plan?.id || '',
+      startDate: sub.startDate?.slice(0, 10) || '',
+      endDate: sub.endDate?.slice(0, 10) || '',
+    })
+    setFormErrors({})
+    setShowModal(true)
+  }
+
+  const openCreateModal = () => {
+    setEditingSub(null)
+    setForm({ memberId: '', planId: '', startDate: '', endDate: '' })
+    setFormErrors({})
+    setShowModal(true)
+  }
+
   const statusColor = (status: string) => {
     switch (status) {
       case 'ACTIVE': return { bg: '#f0fdf4', color: '#16a34a' }
@@ -120,7 +223,7 @@ export default function SubscriptionsPage() {
         icon={Calendar}
         action={
           <button
-            onClick={() => { setForm({ memberId: '', planId: '', startDate: '', endDate: '' }); setFormErrors({}); setShowModal(true) }}
+            onClick={() => openCreateModal()}
             className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
             style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
           >
@@ -174,15 +277,44 @@ export default function SubscriptionsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
-                      {sub.status === 'ACTIVE' && (
+                      <div className="flex items-center gap-1">
+                        {sub.status === 'ACTIVE' && (
+                          <>
+                            <button
+                              onClick={() => openEditModal(sub)}
+                              className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                              style={{ color: 'var(--accent)' }}
+                              title="Editar"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => { setPlanChangeTarget(sub); setNewPlanId(sub.plan?.id || '') }}
+                              className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                              style={{ color: '#2563eb' }}
+                              title="Cambiar plan"
+                            >
+                              <RefreshCw size={14} />
+                            </button>
+                            <button
+                              onClick={() => setCancelTarget(sub)}
+                              className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                              style={{ color: '#dc2626' }}
+                              title="Cancelar"
+                            >
+                              <XCircle size={14} />
+                            </button>
+                          </>
+                        )}
                         <button
-                          onClick={() => setCancelTarget(sub)}
-                          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
-                          style={{ color: '#dc2626' }}
+                          onClick={() => setDeleteTarget(sub)}
+                          className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
+                          style={{ color: '#9ca3af' }}
+                          title="Eliminar"
                         >
-                          <XCircle size={14} /> Cancelar
+                          <Trash2 size={14} />
                         </button>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 )
@@ -192,13 +324,27 @@ export default function SubscriptionsPage() {
         </div>
       )}
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Nueva Suscripción" size="md">
+      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingSub(null) }} title={editingSub ? 'Editar Suscripción' : 'Nueva Suscripción'} size="md">
         <div className="space-y-4">
-          <FormField label="ID del Miembro" required htmlFor="sub-member" error={formErrors.memberId}>
-            <Input id="sub-member" type="text" value={form.memberId} onChange={(e) => setForm({ ...form, memberId: e.target.value })} placeholder="UUID del miembro" error={!!formErrors.memberId} />
+          <FormField label="Miembro" required htmlFor="sub-member" error={formErrors.memberId}>
+            <Select
+              id="sub-member"
+              value={form.memberId}
+              onChange={(e) => setForm({ ...form, memberId: e.target.value })}
+              options={members.map((m) => ({ value: m.id, label: m.name || m.email }))}
+              placeholder="Selecciona un miembro"
+              error={!!formErrors.memberId}
+            />
           </FormField>
-          <FormField label="ID del Plan" required htmlFor="sub-plan" error={formErrors.planId}>
-            <Input id="sub-plan" type="text" value={form.planId} onChange={(e) => setForm({ ...form, planId: e.target.value })} placeholder="UUID del plan" error={!!formErrors.planId} />
+          <FormField label="Plan" required htmlFor="sub-plan" error={formErrors.planId}>
+            <Select
+              id="sub-plan"
+              value={form.planId}
+              onChange={(e) => setForm({ ...form, planId: e.target.value })}
+              options={plans.map((p) => ({ value: p.id, label: `${p.name} — $${p.price}` }))}
+              placeholder="Selecciona un plan"
+              error={!!formErrors.planId}
+            />
           </FormField>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Fecha de Inicio" required htmlFor="sub-start" error={formErrors.startDate}>
@@ -210,12 +356,12 @@ export default function SubscriptionsPage() {
           </div>
         </div>
         <div className="mt-6 flex justify-end gap-3 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-          <button onClick={() => setShowModal(false)} disabled={isSaving} className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}>
+          <button onClick={() => { setShowModal(false); setEditingSub(null) }} disabled={isSaving} className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}>
             Cancelar
           </button>
-          <button onClick={handleCreate} disabled={isSaving} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
+          <button onClick={editingSub ? handleEdit : handleCreate} disabled={isSaving} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
             {isSaving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }} />}
-            Crear
+            {editingSub ? 'Guardar' : 'Crear'}
           </button>
         </div>
       </Modal>
@@ -227,6 +373,40 @@ export default function SubscriptionsPage() {
         title="Cancelar suscripción"
         message={`¿Cancelar la suscripción de ${cancelTarget?.member?.name || ''}? El plan ${cancelTarget?.plan?.name || ''} dejará de estar activo.`}
       />
+
+      <ConfirmDialog
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Eliminar suscripción"
+        message={`¿Eliminar permanentemente la suscripción de ${deleteTarget?.member?.name || ''}? Esta acción no se puede deshacer.`}
+      />
+
+      <Modal isOpen={!!planChangeTarget} onClose={() => { setPlanChangeTarget(null); setNewPlanId('') }} title="Cambiar Plan" size="sm">
+        <div className="space-y-4">
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Cambiar el plan de <strong>{planChangeTarget?.member?.name || ''}</strong> de <strong>{planChangeTarget?.plan?.name || ''}</strong> a:
+          </p>
+          <FormField label="Nuevo Plan" required htmlFor="plan-change-id">
+            <Select
+              id="plan-change-id"
+              value={newPlanId}
+              onChange={(e) => setNewPlanId(e.target.value)}
+              options={plans.map((p) => ({ value: p.id, label: `${p.name} — $${p.price}` }))}
+              placeholder="Selecciona un plan"
+            />
+          </FormField>
+        </div>
+        <div className="mt-6 flex justify-end gap-3 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+          <button onClick={() => { setPlanChangeTarget(null); setNewPlanId('') }} disabled={isSaving} className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}>
+            Cancelar
+          </button>
+          <button onClick={handlePlanChange} disabled={isSaving || !newPlanId} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
+            {isSaving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }} />}
+            Cambiar Plan
+          </button>
+        </div>
+      </Modal>
     </div>
   )
 }

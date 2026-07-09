@@ -143,6 +143,14 @@ export default function Checkout() {
       if (!user?.id) {
         throw new Error('Debes iniciar sesión para completar la compra')
       }
+      if (deliveryMethod === 'PICKUP' && !selectedBranch) {
+        throw new Error('Selecciona una sucursal para recoger tu pedido')
+      }
+      if (deliveryMethod === 'SHIPPING') {
+        if (!shippingAddress.trim()) throw new Error('Ingresa la dirección de envío')
+        if (!shippingCity.trim()) throw new Error('Ingresa la ciudad')
+        if (!shippingPostalCode.trim()) throw new Error('Ingresa el código postal')
+      }
 
       const orderBody: Record<string, unknown> = {
         userId: user.id,
@@ -552,7 +560,7 @@ export default function Checkout() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (deliveryMethod === 'PICKUP' && !selectedBranch) || (deliveryMethod === 'SHIPPING' && !canProceedToDetails())}
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (

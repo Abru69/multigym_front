@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRoutineStore } from '@/features/client/store/routineStore'
+import { createWorkoutLog } from '@/lib/api'
 import type { DayOfWeek, Exercise } from '@/types'
 import {
   CheckCircle2,
-  Circle,
   Play,
   ChevronDown,
   Flame,
@@ -16,10 +16,8 @@ import {
   Clock,
   RotateCcw,
   X,
+  Info,
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-
-const MotionButton = motion(Button)
 
 const DAYS: { key: DayOfWeek; short: string; full: string }[] = [
   { key: 'lunes', short: 'L', full: 'Lunes' },
@@ -40,13 +38,12 @@ const JS_DAY_MAP: DayOfWeek[] = [
   'viernes',
   'sabado',
 ]
-const todayKey = JS_DAY_MAP[new Date().getDay()]
 
 const REST_QUOTES = [
-  'Tu cuerpo se recupera y crece mientras descansas. ¡Aprovéchalo!',
-  'El descanso es parte del entrenamiento. Mañana vuelves con todo.',
-  'Los músculos se construyen fuera del gimnasio. Recarga energías.',
-  'Un guerrero sabe cuándo descansar. Mañana, a darlo todo.',
+  'Tu cuerpo se recupera y crece mientras descansas.',
+  'El descanso es parte del entrenamiento.',
+  'Los músculos se construyen fuera del gimnasio.',
+  'Un guerrero sabe cuándo descansar.',
 ]
 
 const MUSCLE_COLORS: Record<string, string> = {
@@ -85,8 +82,8 @@ const formatTime = (secs: number) => {
 
 function ProgressRing({
   progress,
-  size = 90,
-  strokeWidth = 6,
+  size = 80,
+  strokeWidth = 5,
 }: {
   progress: number
   size?: number
@@ -98,14 +95,8 @@ function ProgressRing({
   const isComplete = progress >= 100
 
   return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <defs>
-          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="var(--accent)" />
-            <stop offset="100%" stopColor="#00cc88" />
-          </linearGradient>
-        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -119,7 +110,7 @@ function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={isComplete ? 'var(--success)' : 'url(#ringGrad)'}
+          stroke={isComplete ? 'var(--success, #22c55e)' : 'var(--accent)'}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -135,14 +126,14 @@ function ProgressRing({
             animate={{ scale: 1 }}
             transition={{ type: 'spring', damping: 10 }}
           >
-            <Trophy size={24} className="text-[var(--success)]" />
+            <Trophy size={20} className="text-[var(--success, #22c55e)]" />
           </motion.div>
         ) : (
           <>
-            <span className="font-heading text-xl leading-none font-black text-[var(--text-primary)]">
+            <span className="text-lg leading-none font-black text-[var(--text-primary)]">
               {Math.round(progress)}
             </span>
-            <span className="text-[8px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
+            <span className="text-[7px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               %
             </span>
           </>
@@ -178,85 +169,76 @@ function ExerciseCard({
     completedSets.has(makeSetKey(dayKey, exercise.id, i))
   ).length
   const allDone = doneSets === exercise.sets
-  const setProgress = exercise.sets > 0 ? (doneSets / exercise.sets) * 100 : 0
   const muscleColor = MUSCLE_COLORS[exercise.muscleGroup] ?? 'var(--accent)'
   const hasActiveTimer = restTimer?.exerciseId === exercise.id
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07, duration: 0.35 }}
-      className={`overflow-hidden rounded-2xl border bg-[var(--card)] transition-all duration-300 ${
+      transition={{ delay: index * 0.06, duration: 0.3 }}
+      className={`overflow-hidden rounded-2xl border transition-all ${
         allDone
-          ? 'border-green-200 bg-green-500/100/10 shadow-sm'
+          ? 'border-[var(--success, #22c55e)]/20 bg-[var(--success, #22c55e)]/5'
           : isExpanded
             ? 'border-[var(--accent)] shadow-md'
-            : 'border-[var(--border)] shadow-sm hover:shadow-md'
+            : 'border-[var(--border)] bg-[var(--card)]'
       }`}
     >
-      <motion.div
-        className="flex cursor-pointer items-center gap-3 p-4 select-none"
+      {/* Collapsed header */}
+      <button
         onClick={onToggle}
-        whileTap={{ scale: 0.98 }}
-        style={{ opacity: allDone && !isExpanded ? 0.55 : 1 }}
+        className="flex w-full items-center gap-3 p-3 text-left select-none active:scale-[0.98] transition-transform"
+        style={{ opacity: allDone && !isExpanded ? 0.5 : 1 }}
       >
-        <span className="w-5 flex-shrink-0 text-center text-[10px] font-black text-[var(--text-muted)] tabular-nums opacity-35">
-          {String(index + 1).padStart(2, '0')}
-        </span>
-
-        <div className="relative h-[60px] w-[60px] flex-shrink-0 overflow-hidden rounded-xl bg-[var(--surface-hover)] ring-1 ring-gray-200">
-          {exercise.imageUrl && (
+        {/* Thumbnail */}
+        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[var(--surface)]">
+          {exercise.imageUrl ? (
             <img
               src={exercise.imageUrl}
               alt={exercise.name}
               className="h-full w-full object-cover"
               loading="lazy"
             />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <Dumbbell size={20} className="text-[var(--text-muted)]" />
+            </div>
           )}
           {allDone && (
-            <div className="absolute inset-0 flex items-center justify-center bg-[var(--success)]/15">
-              <CheckCircle2 size={20} className="text-[var(--success)]" />
+            <div className="absolute inset-0 flex items-center justify-center bg-[var(--success, #22c55e)]/20">
+              <CheckCircle2 size={18} className="text-[var(--success, #22c55e)]" />
             </div>
           )}
         </div>
 
+        {/* Info */}
         <div className="min-w-0 flex-1">
-          <p
-            className="text-sm leading-tight font-bold text-[var(--text-primary)]"
-            style={{
-              textDecoration: allDone ? 'line-through' : 'none',
-              textDecorationColor: 'var(--success)',
-            }}
-          >
-            {exercise.name}
-          </p>
-          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            <p className="text-xs text-[var(--text-secondary)]">
-              {exercise.sets} series × {exercise.reps}
-              {exercise.weight ? ` · ${exercise.weight}` : ''}
+          <div className="flex items-center gap-2">
+            <p
+              className="truncate text-sm font-bold text-[var(--text-primary)]"
+              style={{ textDecoration: allDone ? 'line-through' : 'none' }}
+            >
+              {exercise.name}
             </p>
             <span
-              className="rounded-full px-1.5 py-px text-[7px] font-bold uppercase"
+              className="shrink-0 rounded-full px-1.5 py-px text-[7px] font-bold uppercase"
               style={{
-                background: `${muscleColor}12`,
+                background: `${muscleColor}15`,
                 color: muscleColor,
-                border: `1px solid ${muscleColor}25`,
               }}
             >
               {MUSCLE_LABELS[exercise.muscleGroup] ?? exercise.muscleGroup}
             </span>
           </div>
-          <div className="mt-2 h-1 overflow-hidden rounded-full bg-[var(--surface-hover)]">
-            <motion.div
-              className={`h-full rounded-full ${allDone ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'}`}
-              animate={{ width: `${setProgress}%` }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
-            />
-          </div>
+          <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+            {exercise.sets} × {exercise.reps}
+            {exercise.weight ? ` · ${exercise.weight}` : ''}
+          </p>
         </div>
 
-        <div className="flex flex-shrink-0 items-center gap-1.5">
+        {/* Right side */}
+        <div className="flex shrink-0 items-center gap-2">
           {!isExpanded && hasActiveTimer && restTimer && (
             <motion.span
               className="rounded-full bg-[var(--accent)]/10 px-2 py-0.5 text-[10px] font-bold text-[var(--accent)] tabular-nums"
@@ -266,19 +248,16 @@ function ExerciseCard({
               {restTimer.seconds}s
             </motion.span>
           )}
-          <span
-            className={`text-xs font-bold tabular-nums ${
-              allDone ? 'text-[var(--success)]' : 'text-[var(--text-muted)]'
-            }`}
-          >
+          <span className={`text-xs font-bold tabular-nums ${allDone ? 'text-[var(--success, #22c55e)]' : 'text-[var(--text-muted)]'}`}>
             {doneSets}/{exercise.sets}
           </span>
-          <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.25 }}>
+          <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
             <ChevronDown size={16} className="text-[var(--text-muted)]" />
           </motion.div>
         </div>
-      </motion.div>
+      </button>
 
+      {/* Expanded content */}
       <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
@@ -286,65 +265,43 @@ function ExerciseCard({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
-            <div className="space-y-4 border-t border-[var(--border)] px-4 pb-5">
+            <div className="space-y-4 border-t border-[var(--border)] px-3 pb-4 pt-3">
+              {/* Rest timer inline */}
               {hasActiveTimer && restTimer && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="mt-4 rounded-xl border border-[var(--accent)]/20 bg-[var(--accent)]/5 p-5 text-center"
+                  className="flex items-center justify-between rounded-xl bg-[var(--accent)]/5 px-4 py-3"
                 >
-                  <p className="mb-3 text-[9px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
-                    Descanso
-                  </p>
-                  <div className="relative mx-auto mb-3 h-16 w-16">
-                    <svg width={64} height={64} className="-rotate-90">
-                      <circle
-                        cx={32}
-                        cy={32}
-                        r={26}
-                        fill="none"
-                        stroke="var(--border)"
-                        strokeWidth={4}
-                      />
-                      <circle
-                        cx={32}
-                        cy={32}
-                        r={26}
-                        fill="none"
-                        stroke="var(--accent)"
-                        strokeWidth={4}
-                        strokeLinecap="round"
-                        strokeDasharray={2 * Math.PI * 26}
-                        strokeDashoffset={
-                          2 * Math.PI * 26 * (1 - restTimer.seconds / restTimer.total)
-                        }
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="font-heading text-lg font-black text-[var(--text-primary)] tabular-nums">
-                        {restTimer.seconds}
-                      </span>
+                  <div className="flex items-center gap-3">
+                    <Timer size={16} className="text-[var(--accent)]" />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                        Descanso
+                      </p>
+                      <p className="text-xl font-black tabular-nums text-[var(--accent)]">
+                        {restTimer.seconds}s
+                      </p>
                     </div>
                   </div>
-                  <MotionButton
-                    whileTap={{ scale: 0.9 }}
-                    variant="outline"
-                    onClick={(e: React.MouseEvent) => {
+                  <button
+                    onClick={(e) => {
                       e.stopPropagation()
                       onSkipRest()
                     }}
-                    className="h-auto rounded-full border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[10px] font-bold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+                    className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)]"
                   >
                     Saltar
-                  </MotionButton>
+                  </button>
                 </motion.div>
               )}
 
+              {/* Exercise image large */}
               {exercise.imageUrl && (
-                <div className="mt-4 overflow-hidden rounded-xl" style={{ height: 160 }}>
+                <div className="overflow-hidden rounded-xl" style={{ height: 140 }}>
                   <img
                     src={exercise.imageUrl}
                     alt={exercise.name}
@@ -353,12 +310,14 @@ function ExerciseCard({
                 </div>
               )}
 
+              {/* Description */}
               {exercise.description && (
                 <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
                   {exercise.description}
                 </p>
               )}
 
+              {/* Stats grid */}
               <div className="grid grid-cols-4 gap-2">
                 {[
                   { val: exercise.sets, label: 'Series', accent: true },
@@ -368,69 +327,64 @@ function ExerciseCard({
                 ].map((s) => (
                   <div
                     key={s.label}
-                    className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-2.5 text-center"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-2.5 text-center"
                   >
                     <p
-                      className={`font-heading text-base font-bold ${
+                      className={`text-base font-black ${
                         s.accent ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'
                       }`}
                     >
                       {s.val}
                     </p>
-                    <p className="mt-0.5 text-[9px] font-semibold tracking-wider text-[var(--text-muted)] uppercase">
+                    <p className="mt-0.5 text-[8px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
                       {s.label}
                     </p>
                   </div>
                 ))}
               </div>
 
+              {/* Set tracking — large circles */}
               <div>
-                <p className="mb-2 text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
-                  Seguimiento de series
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                  Series
                 </p>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="flex gap-2">
                   {setsArray.map((i) => {
                     const key = makeSetKey(dayKey, exercise.id, i)
                     const done = completedSets.has(key)
                     return (
-                      <MotionButton
+                      <button
                         key={key}
-                        onClick={(e: React.MouseEvent) => {
+                        onClick={(e) => {
                           e.stopPropagation()
                           onToggleSet(exercise, i)
                         }}
-                        className={`flex h-auto items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-bold ${
+                        className={`flex h-11 w-11 items-center justify-center rounded-full border-2 text-xs font-bold transition-all active:scale-90 ${
                           done
-                            ? 'border-green-200 bg-green-500/10 text-green-400'
-                            : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)]'
+                            ? 'border-[var(--success, #22c55e)] bg-[var(--success, #22c55e)]/10 text-[var(--success, #22c55e)]'
+                            : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:border-[var(--accent)]/30'
                         }`}
-                        whileTap={{ scale: 0.85 }}
-                        whileHover={{ scale: 1.04 }}
                       >
-                        {done ? (
-                          <CheckCircle2 size={14} />
-                        ) : (
-                          <Circle size={14} className="opacity-50" />
-                        )}
-                        Set {i + 1}
-                      </MotionButton>
+                        {done ? <CheckCircle2 size={18} /> : i + 1}
+                      </button>
                     )
                   })}
                 </div>
               </div>
 
+              {/* Tips */}
               {exercise.tips && exercise.tips.length > 0 && (
-                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
-                  <p className="mb-1.5 text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
-                    Consejos
-                  </p>
-                  <div className="space-y-1.5">
+                <div className="rounded-xl bg-[var(--surface)] p-3">
+                  <div className="mb-1.5 flex items-center gap-1.5">
+                    <Zap size={10} className="text-[var(--accent)]" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                      Consejos
+                    </p>
+                  </div>
+                  <div className="space-y-1">
                     {exercise.tips.map((tip, i) => (
-                      <p
-                        key={i}
-                        className="flex items-start gap-1.5 text-xs text-[var(--text-secondary)]"
-                      >
-                        <Zap size={10} className="mt-0.5 flex-shrink-0 text-[var(--accent)]" />
+                      <p key={i} className="flex items-start gap-1.5 text-xs text-[var(--text-secondary)]">
+                        <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-[var(--accent)]/40" />
                         {tip}
                       </p>
                     ))}
@@ -438,17 +392,16 @@ function ExerciseCard({
                 </div>
               )}
 
+              {/* Video link */}
               {exercise.videoUrl && (
-                <motion.a
+                <a
                   href={exercise.videoUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] py-3 text-sm font-bold text-[var(--accent-text)]"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.97 }}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] py-2.5 text-sm font-bold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
                 >
-                  <Play size={16} /> Ver Video Demostrativo
-                </motion.a>
+                  <Play size={14} /> Ver Video
+                </a>
               )}
             </div>
           </motion.div>
@@ -459,14 +412,15 @@ function ExerciseCard({
 }
 
 const slideVariants = {
-  enter: (dir: number) => ({ x: dir >= 0 ? 120 : -120, opacity: 0 }),
+  enter: (dir: number) => ({ x: dir >= 0 ? 100 : -100, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir >= 0 ? -120 : 120, opacity: 0 }),
+  exit: (dir: number) => ({ x: dir >= 0 ? -100 : 100, opacity: 0 }),
 }
 
 export default function MyRoutines() {
   const { currentRoutine, selectedDay, setSelectedDay, loadRoutines } = useRoutineStore()
 
+  const todayKey = JS_DAY_MAP[new Date().getDay()]
   const todayDateStr = useMemo(() => new Date().toISOString().split('T')[0], [])
   const STORAGE_KEY = `multigym-progress-${todayDateStr}`
 
@@ -542,7 +496,7 @@ export default function MyRoutines() {
       const t = setTimeout(() => {
         setShowSwipeTip(false)
         localStorage.setItem('multigym-swipe-tip', '1')
-      }, 5000)
+      }, 4000)
       return () => clearTimeout(t)
     }
   }, [])
@@ -557,9 +511,6 @@ export default function MyRoutines() {
     d.setDate(monday.getDate() + i)
     return d
   })
-  const monthLabel = today
-    .toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
-    .replace(/^\w/, (c) => c.toUpperCase())
 
   const todayRoutine = currentRoutine?.days.find((d) => d.dayOfWeek === selectedDay)
   const exercises = todayRoutine?.exercises ?? []
@@ -613,9 +564,18 @@ export default function MyRoutines() {
       } catch {
         /* no-op */
       }
+      if (currentRoutine?.id) {
+        const durationMinutes = Math.max(1, Math.round(elapsedSeconds / 60))
+        const estimatedCalories = Math.max(1, Math.round(totalExercises * 8 + durationMinutes * 5))
+        createWorkoutLog({
+          workoutId: currentRoutine.id,
+          durationMinutes,
+          caloriesBurned: estimatedCalories,
+        }).catch(() => {})
+      }
     }
     prevProgressRef.current = progress
-  }, [progress, todayRoutine?.isRestDay, totalSets])
+  }, [progress, todayRoutine?.isRestDay, totalSets, currentRoutine?.id, elapsedSeconds, totalExercises])
 
   const goToDay = (newDay: DayOfWeek) => {
     const oldIdx = DAYS.findIndex((d) => d.key === selectedDay)
@@ -671,128 +631,147 @@ export default function MyRoutines() {
 
   return (
     <div
-      className={`mx-auto max-w-2xl space-y-5 px-4 py-6 ${
+      className={`mx-auto max-w-2xl px-4 py-6 ${
         !todayRoutine?.isRestDay && totalSets > 0 ? 'pb-44 lg:pb-28' : ''
       }`}
     >
+      {/* Rest done flash */}
       <AnimatePresence>
         {restDoneFlash && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="fixed top-20 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-[var(--accent-text)] shadow-lg"
+            className="fixed top-20 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[var(--accent)] px-5 py-2 text-sm font-bold text-[var(--accent-text)] shadow-lg"
           >
-            ¡Descanso terminado! Siguiente serie
+            ¡Descanso terminado!
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Swipe tip */}
       <AnimatePresence>
         {showSwipeTip && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="py-1.5 text-center text-xs font-semibold text-[var(--text-muted)]"
+            className="mb-4 flex items-center justify-center gap-1.5 text-xs text-[var(--text-muted)]"
           >
-            Desliza horizontalmente para cambiar de día
+            <Info size={12} />
+            Desliza para cambiar de día
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-4">
-          <div>
-            <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
-              Semana actual
-            </p>
-            <p className="mt-0.5 font-heading text-sm font-bold text-[var(--text-primary)]">{monthLabel}</p>
+      {/* Header — Day name + Progress ring */}
+      <div className="mb-5 flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+            Rutina de
+          </p>
+          <h1 className="text-4xl font-black tracking-tighter text-[var(--text-primary)] sm:text-5xl">
+            {selectedDayData?.full.toUpperCase()}
+          </h1>
+          <div className="mt-2 flex items-center gap-2">
+            {todayRoutine?.isRestDay ? (
+              <span className="flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
+                <Moon size={14} /> Descanso
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-sm text-[var(--text-muted)]">
+                <Dumbbell size={14} />
+                {todayRoutine?.label ?? 'Sin ejercicios'}
+                {estimatedMinutes > 0 && ` · ~${estimatedMinutes} min`}
+              </span>
+            )}
+            {todayKey === selectedDay && (
+              <span className="rounded-full bg-[var(--accent)] px-2 py-0.5 text-[9px] font-bold text-[var(--accent-text)]">
+                HOY
+              </span>
+            )}
           </div>
-          <span className="rounded-full bg-[var(--accent)]/10 px-3 py-1 text-[10px] font-bold text-[var(--accent)]">
-            {currentRoutine?.name ?? 'Sin rutina'}
-          </span>
         </div>
-
-        <div className="grid grid-cols-7 gap-1.5">
-          {DAYS.map((d, i) => {
-            const isSelected = d.key === selectedDay
-            const isToday = d.key === todayKey
-            const dayData = currentRoutine?.days.find((r) => r.dayOfWeek === d.key)
-            const isRest = dayData?.isRestDay ?? false
-            const dateObj = weekDates[i]
-
-            const dayExercises = dayData?.exercises ?? []
-            const dayTotal = dayExercises.reduce((s, ex) => s + ex.sets, 0)
-            const dayDone = dayExercises.reduce(
-              (s, ex) =>
-                s +
-                Array.from({ length: ex.sets }).filter((_, j) =>
-                  completedSets.has(makeSetKey(d.key, ex.id, j))
-                ).length,
-              0
-            )
-            const dayAllDone = dayTotal > 0 && dayDone === dayTotal
-
-            return (
-              <MotionButton
-                key={d.key}
-                onClick={() => goToDay(d.key)}
-                variant="ghost"
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.9 }}
-                className={`relative flex h-auto flex-col items-center gap-1 rounded-xl px-0 py-2.5 ${
-                  isSelected
-                    ? 'bg-[var(--accent)] shadow-sm'
-                    : 'bg-transparent'
-                }`}
-              >
-                <span
-                  className={`text-[10px] font-black tracking-wider ${
-                    isSelected ? 'text-[var(--accent-text)]' : 'text-[var(--text-muted)]'
-                  }`}
-                >
-                  {d.short}
-                </span>
-                <span
-                  className={`font-heading text-lg leading-none font-black ${
-                    isSelected
-                      ? 'text-[var(--accent-text)]'
-                      : isToday
-                        ? 'text-[var(--accent)]'
-                        : 'text-[var(--text-primary)]'
-                  }`}
-                >
-                  {dateObj.getDate()}
-                </span>
-                <div
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{
-                    background: dayAllDone
-                      ? 'var(--success)'
-                      : isRest
-                        ? isSelected
-                          ? 'rgba(255,255,255,0.6)'
-                          : 'var(--text-muted)'
-                        : isSelected
-                          ? 'var(--accent-text)'
-                          : 'var(--accent)',
-                    opacity: isRest && !isSelected ? 0.3 : 0.85,
-                  }}
-                />
-                {isToday && !isSelected && (
-                  <motion.div
-                    className="pointer-events-none absolute inset-0 rounded-xl ring-2 ring-[var(--accent)]/30"
-                    animate={{ opacity: [0.15, 0.45, 0.15] }}
-                    transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                  />
-                )}
-              </MotionButton>
-            )
-          })}
-        </div>
+        {!todayRoutine?.isRestDay && totalSets > 0 && (
+          <ProgressRing progress={progress} size={80} strokeWidth={5} />
+        )}
       </div>
 
+      {/* Week selector — horizontal scroll */}
+      <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+        {DAYS.map((d, i) => {
+          const isSelected = d.key === selectedDay
+          const isToday = d.key === todayKey
+          const dayData = currentRoutine?.days.find((r) => r.dayOfWeek === d.key)
+          const isRest = dayData?.isRestDay ?? false
+          const dateObj = weekDates[i]
+
+          const dayExercises = dayData?.exercises ?? []
+          const dayTotal = dayExercises.reduce((s, ex) => s + ex.sets, 0)
+          const dayDone = dayExercises.reduce(
+            (s, ex) =>
+              s +
+              Array.from({ length: ex.sets }).filter((_, j) =>
+                completedSets.has(makeSetKey(d.key, ex.id, j))
+              ).length,
+            0
+          )
+          const dayAllDone = dayTotal > 0 && dayDone === dayTotal
+
+          return (
+            <button
+              key={d.key}
+              onClick={() => goToDay(d.key)}
+              className={`relative flex min-w-[52px] flex-col items-center gap-1 rounded-2xl px-3 py-3 transition-all active:scale-95 ${
+                isSelected
+                  ? 'bg-[var(--accent)] shadow-sm'
+                  : 'bg-[var(--card)] border border-[var(--border)]'
+              }`}
+            >
+              <span
+                className={`text-[10px] font-bold uppercase tracking-wider ${
+                  isSelected ? 'text-[var(--accent-text)]' : 'text-[var(--text-muted)]'
+                }`}
+              >
+                {d.short}
+              </span>
+              <span
+                className={`text-xl leading-none font-black ${
+                  isSelected
+                    ? 'text-[var(--accent-text)]'
+                    : isToday
+                      ? 'text-[var(--accent)]'
+                      : 'text-[var(--text-primary)]'
+                }`}
+              >
+                {dateObj.getDate()}
+              </span>
+              <div
+                className="h-1.5 w-1.5 rounded-full"
+                style={{
+                  background: dayAllDone
+                    ? 'var(--success, #22c55e)'
+                    : isRest
+                      ? 'var(--text-muted)'
+                      : isSelected
+                        ? 'var(--accent-text)'
+                        : 'var(--accent)',
+                  opacity: isRest ? 0.3 : 0.8,
+                }}
+              />
+              {isToday && !isSelected && (
+                <motion.div
+                  className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-[var(--accent)]/30"
+                  animate={{ opacity: [0.2, 0.5, 0.2] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Day content — swipeable */}
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div
           key={selectedDay}
@@ -801,85 +780,49 @@ export default function MyRoutines() {
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.12}
           onDragEnd={handleDragEnd}
-          className="touch-pan-y space-y-4"
+          className="touch-pan-y space-y-3"
         >
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <h2 className="font-heading text-3xl font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-4xl">
-                {selectedDayData?.full}
-              </h2>
-              <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                {todayRoutine?.isRestDay ? (
-                  <span className="flex items-center gap-1.5 text-sm font-semibold text-[var(--text-muted)]">
-                    <Moon size={15} /> Día de Descanso
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5 rounded-full bg-[var(--accent)]/10 px-3 py-1 text-sm font-bold text-[var(--accent)]">
-                    <Dumbbell size={14} />
-                    {todayRoutine?.label ?? 'Sin ejercicios'}
-                  </span>
-                )}
-                {todayKey === selectedDay && (
-                  <motion.span
-                    className="rounded-full bg-[var(--accent)] px-2.5 py-0.5 text-[10px] font-bold text-[var(--accent-text)]"
-                    animate={{ scale: [1, 1.12, 1], opacity: [1, 0.85, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    HOY
-                  </motion.span>
-                )}
-              </div>
-              {!todayRoutine?.isRestDay && totalExercises > 0 && (
-                <p className="mt-2 text-xs font-medium text-[var(--text-muted)]">
-                  {completedExerciseCount} de {totalExercises} ejercicios
-                  {estimatedMinutes > 0 && ` · ~${estimatedMinutes} min`}
-                </p>
-              )}
-            </div>
-            {!todayRoutine?.isRestDay && totalSets > 0 && (
-              <ProgressRing progress={progress} size={90} strokeWidth={6} />
-            )}
-          </div>
-
+          {/* Progress bar */}
           {!todayRoutine?.isRestDay && totalSets > 0 && (
-            <div className="h-1.5 overflow-hidden rounded-full bg-[var(--surface-hover)]">
+            <div className="h-1 overflow-hidden rounded-full bg-[var(--surface-hover)]">
               <motion.div
-                className={`h-full rounded-full ${progress >= 100 ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'}`}
+                className={`h-full rounded-full ${
+                  progress >= 100 ? 'bg-[var(--success, #22c55e)]' : 'bg-[var(--accent)]'
+                }`}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               />
             </div>
           )}
 
+          {/* Rest day */}
           {todayRoutine?.isRestDay ? (
-            <motion.div className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] py-16 text-center shadow-sm">
-              <motion.p
-                className="relative z-10 mb-5 text-6xl"
-                animate={{ y: [0, -8, 0] }}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center rounded-2xl border border-[var(--border)] bg-[var(--card)] py-16 text-center"
+            >
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               >
-                😴
-              </motion.p>
-              <p className="relative z-10 font-heading text-xl font-bold text-[var(--text-primary)]">
+                <Moon size={40} className="text-[var(--text-muted)]" />
+              </motion.div>
+              <p className="mt-4 text-lg font-black text-[var(--text-primary)]">
                 Día de Descanso
               </p>
-              <p className="relative z-10 mx-auto mt-2 max-w-xs text-sm text-[var(--text-muted)]">
+              <p className="mt-2 max-w-xs text-sm text-[var(--text-muted)]">
                 {restQuote}
               </p>
-              <div className="relative z-10 mt-6 flex items-center justify-center gap-3">
-                <Moon size={16} className="text-[var(--text-muted)] opacity-50" />
-                <span className="text-xs font-semibold text-[var(--text-muted)] opacity-50">
-                  Recuperación activa recomendada
-                </span>
-              </div>
             </motion.div>
           ) : (
-            <div className="space-y-3">
+            <>
+              {/* Exercise list */}
               {exercises.map((exercise, i) => (
                 <ExerciseCard
                   key={exercise.id}
@@ -895,19 +838,15 @@ export default function MyRoutines() {
                 />
               ))}
 
+              {/* Completed state */}
               {progress >= 100 && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="rounded-2xl border border-green-200 bg-green-500/10 py-8 text-center"
+                  className="flex flex-col items-center rounded-2xl border border-[var(--success, #22c55e)]/20 bg-[var(--success, #22c55e)]/5 py-10 text-center"
                 >
-                  <motion.div
-                    animate={{ scale: [1, 1.15, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    <Trophy size={36} className="mx-auto text-[var(--success)]" />
-                  </motion.div>
-                  <p className="mt-3 font-heading text-lg font-bold text-[var(--success)]">
+                  <Trophy size={32} className="text-[var(--success, #22c55e)]" />
+                  <p className="mt-3 text-base font-black text-[var(--success, #22c55e)]">
                     ¡Rutina Completada!
                   </p>
                   <p className="mt-1 text-sm text-[var(--text-muted)]">
@@ -915,38 +854,37 @@ export default function MyRoutines() {
                   </p>
                 </motion.div>
               )}
-            </div>
+            </>
           )}
         </motion.div>
       </AnimatePresence>
 
+      {/* Bottom bar — active workout */}
       <AnimatePresence>
         {!todayRoutine?.isRestDay && totalSets > 0 && (
           <motion.div
-            initial={{ y: 100, opacity: 0 }}
+            initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ delay: 0.4, type: 'spring', damping: 22, stiffness: 260 }}
-            className="fixed right-0 bottom-[72px] left-0 z-40 border-t border-[var(--border)] bg-[var(--card)] shadow-lg lg:bottom-0"
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ delay: 0.3, type: 'spring', damping: 22, stiffness: 260 }}
+            className="fixed right-0 bottom-[68px] left-0 z-40 border-t border-[var(--border)] bg-[var(--card)] shadow-lg lg:bottom-0"
           >
             <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
-              <MotionButton
-                whileTap={{ scale: 0.8 }}
+              <button
                 onClick={resetDayProgress}
-                variant="ghost"
-                className="h-10 w-10 flex-shrink-0 rounded-lg p-2 text-[var(--text-muted)]"
-                title="Reiniciar progreso del día"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)]"
+                title="Reiniciar"
               >
-                <RotateCcw size={14} />
-              </MotionButton>
+                <RotateCcw size={16} />
+              </button>
 
               <div className="min-w-0 flex-1">
                 <div className="mb-1.5 flex items-center justify-between">
-                  <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
                     {completedSetCount}/{totalSets} series
                   </span>
                   {workoutStarted && (
-                    <span className="font-mono text-xs font-bold text-[var(--accent)] tabular-nums">
+                    <span className="text-xs font-bold tabular-nums text-[var(--accent)]">
                       <Clock size={10} className="mr-1 inline" />
                       {formatTime(elapsedSeconds)}
                     </span>
@@ -954,25 +892,25 @@ export default function MyRoutines() {
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-[var(--surface-hover)]">
                   <motion.div
-                    className={`h-full rounded-full ${progress >= 100 ? 'bg-[var(--success)]' : 'bg-[var(--accent)]'}`}
+                    className={`h-full rounded-full ${
+                      progress >= 100 ? 'bg-[var(--success, #22c55e)]' : 'bg-[var(--accent)]'
+                    }`}
                     animate={{ width: `${Math.min(progress, 100)}%` }}
                     transition={{ duration: 0.5 }}
                   />
                 </div>
               </div>
 
-              <MotionButton
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.93 }}
+              <button
                 onClick={() => {
                   if (progress < 100) setWorkoutStarted(!workoutStarted)
                 }}
-                className={`flex h-11 items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-black tracking-wider whitespace-nowrap uppercase ${
+                className={`flex h-11 items-center gap-2 whitespace-nowrap rounded-xl px-5 text-xs font-black uppercase tracking-wider transition-all active:scale-95 ${
                   progress >= 100
-                    ? 'bg-[var(--success)] text-white shadow-sm'
+                    ? 'bg-[var(--success, #22c55e)] text-white'
                     : workoutStarted
                       ? 'border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)]'
-                      : 'bg-[var(--accent)] text-[var(--accent-text)] shadow-sm'
+                      : 'bg-[var(--accent)] text-[var(--accent-text)]'
                 }`}
               >
                 {progress >= 100 ? (
@@ -988,98 +926,75 @@ export default function MyRoutines() {
                     <Flame size={14} /> Iniciar
                   </>
                 )}
-              </MotionButton>
+              </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Celebration modal — clean, no emojis */}
       <AnimatePresence>
         {showCelebration && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--card)]/95 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--bg-primary)]/95 backdrop-blur-sm"
             onClick={() => setShowCelebration(false)}
           >
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
-              {['🎉', '💪', '⭐', '🔥', '🏆', '✨', '💥', '🎯'].map((emoji, i) => (
-                <motion.span
-                  key={i}
-                  className="absolute text-2xl"
-                  initial={{ x: `${15 + Math.random() * 70}%`, y: '110%', opacity: 1 }}
-                  animate={{
-                    y: '-10%',
-                    opacity: [1, 1, 0],
-                    rotate: [0, Math.random() > 0.5 ? 360 : -360],
-                  }}
-                  transition={{
-                    duration: 2.5 + Math.random() * 2,
-                    delay: i * 0.35,
-                    repeat: Infinity,
-                    repeatDelay: 0.5,
-                  }}
-                >
-                  {emoji}
-                </motion.span>
-              ))}
-            </div>
-
             <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
+              initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', damping: 12 }}
-              className="relative z-10 px-8 text-center"
+              transition={{ type: 'spring', damping: 14 }}
+              className="relative px-8 text-center"
               onClick={(e) => e.stopPropagation()}
             >
-              <motion.p
-                className="mb-6 text-7xl"
-                animate={{ scale: [1, 1.25, 1], rotate: [0, 8, -8, 0] }}
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
-                🔥
-              </motion.p>
+                <Trophy size={48} className="mx-auto text-[var(--accent)]" />
+              </motion.div>
+
               <h2
-                className="mb-2 font-heading text-3xl font-black tracking-tight uppercase sm:text-4xl"
+                className="mt-5 text-3xl font-black tracking-tight sm:text-4xl"
                 style={{
-                  background: 'linear-gradient(135deg, var(--accent), #00cc88)',
+                  background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
                 }}
               >
-                ¡Rutina Completada!
+                ¡Completado!
               </h2>
-              <p className="mb-8 text-sm text-[var(--text-secondary)]">Gran trabajo, ¡sigue así! 💪</p>
+              <p className="mt-2 text-sm text-[var(--text-muted)]">Gran trabajo, sigue así</p>
 
-              <div className="mx-auto mb-8 grid max-w-xs grid-cols-3 gap-3">
+              <div className="mx-auto mt-8 grid max-w-xs grid-cols-3 gap-3">
                 {[
                   { val: formatTime(elapsedSeconds), label: 'Tiempo', color: 'var(--accent)' },
-                  { val: String(completedSetCount), label: 'Series', color: 'var(--success)' },
-                  { val: String(totalExercises), label: 'Ejercicios', color: '#00cc88' },
+                  { val: String(completedSetCount), label: 'Series', color: 'var(--success, #22c55e)' },
+                  { val: String(totalExercises), label: 'Ejercicios', color: 'var(--text-secondary)' },
                 ].map((s) => (
                   <div
                     key={s.label}
-                    className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 shadow-sm"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3"
                   >
-                    <p className="font-heading text-xl font-black" style={{ color: s.color }}>
+                    <p className="text-xl font-black" style={{ color: s.color }}>
                       {s.val}
                     </p>
-                    <p className="mt-0.5 text-[9px] font-semibold tracking-wider text-[var(--text-muted)] uppercase">
+                    <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
                       {s.label}
                     </p>
                   </div>
                 ))}
               </div>
 
-              <MotionButton
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => setShowCelebration(false)}
-                className="rounded-xl bg-[var(--accent)] px-8 py-3 text-sm font-bold text-[var(--accent-text)] shadow-md"
+                className="mt-8 rounded-xl bg-[var(--accent)] px-8 py-3 text-sm font-bold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
               >
-                ¡Vamos! 🚀
-              </MotionButton>
+                Continuar
+              </button>
             </motion.div>
           </motion.div>
         )}

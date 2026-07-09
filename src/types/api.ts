@@ -382,3 +382,49 @@ export interface PlatformSettingDTO {
   type: 'string' | 'number' | 'boolean'
   description: string | null
 }
+
+export interface SaasPlanRequest {
+  name: string
+  description?: string
+  price: number
+  memberLimit: number
+  trialDays: number
+}
+
+export interface SubscriptionPlanChangeRequest {
+  planId: string
+}
+
+export interface OrderRequest {
+  userId: string
+  items: Array<{ productId: string; quantity: number }>
+  paymentMethod: string
+  shippingAmount?: number
+  deliveryMethod: string
+  branchId?: string
+  shippingAddress?: string
+  shippingCity?: string
+  shippingPostalCode?: string
+}
+
+export interface OrderStatusRequest {
+  status: string
+}
+
+export interface WorkoutRequest {
+  memberId?: string
+  title: string
+  startsAt: string
+  endsAt: string
+}
+
+export interface HealthDTO {
+  status: string
+  timestamp: string
+}
+
+export interface ReadinessDTO {
+  timestamp: string
+  database: string
+  redis: string
+}

@@ -3,7 +3,6 @@ import { persist } from 'zustand/middleware'
 import type { Routine, DayOfWeek, Exercise, MuscleGroup } from '@/types'
 import { fetchApi } from '@/lib/api'
 import type { ResponseDTO, WorkoutDTO, WorkoutExerciseListItemDTO, PaginatedResult } from '@/types'
-import { mockRoutines } from '@/data/routines'
 
 const DAY_LABELS: Record<DayOfWeek, string> = {
   lunes: 'Lunes',
@@ -122,12 +121,9 @@ export const useRoutineStore = create<RoutineStore>()(
           } else if (!state.currentRoutine && routines.length > 0) {
             set({ currentRoutine: routines[0] })
           }
-        } catch {
-          set({ routines: mockRoutines, isLoading: false })
-          const state = get()
-          if (!state.currentRoutine && mockRoutines.length > 0) {
-            set({ currentRoutine: mockRoutines[0] })
-          }
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'No se pudieron cargar las rutinas'
+          set({ routines: [], isLoading: false, error: message })
         }
       },
 
