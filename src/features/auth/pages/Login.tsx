@@ -5,6 +5,7 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 import { Eye, EyeOff, Loader2, Building2 } from 'lucide-react'
 import { getTenantFromSubdomain, getPlatformUrl } from '@/lib/tenant'
 import { resolveBranding } from '@/lib/tenantConfig'
+import { getAllowedPages } from '@/lib/permissions'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -36,7 +37,8 @@ export default function Login() {
       const ok = await login(email, password, effectiveTenant)
       if (ok) {
         const user = useAuthStore.getState().user
-        if (user?.role === 'admin') {
+        const allowed = getAllowedPages(user?.role)
+        if (allowed.length > 0) {
           navigate('/admin')
         } else {
           navigate('/app/rutinas')

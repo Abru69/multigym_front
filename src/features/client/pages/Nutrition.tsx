@@ -1,13 +1,8 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Flame, CheckCircle2, Circle, Clock, Utensils, Droplets, Info } from 'lucide-react'
-
-const dailyMacros = {
-  calories: { current: 1850, target: 2400 },
-  protein: { current: 120, target: 160 },
-  carbs: { current: 180, target: 250 },
-  fats: { current: 55, target: 80 },
-}
+import { Flame, CheckCircle2, Circle, Clock, Utensils, Droplets, Info, Loader2 } from 'lucide-react'
+import { useNutritionStore } from '@/features/client/store/nutritionStore'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
 const macroConfig = [
   { key: 'calories', label: 'Calorías', color: 'var(--accent)', unit: 'kcal' },
@@ -16,53 +11,44 @@ const macroConfig = [
   { key: 'fats', label: 'Grasas', color: 'var(--warning, #f59e0b)', unit: 'g' },
 ] as const
 
-const mealPlan = [
-  {
-    id: 'm1',
-    name: 'Desayuno',
-    time: '07:30',
-    items: ['Avena con proteína y plátano', 'Café negro'],
-    macros: { cal: 450, p: 35, c: 55, f: 10 },
-    completed: true,
-  },
-  {
-    id: 'm2',
-    name: 'Snack AM',
-    time: '11:00',
-    items: ['Yogurt griego', 'Almendras'],
-    macros: { cal: 250, p: 20, c: 15, f: 12 },
-    completed: true,
-  },
-  {
-    id: 'm3',
-    name: 'Comida',
-    time: '14:30',
-    items: ['Pechuga de pollo a la plancha', 'Arroz integral', 'Brócoli'],
-    macros: { cal: 650, p: 55, c: 70, f: 15 },
-    completed: false,
-  },
-  {
-    id: 'm4',
-    name: 'Cena',
-    time: '20:00',
-    items: ['Salmón al horno', 'Batata', 'Ensalada verde'],
-    macros: { cal: 500, p: 40, c: 45, f: 18 },
-    completed: false,
-  },
-]
-
 export default function Nutrition() {
-  const [meals, setMeals] = useState(mealPlan)
-  const [waterGlasses, setWaterGlasses] = useState(4)
+  const { plan, mealCompletion, waterGlasses, isLoading, loadPlan, toggleMeal, setWaterGlasses } =
+    useNutritionStore()
+  const user = useAuthStore((s) => s.user)
 
-  const toggleMeal = (id: string) => {
-    setMeals((prev) => prev.map((m) => (m.id === id ? { ...m, completed: !m.completed } : m)))
-  }
+  useEffect(() => {
+    if (user?.id) {
+      loadPlan(user.id)
+    }
+  }, [user, loadPlan])
 
   const calcProgress = (current: number, target: number) =>
     Math.min(100, Math.round((current / target) * 100))
 
-  const completedCount = meals.filter((m) => m.completed).length
+  const meals = plan?.meals || []
+  const completedCount = meals.filter((m) => mealCompletion[m.id]).length
+
+  const dailyMacros = plan
+    ? {
+        calories: { current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.calories : 0), 0), target: plan.targetCalories },
+        protein: { current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.protein : 0), 0), target: plan.targetProtein },
+        carbs: { current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.carbs : 0), 0), target: plan.targetCarbs },
+        fats: { current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.fats : 0), 0), target: plan.targetFats },
+      }
+    : {
+        calories: { current: 0, target: 2400 },
+        protein: { current: 0, target: 160 },
+        carbs: { current: 0, target: 250 },
+        fats: { current: 0, target: 80 },
+      }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 size={32} className="animate-spin text-[var(--accent)]" />
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-4 py-8">
@@ -81,7 +67,7 @@ export default function Nutrition() {
           </p>
         </div>
         <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-[var(--text-secondary)]">
-          Volumen Limpio
+          {plan?.name || 'Sin plan asignado'}
         </span>
       </motion.div>
 
@@ -100,18 +86,14 @@ export default function Nutrition() {
               key={macro.key}
               className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4"
             >
-              {/* Subtle background accent */}
               <div
                 className="absolute inset-0 opacity-[0.03]"
                 style={{ backgroundColor: macro.color }}
               />
-
               <div className="relative">
                 <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
                   {macro.label}
                 </p>
-
-                {/* Circular progress indicator */}
                 <div className="mb-3 flex items-center gap-3">
                   <div className="relative h-12 w-12">
                     <svg className="h-12 w-12 -rotate-90" viewBox="0 0 48 48">
@@ -168,7 +150,6 @@ export default function Nutrition() {
           </div>
 
           <div className="relative">
-            {/* Timeline line */}
             <div className="absolute left-[19px] top-2 bottom-2 w-px bg-[var(--border)]" />
 
             <div className="space-y-2">
@@ -180,13 +161,12 @@ export default function Nutrition() {
                   transition={{ delay: 0.15 + i * 0.05 }}
                   className="relative flex gap-4"
                 >
-                  {/* Timeline dot */}
                   <div className="relative z-10 mt-4 flex h-10 w-10 shrink-0 items-center justify-center">
                     <button
                       onClick={() => toggleMeal(meal.id)}
                       className="transition-transform hover:scale-110 active:scale-95"
                     >
-                      {meal.completed ? (
+                      {mealCompletion[meal.id] ? (
                         <CheckCircle2 size={24} className="text-[var(--accent)]" />
                       ) : (
                         <Circle size={24} className="text-[var(--text-muted)]" />
@@ -194,10 +174,9 @@ export default function Nutrition() {
                     </button>
                   </div>
 
-                  {/* Card */}
                   <div
                     className={`flex-1 rounded-xl border p-4 transition-all ${
-                      meal.completed
+                      mealCompletion[meal.id]
                         ? 'border-[var(--border)] bg-[var(--surface)] opacity-60'
                         : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)]/30'
                     }`}
@@ -205,7 +184,7 @@ export default function Nutrition() {
                     <div className="mb-2 flex items-center justify-between">
                       <h3
                         className={`font-bold ${
-                          meal.completed
+                          mealCompletion[meal.id]
                             ? 'text-[var(--text-secondary)] line-through'
                             : 'text-[var(--text-primary)]'
                         }`}
@@ -219,24 +198,24 @@ export default function Nutrition() {
                     </div>
 
                     <ul className="mb-3 space-y-1">
-                      {meal.items.map((item, idx) => (
+                      {meal.foods.map((food, idx) => (
                         <li
                           key={idx}
                           className="flex items-center gap-2 text-sm text-[var(--text-secondary)]"
                         >
                           <span className="h-1 w-1 rounded-full bg-[var(--accent)]/40" />
-                          {item}
+                          {food.name} — {food.quantity}
                         </li>
                       ))}
                     </ul>
 
                     <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
                       <span style={{ color: macroConfig[0].color }}>
-                        {meal.macros.cal} kcal
+                        {meal.calories} kcal
                       </span>
-                      <span>P: {meal.macros.p}g</span>
-                      <span>C: {meal.macros.c}g</span>
-                      <span>G: {meal.macros.f}g</span>
+                      <span>P: {meal.protein}g</span>
+                      <span>C: {meal.carbs}g</span>
+                      <span>G: {meal.fats}g</span>
                     </div>
                   </div>
                 </motion.div>
@@ -289,25 +268,26 @@ export default function Nutrition() {
           </motion.div>
 
           {/* Coach Note */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-            className="rounded-2xl border border-[var(--accent)]/15 bg-[var(--accent)]/5 p-5"
-          >
-            <div className="flex gap-3">
-              <Info size={16} className="mt-0.5 shrink-0 text-[var(--accent)]" />
-              <div>
-                <h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--accent)]">
-                  Nota del Coach
-                </h4>
-                <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
-                  Prioriza el descanso hoy. Consume tus carbohidratos antes y después del entreno
-                  para maximizar la recuperación.
-                </p>
+          {plan?.notes && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="rounded-2xl border border-[var(--accent)]/15 bg-[var(--accent)]/5 p-5"
+            >
+              <div className="flex gap-3">
+                <Info size={16} className="mt-0.5 shrink-0 text-[var(--accent)]" />
+                <div>
+                  <h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--accent)]">
+                    Nota del Coach
+                  </h4>
+                  <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+                    {plan.notes}
+                  </p>
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
         </div>
       </div>
     </div>

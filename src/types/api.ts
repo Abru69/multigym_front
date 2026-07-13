@@ -428,3 +428,66 @@ export interface ReadinessDTO {
   database: string
   redis: string
 }
+
+// --- Nutrition ---
+export interface FoodItemDTO {
+  id: string
+  name: string
+  quantity: string
+  calories: number
+  protein: number
+  carbs: number
+  fats: number
+}
+
+export interface MealDTO {
+  id: string
+  name: string
+  time: string
+  foods: FoodItemDTO[]
+  calories: number
+  protein: number
+  carbs: number
+  fats: number
+}
+
+export interface NutritionPlanDTO {
+  id: string
+  memberId: string
+  memberName?: string
+  name: string
+  targetCalories: number
+  targetProtein: number
+  targetCarbs: number
+  targetFats: number
+  meals: MealDTO[]
+  notes: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface NutritionPlanRequest {
+  memberId: string
+  name: string
+  targetCalories: number
+  targetProtein: number
+  targetCarbs: number
+  targetFats: number
+  meals: MealRequest[]
+  notes: string
+}
+
+export interface MealRequest {
+  name: string
+  time: string
+  foods: FoodItemRequest[]
+}
+
+export interface FoodItemRequest {
+  name: string
+  quantity: string
+  calories: number
+  protein: number
+  carbs: number
+  fats: number
+}

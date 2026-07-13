@@ -1,15 +1,20 @@
 # Próximos Pasos
 
-**Última sesión:** 2026-07-07 — Order Pickup Flow (QR voucher, READY/COMPLETED/CANCELLED)
+**Última sesión:** 2026-07-13 — Roles y Permisos por Página + Nutrition Module
 
 ## Completado Reciente
 
-- ✅ **Order Status Machine** — PENDING→READY→COMPLETED, CANCELLED con validación
-- ✅ **Pickup Flow** — Admin: "Marcar Listo" / "Entregado" / "Cancelar"
-- ✅ **PickupVoucher** — Modal con QR code, recibo, sucursal, artículos, total
-- ✅ **MyOrders READY badge** — Azul "Listo para Recoger" + botón "Ver Comprobante"
-- ✅ **fetchApi fix** — Falls back to auth-storage tenantId on localhost
-- ✅ **Tenant-settings CLIENT access** — Abierto para que checkout pueda leer delivery methods
+- ✅ **Roles y Permisos** — 6 roles (admin, nutricionist, staff, receptionist, seller, client) con control de acceso por página
+- ✅ **permissions.ts** — Mapa de permisos, `canAccessPage()`, `getAllowedPages()`, labels, colores
+- ✅ **RoleGuard** — Guard genérico que verifica permisos por ruta admin
+- ✅ **AdminGuard actualizado** — Usa `getAllowedPages()` en vez de `role === 'admin'`
+- ✅ **AdminLayout filtrado** — Nav items según permisos del usuario
+- ✅ **Users.tsx** — Select de 6 roles + badges con colores
+- ✅ **Login/ClientLayout/Landing** — Redirect usa `getAllowedPages()`
+- ✅ **Nutrition Admin** — CRUD planes nutricionales en `/admin/nutricion`
+- ✅ **Nutrition Store** — `nutritionStore.ts` con loadPlan, toggleMeal, setWaterGlasses + persist
+- ✅ **Nutrition API** — 6 funciones listas para backend
+- ✅ **Nutrition Client** — Conectado con store, fallback mock data
 
 ## Endpoints Faltantes en Backend (Mock Data en Frontend)
 
@@ -43,43 +48,17 @@ public record ProgressDTO(
 - `PUT /api/progress/{id}` — editar registro
 - `DELETE /api/progress/{id}` — eliminar registro
 
-### 2. Nutrition.tsx — Plan de nutrición
+### 2. Nutrition — Frontend listo, endpoints pendientes
 
-**Necesita:** `NutritionController` completo nuevo
+**Frontend completado:** Admin CRUD + cliente con store. Fallback a mock data.
 
-El frontend muestra: macros diarios (calorías, proteína, carbohidratos, grasas), plan de comidas (4 comidas), seguimiento de agua.
-
-**DTOs necesarios:**
-```java
-public record NutritionPlanDTO(
-    UUID id,
-    UUID memberId,
-    Integer targetCalories,
-    Integer targetProtein,
-    Integer targetCarbs,
-    Integer targetFats,
-    List<MealDTO> meals,
-    String notes
-) {}
-
-public record MealDTO(
-    UUID id,
-    String name,          // "Desayuno", "Comida", etc.
-    List<FoodItemDTO> foods,
-    Integer calories,
-    Integer protein,
-    Integer carbs,
-    Integer fats
-) {}
-```
-
-**Endpoints necesarios:**
+**Endpoints necesarios (para cuando el backend esté listo):**
 - `GET /api/nutrition/member/{memberId}` — plan de nutrición del miembro
+- `GET /api/nutrition` — listar todos los planes (admin)
 - `POST /api/nutrition` — crear plan
 - `PUT /api/nutrition/{id}` — actualizar plan
 - `DELETE /api/nutrition/{id}` — eliminar plan
-- `POST /api/nutrition/{planId}/meals` — agregar comida
-- `PUT /api/nutrition/meals/{mealId}` — actualizar comida
+- `PATCH /api/nutrition/{id}/assign` — asignar plan a miembro
 
 ### 3. Miembro Creación — Formulario completo
 
@@ -113,9 +92,9 @@ El backend `POST /api/members` requiere un `userId` existente. Para crear un mie
 ## Prioridad Alta
 
 1. **Crear endpoints de Progress** — Necesario para que Progress.tsx deje de usar mock data
-2. **Crear endpoints de Nutrition** — Necesario para que Nutrition.tsx deje de usar mock data
+2. **Crear endpoints de Nutrition** — Frontend listo, solo falta el backend Java
 3. **Integrar creación de miembros** — Formulario que combine User + Member
-4. **Verificar UI en navegador** — Ejecutar `npm run dev` y probar las 4 páginas nuevas
+4. **Verificar UI en navegador** — Ejecutar `npm run dev` y probar Nutrition admin
 
 ## Prioridad Media
 
@@ -141,7 +120,7 @@ El backend `POST /api/members` requiere un `userId` existente. Para crear un mie
 ## Bloqueado
 
 - **Audit Logs backend 500** — `GET /api/audits` retorna 500. Frontend listo, pendiente fix en backend (AuditLog entity mapping, null checks en `auditService.findFiltered`)
-- Progress.tsx y Nutrition.tsx — sin endpoints backend, se quedan como mock data hasta que se creen los controladores Java
+- Progress.tsx — sin endpoints backend, se queda como mock data hasta que se cree el controlador Java
 
 ## Pendiente Medio
 

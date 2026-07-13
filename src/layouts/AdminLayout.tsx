@@ -1,26 +1,31 @@
-import { Zap } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { getTenantUrl } from '@/lib/tenant'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { DashboardLayout, type NavItem } from '@/components/layout/DashboardLayout'
-import { LayoutDashboard, Package, Users, Dumbbell, CreditCard, Calendar, DollarSign, Store, Truck, Settings } from 'lucide-react'
+import { LayoutDashboard, Package, Users, Dumbbell, CreditCard, Calendar, DollarSign, Store, Truck, Settings, Utensils } from 'lucide-react'
+import { canAccessPage, type AdminPage } from '@/lib/permissions'
 
-const navItems: NavItem[] = [
-  { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
-  { to: '/admin/usuarios', icon: Users, label: 'Usuarios' },
-  { to: '/admin/planes', icon: CreditCard, label: 'Planes' },
-  { to: '/admin/suscripciones', icon: Calendar, label: 'Suscripciones' },
-  { to: '/admin/pagos', icon: DollarSign, label: 'Pagos' },
-  { to: '/admin/recogidas', icon: Store, label: 'Recogidas' },
-  { to: '/admin/envios', icon: Truck, label: 'Envíos' },
-  { to: '/admin/entrega', icon: Settings, label: 'Métodos de Entrega' },
-  { to: '/admin/inventario', icon: Package, label: 'Inventario' },
-  { to: '/admin/ejercicios', icon: Dumbbell, label: 'Ejercicios y Rutinas' },
+const ALL_NAV_ITEMS: (NavItem & { page: AdminPage })[] = [
+  { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true, page: 'dashboard' },
+  { to: '/admin/usuarios', icon: Users, label: 'Usuarios', page: 'users' },
+  { to: '/admin/planes', icon: CreditCard, label: 'Planes', page: 'plans' },
+  { to: '/admin/suscripciones', icon: Calendar, label: 'Suscripciones', page: 'subscriptions' },
+  { to: '/admin/pagos', icon: DollarSign, label: 'Pagos', page: 'payments' },
+  { to: '/admin/nutricion', icon: Utensils, label: 'Nutrición', page: 'nutrition' },
+  { to: '/admin/recogidas', icon: Store, label: 'Recogidas', page: 'pickups' },
+  { to: '/admin/envios', icon: Truck, label: 'Envíos', page: 'shipments' },
+  { to: '/admin/entrega', icon: Settings, label: 'Métodos de Entrega', page: 'delivery' },
+  { to: '/admin/inventario', icon: Package, label: 'Inventario', page: 'inventory' },
+  { to: '/admin/ejercicios', icon: Dumbbell, label: 'Ejercicios y Rutinas', page: 'exercises' },
 ]
 
 export function AdminLayout() {
   const { user, logout, tenantId } = useAuthStore()
   const { branding } = useTenantBranding()
+
+  const navItems = ALL_NAV_ITEMS.filter((item) =>
+    canAccessPage(user?.role, item.page)
+  )
 
   const handleLogout = async () => {
     const currentTenantId = tenantId || user?.tenantId

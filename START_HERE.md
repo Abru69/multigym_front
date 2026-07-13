@@ -51,10 +51,12 @@ src/
 ## Estado actual
 
 - ✅ Build passing
-- ✅ Admin redesign completo (6 páginas)
+- ✅ Admin redesign completo (14 páginas)
 - ✅ CSS migration completa
-- ⚠️ Lint: 134 problemas (88 errors, 46 warnings)
+- ✅ Nutrition Module (Admin CRUD + Cliente store)
+- ✅ 6 Roles con control de acceso por página
+- ⚠️ Lint: problemas preexistentes
 
 ---
 
-_Última actualización: 2026-07-02_
+_Última actualización: 2026-07-13_

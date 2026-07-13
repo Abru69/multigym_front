@@ -3,20 +3,23 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Play } from 'lucide-react'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { getAllowedPages } from '@/lib/permissions'
 
 export function TenantHero() {
   const { branding, tenantId } = useTenantBranding()
   const { isAuthenticated, user } = useAuthStore()
   const { hero, stats, heroVideo } = branding
 
+  const hasAdminAccess = getAllowedPages(user?.role).length > 0
+
   const primaryCta = isAuthenticated
-    ? user?.role === 'admin'
+    ? hasAdminAccess
       ? hero.ctaAuthenticatedAdmin
       : hero.ctaAuthenticatedClient
     : hero.ctaText
 
   const primaryLink = isAuthenticated
-    ? user?.role === 'admin'
+    ? hasAdminAccess
       ? '/admin'
       : '/app/rutinas'
     : `/login?tenant=${tenantId}`

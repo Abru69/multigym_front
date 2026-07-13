@@ -4,6 +4,7 @@ import { AuthGuard } from './AuthGuard'
 import { AdminGuard } from './AdminGuard'
 import { PlatformGuard } from './PlatformGuard'
 import { TenantRouter } from './TenantRouter'
+import { RoleGuard } from './RoleGuard'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { ClientLayout } from '@/layouts/ClientLayout'
 import { AuthLayout } from '@/layouts/AuthLayout'
@@ -34,6 +35,7 @@ const Payments = lazy(() => import('@/features/admin/pages/Payments'))
 const Pickups = lazy(() => import('@/features/admin/pages/Pickups'))
 const Shipments = lazy(() => import('@/features/admin/pages/Shipments'))
 const DeliverySettings = lazy(() => import('@/features/admin/pages/DeliverySettings'))
+const NutritionPlans = lazy(() => import('@/features/admin/pages/NutritionPlans'))
 
 // Shop Pages
 const Catalog = lazy(() => import('@/features/shop/pages/Catalog'))
@@ -115,16 +117,17 @@ export const router = createBrowserRouter([
       </AdminGuard>
     ),
     children: [
-      { index: true, element: withSuspense(AdminDashboard) },
-      { path: 'inventario', element: withSuspense(Inventory) },
-      { path: 'usuarios', element: withSuspense(Users) },
-      { path: 'ejercicios', element: withSuspense(Exercises) },
-      { path: 'planes', element: withSuspense(Plans) },
-      { path: 'suscripciones', element: withSuspense(Subscriptions) },
-      { path: 'pagos', element: withSuspense(Payments) },
-      { path: 'recogidas', element: withSuspense(Pickups) },
-      { path: 'envios', element: withSuspense(Shipments) },
-      { path: 'entrega', element: withSuspense(DeliverySettings) },
+      { index: true, element: <RoleGuard page="dashboard">{withSuspense(AdminDashboard)}</RoleGuard> },
+      { path: 'inventario', element: <RoleGuard page="inventory">{withSuspense(Inventory)}</RoleGuard> },
+      { path: 'usuarios', element: <RoleGuard page="users">{withSuspense(Users)}</RoleGuard> },
+      { path: 'ejercicios', element: <RoleGuard page="exercises">{withSuspense(Exercises)}</RoleGuard> },
+      { path: 'planes', element: <RoleGuard page="plans">{withSuspense(Plans)}</RoleGuard> },
+      { path: 'suscripciones', element: <RoleGuard page="subscriptions">{withSuspense(Subscriptions)}</RoleGuard> },
+      { path: 'pagos', element: <RoleGuard page="payments">{withSuspense(Payments)}</RoleGuard> },
+      { path: 'recogidas', element: <RoleGuard page="pickups">{withSuspense(Pickups)}</RoleGuard> },
+      { path: 'envios', element: <RoleGuard page="shipments">{withSuspense(Shipments)}</RoleGuard> },
+      { path: 'entrega', element: <RoleGuard page="delivery">{withSuspense(DeliverySettings)}</RoleGuard> },
+      { path: 'nutricion', element: <RoleGuard page="nutrition">{withSuspense(NutritionPlans)}</RoleGuard> },
     ],
   },
 

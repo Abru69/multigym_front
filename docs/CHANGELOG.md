@@ -4,6 +4,32 @@ Formato: [YYYY-MM-DD]
 
 ---
 
+## [2026-07-13]
+
+### Completado
+
+- **Nutrition Module (Frontend)**
+  - **Types**: `NutritionPlanDTO`, `MealDTO`, `FoodItemDTO`, `NutritionPlanRequest`, `MealRequest`, `FoodItemRequest` en `api.ts`
+  - **API**: 6 funciones — `getNutritionPlans`, `getNutritionPlanByMember`, `createNutritionPlan`, `updateNutritionPlan`, `deleteNutritionPlan`, `assignNutritionPlan`
+  - **Store**: `nutritionStore.ts` — `loadPlan()`, `toggleMeal()`, `setWaterGlasses()` con persist (mealCompletion + waterGlasses en localStorage)
+  - **Admin**: `NutritionPlans.tsx` — CRUD completo con card grid, modal crear/editar, editor de comidas con select predefinido (Desayuno, Snack AM/PM, Comida, Cena, Pre/Post-entreno), editor de alimentos con macros, assignación a miembro
+  - **Ruta**: `/admin/nutricion` (lazy) + nav item "Nutrición" con icono Utensils en AdminLayout
+  - **Cliente**: `Nutrition.tsx` conectado con `nutritionStore`, fallback a mock data cuando backend no responde
+  - **Fix**: `exercise.ts` syntax error pre-existente corregido
+
+- **Roles y Permisos por Página**
+  - **6 roles**: admin, nutricionist, staff, receptionist, seller, client
+  - **`permissions.ts`**: Mapa de permisos por rol, labels, colores, `canAccessPage()`, `getAllowedPages()`
+  - **`RoleGuard.tsx`**: Guard genérico que verifica permisos por ruta
+  - **AdminGuard**: Usa `getAllowedPages()` en vez de `role === 'admin'` hardcodeado
+  - **Router**: Cada ruta admin envuelta con `RoleGuard page="..."`
+  - **AdminLayout**: Nav items filtrados según permisos del usuario
+  - **Users.tsx**: Select de 6 roles + badges con colores por rol
+  - **Login/ClientLayout/Landing/TenantHero**: Redirect y portal link usan `getAllowedPages()`
+  - **Acceso por rol**: Admin (todas), Nutriólogo (nutrición), Staff (dashboard/usuarios/inventario/ejercicios), Recepcionista (dashboard/usuarios/suscripciones/pagos), Vendedor (dashboard/inventario/recogidas/envíos/entrega), Cliente (portal cliente)
+
+---
+
 ## [2026-07-07]
 
 ### Completado

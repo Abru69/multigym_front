@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Zap, Dumbbell, ShoppingBag, Package, LogOut } from 'lucide-react'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { getAllowedPages } from '@/lib/permissions'
 import { TenantHero } from '../components/TenantHero'
 import { GymSchedule } from '../components/GymSchedule'
 import { Trainers } from '../components/Trainers'
@@ -12,7 +13,7 @@ export default function TenantLandingPage() {
   const { branding, tenantId } = useTenantBranding()
   const { isAuthenticated, user, logout } = useAuthStore()
 
-  const portalLink = user?.role === 'admin' ? '/admin' : '/app/rutinas'
+  const portalLink = getAllowedPages(user?.role).length > 0 ? '/admin' : '/app/rutinas'
 
   const handleLogout = async () => {
     await logout()

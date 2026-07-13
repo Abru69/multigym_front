@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { getAllowedPages } from '@/lib/permissions'
 import type { ReactNode } from 'react'
 
 export function AdminGuard({ children }: { children: ReactNode }) {
@@ -9,7 +10,8 @@ export function AdminGuard({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace />
   }
 
-  if (user?.role !== 'admin') {
+  const allowed = getAllowedPages(user?.role)
+  if (allowed.length === 0) {
     return <Navigate to="/app/rutinas" replace />
   }
 

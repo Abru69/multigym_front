@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { getTenantUrl } from '@/lib/tenant'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
+import { getAllowedPages } from '@/lib/permissions'
 import SaaSLanding from './SaaSLanding'
 
 const features = [
@@ -64,9 +65,10 @@ export default function Landing() {
     return <SaaSLanding />
   }
 
-  const portalLink = user?.role === 'admin' ? '/admin' : '/app/rutinas'
+  const hasAdminAccess = getAllowedPages(user?.role).length > 0
+  const portalLink = hasAdminAccess ? '/admin' : '/app/rutinas'
   const ctaText = isAuthenticated
-    ? user?.role === 'admin'
+    ? hasAdminAccess
       ? branding.hero.ctaAuthenticatedAdmin
       : branding.hero.ctaAuthenticatedClient
     : branding.hero.ctaText

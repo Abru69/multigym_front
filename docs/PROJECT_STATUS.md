@@ -1,21 +1,24 @@
 # Estado del Proyecto
 
-**Última actualización:** 2026-07-07
+**Última actualización:** 2026-07-13
 
 ## Resumen
 
 | Área               | Estado                                    |
 | ------------------ | ----------------------------------------- |
-| Build              | ✅ Passing (517ms)                        |
-| TypeScript         | ✅ Clean                                  |
+| Build              | ✅ Passing (836ms)                        |
+| TypeScript         | ⚠️ Errores preexistentes (DeliverySettings, Checkout, MyOrders) |
 | Lint               | ⚠️ Problemas preexistentes               |
 | Dark Theme         | ✅ Near-black (#0a0a0a) + accent #aaff00 |
 | API Integration    | ✅ 30+ endpoints conectados               |
-| Admin Pages        | ✅ 13 páginas (Dashboard, Inventario, Usuarios, Ejercicios, Miembros, Planes, Suscripciones, Pagos, Recogidas, Envíos, Métodos de Entrega, ...) |
+| Admin Pages        | ✅ 14 páginas (Dashboard, Inventario, Usuarios, Ejercicios, Planes, Suscripciones, Pagos, Nutrición, Recogidas, Envíos, Métodos de Entrega, ...) |
 | Client Pages       | ✅ 4 páginas (Rutinas, Nutrición, Progreso, My Orders) |
 | Checkout           | ✅ Integrado con backend + delivery methods (3 pasos)|
 | Pickup Flow        | ✅ Estado READY, comprobante QR, entregado/cancelado |
-| Missing Endpoints  | ⚠️ Progress y Nutrition sin backend       |
+| Nutrition (Admin)  | ✅ CRUD planes nutricionales + assignación a miembros |
+| Nutrition (Client) | ✅ Conectado con store, fallback mock     |
+| Roles & Permisos   | ✅ 6 roles con control de acceso por página |
+| Missing Endpoints  | ⚠️ Progress sin backend                   |
 
 ## Funcionalidades Recientes (2026-07-07)
 
@@ -166,6 +169,30 @@
 - **Router**: +4 lazy routes bajo `/admin/`
 - Build: `tsc --noEmit` ✅ | `vite build` ✅ (1.76s)
 
+### Fase 12 — Nutrition Module Frontend (2026-07-13)
+
+- **Types**: `NutritionPlanDTO`, `MealDTO`, `FoodItemDTO`, `NutritionPlanRequest`, `MealRequest`, `FoodItemRequest`
+- **API**: 6 funciones — `getNutritionPlans`, `getNutritionPlanByMember`, `createNutritionPlan`, `updateNutritionPlan`, `deleteNutritionPlan`, `assignNutritionPlan`
+- **Store**: `nutritionStore.ts` — Zustand con persist para `mealCompletion` y `waterGlasses`
+- **Admin**: `NutritionPlans.tsx` — CRUD completo con card grid, editor de comidas (select predefinido), editor de alimentos con macros, assignación a miembro
+- **Ruta**: `/admin/nutricion` + nav item "Nutrición" en AdminLayout
+- **Cliente**: `Nutrition.tsx` conectado con `nutritionStore`, fallback a mock data
+- **Fix**: `exercise.ts` syntax error pre-existente
+- Build: `vite build` ✅ (739ms)
+
+### Fase 13 — Roles y Permisos por Página (2026-07-13)
+
+- **Types**: `UserRole` type expandido en `user.ts` con 6 valores: admin, client, nutricionist, staff, receptionist, seller
+- **`permissions.ts`**: Mapa de permisos por rol, `canAccessPage()`, `getAllowedPages()`, `ROLE_LABELS`, `ROLE_COLORS`, `getPageFromPath()`
+- **`RoleGuard.tsx`**: Guard genérico por ruta + `PathRoleGuard` por pathname
+- **AdminGuard**: Usa `getAllowedPages()` en vez de `role === 'admin'` hardcodeado
+- **Router**: Cada ruta admin envuelta con `RoleGuard page="..."`
+- **AdminLayout**: Nav items filtrados por `canAccessPage()`
+- **Users.tsx**: Select de 6 roles + badges con colores por rol
+- **Login/ClientLayout/Landing/TenantHero**: Redirect y portal link usan `getAllowedPages()`
+- **Acceso por rol**: Admin (todas), Nutriólogo (nutrición), Staff (dashboard/usuarios/inventario/ejercicios), Recepcionista (dashboard/usuarios/suscripciones/pagos), Vendedor (dashboard/inventario/recogidas/envíos/entrega), Cliente (portal cliente)
+- Build: `vite build` ✅ (836ms)
+
 ## Endpoints Faltantes en Backend
 
 ### Progress.tsx — Datos físicos del usuario
@@ -190,11 +217,17 @@ public record ProgressDTO(
 - `PUT /api/progress/{id}` — editar registro
 - `DELETE /api/progress/{id}` — eliminar registro
 
-### Nutrition.tsx — Plan de nutrición
+### Nutrition — Frontend listo, endpoints pendientes
 
-**El frontend muestra:** macros diarios, plan de comidas (4 comidas), seguimiento de agua
+**Frontend completado:** Admin CRUD + cliente conectado con store. Fallback a mock data mientras el backend no exista.
 
-**Necesita:** `NutritionController` completo nuevo con `NutritionPlanDTO`, `MealDTO`, `FoodItemDTO`
+**Endpoints necesarios (para cuando el backend esté listo):**
+- `GET /api/nutrition/member/{memberId}` — plan de nutrición del miembro
+- `GET /api/nutrition` — listar todos los planes (admin)
+- `POST /api/nutrition` — crear plan
+- `PUT /api/nutrition/{id}` — actualizar plan
+- `DELETE /api/nutrition/{id}` — eliminar plan
+- `PATCH /api/nutrition/{id}/assign` — asignar plan a miembro
 
 ### Miembro Creación — Formulario completo
 

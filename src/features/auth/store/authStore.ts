@@ -2,6 +2,16 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { User, ResponseDTO, LoginResponse, UserDTO } from '@/types'
 import { fetchApi, logout as apiLogout } from '@/lib/api'
+import type { UserRole } from '@/lib/permissions'
+
+const ROLE_MAP: Record<string, UserRole> = {
+  ADMIN: 'admin',
+  CLIENT: 'client',
+  NUTRICIONIST: 'nutricionist',
+  STAFF: 'staff',
+  RECEPTIONIST: 'receptionist',
+  SELLER: 'seller',
+}
 
 interface AuthStore {
   user: User | null
@@ -33,7 +43,8 @@ export const useAuthStore = create<AuthStore>()(
           })
 
           if (response && response.dto && response.dto.accessToken) {
-            const role = response.dto.role.toLowerCase() === 'admin' ? 'admin' : 'client'
+            const rawRole = response.dto.role?.toUpperCase() || 'CLIENT'
+            const role = ROLE_MAP[rawRole] || 'client'
 
             // Extract real user data from response.lista[0] if available
             const userDTO =

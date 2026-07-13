@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { getTenantUrl } from '@/lib/tenant'
 import { useTheme } from '@/hooks/useTheme'
+import { getAllowedPages } from '@/lib/permissions'
 
 const clientNav = [
   { to: '/app/rutinas', icon: Dumbbell, label: 'Rutinas' },
@@ -35,7 +36,7 @@ export function ClientLayout() {
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
 
-  const portalLink = user?.role === 'admin' ? '/admin' : '/app/rutinas'
+  const portalLink = getAllowedPages(user?.role).length > 0 ? '/admin' : '/app/rutinas'
 
   const handleLogout = async () => {
     const currentTenantId = tenantId || user?.tenantId

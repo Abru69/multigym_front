@@ -33,6 +33,8 @@ import type {
   HealthDTO,
   ReadinessDTO,
   UserDTO,
+  NutritionPlanDTO,
+  NutritionPlanRequest,
 } from '@/types'
 
 export async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -552,3 +554,26 @@ export const getTenantUserById = (userId: string) =>
 // --- Client Members (excludes admins) ---
 export const getClientUsers = () =>
   fetchApi<ResponseDTO<PaginatedResult<UserDTO>>>('/api/tenant/users?role=CLIENT&isActive=true&size=9999')
+
+// --- Nutrition Plans ---
+export const getNutritionPlans = () =>
+  fetchApi<ResponseDTO<PaginatedResult<NutritionPlanDTO>>>('/api/nutrition')
+export const getNutritionPlanByMember = (memberId: string) =>
+  fetchApi<ResponseDTO<NutritionPlanDTO>>(`/api/nutrition/member/${memberId}`)
+export const createNutritionPlan = (data: NutritionPlanRequest) =>
+  fetchApi<ResponseDTO<NutritionPlanDTO>>('/api/nutrition', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const updateNutritionPlan = (id: string, data: NutritionPlanRequest) =>
+  fetchApi<ResponseDTO<NutritionPlanDTO>>(`/api/nutrition/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+export const deleteNutritionPlan = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/nutrition/${id}`, { method: 'DELETE' })
+export const assignNutritionPlan = (planId: string, memberId: string) =>
+  fetchApi<ResponseDTO<NutritionPlanDTO>>(`/api/nutrition/${planId}/assign`, {
+    method: 'PATCH',
+    body: JSON.stringify({ memberId }),
+  })

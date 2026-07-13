@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/Input'
 import { useToastStore } from '@/components/ui/Toast'
 import { DropdownMenu, DropdownItem, DropdownSeparator } from '@/components/ui/DropdownMenu'
 import type { ResponseDTO, UserDTO } from '@/types'
+import { ROLE_LABELS, ROLE_COLORS } from '@/lib/permissions'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
@@ -22,7 +23,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
 
-type RoleFilter = 'ALL' | 'ADMIN' | 'CLIENT'
+type RoleFilter = 'ALL' | 'ADMIN' | 'CLIENT' | 'NUTRICIONIST' | 'STAFF' | 'RECEPTIONIST' | 'SELLER'
 
 export default function UsersPage() {
   const navigate = useNavigate()
@@ -194,6 +195,10 @@ export default function UsersPage() {
     { key: 'ALL', label: 'Todos' },
     { key: 'ADMIN', label: 'Admin' },
     { key: 'CLIENT', label: 'Cliente' },
+    { key: 'NUTRICIONIST', label: 'Nutriólogo' },
+    { key: 'STAFF', label: 'Staff' },
+    { key: 'RECEPTIONIST', label: 'Recepcionista' },
+    { key: 'SELLER', label: 'Vendedor' },
   ]
 
   return (
@@ -306,7 +311,7 @@ export default function UsersPage() {
                 border: '1px solid var(--border)',
                 borderLeftWidth: 3,
                 borderLeftColor:
-                  user.role === 'ADMIN' ? 'var(--accent)' : 'var(--border)',
+                  ROLE_COLORS[user.role]?.bg || 'var(--border)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06)'
@@ -396,17 +401,18 @@ export default function UsersPage() {
 
               {/* Badges */}
               <div className="flex items-center gap-2 mt-3">
-                <span
-                  className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
-                  style={{
-                    backgroundColor:
-                      user.role === 'ADMIN' ? 'rgba(170,255,0,0.15)' : '#f1f5f9',
-                    color:
-                      user.role === 'ADMIN' ? 'var(--accent-text)' : 'var(--text-secondary)',
-                  }}
-                >
-                  {user.role === 'ADMIN' ? 'Admin' : 'Cliente'}
-                </span>
+                {(() => {
+                  const colors = ROLE_COLORS[user.role] || ROLE_COLORS.CLIENT
+                  const label = ROLE_LABELS[user.role] || user.role
+                  return (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+                      style={{ backgroundColor: colors.bg, color: colors.text }}
+                    >
+                      {label}
+                    </span>
+                  )
+                })()}
                 <span
                   className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
                   style={{
@@ -521,6 +527,10 @@ export default function UsersPage() {
               >
                 <option value="CLIENT">Cliente</option>
                 <option value="ADMIN">Administrador</option>
+                <option value="NUTRICIONIST">Nutriólogo</option>
+                <option value="STAFF">Staff</option>
+                <option value="RECEPTIONIST">Recepcionista</option>
+                <option value="SELLER">Vendedor</option>
               </select>
             </FormField>
 

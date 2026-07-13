@@ -44,5 +44,3 @@ export interface RoutineDay {
 
 export type DayOfWeek =
   | 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo'
-  notes?: string
-}

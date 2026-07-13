@@ -49,4 +49,10 @@ export type {
   PlatformSettingDTO,
   BranchDTO,
   TenantSettingDTO,
+  FoodItemDTO,
+  MealDTO,
+  NutritionPlanDTO,
+  NutritionPlanRequest,
+  MealRequest,
+  FoodItemRequest,
 } from './api'
