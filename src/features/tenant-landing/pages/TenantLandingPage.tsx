@@ -4,6 +4,7 @@ import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { getAllowedPages } from '@/lib/permissions'
 import { TenantHero } from '../components/TenantHero'
+import { TenantBanner } from '../components/TenantBanner'
 import { GymSchedule } from '../components/GymSchedule'
 import { Trainers } from '../components/Trainers'
 import { GymPlans } from '../components/GymPlans'
@@ -119,6 +120,7 @@ export default function TenantLandingPage() {
 
       <main>
         <TenantHero />
+        <TenantBanner />
         <div id="horarios">
           <GymSchedule />
         </div>

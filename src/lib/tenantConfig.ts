@@ -84,6 +84,16 @@ export interface TenantBranding {
     features: string[]
     featured?: boolean
   }>
+
+  /** Promotional banners displayed below the hero section */
+  banners: Array<{
+    image: string
+    title: string
+    subtitle: string
+    link?: string
+    buttonText?: string
+    accentColor?: string
+  }>
 }
 
 /**
@@ -177,6 +187,7 @@ export const DEFAULT_BRANDING: TenantBranding = {
       ],
     },
   ],
+  banners: [],
 }
 
 /**
@@ -262,6 +273,16 @@ export const TENANT_CONFIGS: Record<string, Partial<TenantBranding>> = {
           'Clases grupales',
           'Soporte 24/7',
         ],
+      },
+    ],
+    banners: [
+      {
+        image: '/images/promo-summer.webp',
+        title: 'Summer Challenge 2026',
+        subtitle: 'Gana 3 meses gratis entrenando con nosotros. Inscríbete antes del 31 de agosto.',
+        link: '/registro',
+        buttonText: 'Inscribirme',
+        accentColor: '#f97316',
       },
     ],
   },
@@ -472,5 +493,6 @@ export function resolveBranding(tenantId: string | null): TenantBranding {
     schedule: { ...DEFAULT_BRANDING.schedule, ...override.schedule },
     trainers: override.trainers ?? DEFAULT_BRANDING.trainers,
     plans: override.plans ?? DEFAULT_BRANDING.plans,
+    banners: override.banners ?? DEFAULT_BRANDING.banners,
   }
 }
