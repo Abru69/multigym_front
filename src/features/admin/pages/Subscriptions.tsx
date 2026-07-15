@@ -93,6 +93,9 @@ export default function SubscriptionsPage() {
     if (!form.planId) errors.planId = 'Selecciona un plan'
     if (!form.startDate) errors.startDate = 'Fecha de inicio requerida'
     if (!form.endDate) errors.endDate = 'Fecha de fin requerida'
+    if (form.startDate && form.endDate && form.endDate <= form.startDate) {
+      errors.endDate = 'La fecha de fin debe ser posterior a la de inicio'
+    }
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }

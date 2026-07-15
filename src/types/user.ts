@@ -9,6 +9,7 @@ export interface User {
   isActive: boolean
   currentPlan?: string
   tenantId?: string
+  memberId?: string
 }
 
 export interface AuthState {

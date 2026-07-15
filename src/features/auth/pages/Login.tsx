@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { Eye, EyeOff, Loader2, Building2 } from 'lucide-react'
 import { getTenantFromSubdomain, getPlatformUrl } from '@/lib/tenant'
 import { resolveBranding } from '@/lib/tenantConfig'
 import { getAllowedPages } from '@/lib/permissions'
+import { getDefaultRoute } from '@/router/AdminGuard'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -18,10 +19,23 @@ export default function Login() {
   const [tenantId, setTenantId] = useState(autoTenant || '')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
-  const { login, isLoading } = useAuthStore()
+  const { login, isLoading, isAuthenticated } = useAuthStore()
   const navigate = useNavigate()
+  const location = useLocation()
 
-  useEffect(() => {}, [])
+  useEffect(() => {
+    if (isAuthenticated) {
+      const user = useAuthStore.getState().user
+      if (!user) return
+      const from = (location.state as { from?: { pathname?: string } })?.from?.pathname
+      const allowed = getAllowedPages(user.role)
+      if (allowed.length > 0) {
+        navigate(from || getDefaultRoute(user.role), { replace: true })
+      } else {
+        window.location.href = from || '/'
+      }
+    }
+  }, [isAuthenticated, navigate, location])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,16 +48,7 @@ export default function Login() {
     }
 
     try {
-      const ok = await login(email, password, effectiveTenant)
-      if (ok) {
-        const user = useAuthStore.getState().user
-        const allowed = getAllowedPages(user?.role)
-        if (allowed.length > 0) {
-          navigate('/admin')
-        } else {
-          navigate('/app/rutinas')
-        }
-      }
+      await login(email, password, effectiveTenant)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Credenciales inválidas.')
     }

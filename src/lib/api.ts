@@ -35,9 +35,12 @@ import type {
   UserDTO,
   NutritionPlanDTO,
   NutritionPlanRequest,
+  TenantUserRequest,
+  ProductRequest,
 } from '@/types'
 
 export async function fetchApi<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const isPlatformRequest = url.startsWith('/platform/') || url.startsWith('/platform-api/')
   let token = ''
 
   const platformData = localStorage.getItem('platform-auth')
@@ -57,26 +60,11 @@ export async function fetchApi<T>(url: string, options: RequestInit = {}): Promi
     if (tenantData) {
       try {
         const parsed = JSON.parse(tenantData)
-        if (parsed.state && parsed.state.token) {
+        if (parsed.state && parsed.state.token && parsed.state.token !== 'fake-token') {
           token = parsed.state.token
         }
       } catch (e) {
         console.error('Failed to parse auth-storage', e)
-      }
-    }
-  }
-
-  const isTenantRequest = url.startsWith('/api/tenant/') || url.startsWith('/api/auth/')
-  if (isTenantRequest) {
-    const tenantData = localStorage.getItem('auth-storage')
-    if (tenantData) {
-      try {
-        const parsed = JSON.parse(tenantData)
-        if (parsed.state && parsed.state.token && parsed.state.token !== 'fake-token') {
-          token = parsed.state.token
-        }
-      } catch {
-        // keep platform token as fallback
       }
     }
   }
@@ -88,30 +76,41 @@ export async function fetchApi<T>(url: string, options: RequestInit = {}): Promi
     headers.set('Authorization', `Bearer ${token}`)
   }
 
-  let tenantId = getTenantFromSubdomain()
-  if (!tenantId) {
-    const tenantData = localStorage.getItem('auth-storage')
-    if (tenantData) {
-      try {
-        const parsed = JSON.parse(tenantData)
-        if (parsed.state && parsed.state.tenantId) {
-          tenantId = parsed.state.tenantId
+  if (!isPlatformRequest) {
+    let tenantId = getTenantFromSubdomain()
+    if (!tenantId) {
+      const tenantData = localStorage.getItem('auth-storage')
+      if (tenantData) {
+        try {
+          const parsed = JSON.parse(tenantData)
+          if (parsed.state && parsed.state.tenantId) {
+            tenantId = parsed.state.tenantId
+          }
+        } catch {
+          // ignore
         }
-      } catch {
-        // ignore
       }
     }
-  }
-  if (tenantId && !headers.has('X-Tenant-ID')) {
-    headers.set('X-Tenant-ID', tenantId)
+    if (tenantId && !headers.has('X-Tenant-ID')) {
+      headers.set('X-Tenant-ID', tenantId)
+    }
   }
 
   const response = await fetch(url, { ...options, headers })
 
   if (response.status === 401) {
-    localStorage.removeItem('auth-storage')
-    localStorage.removeItem('platform-auth')
-    window.location.href = '/login'
+    if (isPlatformRequest) {
+      localStorage.removeItem('platform-auth')
+      window.location.href = '/platform/login'
+    } else {
+      const hasPlatformToken = !!localStorage.getItem('platform-auth')
+      localStorage.removeItem('auth-storage')
+      if (hasPlatformToken) {
+        window.location.href = '/platform/login'
+      } else {
+        window.location.href = '/login'
+      }
+    }
     throw new Error('Sesión expirada. Por favor inicia sesión de nuevo.')
   }
 
@@ -134,9 +133,19 @@ export async function fetchApi<T>(url: string, options: RequestInit = {}): Promi
   return null as T
 }
 
-export const getProducts = () => fetchApi<ResponseDTO<PaginatedResult<ProductDTO>>>('/api/products')
-export const createProduct = (data: Partial<ProductDTO>) =>
-  fetchApi<ResponseDTO<ProductDTO>>('/api/products', { method: 'POST', body: JSON.stringify(data) })
+export const getProducts = (params?: { name?: string; page?: number; size?: number }) => {
+  const q = new URLSearchParams()
+  if (params?.name) q.set('name', params.name)
+  if (params?.page !== undefined) q.set('page', String(params.page))
+  if (params?.size !== undefined) q.set('size', String(params.size))
+  const qs = q.toString()
+  return fetchApi<ResponseDTO<PaginatedResult<ProductDTO>>>(`/api/products${qs ? '?' + qs : ''}`)
+}
+export const createProduct = (data: ProductRequest) =>
+  fetchApi<ResponseDTO<ProductDTO>>('/api/products', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
 
 export const getExercises = () =>
   fetchApi<ResponseDTO<PaginatedResult<ExerciseDTO>>>('/api/exercises')
@@ -146,8 +155,16 @@ export const createExercise = (data: Partial<ExerciseDTO>) =>
     body: JSON.stringify(data),
   })
 
-export const getWorkouts = () => fetchApi<ResponseDTO<PaginatedResult<WorkoutDTO>>>('/api/workouts')
-export const createWorkout = (data: Partial<WorkoutDTO>) =>
+export const getWorkouts = (params?: { title?: string; memberId?: string; page?: number; size?: number }) => {
+  const q = new URLSearchParams()
+  if (params?.title) q.set('title', params.title)
+  if (params?.memberId) q.set('memberId', params.memberId)
+  if (params?.page !== undefined) q.set('page', String(params.page))
+  if (params?.size !== undefined) q.set('size', String(params.size))
+  const qs = q.toString()
+  return fetchApi<ResponseDTO<PaginatedResult<WorkoutDTO>>>(`/api/workouts${qs ? '?' + qs : ''}`)
+}
+export const createWorkout = (data: { memberId: string; title: string; startsAt: string; endsAt: string }) =>
   fetchApi<ResponseDTO<WorkoutDTO>>('/api/workouts', { method: 'POST', body: JSON.stringify(data) })
 export const deleteWorkout = (id: string) =>
   fetchApi<ResponseDTO<unknown>>(`/api/workouts/${id}`, { method: 'DELETE' })
@@ -304,7 +321,7 @@ export const getWorkoutExercises = (workoutId: string) =>
 export const createWorkoutExercise = (data: {
   workoutId: string
   exerciseId: string
-  dayOfWeek: string
+  dayOfWeek?: string
   sets: number
   reps: string
   restSeconds: number
@@ -317,6 +334,8 @@ export const createWorkoutExercise = (data: {
 export const updateWorkoutExercise = (
   id: string,
   data: {
+    workoutId: string
+    exerciseId: string
     dayOfWeek?: string
     sets?: number
     reps?: string
@@ -500,8 +519,15 @@ export const getPaymentById = (id: string) =>
   fetchApi<ResponseDTO<PaymentListItemDTO>>(`/api/payments/${id}`)
 
 // --- Orders (list, my, detail, update, status, delete) ---
-export const getOrders = () =>
-  fetchApi<ResponseDTO<PaginatedResult<OrderDTO>>>('/api/orders')
+export const getOrders = (params?: { status?: string; userId?: string; page?: number; size?: number }) => {
+  const q = new URLSearchParams()
+  if (params?.status) q.set('status', params.status)
+  if (params?.userId) q.set('userId', params.userId)
+  if (params?.page !== undefined) q.set('page', String(params.page))
+  if (params?.size !== undefined) q.set('size', String(params.size))
+  const qs = q.toString()
+  return fetchApi<ResponseDTO<PaginatedResult<OrderDTO>>>(`/api/orders${qs ? '?' + qs : ''}`)
+}
 export const getMyOrders = () =>
   fetchApi<ResponseDTO<PaginatedResult<OrderDTO>>>('/api/orders/my')
 export const getOrderById = (id: string) =>
@@ -551,15 +577,41 @@ export const getBranchById = (id: string) =>
 export const getTenantUserById = (userId: string) =>
   fetchApi<ResponseDTO<UserDTO>>(`/api/tenant/users/${userId}`)
 
+export const createTenantUser = (data: TenantUserRequest) =>
+  fetchApi<ResponseDTO<UserDTO>>('/api/tenant/users', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+
+export const updateTenantUser = (userId: string, data: TenantUserRequest) =>
+  fetchApi<ResponseDTO<UserDTO>>(`/api/tenant/users/${userId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+
+export const toggleTenantUserStatus = (userId: string) =>
+  fetchApi<ResponseDTO<UserDTO>>(`/api/tenant/users/${userId}/status`, { method: 'PATCH' })
+
+export const deleteTenantUser = (userId: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/tenant/users/${userId}`, { method: 'DELETE' })
+
 // --- Client Members (excludes admins) ---
 export const getClientUsers = () =>
   fetchApi<ResponseDTO<PaginatedResult<UserDTO>>>('/api/tenant/users?role=CLIENT&isActive=true&size=9999')
 
 // --- Nutrition Plans ---
-export const getNutritionPlans = () =>
-  fetchApi<ResponseDTO<PaginatedResult<NutritionPlanDTO>>>('/api/nutrition')
+export const getNutritionPlans = (params?: { search?: string; page?: number; size?: number }) => {
+  const q = new URLSearchParams()
+  if (params?.search) q.set('search', params.search)
+  if (params?.page !== undefined) q.set('page', String(params.page))
+  if (params?.size !== undefined) q.set('size', String(params.size))
+  const qs = q.toString()
+  return fetchApi<ResponseDTO<PaginatedResult<NutritionPlanDTO>>>(`/api/nutrition${qs ? '?' + qs : ''}`)
+}
 export const getNutritionPlanByMember = (memberId: string) =>
   fetchApi<ResponseDTO<NutritionPlanDTO>>(`/api/nutrition/member/${memberId}`)
+export const getMyNutritionPlan = () =>
+  fetchApi<ResponseDTO<NutritionPlanDTO>>('/api/nutrition/my')
 export const createNutritionPlan = (data: NutritionPlanRequest) =>
   fetchApi<ResponseDTO<NutritionPlanDTO>>('/api/nutrition', {
     method: 'POST',

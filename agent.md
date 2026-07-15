@@ -62,10 +62,13 @@ src/
 │   │   └── pages/       # Dashboard, Users, Inventory, Exercises, RoutineBuilder, RoutineLibrary
 │   ├── client/          # Portal de Cliente (rutinas, progreso, nutrición)
 │   │   ├── pages/       # Landing, MyRoutines, Progress, Nutrition, SaaSLanding
-│   │   └── store/       # routineStore.ts
+│   │   └── store/       # routineStore.ts, nutritionStore.ts
 │   ├── landing/         # Landing SaaS
 │   │   ├── components/  # Hero, Features, Pricing, Footer, RoutineShowcase
 │   │   └── pages/       # LandingPage.tsx
+│   ├── tenant-landing/  # Landing del Tenant (branding dinámico)
+│   │   ├── components/  # TenantHero, TenantBanner, GymSchedule, Trainers, GymPlans, MemberNav
+│   │   └── pages/       # TenantLandingPage.tsx
 │   └── shop/            # E-Commerce (catálogo, carrito, checkout)
 │       ├── pages/       # Catalog, Cart, Checkout, ProductDetail
 │       └── store/       # cartStore.ts
@@ -86,7 +89,7 @@ src/
 - **Rendimiento:** Lazy loading para rutas pesadas, optimizar animaciones, evitar re-renders innecesarios.
 - **Semántica HTML:** Usar `<header>`, `<section>`, `<article>`, `<footer>`, `<nav>` para accesibilidad y SEO.
 - **Guard Pattern:** Mantener AuthGuard, AdminGuard y PlatformGuard para control de acceso por rol.
-- **Zustand Stores:** Un store por dominio (auth, platformAuth, cart, routine). Usar persist para datos que sobrevivan refresh.
+- **Zustand Stores:** Un store por dominio (auth, platformAuth, cart, routine, nutrition). Usar persist para datos que sobrevivan refresh.
 - **Tenant Awareness:** Toda funcionalidad debe considerar el contexto del tenant actual. No hardcodear tenantId.
 - **Mock Data:** Los datos mock en `src/data/` sirven como semilla. Preparar la integración con la API real del backend Java.
 
@@ -113,9 +116,9 @@ src/
 
 ## 4. Portal de Cliente (`features/client/`)
 
-- Landing tenant-aware con branding dinámico
+- Landing tenant-aware con branding dinámico y banners promocionales
 - Mis rutinas (vista del día actual), seguimiento de progreso, plan de nutrición
-- Store: `routineStore.ts`
+- Stores: `routineStore.ts`, `nutritionStore.ts`
 
 ## 5. E-Commerce (`features/shop/`)
 

@@ -83,7 +83,7 @@ src/
 ### 4. Portal Cliente (`features/client/`)
 
 - Rutinas asignadas, progreso, nutrición
-- Store: `routineStore.ts`
+- Stores: `routineStore.ts`, `nutritionStore.ts` (con persist para mealCompletion + waterGlasses)
 
 ### 5. E-Commerce (`features/shop/`)
 
@@ -101,6 +101,7 @@ src/
 | FormField     | `features/admin/components/FormField.tsx`     | Campos de formulario           |
 | AdminHeader   | `features/admin/components/AdminHeader.tsx`   | Encabezado de página           |
 | Avatar        | `components/ui/Avatar.tsx`                    | Iniciales con color hash       |
+| TenantBanner  | `features/tenant-landing/components/TenantBanner.tsx` | Banners promocionales landing |
 
 ## Comandos
 

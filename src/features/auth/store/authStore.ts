@@ -57,9 +57,10 @@ export const useAuthStore = create<AuthStore>()(
               name: userDTO?.memberDTO?.name || email.split('@')[0],
               email: userDTO?.email || email,
               phone: userDTO?.memberDTO?.phone || undefined,
-              role: role as 'admin' | 'client',
+              role: role as UserRole,
               joinDate: new Date().toISOString(),
               isActive: userDTO?.isActive ?? true,
+              memberId: userDTO?.memberDTO?.id || undefined,
             }
 
             set({

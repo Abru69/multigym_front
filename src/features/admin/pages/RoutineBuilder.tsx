@@ -14,7 +14,7 @@ import {
 import { Modal } from '@/components/ui/Modal'
 import { useToastStore } from '@/components/ui/Toast'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { getExercises, createExercise, createWorkout, updateWorkout, fetchApi } from '@/lib/api'
+import { getExercises, createExercise, createWorkout, createWorkoutExercise, updateWorkout, fetchApi } from '@/lib/api'
 import { MUSCLE_GROUPS } from '@/data/constants'
 import { SearchBar } from '../components/SearchBar'
 import { FormField } from '../components/FormField'
@@ -46,6 +46,7 @@ interface WorkoutExercise {
 interface EditingRoutine {
   id?: string
   title?: string
+  member?: { id: string } | null
   exercises?: WorkoutExercise[]
 }
 
@@ -53,6 +54,7 @@ interface UserData {
   id: string
   name?: string
   email?: string
+  memberId?: string
 }
 
 type DayExercises = Record<DayOfWeek, DayExercise[]>
@@ -121,8 +123,16 @@ export default function RoutineBuilder({
 
   useEffect(() => {
     loadExercises()
-    fetchApi<ResponseDTO<{ data: UserData[] }>>('/api/tenant/users')
-      .then((res) => setDbUsers(res.dto?.data || []))
+    fetchApi<{ dto?: { data?: Array<{ id: string; email?: string; role?: string; isActive?: boolean; memberDTO?: { id: string } | null; name?: string }> } }>('/api/tenant/users')
+      .then((res) => {
+        const users: UserData[] = (res.dto?.data || []).map((u) => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          memberId: u.memberDTO?.id,
+        }))
+        setDbUsers(users)
+      })
       .catch((e) => console.error(e))
   }, [loadExercises])
 
@@ -285,27 +295,36 @@ export default function RoutineBuilder({
     try {
       const exercisesPayload = Object.entries(dayExercises).flatMap(([dayOfWeek, exercises]) =>
         exercises.map((ex, index) => ({
-          exercise: { id: ex.id },
+          exerciseId: ex.id,
           dayOfWeek,
           sets: parseInt(String(ex.sets)) || 4,
           reps: ex.reps || '12',
-          restSeconds: 60,
+          restSeconds: ex.restSeconds || 60,
           orderIndex: index,
         }))
       )
 
-      const payload = {
+      const workoutPayload = {
         title: routineName,
         startsAt: new Date().toISOString(),
         endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        exercises: exercisesPayload,
+      }
+
+      const assignAndExercises = async (userId: string) => {
+        const res = await createWorkout({ ...workoutPayload, memberId: userId })
+        const workoutId = res.dto?.id
+        if (!workoutId) throw new Error('No se pudo crear la rutina')
+        for (const ex of exercisesPayload) {
+          await createWorkoutExercise({ workoutId, ...ex })
+        }
       }
 
       if (personalizedUser) {
-        await createWorkout({ ...payload, member: { id: personalizedUser.id } })
+        const memberKey = personalizedUser.memberId || personalizedUser.id
+        await assignAndExercises(memberKey)
       } else {
         for (const userId of Array.from(selectedUsers)) {
-          await createWorkout({ ...payload, member: { id: userId } })
+          await assignAndExercises(userId)
         }
       }
 
@@ -328,30 +347,25 @@ export default function RoutineBuilder({
     try {
       const exercisesPayload = Object.entries(dayExercises).flatMap(([dayOfWeek, exercises]) =>
         exercises.map((ex, index) => ({
-          exercise: { id: ex.id },
+          exerciseId: ex.id,
           dayOfWeek,
           sets: parseInt(String(ex.sets)) || 4,
           reps: ex.reps || '12',
-          restSeconds: 60,
+          restSeconds: ex.restSeconds || 60,
           orderIndex: index,
         }))
       )
 
-      const payload = {
-        title: routineName,
-        startsAt: new Date().toISOString(),
-        endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      }
-
       if (editingRoutine?.id) {
-        await updateWorkout(editingRoutine.id, payload)
+        await updateWorkout(editingRoutine.id, {
+          memberId: editingRoutine.member?.id || '',
+          title: routineName,
+          startsAt: new Date().toISOString(),
+          endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        })
         addToast(`Plantilla "${routineName}" actualizada exitosamente.`, 'success')
       } else {
-        await createWorkout({ ...payload, exercises: exercisesPayload })
-        addToast(
-          `Plantilla "${routineName}" guardada en la biblioteca general exitosamente.`,
-          'success'
-        )
+        addToast('Para guardar una plantilla primero asígnala a un cliente con "Asignar"', 'info')
       }
     } catch (e: unknown) {
       addToast(e instanceof Error ? e.message : 'Error guardando plantilla', 'error')
@@ -780,13 +794,14 @@ export default function RoutineBuilder({
 
           <div className="max-h-[50vh] space-y-2 overflow-y-auto">
             {filteredClients.map((user) => {
-              const isSelected = selectedUsers.has(user.id)
+              const key = user.memberId || user.id
+              const isSelected = selectedUsers.has(key)
               return (
                 <button
                   key={user.id}
                   onClick={() => {
                     const next = new Set(selectedUsers)
-                    isSelected ? next.delete(user.id) : next.add(user.id)
+                    isSelected ? next.delete(key) : next.add(key)
                     setSelectedUsers(next)
                   }}
                   className={`flex w-full items-center gap-4 rounded-xl border p-3 text-left transition-all ${

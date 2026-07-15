@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { NutritionPlanDTO, ResponseDTO } from '@/types'
-import { fetchApi } from '@/lib/api'
+import { getMyNutritionPlan } from '@/lib/api'
 
 const MOCK_PLAN: NutritionPlanDTO = {
   id: 'mock-1',
@@ -77,7 +77,7 @@ interface NutritionState {
   waterGlasses: number
   isLoading: boolean
   error: string | null
-  loadPlan: (memberId: string) => Promise<void>
+  loadPlan: () => Promise<void>
   toggleMeal: (mealId: string) => void
   setWaterGlasses: (glasses: number) => void
 }
@@ -91,12 +91,10 @@ export const useNutritionStore = create<NutritionState>()(
       isLoading: false,
       error: null,
 
-      loadPlan: async (memberId: string) => {
+      loadPlan: async () => {
         set({ isLoading: true, error: null })
         try {
-          const response = await fetchApi<ResponseDTO<NutritionPlanDTO>>(
-            `/api/nutrition/member/${memberId}`
-          )
+          const response = await getMyNutritionPlan()
           const plan = response.dto || null
           if (plan) {
             set({ plan, isLoading: false })

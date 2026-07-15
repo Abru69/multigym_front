@@ -361,7 +361,8 @@ export default function MemberProfile() {
           <button
             onClick={async () => {
               await logout()
-              window.location.href = '/'
+              const tid = window.location.pathname.match(/^\/([^/]+)/)?.[1]
+              window.location.href = tid ? `/${tid}/login` : '/'
             }}
             className="flex w-full items-center gap-3 px-5 py-4 text-red-400 transition-colors hover:bg-red-500/10"
           >

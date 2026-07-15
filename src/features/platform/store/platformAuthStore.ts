@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { fetchApi } from '@/lib/api'
+import { fetchApi, logout as apiLogout } from '@/lib/api'
 import type { ResponseDTO, PlatformLoginResponse } from '@/types'
 
 interface PlatformAdmin {
@@ -15,7 +15,7 @@ interface PlatformAuthStore {
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 export const usePlatformAuthStore = create<PlatformAuthStore>()(
@@ -49,13 +49,19 @@ export const usePlatformAuthStore = create<PlatformAuthStore>()(
           }
         } catch (error) {
           console.error('Login failed:', error)
+          throw error
+        } finally {
+          set({ isLoading: false })
         }
-
-        set({ isLoading: false })
         return false
       },
 
-      logout: () => {
+      logout: async () => {
+        try {
+          await apiLogout()
+        } catch {
+          // Ignore logout errors — still clear local state
+        }
         set({ admin: null, token: null, isAuthenticated: false })
       },
     }),

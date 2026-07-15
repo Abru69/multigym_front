@@ -63,7 +63,12 @@ export default function PaymentsPage() {
     })
   }, [payments, debouncedSearch])
 
-  const totalAmount = useMemo(() => payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0), [payments])
+  const totalAmount = useMemo(() =>
+    payments
+      .filter((p) => p.status === 'COMPLETED' || p.status === 'APPROVED')
+      .reduce((sum, p) => sum + (Number(p.amount) || 0), 0),
+    [payments]
+  )
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {}
@@ -266,7 +271,7 @@ export default function PaymentsPage() {
               id="pay-sub"
               value={form.subscriptionId}
               onChange={(e) => setForm({ ...form, subscriptionId: e.target.value })}
-              options={subscriptionsList.map((s) => ({
+              options={subscriptionsList.filter((s) => s.status === 'ACTIVE').map((s) => ({
                 value: s.id,
                 label: `${s.member?.name || 'N/A'} — ${s.plan?.name || 'N/A'}`,
               }))}

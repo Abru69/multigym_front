@@ -23,8 +23,8 @@ export default function ActivateAccount() {
     e.preventDefault()
     setError('')
 
-    if (newPassword && newPassword.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.')
+    if (newPassword && newPassword.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.')
       return
     }
 
@@ -118,7 +118,7 @@ export default function ActivateAccount() {
               placeholder="••••••••"
               className="pr-11 pl-10"
               required
-              minLength={6}
+              minLength={8}
             />
             <button
               type="button"
@@ -144,7 +144,7 @@ export default function ActivateAccount() {
               placeholder="••••••••"
               className="pr-4 pl-10"
               required
-              minLength={6}
+              minLength={8}
             />
           </div>
         </div>

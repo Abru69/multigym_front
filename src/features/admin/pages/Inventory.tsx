@@ -99,7 +99,7 @@ export default function Inventory() {
           isAvailable: p.stock > 0,
           slug: p.name.toLowerCase().replace(/ /g, '-'),
           brand: 'MultiGym',
-          category: 'proteinas',
+          category: p.category || 'general',
           image:
             p.imageUrl || p.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=400&h=400&fit=crop',
         }))
@@ -120,7 +120,7 @@ export default function Inventory() {
     return productsList.filter((p) => {
       const matchSearch =
         p.name.toLowerCase().includes(term) || p.brand.toLowerCase().includes(term)
-      const matchCategory = category === 'all' || p.category === category
+      const matchCategory = category === 'all' || p.category.toLowerCase() === category.toLowerCase()
       return matchSearch && matchCategory
     })
   }, [productsList, debouncedSearch, category])

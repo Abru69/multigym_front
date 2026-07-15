@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import type { Routine, DayOfWeek, Exercise, MuscleGroup } from '@/types'
 import { fetchApi } from '@/lib/api'
 import type { ResponseDTO, WorkoutDTO, WorkoutExerciseListItemDTO, PaginatedResult } from '@/types'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
 const DAY_LABELS: Record<DayOfWeek, string> = {
   lunes: 'Lunes',
@@ -92,21 +93,24 @@ export const useRoutineStore = create<RoutineStore>()(
       loadRoutines: async () => {
         set({ isLoading: true, error: null })
         try {
-          const workoutsRes = await fetchApi<ResponseDTO<PaginatedResult<WorkoutDTO>>>('/api/workouts')
+          const memberId = useAuthStore.getState().user?.memberId
+          const url = memberId ? `/api/workouts?memberId=${memberId}` : '/api/workouts'
+          const workoutsRes = await fetchApi<ResponseDTO<PaginatedResult<WorkoutDTO>>>(url)
           const workouts = workoutsRes.dto?.data || []
 
-          const routines: Routine[] = []
-          for (const w of workouts) {
-            try {
-              const exRes = await fetchApi<ResponseDTO<PaginatedResult<WorkoutExerciseListItemDTO>>>(
+          const exerciseResults = await Promise.allSettled(
+            workouts.map((w) =>
+              fetchApi<ResponseDTO<PaginatedResult<WorkoutExerciseListItemDTO>>>(
                 `/api/workout-exercises/${w.id}`
-              )
-              const exercises = exRes.dto?.data || []
-              routines.push(mapWorkoutToRoutine(w, exercises))
-            } catch {
-              routines.push(mapWorkoutToRoutine(w, []))
-            }
-          }
+              ).then((res) => ({ workoutId: w.id, exercises: res.dto?.data || [] }))
+            )
+          )
+
+          const routines: Routine[] = workouts.map((w, i) => {
+            const result = exerciseResults[i]
+            const exercises = result.status === 'fulfilled' ? result.value.exercises : []
+            return mapWorkoutToRoutine(w, exercises)
+          })
 
           set({ routines, isLoading: false })
 

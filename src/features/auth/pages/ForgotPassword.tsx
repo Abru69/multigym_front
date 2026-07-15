@@ -35,6 +35,7 @@ export default function ForgotPassword() {
       await fetchApi<ResponseDTO<unknown>>('/api/auth/reset-password', {
         method: 'POST',
         body: JSON.stringify({ email }),
+        headers: { 'X-Tenant-ID': effectiveTenant },
       })
       setSent(true)
     } catch (err: unknown) {

@@ -1,20 +1,21 @@
 # Próximos Pasos
 
-**Última sesión:** 2026-07-13 — Roles y Permisos por Página + Nutrition Module
+**Última sesión:** 2026-07-14 — API Improvements, Tenant Banners, Validation Hardening
 
 ## Completado Reciente
 
-- ✅ **Roles y Permisos** — 6 roles (admin, nutricionist, staff, receptionist, seller, client) con control de acceso por página
-- ✅ **permissions.ts** — Mapa de permisos, `canAccessPage()`, `getAllowedPages()`, labels, colores
-- ✅ **RoleGuard** — Guard genérico que verifica permisos por ruta admin
-- ✅ **AdminGuard actualizado** — Usa `getAllowedPages()` en vez de `role === 'admin'`
-- ✅ **AdminLayout filtrado** — Nav items según permisos del usuario
-- ✅ **Users.tsx** — Select de 6 roles + badges con colores
-- ✅ **Login/ClientLayout/Landing** — Redirect usa `getAllowedPages()`
-- ✅ **Nutrition Admin** — CRUD planes nutricionales en `/admin/nutricion`
-- ✅ **Nutrition Store** — `nutritionStore.ts` con loadPlan, toggleMeal, setWaterGlasses + persist
-- ✅ **Nutrition API** — 6 funciones listas para backend
-- ✅ **Nutrition Client** — Conectado con store, fallback mock data
+- ✅ **Tenant Landing Banners** — `TenantBanner.tsx` con banners promocionales debajo del hero
+- ✅ **API refactoring** — `fetchApi` separa platform vs tenant, mejor manejo de 401
+- ✅ **API pagination** — `getProducts`, `getWorkouts`, `getOrders`, `getNutritionPlans` con params
+- ✅ **Tenant Users CRUD** — create, update, toggleStatus, delete
+- ✅ **Nutrition simplificado** — `getMyNutritionPlan()` (sin memberId)
+- ✅ **RoutineBuilder fix** — Crea workout + ejercicios secuencialmente
+- ✅ **Validaciones mejoradas** — Users, NutritionPlans, Subscriptions, Payments, ActivateAccount
+- ✅ **Login redirect por rol** — `getDefaultRoute()` + useEffect auto-redirect
+- ✅ **AdminGuard/RoleGuard** — getDefaultRoute() para redirects por rol
+- ✅ **Cart tenant-scoped** — localStorage key con tenantId
+- ✅ **Cart badge** — Muestra número de items
+- ✅ **Roles y Permisos** — 6 roles con control de acceso por página
 
 ## Endpoints Faltantes en Backend (Mock Data en Frontend)
 
@@ -92,9 +93,9 @@ El backend `POST /api/members` requiere un `userId` existente. Para crear un mie
 ## Prioridad Alta
 
 1. **Crear endpoints de Progress** — Necesario para que Progress.tsx deje de usar mock data
-2. **Crear endpoints de Nutrition** — Frontend listo, solo falta el backend Java
+2. **Crear endpoints de Nutrition backend** — Frontend ya usa `getMyNutritionPlan()`, falta implementar `/api/nutricion/my` en Java
 3. **Integrar creación de miembros** — Formulario que combine User + Member
-4. **Verificar UI en navegador** — Ejecutar `npm run dev` y probar Nutrition admin
+4. **Verificar UI en navegador** — Ejecutar `npm run dev` y probar TenantBanner, Login redirect, Cart badge
 
 ## Prioridad Media
 
@@ -108,19 +109,23 @@ El backend `POST /api/members` requiere un `userId` existente. Para crear un mie
    - `useMemo` en listas grandes
    - Lazy loading de imágenes
 
+7. **Tenant Branding — Banners dinámicos desde backend**
+   - Actualmente hardcodeados en `tenantConfig.ts`
+   - Necesita endpoint `GET /api/tenant-settings` para banners
+
 ## Prioridad Baja
 
-7. **Tests Unitarios**
+8. **Tests Unitarios**
    - Vitest o Jest
    - Tests para stores y componentes UI
 
-8. **PWA Setup**
+9. **PWA Setup**
    - Service worker, manifest, offline support
 
 ## Bloqueado
 
-- **Audit Logs backend 500** — `GET /api/audits` retorna 500. Frontend listo, pendiente fix en backend (AuditLog entity mapping, null checks en `auditService.findFiltered`)
-- Progress.tsx — sin endpoints backend, se queda como mock data hasta que se cree el controlador Java
+- **Audit Logs backend 500** — `GET /api/audits` retorna 500. Frontend listo, pendiente fix en backend
+- **Progress.tsx** — sin endpoints backend, se queda como mock data hasta que se cree el controlador Java
 
 ## Pendiente Medio
 

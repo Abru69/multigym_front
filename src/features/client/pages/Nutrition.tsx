@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Flame, CheckCircle2, Circle, Clock, Utensils, Droplets, Info, Loader2 } from 'lucide-react'
 import { useNutritionStore } from '@/features/client/store/nutritionStore'
-import { useAuthStore } from '@/features/auth/store/authStore'
 
 const macroConfig = [
   { key: 'calories', label: 'Calorías', color: 'var(--accent)', unit: 'kcal' },
@@ -14,16 +13,13 @@ const macroConfig = [
 export default function Nutrition() {
   const { plan, mealCompletion, waterGlasses, isLoading, loadPlan, toggleMeal, setWaterGlasses } =
     useNutritionStore()
-  const user = useAuthStore((s) => s.user)
 
   useEffect(() => {
-    if (user?.id) {
-      loadPlan(user.id)
-    }
-  }, [user, loadPlan])
+    loadPlan()
+  }, [loadPlan])
 
   const calcProgress = (current: number, target: number) =>
-    Math.min(100, Math.round((current / target) * 100))
+    target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0
 
   const meals = plan?.meals || []
   const completedCount = meals.filter((m) => mealCompletion[m.id]).length

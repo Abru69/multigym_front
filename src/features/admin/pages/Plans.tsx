@@ -102,9 +102,9 @@ export default function PlansPage() {
         name: form.name,
         description: form.description || undefined,
         price: parseFloat(form.price),
-        durationMonths: parseInt(form.durationMonths),
-        maxWorkoutsPerWeek: form.maxWorkoutsPerWeek ? parseInt(form.maxWorkoutsPerWeek) : undefined,
-        maxClasses: form.maxClasses ? parseInt(form.maxClasses) : undefined,
+        durationMonths: parseInt(form.durationMonths) || 1,
+        maxWorkoutsPerWeek: form.maxWorkoutsPerWeek ? (parseInt(form.maxWorkoutsPerWeek) || undefined) : undefined,
+        maxClasses: form.maxClasses ? (parseInt(form.maxClasses) || undefined) : undefined,
         accessHours: form.accessHours || undefined,
         features: form.features || undefined,
       }

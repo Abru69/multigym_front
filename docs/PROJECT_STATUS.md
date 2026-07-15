@@ -1,6 +1,6 @@
 # Estado del Proyecto
 
-**Última actualización:** 2026-07-13
+**Última actualización:** 2026-07-14
 
 ## Resumen
 
@@ -10,7 +10,7 @@
 | TypeScript         | ⚠️ Errores preexistentes (DeliverySettings, Checkout, MyOrders) |
 | Lint               | ⚠️ Problemas preexistentes               |
 | Dark Theme         | ✅ Near-black (#0a0a0a) + accent #aaff00 |
-| API Integration    | ✅ 30+ endpoints conectados               |
+| API Integration    | ✅ 30+ endpoints conectados + pagination  |
 | Admin Pages        | ✅ 14 páginas (Dashboard, Inventario, Usuarios, Ejercicios, Planes, Suscripciones, Pagos, Nutrición, Recogidas, Envíos, Métodos de Entrega, ...) |
 | Client Pages       | ✅ 4 páginas (Rutinas, Nutrición, Progreso, My Orders) |
 | Checkout           | ✅ Integrado con backend + delivery methods (3 pasos)|
@@ -18,7 +18,67 @@
 | Nutrition (Admin)  | ✅ CRUD planes nutricionales + assignación a miembros |
 | Nutrition (Client) | ✅ Conectado con store, fallback mock     |
 | Roles & Permisos   | ✅ 6 roles con control de acceso por página |
+| Tenant Landing     | ✅ Banners promocionales + branding dinámico |
+| Form Validations   | ✅ Validación reforzada en todos los forms |
 | Missing Endpoints  | ⚠️ Progress sin backend                   |
+
+## Funcionalidades Recientes (2026-07-14)
+
+### Tenant Landing — Banners Promocionales
+- `TenantBanner.tsx` — componente de banner debajo del hero
+- `TenantBranding.banners` array con imagen, título, subtítulo, link, botón, accentColor
+- Ejemplo: gym1 tiene banner "Summer Challenge 2026"
+- `TenantLandingPage.tsx` renderiza `<TenantBanner />` después de `<TenantHero />`
+
+### API Refactoring
+- `fetchApi()` separa requests platform vs tenant automáticamente
+- Token de plataforma (`platform-auth`) para `/platform/` y `/platform-api/`
+- Token de tenant (`auth-storage`) para `/api/tenant/` y `/api/auth/`
+- 401 handling: redirige a `/platform/login` o `/login` según contexto
+- Header `X-Tenant-ID` no se envía en requests de plataforma
+
+### API Pagination
+- `getProducts({ name?, page?, size? })` — búsqueda y paginación
+- `getWorkouts({ title?, memberId?, page?, size? })` — búsqueda y paginación
+- `getOrders({ status?, userId?, page?, size? })` — filtrado y paginación
+- `getNutritionPlans({ search?, page?, size? })` — búsqueda y paginación
+
+### Tenant Users CRUD
+- `createTenantUser(data)` — POST `/api/tenant/users`
+- `updateTenantUser(userId, data)` — PUT `/api/tenant/users/{id}`
+- `toggleTenantUserStatus(userId)` — PATCH `/api/tenant/users/{id}/status`
+- `deleteTenantUser(userId)` — DELETE `/api/tenant/users/{id}`
+
+### RoutineBuilder Fix
+- Crea workout con `createWorkout({ memberId, title, startsAt, endsAt })`
+- Luego crea ejercicios con `createWorkoutExercise({ workoutId, exerciseId, ... })`
+- `memberId` resuelto desde `user.memberDTO.id`
+- `WorkoutExerciseRequest.dayOfWeek` cambiado a opcional
+
+### Validaciones Reforzadas
+- **Users**: nombre y teléfono requeridos, password minLength=8
+- **NutritionPlans**: valida nombres de alimentos no vacíos
+- **Subscriptions**: endDate debe ser posterior a startDate
+- **Payments**: solo suscripciones ACTIVE en select, total solo COMPLETED/APPROVED
+- **ActivateAccount**: minLength 6 → 8
+- **Exercises**: valida nombre duplicado en grupos personalizados
+
+### Login Redirect por Rol
+- `getDefaultRoute(role)` mapea page → route (ej: `users` → `/admin/usuarios`)
+- `Login.tsx`: useEffect auto-redirige si `isAuthenticated`
+- `RoleGuard` y `PathRoleGuard` usan getDefaultRoute() para redirects
+
+### Cart Tenant-Scoped
+- localStorage key: `reto4-cart-{tenantId}` (antes genérico)
+- Cart badge muestra número de items
+
+### Other Fixes
+- **MemberNav**: `/app/nutricion` → `/app/perfil`
+- **MyOrders**: paymentStatus labels en español
+- **Checkout**: tipado `OrderRequest`, fallback `dto || lista`
+- **RoutineStore**: `Promise.allSettled` carga paralela
+- **Platform Auth**: async logout con backend
+- **CSS**: `color-scheme: inherit`
 
 ## Funcionalidades Recientes (2026-07-07)
 
@@ -191,6 +251,20 @@
 - **Users.tsx**: Select de 6 roles + badges con colores por rol
 - **Login/ClientLayout/Landing/TenantHero**: Redirect y portal link usan `getAllowedPages()`
 - **Acceso por rol**: Admin (todas), Nutriólogo (nutrición), Staff (dashboard/usuarios/inventario/ejercicios), Recepcionista (dashboard/usuarios/suscripciones/pagos), Vendedor (dashboard/inventario/recogidas/envíos/entrega), Cliente (portal cliente)
+- Build: `vite build` ✅ (836ms)
+
+### Fase 14 — API Improvements + Tenant Banners + Validation Hardening (2026-07-14)
+
+- **API refactoring**: `fetchApi()` separa platform vs tenant, mejor manejo de 401
+- **API pagination**: 4 endpoints con params de paginación y búsqueda
+- **Tenant Users CRUD**: create, update, toggleStatus, delete
+- **Tenant Landing**: `TenantBanner.tsx` con banners promocionales
+- **RoutineBuilder fix**: Crea workout + ejercicios secuencialmente
+- **Validaciones reforzadas**: 6 páginas con mejoras de validación
+- **Login redirect**: `getDefaultRoute()` por rol + useEffect auto-redirect
+- **Cart tenant-scoped**: localStorage key con tenantId
+- **Cart badge**: Muestra número de items
+- **Types**: `ProductRequest`, `TenantUserRequest`
 - Build: `vite build` ✅ (836ms)
 
 ## Endpoints Faltantes en Backend

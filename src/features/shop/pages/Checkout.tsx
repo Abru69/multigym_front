@@ -5,7 +5,7 @@ import { useCartStore } from '@/features/shop/store/cartStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useToastStore } from '@/components/ui/Toast'
 import { fetchApi } from '@/lib/api'
-import type { OrderDTO, ResponseDTO, BranchDTO, TenantSettingDTO } from '@/types'
+import type { OrderDTO, ResponseDTO, BranchDTO, TenantSettingDTO, OrderRequest } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
   CheckCircle2,
@@ -108,9 +108,9 @@ export default function Checkout() {
           fetchApi<ResponseDTO<BranchDTO[]>>('/api/branches'),
           fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings'),
         ])
-        setBranches(branchesRes.lista || [])
+        setBranches(branchesRes.dto || branchesRes.lista || [])
 
-        const settings = settingsRes.lista || []
+        const settings = settingsRes.dto || settingsRes.lista || []
         const pickupEnabled = settings.find((s) => s.key === 'delivery_pickup_enabled')
         const shippingEnabled = settings.find((s) => s.key === 'delivery_shipping_enabled')
 
@@ -152,7 +152,7 @@ export default function Checkout() {
         if (!shippingPostalCode.trim()) throw new Error('Ingresa el código postal')
       }
 
-      const orderBody: Record<string, unknown> = {
+      const orderBody: OrderRequest = {
         userId: user.id,
         items: items.map((item) => ({
           productId: item.product.id,
@@ -161,14 +161,9 @@ export default function Checkout() {
         paymentMethod: 'CREDIT_CARD',
         shippingAmount: shipping,
         deliveryMethod,
-      }
-
-      if (deliveryMethod === 'PICKUP') {
-        orderBody.branchId = selectedBranch
-      } else {
-        orderBody.shippingAddress = shippingAddress
-        orderBody.shippingCity = shippingCity
-        orderBody.shippingPostalCode = shippingPostalCode
+        ...(deliveryMethod === 'PICKUP'
+          ? { branchId: selectedBranch }
+          : { shippingAddress, shippingCity, shippingPostalCode }),
       }
 
       const orderRes = await fetchApi<ResponseDTO<OrderDTO>>('/api/orders', {

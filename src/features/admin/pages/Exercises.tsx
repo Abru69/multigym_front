@@ -132,6 +132,9 @@ export default function Exercises() {
   const validateNewGroupForm = (): boolean => {
     const errors: Record<string, string> = {}
     if (!newGroupForm.name.trim()) errors.name = 'El nombre es requerido'
+    else if (customGroups.some((g) => g.name.toLowerCase() === newGroupForm.name.trim().toLowerCase())) {
+      errors.name = 'Ya existe un grupo con ese nombre'
+    }
     setNewGroupErrors(errors)
     return Object.keys(errors).length === 0
   }

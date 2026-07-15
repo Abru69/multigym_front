@@ -95,7 +95,9 @@ export function ClientLayout() {
               >
                 <ShoppingCart size={20} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[var(--accent)] border-2 border-white" />
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[9px] font-bold text-[var(--accent-text)]">
+                    {cartCount}
+                  </span>
                 )}
               </Link>
             )}

@@ -64,6 +64,15 @@ export const useCartStore = create<CartStore>()(
 
       total: () => get().items.reduce((sum, i) => sum + i.product.price * i.quantity, 0),
     }),
-    { name: 'reto4-cart' }
+    {
+      name: (() => {
+        try {
+          const data = localStorage.getItem('auth-storage')
+          const parsed = data ? JSON.parse(data) : null
+          const tenantId = parsed?.state?.tenantId || 'default'
+          return `reto4-cart-${tenantId}`
+        } catch { return 'reto4-cart' }
+      })(),
+    }
   )
 )

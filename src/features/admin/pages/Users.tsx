@@ -44,7 +44,6 @@ export default function UsersPage() {
     name: '',
     phone: '',
     email: '',
-    password: '',
     role: 'CLIENT',
     status: true,
   })
@@ -85,9 +84,10 @@ export default function UsersPage() {
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {}
+    if (!form.name) errors.name = 'El nombre es requerido'
+    if (!form.phone) errors.phone = 'El teléfono es requerido'
     if (!form.email) errors.email = 'El email es requerido'
     if (!form.email.includes('@')) errors.email = 'Email inválido'
-    if (!selectedUser && !form.password) errors.password = 'La contraseña es requerida'
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -103,7 +103,6 @@ export default function UsersPage() {
             name: form.name,
             phone: form.phone,
             email: form.email,
-            password: form.password || undefined,
             role: form.role,
             status: form.status,
           }),
@@ -116,7 +115,6 @@ export default function UsersPage() {
             name: form.name,
             phone: form.phone,
             email: form.email,
-            password: form.password,
             role: form.role,
             status: form.status,
           }),
@@ -133,7 +131,7 @@ export default function UsersPage() {
   }
 
   const openCreate = () => {
-    setForm({ name: '', phone: '', email: '', password: '', role: 'CLIENT', status: true })
+    setForm({ name: '', phone: '', email: '', role: 'CLIENT', status: true })
     setFormErrors({})
     setSelectedUser(null)
     setShowModal(true)
@@ -144,7 +142,6 @@ export default function UsersPage() {
       name: user.memberDTO?.name || '',
       phone: user.memberDTO?.phone || '',
       email: user.email,
-      password: '',
       role: user.role,
       status: user.isActive,
     })
@@ -455,23 +452,25 @@ export default function UsersPage() {
         size="md"
       >
         <div className="space-y-4">
-          <FormField label="Nombre Completo" htmlFor="user-name">
+          <FormField label="Nombre Completo" htmlFor="user-name" error={formErrors.name} required>
             <Input
               id="user-name"
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="Ej: Juan Pérez"
+              error={!!formErrors.name}
             />
           </FormField>
 
-          <FormField label="Teléfono" htmlFor="user-phone">
+          <FormField label="Teléfono" htmlFor="user-phone" error={formErrors.phone} required>
             <Input
               id="user-phone"
               type="text"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="Ej: 555-1234"
+              error={!!formErrors.phone}
             />
           </FormField>
 
@@ -491,25 +490,29 @@ export default function UsersPage() {
             />
           </FormField>
 
-          <FormField
-            label={
-              selectedUser
-                ? 'Contraseña (dejar vacío para no cambiar)'
-                : 'Contraseña'
-            }
-            required={!selectedUser}
-            htmlFor="user-password"
-            error={formErrors.password}
-          >
-            <Input
-              id="user-password"
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="••••••••"
-              error={!!formErrors.password}
-            />
-          </FormField>
+          {!selectedUser && (
+            <p className="rounded-xl px-3 py-2 text-xs" style={{ backgroundColor: 'var(--accent-muted)', color: 'var(--accent)' }}>
+              Se enviará un correo de activación al nuevo usuario para que establezca su contraseña.
+            </p>
+          )}
+
+          {selectedUser && (
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await fetchApi(`/api/tenant/users/${selectedUser.id}/reset-password`, { method: 'POST' })
+                  addToast('Correo de restablecimiento enviado', 'success')
+                } catch (err: unknown) {
+                  addToast(err instanceof Error ? err.message : 'Error al enviar restablecimiento', 'error')
+                }
+              }}
+              className="w-full rounded-xl border px-4 py-2.5 text-left text-sm font-medium transition-all hover:opacity-80"
+              style={{ borderColor: 'var(--accent)', color: 'var(--accent)', backgroundColor: 'var(--accent-muted)' }}
+            >
+              Enviar correo de restablecimiento de contraseña
+            </button>
+          )}
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField label="Rol" htmlFor="user-role">

@@ -194,6 +194,10 @@ export default function NutritionPlansPage() {
       addToast('Nombre de la comida requerido', 'error')
       return
     }
+    if (mealForm.foods.some((f) => !f.name.trim())) {
+      addToast('Todos los alimentos deben tener nombre', 'error')
+      return
+    }
     const updatedMeals = [...form.meals]
     if (editingMealIndex !== null) {
       updatedMeals[editingMealIndex] = mealForm
@@ -217,7 +221,9 @@ export default function NutritionPlansPage() {
 
   const updateFood = (index: number, field: string, value: string | number) => {
     const updated = [...mealForm.foods]
-    ;(updated[index] as Record<string, unknown>)[field] = value
+    const item = { ...updated[index] }
+    ;(item as Record<string, unknown>)[field] = value
+    updated[index] = item as typeof updated[number]
     setMealForm({ ...mealForm, foods: updated })
   }
 

@@ -327,7 +327,7 @@ export interface PaymentRequest {
 export interface WorkoutExerciseRequest {
   workoutId: string
   exerciseId: string
-  dayOfWeek: string
+  dayOfWeek?: string
   sets: number
   reps: string
   restSeconds: number
@@ -395,6 +395,22 @@ export interface SubscriptionPlanChangeRequest {
   planId: string
 }
 
+export interface ProductRequest {
+  name: string
+  price: number
+  stock: number
+  imageUrl?: string
+}
+
+export interface TenantUserRequest {
+  email: string
+  password?: string
+  name: string
+  phone: string
+  role: string
+  status?: boolean
+}
+
 export interface OrderRequest {
   userId: string
   items: Array<{ productId: string; quantity: number }>
@@ -412,7 +428,7 @@ export interface OrderStatusRequest {
 }
 
 export interface WorkoutRequest {
-  memberId?: string
+  memberId: string
   title: string
   startsAt: string
   endsAt: string

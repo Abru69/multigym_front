@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { usePlatformAuthStore } from '@/features/platform/store/platformAuthStore'
@@ -8,15 +8,23 @@ export default function PlatformLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const { login, isLoading } = usePlatformAuthStore()
+  const { login, isLoading, isAuthenticated } = usePlatformAuthStore()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/platform', { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    const ok = await login(email, password)
-    if (ok) navigate('/platform')
-    else setError('Credenciales incorrectas. Verifica tu email y contraseña.')
+    try {
+      await login(email, password)
+    } catch {
+      setError('Error al conectar con el servidor. Intenta de nuevo.')
+    }
   }
 
   return (

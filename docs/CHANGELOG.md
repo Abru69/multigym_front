@@ -4,6 +4,105 @@ Formato: [YYYY-MM-DD]
 
 ---
 
+## [2026-07-14]
+
+### Completado
+
+- **Tenant Landing Page — Banners Promocionales**
+  - Nuevo componente `TenantBanner.tsx` — banners promocionales debajo del hero
+  - `TenantBranding.banners` array con imagen, título, subtítulo, link, botón, accentColor
+  - `TenantLandingPage.tsx` renderiza `<TenantBanner />` después de `<TenantHero />`
+  - Ejemplo: `gym1` tiene banner "Summer Challenge 2026" con accent orange
+
+- **API Refactoring — Separación Platform vs Tenant**
+  - `fetchApi()` ahora detecta requests a `/platform/` o `/platform-api/` y usa token de plataforma
+  - Token de tenant solo se usa si no es fake-token
+  - Header `X-Tenant-ID` no se envía en requests de plataforma
+  - 401 handling: platform → `/platform/login`, tenant con platform token → `/platform/login`, tenant sin → `/login`
+
+- **API Pagination — 4 Endpoints con Params**
+  - `getProducts({ name?, page?, size? })` — búsqueda y paginación
+  - `getWorkouts({ title?, memberId?, page?, size? })` — búsqueda y paginación
+  - `getOrders({ status?, userId?, page?, size? })` — filtrado y paginación
+  - `getNutritionPlans({ search?, page?, size? })` — búsqueda y paginación
+
+- **Tenant Users CRUD**
+  - `createTenantUser(data: TenantUserRequest)` — POST `/api/tenant/users`
+  - `updateTenantUser(userId, data)` — PUT `/api/tenant/users/{id}`
+  - `toggleTenantUserStatus(userId)` — PATCH `/api/tenant/users/{id}/status`
+  - `deleteTenantUser(userId)` — DELETE `/api/tenant/users/{id}`
+
+- **Nutrition Simplificado**
+  - `getMyNutritionPlan()` — GET `/api/nutrition/my` (endpoint propio del miembro)
+  - `nutritionStore.loadPlan()` ya no necesita `memberId` como parámetro
+  - `Nutrition.tsx` llama `loadPlan()` sin argumentos
+
+- **RoutineBuilder Fix**
+  - Crea workout con `createWorkout({ memberId, title, startsAt, endsAt })`
+  - Luego crea ejercicios individualmente con `createWorkoutExercise({ workoutId, exerciseId, ... })`
+  - Resuelve `memberId` desde `user.memberDTO.id` (no `user.id`)
+  - `updateWorkout` ahora requiere `memberId` como campo obligatorio
+  - `WorkoutExerciseRequest.dayOfWeek` cambiado a opcional
+
+- **Validaciones Mejoradas**
+  - `Users.tsx`: nombre y teléfono requeridos, password minLength=8
+  - `NutritionPlans.tsx`: valida que todos los alimentos tengan nombre
+  - `Subscriptions.tsx`: endDate debe ser posterior a startDate
+  - `Payments.tsx`: solo muestra suscripciones ACTIVE en select, total solo suma COMPLETED/APPROVED
+  - `ActivateAccount.tsx`: minLength 6 → 8
+  - `Exercises.tsx`: valida nombre duplicado en grupos personalizados
+
+- **Login Redirect por Rol**
+  - `Login.tsx`: `useEffect` auto-redirige si `isAuthenticated`
+  - `AdminGuard.getDefaultRoute(role)` mapea page → route (ej: `users` → `/admin/usuarios`)
+  - `RoleGuard` usa `getDefaultRoute()` en vez de `/admin` hardcodeado
+  - `PlatformLogin.tsx`: auto-redirect a `/platform` si autenticado
+
+- **AdminGuard/RoleGuard — getDefaultRoute()**
+  - Mapeo completo: dashboard→`/admin`, users→`/admin/usuarios`, plans→`/admin/planes`, etc.
+  - `AdminGuard` redirige a `/` si role no tiene páginas (antes `/app/rutinas`)
+  - `RoleGuard` y `PathRoleGuard` usan getDefaultRoute() para redirects
+
+- **Cart Tenant-Scoped**
+  - localStorage key: `reto4-cart-{tenantId}` (antes `reto4-cart` genérico)
+  - Extrae tenantId de auth-storage para generar key única por tenant
+
+- **Cart Badge con Contador**
+  - `ClientLayout.tsx`: badge muestra número de items (antes solo punto verde)
+  - `bg-[var(--accent)]` + `text-[var(--accent-text)]` con `px-1 text-[9px]`
+
+- **MemberNav — Link Corregido**
+  - `/app/nutricion` → `/app/perfil` (MemberNav.tsx)
+
+- **MyOrders — Labels en Español**
+  - paymentStatus: COMPLETED→Pagado, PENDING→Pendiente, FAILED→Fallido, REFUNDED→Reembolsado
+
+- **Checkout — Tipado y Fallbacks**
+  - `orderBody` tipado como `OrderRequest` (antes `Record<string, unknown>`)
+  - Branches: `branchesRes.dto || branchesRes.lista` (fallback para ambos formatos)
+  - Settings: `settingsRes.dto || settingsRes.lista`
+
+- **RoutineStore — Carga Paralela**
+  - `Promise.allSettled` para cargar ejercicios de todos los workouts en paralelo
+  - No falla si un workout individual no carga sus ejercicios
+
+- **Platform Auth — Async Logout**
+  - `platformAuthStore.logout()` llama `apiLogout()` antes de limpiar estado
+  - `PlatformLogin` auto-redirect si ya autenticado
+
+- **Types**
+  - `ProductRequest`: name, price, stock, imageUrl?
+  - `TenantUserRequest`: email, password?, name, phone, role, status?
+  - `WorkoutRequest.memberId` cambiado a requerido
+  - `WorkoutExerciseRequest.dayOfWeek` cambiado a opcional
+
+- **CSS Fix**
+  - `select, input, textarea` — `color-scheme: inherit` (antes `light`)
+
+- **Build**: `vite build` ✅ (836ms)
+
+---
+
 ## [2026-07-13]
 
 ### Completado

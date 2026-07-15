@@ -442,7 +442,11 @@ export default function MyOrders() {
                                 : 'var(--warning, #f59e0b)',
                             }}
                           >
-                            {order.paymentStatus || 'Pendiente'}
+                            {order.paymentStatus === 'COMPLETED' ? 'Pagado' :
+                             order.paymentStatus === 'PENDING' ? 'Pendiente' :
+                             order.paymentStatus === 'FAILED' ? 'Fallido' :
+                             order.paymentStatus === 'REFUNDED' ? 'Reembolsado' :
+                             order.paymentStatus || 'Pendiente'}
                           </p>
                         </div>
                         <div className="rounded-xl bg-[var(--surface)] px-3 py-2">

@@ -4,7 +4,7 @@ import { Dumbbell, ShoppingBag, User } from 'lucide-react'
 const navItems = [
   { to: '/app/rutinas', icon: Dumbbell, label: 'Rutinas' },
   { to: '/tienda', icon: ShoppingBag, label: 'Tienda' },
-  { to: '/app/nutricion', icon: User, label: 'Perfil' },
+  { to: '/app/perfil', icon: User, label: 'Perfil' },
 ]
 
 export function MemberNav() {
