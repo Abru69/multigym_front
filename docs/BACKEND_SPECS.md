@@ -223,6 +223,14 @@ El frontend ya tokeniza tarjetas con `@mercadopago/sdk-js` y envía el `cardToke
 | Pago rechazado (`OTHE`, `CALL`, `FUND`, `SECU`, `EXPI`, `FORM`) | `402 Payment Required` con `mensaje` del rechazo |
 | Pago pendiente (`CONT`) | `402 Payment Required` actualmente. Pendiente futuro: crear orden con `paymentStatus=PENDING` |
 
+### Order Refund Handling
+
+- `PATCH /api/orders/{id}/cancel` cancela órdenes pagadas y dispara un intento de devolución en backend.
+- Devolución exitosa: `status=CANCELLED`, `paymentStatus=REFUNDED`, opcional `refundReference` / `refundedAt`.
+- Devolución fallida: `status=CANCELLED`, `paymentStatus=REFUND_FAILED`, `refundErrorMessage` para resolución manual.
+- `PATCH /api/orders/{id}/refund/retry` reintenta una devolución fallida.
+- `PATCH /api/orders/{id}/refund/mark-refunded` marca una devolución como resuelta manualmente con `refundReference` y `note` opcionales.
+
 ### Webhooks
 
 - Backend expone `POST /api/webhooks/mercadopago` sin auth.

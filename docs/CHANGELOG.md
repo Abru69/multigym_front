@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-07-16]
+
+### Completado
+
+- **Resolución de devoluciones fallidas**
+  - Soporte frontend para estados `REFUND_FAILED` y `REFUNDED` en órdenes.
+  - Admin puede reintentar devolución fallida o marcarla como resuelta manualmente desde recogidas.
+  - Cliente ve `REFUND_FAILED` como “Devolución en revisión”.
+
 Formato: [YYYY-MM-DD]
 
 ---

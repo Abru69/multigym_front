@@ -466,6 +466,17 @@ export const cancelOrder = (orderId: string) =>
     method: 'PATCH',
   })
 
+export const retryOrderRefund = (orderId: string) =>
+  fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${orderId}/refund/retry`, {
+    method: 'PATCH',
+  })
+
+export const markOrderRefunded = (orderId: string, data: { refundReference?: string; note?: string }) =>
+  fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${orderId}/refund/mark-refunded`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+
 // --- Health ---
 export const getHealth = () => fetchApi<ResponseDTO<HealthDTO>>('/api/health')
 export const getReadiness = () => fetchApi<ResponseDTO<ReadinessDTO>>('/api/readiness')

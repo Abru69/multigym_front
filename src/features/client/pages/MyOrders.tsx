@@ -446,6 +446,7 @@ export default function MyOrders() {
                              order.paymentStatus === 'PENDING' ? 'Pendiente' :
                              order.paymentStatus === 'FAILED' ? 'Fallido' :
                              order.paymentStatus === 'REFUNDED' ? 'Reembolsado' :
+                             order.paymentStatus === 'REFUND_FAILED' ? 'Devolución en revisión' :
                              order.paymentStatus || 'Pendiente'}
                           </p>
                         </div>
@@ -468,6 +469,14 @@ export default function MyOrders() {
                           </div>
                         )}
                       </div>
+                      {order.paymentStatus === 'REFUND_FAILED' && (
+                        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+                          <p className="text-xs font-bold text-amber-700">Devolución en revisión</p>
+                          <p className="mt-1 text-[11px] text-amber-600">
+                            El equipo está revisando tu devolución manualmente.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { fetchApi } from '@/lib/api'
-import type { OrderDTO, OrderItemDTO, ResponseDTO } from '@/types'
+import { cancelOrder, fetchApi, markOrderComplete, markOrderReady, markOrderRefunded, retryOrderRefund } from '@/lib/api'
+import type { OrderDTO, OrderItemDTO, PaginatedResult, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
   Store,
@@ -18,9 +18,39 @@ import {
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
   PENDING: { label: 'Esperando', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
+  PREPARING: { label: 'Preparando', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
+  PROCESSING: { label: 'Preparando', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
+  AUTHORIZED: { label: 'Esperando', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
   READY: { label: 'Listo para Recoger', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', dot: 'bg-blue-500' },
   COMPLETED: { label: 'Recogida', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
   CANCELLED: { label: 'Cancelada', color: 'text-gray-500', bg: 'bg-gray-50 border-gray-200', dot: 'bg-gray-400' },
+}
+
+const paymentStatusConfig: Record<string, { label: string; color: string; bg: string }> = {
+  COMPLETED: { label: 'Pagado', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
+  REFUNDED: { label: 'Reembolsado', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+  REFUND_FAILED: { label: 'Reembolso fallido', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
+  FAILED: { label: 'Pago fallido', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
+  PENDING: { label: 'Pago pendiente', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
+}
+
+const pendingStatuses = new Set(['PENDING', 'PREPARING', 'PROCESSING', 'AUTHORIZED', 'CREATED', 'CONFIRMED', 'PAID'])
+const normalizeStatus = (status?: string) => (status || 'PENDING').toUpperCase()
+const isPendingStatus = (status?: string) => pendingStatuses.has(normalizeStatus(status))
+
+type OrderListResponse = PaginatedResult<OrderDTO> | { data?: OrderDTO[]; content?: OrderDTO[] } | OrderDTO[]
+
+function extractOrders(res: ResponseDTO<OrderListResponse>) {
+  const dto = res.dto
+  if (Array.isArray(dto)) return dto
+  if (Array.isArray(dto?.data)) return dto.data
+  if (dto && 'content' in dto && Array.isArray(dto.content)) return dto.content
+  if (Array.isArray(res.lista)) return res.lista as OrderDTO[]
+  return []
+}
+
+function mergeUpdatedOrder(current: OrderDTO, response: ResponseDTO<OrderDTO>, fallbackStatus: string) {
+  return response.dto ? { ...current, ...response.dto } : { ...current, status: fallbackStatus }
 }
 
 function formatDate(dateStr?: string) {
@@ -45,8 +75,8 @@ export default function Pickups() {
   const loadOrders = async () => {
     try {
       setLoading(true)
-      const res = await fetchApi<ResponseDTO<{ data: OrderDTO[] }>>('/api/orders?deliveryMethod=PICKUP')
-      setOrders(res.dto?.data || [])
+      const res = await fetchApi<ResponseDTO<OrderListResponse>>('/api/orders?deliveryMethod=PICKUP')
+      setOrders(extractOrders(res))
     } catch (err) {
       console.error('Failed to load pickup orders:', err)
     } finally {
@@ -62,9 +92,9 @@ export default function Pickups() {
   const handleMarkReady = async (orderId: string) => {
     try {
       setActionId(orderId)
-      await fetchApi(`/api/orders/${orderId}/ready`, { method: 'PATCH' })
+      const res = await markOrderReady(orderId)
       setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: 'READY' } : o))
+        prev.map((o) => (o.id === orderId ? mergeUpdatedOrder(o, res, 'READY') : o))
       )
     } catch (err) {
       console.error('Failed to mark as ready:', err)
@@ -76,9 +106,9 @@ export default function Pickups() {
   const handleMarkComplete = async (orderId: string) => {
     try {
       setActionId(orderId)
-      await fetchApi(`/api/orders/${orderId}/complete`, { method: 'PATCH' })
+      const res = await markOrderComplete(orderId)
       setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: 'COMPLETED' } : o))
+        prev.map((o) => (o.id === orderId ? mergeUpdatedOrder(o, res, 'COMPLETED') : o))
       )
     } catch (err) {
       console.error('Failed to mark as completed:', err)
@@ -90,9 +120,9 @@ export default function Pickups() {
   const handleCancel = async (orderId: string) => {
     try {
       setActionId(orderId)
-      await fetchApi(`/api/orders/${orderId}/cancel`, { method: 'PATCH' })
+      const res = await cancelOrder(orderId)
       setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: 'CANCELLED' } : o))
+        prev.map((o) => (o.id === orderId ? mergeUpdatedOrder(o, res, 'CANCELLED') : o))
       )
     } catch (err) {
       console.error('Failed to cancel order:', err)
@@ -101,10 +131,45 @@ export default function Pickups() {
     }
   }
 
-  const filtered = orders.filter((o) => filter === 'ALL' || o.status === filter)
-  const pendingCount = orders.filter((o) => o.status === 'PENDING').length
-  const readyCount = orders.filter((o) => o.status === 'READY').length
-  const completedCount = orders.filter((o) => o.status === 'COMPLETED').length
+  const handleRetryRefund = async (orderId: string) => {
+    try {
+      setActionId(orderId)
+      const res = await retryOrderRefund(orderId)
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? mergeUpdatedOrder(o, res, 'CANCELLED') : o))
+      )
+    } catch (err) {
+      console.error('Failed to retry refund:', err)
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const handleMarkRefunded = async (orderId: string) => {
+    const refundReference = window.prompt('Referencia de devolución manual (opcional)') || undefined
+    const note = window.prompt('Nota de resolución manual (opcional)') || undefined
+    try {
+      setActionId(orderId)
+      const res = await markOrderRefunded(orderId, { refundReference, note })
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? mergeUpdatedOrder(o, res, 'CANCELLED') : o))
+      )
+    } catch (err) {
+      console.error('Failed to mark refund manually resolved:', err)
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const filtered = orders.filter((o) => {
+    const status = normalizeStatus(o.status)
+    if (filter === 'ALL') return true
+    if (filter === 'PENDING') return isPendingStatus(status)
+    return status === filter
+  })
+  const pendingCount = orders.filter((o) => isPendingStatus(o.status)).length
+  const readyCount = orders.filter((o) => normalizeStatus(o.status) === 'READY').length
+  const completedCount = orders.filter((o) => normalizeStatus(o.status) === 'COMPLETED').length
 
   if (loading) {
     return (
@@ -182,7 +247,9 @@ export default function Pickups() {
           </div>
         ) : (
           filtered.map((order, i) => {
-            const status = statusConfig[order.status] || statusConfig.PENDING
+            const orderStatus = normalizeStatus(order.status)
+            const status = statusConfig[orderStatus] || statusConfig.PENDING
+            const paymentStatus = paymentStatusConfig[(order.paymentStatus || 'PENDING').toUpperCase()] || paymentStatusConfig.PENDING
             const items = (order as OrderDTO & { items?: OrderItemDTO[] }).items || []
             const isExpanded = expandedId === order.id
 
@@ -207,6 +274,9 @@ export default function Pickups() {
                         <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
                         {status.label}
                       </span>
+                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${paymentStatus.bg} ${paymentStatus.color}`}>
+                        {paymentStatus.label}
+                      </span>
                     </div>
                     <div className="mt-0.5 flex items-center gap-3 text-[11px] text-[var(--text-muted)]">
                       <span className="inline-flex items-center gap-1">
@@ -220,7 +290,7 @@ export default function Pickups() {
                     </div>
                   </button>
                   <div className="flex items-center gap-2">
-                    {order.status === 'PENDING' && (
+                    {isPendingStatus(order.status) && (
                       <button
                         onClick={() => handleMarkReady(order.id!)}
                         disabled={actionId === order.id}
@@ -234,7 +304,7 @@ export default function Pickups() {
                         Marcar Listo
                       </button>
                     )}
-                    {order.status === 'READY' && (
+                    {orderStatus === 'READY' && (
                       <button
                         onClick={() => handleMarkComplete(order.id!)}
                         disabled={actionId === order.id}
@@ -248,7 +318,7 @@ export default function Pickups() {
                         Entregado
                       </button>
                     )}
-                    {(order.status === 'PENDING' || order.status === 'READY') && (
+                    {(isPendingStatus(order.status) || orderStatus === 'READY') && (
                       <button
                         onClick={() => handleCancel(order.id!)}
                         disabled={actionId === order.id}
@@ -261,6 +331,26 @@ export default function Pickups() {
                         )}
                         Cancelar
                       </button>
+                    )}
+                    {orderStatus === 'CANCELLED' && order.paymentStatus === 'REFUND_FAILED' && (
+                      <>
+                        <button
+                          onClick={() => handleRetryRefund(order.id!)}
+                          disabled={actionId === order.id}
+                          className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          <RefreshCw size={12} className={actionId === order.id ? 'animate-spin' : ''} />
+                          Reintentar
+                        </button>
+                        <button
+                          onClick={() => handleMarkRefunded(order.id!)}
+                          disabled={actionId === order.id}
+                          className="flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50"
+                        >
+                          <CheckCircle2 size={12} />
+                          Manual
+                        </button>
+                      </>
                     )}
                     <button
                       onClick={() => setExpandedId(isExpanded ? null : order.id!)}
@@ -324,6 +414,20 @@ export default function Pickups() {
                             <span className="text-sm font-bold text-[var(--text-primary)]">{formatCurrency(Number(order.total))}</span>
                           </div>
                         </div>
+                        {order.paymentStatus === 'REFUND_FAILED' && (
+                          <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5">
+                            <p className="text-xs font-bold text-red-700">Resolver devolución manualmente</p>
+                            <p className="mt-1 text-[11px] text-red-600">
+                              {order.refundErrorMessage || 'Mercado Pago no aceptó el reembolso automático.'}
+                            </p>
+                          </div>
+                        )}
+                        {order.paymentStatus === 'REFUNDED' && order.refundReference && (
+                          <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5">
+                            <p className="text-xs font-bold text-blue-700">Devolución completada</p>
+                            <p className="mt-1 truncate text-[11px] font-mono text-blue-600">{order.refundReference}</p>
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   )}

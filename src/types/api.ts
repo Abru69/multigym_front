@@ -184,6 +184,10 @@ export interface OrderDTO {
   shippingAddress?: string
   shippingCity?: string
   shippingPostalCode?: string
+  refundReference?: string
+  refundErrorMessage?: string
+  refundedAt?: string
+  cancelledAt?: string
 }
 
 export interface OrderItemDTO {
