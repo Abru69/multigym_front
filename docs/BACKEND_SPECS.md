@@ -187,3 +187,51 @@ public record ProgressDTO(
     String notes
 ) {}
 ```
+
+---
+
+## 4. Mercado Pago Checkout Contract
+
+### Estado actual
+
+El frontend ya tokeniza tarjetas con `@mercadopago/sdk-js` y envía el `cardToken` al backend en `POST /api/orders`.
+
+### Request esperado por backend
+
+```json
+{
+  "userId": "<tenant-user-id>",
+  "items": [
+    { "productId": "<product-id>", "quantity": 1 }
+  ],
+  "paymentMethod": "CREDIT_CARD",
+  "shippingAmount": 0,
+  "deliveryMethod": "PICKUP",
+  "branchId": "<branch-id>",
+  "cardToken": "<mercadopago-card-token>",
+  "paymentMethodId": "visa",
+  "issuerId": null,
+  "installments": 1
+}
+```
+
+### Respuestas esperadas
+
+| Caso | Backend |
+|------|---------|
+| Pago aprobado (`APRO`) | `200 OK`, orden creada, `paymentStatus=COMPLETED` |
+| Pago rechazado (`OTHE`, `CALL`, `FUND`, `SECU`, `EXPI`, `FORM`) | `402 Payment Required` con `mensaje` del rechazo |
+| Pago pendiente (`CONT`) | `402 Payment Required` actualmente. Pendiente futuro: crear orden con `paymentStatus=PENDING` |
+
+### Webhooks
+
+- Backend expone `POST /api/webhooks/mercadopago` sin auth.
+- Backend debe configurar `MP_NOTIFICATION_URL` y enviarlo como `notificationUrl` en Payments API.
+- Payment metadata incluye `tenant_schema` para procesar el webhook en el tenant correcto.
+- Frontend no consume webhooks directamente.
+
+### Sandbox MLM
+
+- `VITE_MP_PUBLIC_KEY` debe ser `TEST-...` para local/sandbox.
+- Tarjeta aprobada: Visa `4075 5957 1648 3764`, CVV `123`, vencimiento `11/30`, titular `APRO`.
+- Otros titulares de prueba: `OTHE`, `CONT`, `CALL`, `FUND`, `SECU`, `EXPI`, `FORM`.

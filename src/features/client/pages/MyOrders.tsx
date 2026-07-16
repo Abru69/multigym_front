@@ -208,7 +208,7 @@ export default function MyOrders() {
           Entrega:
         </span>
         {([
-          { key: 'ALL', label: 'Todas' },
+          { key: 'ALL', label: 'Todas', icon: null },
           { key: 'PICKUP', label: 'Recogida', icon: Store },
           { key: 'SHIPPING', label: 'Envío', icon: Truck },
         ] as const).map((f) => (

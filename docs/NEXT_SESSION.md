@@ -1,6 +1,6 @@
 # Próximos Pasos
 
-**Última sesión:** 2026-07-14 — PWA, API Improvements, Tenant Banners
+**Última sesión:** 2026-07-15 — Mercado Pago Checkout Sandbox + Webhooks
 
 ## Completado Reciente
 
@@ -17,6 +17,9 @@
 - ✅ **Cart tenant-scoped** — localStorage key con tenantId
 - ✅ **Cart badge** — Muestra número de items
 - ✅ **Roles y Permisos** — 6 roles con control de acceso por página
+- ✅ **Mercado Pago Checkout** — tokenización con `@mercadopago/sdk-js`, envío de `cardToken` a `/api/orders`, y datos sandbox MLM precargados en modo `TEST-*`
+- ✅ **Mercado Pago Sandbox Scenarios** — `APRO`, `OTHE`, `CONT`, `CALL`, `FUND`, `SECU`, `EXPI`, `FORM` probados contra backend local
+- ✅ **Mercado Pago Webhooks** — backend recibe `payment` notifications con `notification_url`; historial MercadoPago con entregas exitosas
 
 ## Endpoints Faltantes en Backend (Mock Data en Frontend)
 
@@ -93,10 +96,21 @@ El backend `POST /api/members` requiere un `userId` existente. Para crear un mie
 
 ## Prioridad Alta
 
-1. **Crear endpoints de Progress** — Necesario para que Progress.tsx deje de usar mock data
-2. **Crear endpoints de Nutrition backend** — Frontend ya usa `getMyNutritionPlan()`, falta implementar `/api/nutricion/my` en Java
+1. **Decidir soporte de pagos pendientes Mercado Pago (`CONT`)** — hoy el backend devuelve `402`; si se requiere, crear orden con `paymentStatus=PENDING` y actualizar por webhook
+2. **Crear endpoints de Progress** — Necesario para que Progress.tsx deje de usar mock data
 3. **Integrar creación de miembros** — Formulario que combine User + Member
-4. **Verificar UI en navegador** — Ejecutar `npm run dev` y probar TenantBanner, Login redirect, Cart badge
+4. **Verificar UI en navegador** — Ejecutar `npm run dev` y probar flujo checkout completo
+
+## Mercado Pago Local Test Setup
+
+- Frontend HTTPS: `https://localhost:5173`
+- Backend local: `http://localhost:8080`
+- Docker solo para Postgres/Redis durante desarrollo local
+- Frontend env: `VITE_MP_PUBLIC_KEY=TEST-...`
+- Backend env: `MP_ACCESS_TOKEN=TEST-...`, `MP_PUBLIC_KEY=TEST-...`, `MP_NOTIFICATION_URL=https://connector-overlook-bucket.ngrok-free.dev/api/webhooks/mercadopago`
+- Tenant de prueba: `gymx`
+- Usuario cliente: `client@gymx.com` / `admin123`
+- Tarjeta MLM aprobada: Visa `4075 5957 1648 3764`, CVV `123`, vencimiento `11/30`, titular `APRO`
 
 ## Prioridad Media
 

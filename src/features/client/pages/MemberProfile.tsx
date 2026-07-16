@@ -51,7 +51,7 @@ export default function MemberProfile() {
             getSubscriptionsByMember(user.id),
             getMyOrders(),
           ])
-          const subs = subRes.lista ?? subRes.dto?.data ?? []
+          const subs = subRes.lista ?? subRes.dto ?? []
           const active = subs.find((s) => s.status === 'ACTIVE') ?? subs[0] ?? null
           setSubscription(active)
           setOrders(ordersRes.dto?.data ?? [])

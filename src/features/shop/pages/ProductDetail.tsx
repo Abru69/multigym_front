@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { fetchApi } from '@/lib/api'
-import type { Product, ProductDTO, ResponseDTO } from '@/types'
+import type { Product, ProductCategory, ProductDTO, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import { useCartStore } from '@/features/shop/store/cartStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -38,17 +38,22 @@ export default function ProductDetail() {
       try {
         setProductLoading(true)
         const response = await fetchApi<ResponseDTO<ProductDTO[]>>(`/api/products?search=${slug}`)
-        const products = response.dto?.data || []
+        const products = response.lista || response.dto || []
         const found = products.find((p) =>
           p.name.toLowerCase().replace(/ /g, '-') === slug
         )
         if (found) {
+          const validCategories: ProductCategory[] = ['proteinas', 'pre-entrenos', 'creatina', 'aminoacidos', 'vitaminas', 'barras', 'accesorios']
+          const category = validCategories.includes(found.category as ProductCategory)
+            ? (found.category as ProductCategory)
+            : 'proteinas'
+
           setProduct({
             ...found,
             slug: found.name.toLowerCase().replace(/ /g, '-'),
             brand: found.brand || 'MultiGym',
             image: found.imageUrl || found.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=600&h=600&fit=crop',
-            category: found.category || 'proteinas',
+            category,
             rating: found.rating || 5.0,
             reviewCount: found.reviewCount || 0,
             isAvailable: found.stock > 0,

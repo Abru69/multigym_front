@@ -356,7 +356,7 @@ export default function RoutineBuilder({
         })
         addToast(`Plantilla "${routineName}" actualizada exitosamente.`, 'success')
       } else {
-        addToast('Para guardar una plantilla primero asígnala a un cliente con "Asignar"', 'info')
+        addToast('Para guardar una plantilla primero asígnala a un cliente con "Asignar"', 'warning')
       }
     } catch (e: unknown) {
       addToast(e instanceof Error ? e.message : 'Error guardando plantilla', 'error')

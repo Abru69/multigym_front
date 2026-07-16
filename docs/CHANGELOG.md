@@ -4,6 +4,27 @@ Formato: [YYYY-MM-DD]
 
 ---
 
+## [2026-07-15]
+
+### Completado
+
+- **Checkout Mercado Pago Sandbox (MLM)**
+  - Integración con `@mercadopago/sdk-js` usando `window.MercadoPago` y `VITE_MP_PUBLIC_KEY`.
+  - `Checkout.tsx` tokeniza tarjeta con `mp.createCardToken()` y envía `cardToken`, `paymentMethodId` e `installments` a `POST /api/orders`.
+  - Modo sandbox detectado por public key `TEST-*`; precarga datos de prueba México para pago aprobado: titular `APRO`, Visa `4075 5957 1648 3764`, CVV `123`, vencimiento `11/30`.
+  - Se agregó ayuda visible en la pantalla de pago con los datos de tarjeta sandbox MLM.
+  - Probados escenarios Mercado Pago: `APRO`, `OTHE`, `CONT`, `CALL`, `FUND`, `SECU`, `EXPI`, `FORM`.
+
+- **Backend Mercado Pago compatibilidad**
+  - Frontend apunta a backend local por proxy Vite HTTPS `https://localhost:5173/api` → `http://localhost:8080/api`.
+  - Backend usa `TEST-*` credentials de `MultiGym Checkout API` y Payments API.
+  - Webhooks `payment` verificados con `MP_NOTIFICATION_URL`; Mercado Pago reportó notificaciones exitosas.
+
+- **Notas de prueba**
+  - `APRO` debe crear orden y mostrar éxito.
+  - Rechazos (`OTHE`, `CALL`, `FUND`, `SECU`, `EXPI`, `FORM`) devuelven `402` y muestran error del backend.
+  - `CONT` devuelve `402` actualmente porque el backend aún no crea órdenes pendientes reales.
+
 ## [2026-07-14]
 
 ### Completado

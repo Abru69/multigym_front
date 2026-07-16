@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCartStore } from '@/features/shop/store/cartStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useToastStore } from '@/components/ui/Toast'
 import { fetchApi } from '@/lib/api'
+import { getMercadoPago } from '@/lib/mercadopago'
 import type { OrderDTO, ResponseDTO, BranchDTO, TenantSettingDTO, OrderRequest } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
@@ -26,6 +27,8 @@ const STEPS = [
   { key: 'payment', label: 'Pago', icon: CreditCard },
   { key: 'success', label: 'Confirmación', icon: CheckCircle2 },
 ] as const
+
+const isMercadoPagoTestMode = import.meta.env.VITE_MP_PUBLIC_KEY?.startsWith('TEST-')
 
 function StepIndicator({ currentStep }: { currentStep: string }) {
   const getStepIndex = (s: string) => {
@@ -82,6 +85,7 @@ export default function Checkout() {
   const [step, setStep] = useState<'method' | 'details' | 'payment' | 'success'>('method')
   const [loading, setLoading] = useState(false)
   const [orderNumber, setOrderNumber] = useState('')
+  const [mpReady, setMpReady] = useState(false)
 
   const [confettiOffsets] = useState(() =>
     Array.from({ length: 6 }, () => ({
@@ -97,6 +101,11 @@ export default function Checkout() {
   const [shippingAddress, setShippingAddress] = useState('')
   const [shippingCity, setShippingCity] = useState('')
   const [shippingPostalCode, setShippingPostalCode] = useState('')
+  const [cardholderName, setCardholderName] = useState(isMercadoPagoTestMode ? 'APRO' : '')
+  const [cardNumber, setCardNumber] = useState(isMercadoPagoTestMode ? '4075 5957 1648 3764' : '')
+  const [cardExpiry, setCardExpiry] = useState(isMercadoPagoTestMode ? '11/30' : '')
+  const [cardCvc, setCardCvc] = useState(isMercadoPagoTestMode ? '123' : '')
+  const [cardholderEmail, setCardholderEmail] = useState(user?.email || '')
 
   const subtotal = total()
   const shipping = deliveryMethod === 'SHIPPING' ? (subtotal > 1500 ? 0 : 150) : 0
@@ -144,8 +153,46 @@ export default function Checkout() {
     }
   }, [branches, selectedBranch])
 
-  const handleSimulatePayment = async (e: React.FormEvent) => {
-    e.preventDefault()
+  useEffect(() => {
+    let timer = 0
+    try {
+      getMercadoPago()
+      timer = window.setTimeout(() => setMpReady(true), 0)
+    } catch (err) {
+      console.error('Failed to init MercadoPago:', err)
+      addToast('Error al inicializar MercadoPago', 'error')
+    }
+    return () => window.clearTimeout(timer)
+  }, [addToast])
+
+  useEffect(() => {
+    if (user?.email && !cardholderEmail) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCardholderEmail(user.email)
+    }
+  }, [user?.email, cardholderEmail])
+
+  const formatCardNumber = (value: string) =>
+    value
+      .replace(/\D/g, '')
+      .slice(0, 16)
+      .replace(/(\d{4})(?=\d)/g, '$1 ')
+
+  const formatExpiry = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 4)
+    if (digits.length <= 2) return digits
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`
+  }
+
+  const getPaymentMethodId = (digits: string) => {
+    if (/^4/.test(digits)) return 'visa'
+    if (/^(5[1-5]|2[2-7])/.test(digits)) return 'master'
+    if (/^3[47]/.test(digits)) return 'amex'
+    return 'visa'
+  }
+
+  const processPayment = async (e?: FormEvent<HTMLFormElement>) => {
+    e?.preventDefault()
     setLoading(true)
     try {
       if (!user?.id) {
@@ -160,6 +207,32 @@ export default function Checkout() {
         if (!shippingPostalCode.trim()) throw new Error('Ingresa el código postal')
       }
 
+      const cardDigits = cardNumber.replace(/\D/g, '')
+      const [expirationMonth, expirationYearShort] = cardExpiry.split('/')
+      if (cardDigits.length < 13) throw new Error('Ingresa un número de tarjeta válido')
+      if (!expirationMonth || !expirationYearShort) throw new Error('Ingresa el vencimiento en formato MM/YY')
+      if (!cardCvc.trim()) throw new Error('Ingresa el CVC')
+      if (!cardholderName.trim()) throw new Error('Ingresa el nombre del titular')
+      if (!cardholderEmail.trim()) throw new Error('Ingresa el email del titular')
+
+      const expirationYear = expirationYearShort.length === 2 ? `20${expirationYearShort}` : expirationYearShort
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mp: any = getMercadoPago()
+      const tokenResponse = await mp.createCardToken({
+        cardNumber: cardDigits,
+        cardholderName: cardholderName.trim(),
+        cardExpirationMonth: expirationMonth,
+        cardExpirationYear: expirationYear,
+        securityCode: cardCvc.trim(),
+        identificationType: 'RFC',
+        identificationNumber: 'CACX7605101P8',
+      })
+      const cardToken = tokenResponse?.id || tokenResponse?.token
+      if (!cardToken) {
+        console.error('MercadoPago token response:', tokenResponse)
+        throw new Error('No se pudo tokenizar la tarjeta. Verifica los datos e intenta de nuevo.')
+      }
+
       const orderBody: OrderRequest = {
         userId: user.id,
         items: items.map((item) => ({
@@ -169,6 +242,9 @@ export default function Checkout() {
         paymentMethod: 'CREDIT_CARD',
         shippingAmount: shipping,
         deliveryMethod,
+        cardToken,
+        paymentMethodId: getPaymentMethodId(cardDigits),
+        installments: 1,
         ...(deliveryMethod === 'PICKUP'
           ? { branchId: selectedBranch }
           : { shippingAddress, shippingCity, shippingPostalCode }),
@@ -478,7 +554,7 @@ export default function Checkout() {
               Información de Pago
             </h2>
 
-            <form onSubmit={handleSimulatePayment} className="space-y-5">
+            <form onSubmit={processPayment} className="space-y-5">
               <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
                 <div className="border-b border-[var(--border)] bg-[var(--surface)] px-6 py-4">
                   <div className="flex items-center gap-3">
@@ -487,40 +563,29 @@ export default function Checkout() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-[var(--text-primary)]">Tarjeta de Crédito / Débito</p>
-                      <p className="text-xs text-[var(--text-muted)]">Ingresa los datos de tu tarjeta</p>
+                      <p className="text-xs text-[var(--text-muted)]">Pago procesado por MercadoPago</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="p-6">
-                  <div className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-800 to-gray-900 p-6 text-white shadow-lg">
-                    <div className="mb-6 flex items-center justify-between">
-                      <div className="h-8 w-12 rounded bg-white/20" />
-                      <CreditCard size={24} className="text-white/60" />
+                  {isMercadoPagoTestMode && (
+                    <div className="mb-4 rounded-xl border border-[var(--accent)]/30 bg-[var(--accent)]/10 p-4 text-xs text-[var(--text-secondary)]">
+                      <p className="font-bold text-[var(--text-primary)]">Modo prueba Mercado Pago México</p>
+                      <p>Usa titular <span className="font-mono font-bold">APRO</span> para aprobar el pago.</p>
+                      <p>Visa: <span className="font-mono">4075 5957 1648 3764</span>, CVV <span className="font-mono">123</span>, vencimiento <span className="font-mono">11/30</span>.</p>
                     </div>
-                    <p className="mb-6 font-mono text-lg tracking-widest">
-                      **** **** **** ****
-                    </p>
-                    <div className="flex justify-between text-xs">
-                      <div>
-                        <p className="text-white/50">TITULAR</p>
-                        <p className="font-semibold">TU NOMBRE</p>
-                      </div>
-                      <div>
-                        <p className="text-white/50">VENCE</p>
-                        <p className="font-semibold">MM/AA</p>
-                      </div>
-                    </div>
-                  </div>
-
+                  )}
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label htmlFor="card-name" className="text-xs font-semibold text-[var(--text-primary)]">Nombre en la Tarjeta</label>
+                      <label htmlFor="cardholder-name" className="text-xs font-semibold text-[var(--text-primary)]">Nombre en la Tarjeta</label>
                       <input
-                        id="card-name"
+                        id="cardholder-name"
                         required
                         type="text"
                         placeholder="Como aparece en la tarjeta"
+                        value={cardholderName}
+                        onChange={(e) => setCardholderName(e.target.value.toUpperCase())}
                         className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm uppercase text-[var(--text-primary)] transition-all placeholder:normal-case placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
                       />
                     </div>
@@ -529,9 +594,13 @@ export default function Checkout() {
                       <input
                         id="card-number"
                         required
+                        inputMode="numeric"
+                        autoComplete="cc-number"
                         type="text"
                         maxLength={19}
                         placeholder="0000 0000 0000 0000"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
                         className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
                       />
                     </div>
@@ -541,9 +610,13 @@ export default function Checkout() {
                         <input
                           id="card-expiry"
                           required
+                          inputMode="numeric"
+                          autoComplete="cc-exp"
                           type="text"
                           maxLength={5}
                           placeholder="MM/YY"
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
                           className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
                         />
                       </div>
@@ -552,12 +625,28 @@ export default function Checkout() {
                         <input
                           id="card-cvc"
                           required
+                          inputMode="numeric"
+                          autoComplete="cc-csc"
                           type="password"
                           maxLength={4}
-                          placeholder="•••"
+                          placeholder="123"
+                          value={cardCvc}
+                          onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
                           className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
                         />
                       </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label htmlFor="cardholder-email" className="text-xs font-semibold text-[var(--text-primary)]">Email</label>
+                      <input
+                        id="cardholder-email"
+                        required
+                        type="email"
+                        placeholder="tu@email.com"
+                        value={cardholderEmail}
+                        onChange={(e) => setCardholderEmail(e.target.value)}
+                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                      />
                     </div>
                   </div>
                 </div>
@@ -565,12 +654,12 @@ export default function Checkout() {
 
               <div className="flex items-center justify-center gap-2 text-xs text-[var(--text-muted)]">
                 <Lock size={12} />
-                <span>Pago procesado de forma segura</span>
+                <span>Pago seguro procesado por MercadoPago</span>
               </div>
 
               <button
                 type="submit"
-                disabled={loading || (deliveryMethod === 'PICKUP' && !selectedBranch) || (deliveryMethod === 'SHIPPING' && !canProceedToDetails())}
+                disabled={loading || !mpReady || (deliveryMethod === 'PICKUP' && !selectedBranch) || (deliveryMethod === 'SHIPPING' && !canProceedToDetails())}
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (

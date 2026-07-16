@@ -1,0 +1,22 @@
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    MercadoPago: any
+  }
+}
+
+let mpInstance: unknown = null
+
+export function getMercadoPago() {
+  if (mpInstance) return mpInstance
+
+  const publicKey = import.meta.env.VITE_MP_PUBLIC_KEY
+  if (!publicKey) {
+    throw new Error('VITE_MP_PUBLIC_KEY no está configurada en .env.local')
+  }
+
+  mpInstance = new window.MercadoPago(publicKey, {
+    locale: 'es-MX',
+  })
+  return mpInstance
+}

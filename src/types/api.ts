@@ -1,7 +1,9 @@
+type ResponseList<T> = T extends Array<infer Item> ? Item[] : T[]
+
 export interface ResponseDTO<T> {
   estatus: string
   mensaje: string
-  lista?: T[]
+  lista?: ResponseList<T>
   dto?: T
   codError?: string
 }
@@ -421,6 +423,10 @@ export interface OrderRequest {
   shippingAddress?: string
   shippingCity?: string
   shippingPostalCode?: string
+  cardToken?: string
+  paymentMethodId?: string
+  issuerId?: string
+  installments?: number
 }
 
 export interface OrderStatusRequest {
