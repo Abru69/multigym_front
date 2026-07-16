@@ -4,6 +4,12 @@
 
 ### Completado
 
+- **Docker frontend con HTTPS local**
+  - Agregado `Dockerfile`, `.dockerignore`, `docker-compose.yml` y configuración Nginx para servir el build de Vite.
+  - Nginx expone `443 ssl`, redirige `80 -> 443` y proxya `/api`, `/uploads`, `/platform/auth` y `/platform-api` hacia `fitness-app:8080`.
+  - Certificados locales montados desde `certs/fullchain.pem` y `certs/privkey.pem`.
+  - Healthcheck Docker usa `http://127.0.0.1/health` dentro del contenedor.
+
 - **Resolución de devoluciones fallidas**
   - Soporte frontend para estados `REFUND_FAILED` y `REFUNDED` en órdenes.
   - Admin puede reintentar devolución fallida o marcarla como resuelta manualmente desde recogidas.

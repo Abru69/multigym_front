@@ -1,5 +1,34 @@
 # React + TypeScript + Vite
 
+## Docker HTTPS Local
+
+The frontend can run as a production build behind Nginx with local HTTPS.
+
+Prerequisites:
+
+- Backend Docker stack running with service name `fitness-app` on Docker network `multigym-network`.
+- Local certificates in `certs/fullchain.pem` and `certs/privkey.pem`.
+
+Generate a self-signed localhost certificate:
+
+```bash
+openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 365 \
+  -keyout certs/privkey.pem \
+  -out certs/fullchain.pem \
+  -subj "/CN=localhost" \
+  -addext "subjectAltName=DNS:localhost,DNS:*.localhost,IP:127.0.0.1"
+```
+
+Start the frontend container:
+
+```bash
+docker compose up -d --build
+```
+
+Open `https://localhost`. The browser will warn about the self-signed certificate; accept it for local development.
+
+Nginx routes `/api/`, `/uploads/`, `/platform/auth/`, and `/platform-api/` to the backend container at `fitness-app:8080`.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

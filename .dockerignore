@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+.git
+.idea
+.DS_Store
+*.log
+*.local
+certs/*.pem
+certs/*.key
+certs/*.crt
+docs
+.ai
+.agent
