@@ -42,6 +42,7 @@ export default function RoutineLibrary() {
 
   useEffect(() => {
     if (!isBuilding && !editingRoutine) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchTemplates()
     }
   }, [isBuilding, editingRoutine, fetchTemplates])

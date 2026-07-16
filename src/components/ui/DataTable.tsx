@@ -131,7 +131,7 @@ function DataTable<T>({
             </tr>
           </thead>
           <tbody>
-            {sortedData.map((item, index) => (
+            {sortedData.map((item) => (
               <tr
                 key={keyExtractor(item)}
                 onClick={onRowClick ? () => onRowClick(item) : undefined}

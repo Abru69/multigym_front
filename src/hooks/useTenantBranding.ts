@@ -1,21 +1,64 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { getTenantFromSubdomain } from '@/lib/tenant'
 import { resolveBranding, type TenantBranding } from '@/lib/tenantConfig'
+import { useTenantSettingsStore, deriveColorPalette, isValidColor } from '@/features/admin/store/tenantSettingsStore'
 
 /**
- * React hook that resolves the current tenant's branding from the subdomain
- * and applies the color overrides as CSS custom properties on :root.
+ * React hook that resolves the current tenant's branding.
+ *
+ * Resolution order for colors:
+ *   1. Backend TenantSettings (brand_color, accent_color) via API
+ *   2. Hardcoded TENANT_CONFIGS[tenantId] in tenantConfig.ts
+ *   3. DEFAULT_BRANDING
  *
  * Usage:
  *   const { branding, tenantId, isTenantContext } = useTenantBranding()
  */
 export function useTenantBranding() {
   const tenantId = useMemo(() => getTenantFromSubdomain(), [])
-  const branding = useMemo(() => resolveBranding(tenantId), [tenantId])
+  const baseBranding = useMemo(() => resolveBranding(tenantId), [tenantId])
   const isTenantContext = tenantId !== null
 
-  // Apply color overrides to CSS custom properties
+  const { colors: apiColors, loaded, loadSettings } = useTenantSettingsStore()
+
+  // Fetch tenant settings from backend on mount (only in tenant context)
   useEffect(() => {
+    if (isTenantContext && !loaded) {
+      loadSettings()
+    }
+  }, [isTenantContext, loaded, loadSettings])
+
+  // Merge: API colors override hardcoded when valid
+  const branding: TenantBranding = useMemo(() => {
+    if (!loaded || !isTenantContext) return baseBranding
+
+    const hasBrandColor = isValidColor(apiColors.brandColor)
+    const hasAccentColor = isValidColor(apiColors.accentColor)
+
+    if (!hasBrandColor && !hasAccentColor) return baseBranding
+
+    // brand_color becomes the primary accent
+    const primary = hasBrandColor ? apiColors.brandColor! : baseBranding.colors.accent
+    const palette = deriveColorPalette(primary)
+
+    // accent_color becomes the detail/secondary accent
+    const detail = hasAccentColor ? apiColors.accentColor! : baseBranding.colors.detail
+
+    return {
+      ...baseBranding,
+      colors: {
+        accent: primary,
+        accentHover: palette.hover,
+        accentLight: palette.light,
+        accentMuted: palette.muted,
+        accentText: palette.text,
+        detail,
+      },
+    }
+  }, [baseBranding, apiColors, loaded, isTenantContext])
+
+  // Apply color overrides to CSS custom properties (before paint)
+  useLayoutEffect(() => {
     const root = document.documentElement
     const { colors } = branding
 
@@ -33,44 +76,12 @@ export function useTenantBranding() {
     root.style.setProperty('--accent-muted', colors.accentMuted)
     root.style.setProperty('--detail', colors.detail)
 
-    // accent-text: dark in light mode, accentText in dark mode
-    const applyAccentText = () => {
-      const isDark = root.getAttribute('data-theme') !== 'light'
-      root.style.setProperty('--accent-text', isDark ? colors.accentText : '#1c1917')
-      root.style.setProperty('--color-accent-text', isDark ? colors.accentText : '#1c1917')
-    }
-    applyAccentText()
-
-    // Watch for theme changes
-    const observer = new MutationObserver(applyAccentText)
-    observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] })
+    // accent-text: derivado de la luminancia del acento (consistente en ambos temas)
+    root.style.setProperty('--accent-text', colors.accentText)
+    root.style.setProperty('--color-accent-text', colors.accentText)
 
     // Update glow shadow
     root.style.setProperty('--shadow-glow', `0 0 20px ${colors.accentMuted}`)
-
-    // Update page title
-    document.title = `${branding.name} | ${branding.tagline}`
-
-    return () => {
-      observer.disconnect()
-      // Cleanup: remove inline styles when unmounting (optional)
-      const props = [
-        '--color-accent',
-        '--color-accent-hover',
-        '--color-accent-light',
-        '--color-accent-muted',
-        '--color-accent-text',
-        '--color-detail',
-        '--accent',
-        '--accent-hover',
-        '--accent-light',
-        '--accent-muted',
-        '--accent-text',
-        '--detail',
-        '--shadow-glow',
-      ]
-      props.forEach((p) => root.style.removeProperty(p))
-    }
   }, [branding])
 
   return { branding, tenantId, isTenantContext }

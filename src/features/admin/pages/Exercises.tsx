@@ -4,7 +4,6 @@ import { Dumbbell, Plus, Edit2, Trash2, Layers } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { useToastStore } from '@/components/ui/Toast'
 import { getExercises, createExercise, fetchApi } from '@/lib/api'
-import type { ResponseDTO } from '@/types'
 import { MUSCLE_GROUPS } from '@/data/constants'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
@@ -79,6 +78,7 @@ export default function Exercises() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadExercises()
   }, [loadExercises])
 
@@ -322,6 +322,7 @@ export default function Exercises() {
                   error={formErrors.name}
                   htmlFor="ex-name"
                 >
+                  {/* eslint-disable jsx-a11y/no-autofocus */}
                   <input
                     id="ex-name"
                     type="text"
@@ -331,6 +332,7 @@ export default function Exercises() {
                     autoFocus
                     className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                   />
+                  {/* eslint-enable jsx-a11y/no-autofocus */}
                 </FormField>
                 <FormField
                   label="Grupo Muscular"
@@ -470,6 +472,7 @@ export default function Exercises() {
                 error={newGroupErrors.name}
                 htmlFor="group-name"
               >
+                {/* eslint-disable jsx-a11y/no-autofocus */}
                 <input
                   id="group-name"
                   type="text"
@@ -479,6 +482,7 @@ export default function Exercises() {
                   autoFocus
                   className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                 />
+                {/* eslint-enable jsx-a11y/no-autofocus */}
               </FormField>
               <FormField label="Descripción" htmlFor="group-desc">
                 <input

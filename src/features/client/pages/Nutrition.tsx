@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Flame, CheckCircle2, Circle, Clock, Utensils, Droplets, Info, Loader2 } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, Utensils, Droplets, Info, Loader2 } from 'lucide-react'
 import { useNutritionStore } from '@/features/client/store/nutritionStore'
 
 const macroConfig = [

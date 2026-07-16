@@ -1,13 +1,10 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import {
   Dumbbell,
   Store,
   LineChart,
-  Users,
   ChevronRight,
-  CheckCircle,
   Shield,
   Zap,
   Building2,
@@ -100,12 +97,10 @@ const heroStagger = {
 }
 const heroItem = {
   hidden: { opacity: 0, y: 25 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' as any } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' as const } },
 }
 
 export default function SaaSLanding() {
-  const navigate = useNavigate()
-
   const openRegistration = (planId: string) => {
     alert(`Para contratar el plan ${planId}, por favor contacta al administrador en admin@saas.com`)
   }
@@ -456,18 +451,18 @@ export default function SaaSLanding() {
             >
               Login Propietarios
             </Link>
-            <a
-              href="#"
+            <button
+              type="button"
               className="text-[var(--text-muted)] transition-colors hover:text-[var(--accent)]"
             >
               Soporte
-            </a>
-            <a
-              href="#"
+            </button>
+            <button
+              type="button"
               className="text-[var(--text-muted)] transition-colors hover:text-[var(--accent)]"
             >
               Términos
-            </a>
+            </button>
           </div>
         </div>
       </footer>

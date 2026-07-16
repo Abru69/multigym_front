@@ -10,6 +10,11 @@ export type AdminPage =
   | 'pickups'
   | 'shipments'
   | 'delivery'
+  | 'checkins'
+  | 'announcements'
+  | 'reports'
+  | 'branches'
+  | 'branding'
 
 export type UserRole = 'admin' | 'client' | 'nutricionist' | 'staff' | 'receptionist' | 'seller'
 
@@ -17,10 +22,11 @@ const ROLE_PAGES: Record<UserRole, AdminPage[]> = {
   admin: [
     'dashboard', 'users', 'plans', 'subscriptions', 'payments',
     'nutrition', 'inventory', 'exercises', 'pickups', 'shipments', 'delivery',
+    'checkins', 'announcements', 'reports', 'branches', 'branding',
   ],
   nutricionist: ['nutrition'],
-  staff: ['dashboard', 'users', 'inventory', 'exercises'],
-  receptionist: ['dashboard', 'users', 'subscriptions', 'payments'],
+  staff: ['dashboard', 'users', 'inventory', 'exercises', 'checkins'],
+  receptionist: ['dashboard', 'users', 'subscriptions', 'payments', 'checkins'],
   seller: ['dashboard', 'inventory', 'pickups', 'shipments', 'delivery'],
   client: [],
 }
@@ -65,6 +71,11 @@ const PAGE_ROUTE_MAP: Record<string, AdminPage> = {
   '/admin/recogidas': 'pickups',
   '/admin/envios': 'shipments',
   '/admin/entrega': 'delivery',
+  '/admin/check-ins': 'checkins',
+  '/admin/anuncios': 'announcements',
+  '/admin/reportes': 'reports',
+  '/admin/sucursales': 'branches',
+  '/admin/branding': 'branding',
 }
 
 export function getPageFromPath(pathname: string): AdminPage | null {

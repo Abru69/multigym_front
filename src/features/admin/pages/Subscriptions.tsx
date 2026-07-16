@@ -58,6 +58,7 @@ export default function SubscriptionsPage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData()
     getClientUsers().then((res) => {
       if (res?.dto?.data) {

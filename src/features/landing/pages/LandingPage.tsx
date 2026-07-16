@@ -32,12 +32,12 @@ export default function LandingPage() {
             >
               Precios
             </a>
-            <a
-              href="#"
+            <button
+              type="button"
               className="text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
             >
               Documentación
-            </a>
+            </button>
           </nav>
 
           <div className="flex items-center gap-4">

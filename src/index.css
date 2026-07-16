@@ -68,6 +68,7 @@
   --accent-muted: #431407;
   --accent-text: #ffffff;
   --detail: #f97316;
+  --shadow-glow: 0 0 20px #431407;
 
   --border: #222222;
   --border-hover: #333333;
@@ -152,6 +153,7 @@
   --accent-muted: #fff7ed;
   --accent-text: #1c1917;
   --detail: #f97316;
+  --shadow-glow: 0 0 20px #fed7aa;
 
   --border: #e7e5e4;
   --border-hover: #d6d3d1;

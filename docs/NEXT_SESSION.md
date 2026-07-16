@@ -1,9 +1,10 @@
 # Próximos Pasos
 
-**Última sesión:** 2026-07-14 — API Improvements, Tenant Banners, Validation Hardening
+**Última sesión:** 2026-07-14 — PWA, API Improvements, Tenant Banners
 
 ## Completado Reciente
 
+- ✅ **PWA completa** — `vite-plugin-pwa` + Workbox, offline support, auto-update, iconos generados
 - ✅ **Tenant Landing Banners** — `TenantBanner.tsx` con banners promocionales debajo del hero
 - ✅ **API refactoring** — `fetchApi` separa platform vs tenant, mejor manejo de 401
 - ✅ **API pagination** — `getProducts`, `getWorkouts`, `getOrders`, `getNutritionPlans` con params
@@ -118,9 +119,6 @@ El backend `POST /api/members` requiere un `userId` existente. Para crear un mie
 8. **Tests Unitarios**
    - Vitest o Jest
    - Tests para stores y componentes UI
-
-9. **PWA Setup**
-   - Service worker, manifest, offline support
 
 ## Bloqueado
 

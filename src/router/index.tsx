@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AuthGuard } from './AuthGuard'
 import { AdminGuard } from './AdminGuard'
@@ -10,51 +10,17 @@ import { ClientLayout } from '@/layouts/ClientLayout'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { PlatformLayout } from '@/layouts/PlatformLayout'
 import { Spinner } from '@/components/ui/Spinner'
-
-// Auth Pages
-const Login = lazy(() => import('@/features/auth/pages/Login'))
-const Register = lazy(() => import('@/features/auth/pages/Register'))
-const ForgotPassword = lazy(() => import('@/features/auth/pages/ForgotPassword'))
-const ResetPassword = lazy(() => import('@/features/auth/pages/ResetPassword'))
-const ActivateAccount = lazy(() => import('@/features/auth/pages/ActivateAccount'))
-
-// Client Pages
-const MyRoutines = lazy(() => import('@/features/client/pages/MyRoutines'))
-const Nutrition = lazy(() => import('@/features/client/pages/Nutrition'))
-const MyOrders = lazy(() => import('@/features/client/pages/MyOrders'))
-const MemberProfile = lazy(() => import('@/features/client/pages/MemberProfile'))
-
-// Admin Pages
-const AdminDashboard = lazy(() => import('@/features/admin/pages/Dashboard'))
-const Inventory = lazy(() => import('@/features/admin/pages/Inventory'))
-const Users = lazy(() => import('@/features/admin/pages/Users'))
-const Exercises = lazy(() => import('@/features/admin/pages/Exercises'))
-const Plans = lazy(() => import('@/features/admin/pages/Plans'))
-const Subscriptions = lazy(() => import('@/features/admin/pages/Subscriptions'))
-const Payments = lazy(() => import('@/features/admin/pages/Payments'))
-const Pickups = lazy(() => import('@/features/admin/pages/Pickups'))
-const Shipments = lazy(() => import('@/features/admin/pages/Shipments'))
-const DeliverySettings = lazy(() => import('@/features/admin/pages/DeliverySettings'))
-const NutritionPlans = lazy(() => import('@/features/admin/pages/NutritionPlans'))
-
-// Shop Pages
-const Catalog = lazy(() => import('@/features/shop/pages/Catalog'))
-const ProductDetail = lazy(() => import('@/features/shop/pages/ProductDetail'))
-const Cart = lazy(() => import('@/features/shop/pages/Cart'))
-const Checkout = lazy(() => import('@/features/shop/pages/Checkout'))
-
-// Platform Pages
-const PlatformLogin = lazy(() => import('@/features/platform/pages/PlatformLogin'))
-const PlatformDashboard = lazy(() => import('@/features/platform/pages/PlatformDashboard'))
-const PlatformTenants = lazy(() => import('@/features/platform/pages/PlatformTenants'))
-const PlatformUsers = lazy(() => import('@/features/platform/pages/PlatformUsers'))
-const PlatformSaaSPlans = lazy(() => import('@/features/platform/pages/PlatformSaaSPlans'))
-const PlatformBilling = lazy(() => import('@/features/platform/pages/PlatformBilling'))
-const PlatformLogs = lazy(() => import('@/features/platform/pages/PlatformLogs'))
-const PlatformSettings = lazy(() => import('@/features/platform/pages/PlatformSettings'))
-
-// 404 Page
-const NotFound = lazy(() => import('@/pages/NotFound'))
+import {
+  Login, Register, ForgotPassword, ResetPassword, ActivateAccount,
+  MyRoutines, Nutrition, MyOrders, MemberProfile,
+  AdminDashboard, Inventory, Users, Exercises, Plans, Subscriptions, Payments,
+  Pickups, Shipments, DeliverySettings, NutritionPlans, CheckIns, Announcements,
+  Reports, Branches, BrandingSettings,
+  Catalog, ProductDetail, Cart, Checkout,
+  PlatformLogin, PlatformDashboard, PlatformTenants, PlatformUsers,
+  PlatformSaaSPlans, PlatformBilling, PlatformLogs, PlatformSettings, PlatformReports,
+  NotFound,
+} from './lazyRoutes'
 
 const withSuspense = (Component: React.LazyExoticComponent<React.ComponentType>) => (
   <Suspense
@@ -89,6 +55,7 @@ export const router = createBrowserRouter([
       { path: 'billing', element: withSuspense(PlatformBilling) },
       { path: 'logs', element: withSuspense(PlatformLogs) },
       { path: 'settings', element: withSuspense(PlatformSettings) },
+      { path: 'reports', element: withSuspense(PlatformReports) },
     ],
   },
 
@@ -128,6 +95,11 @@ export const router = createBrowserRouter([
       { path: 'envios', element: <RoleGuard page="shipments">{withSuspense(Shipments)}</RoleGuard> },
       { path: 'entrega', element: <RoleGuard page="delivery">{withSuspense(DeliverySettings)}</RoleGuard> },
       { path: 'nutricion', element: <RoleGuard page="nutrition">{withSuspense(NutritionPlans)}</RoleGuard> },
+      { path: 'check-ins', element: <RoleGuard page="checkins">{withSuspense(CheckIns)}</RoleGuard> },
+      { path: 'anuncios', element: <RoleGuard page="announcements">{withSuspense(Announcements)}</RoleGuard> },
+      { path: 'reportes', element: <RoleGuard page="reports">{withSuspense(Reports)}</RoleGuard> },
+      { path: 'sucursales', element: <RoleGuard page="branches">{withSuspense(Branches)}</RoleGuard> },
+      { path: 'branding', element: <RoleGuard page="branding">{withSuspense(BrandingSettings)}</RoleGuard> },
     ],
   },
 

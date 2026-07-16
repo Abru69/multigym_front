@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { NutritionPlanDTO, ResponseDTO } from '@/types'
+import type { NutritionPlanDTO } from '@/types'
 import { getMyNutritionPlan } from '@/lib/api'
 
 const MOCK_PLAN: NutritionPlanDTO = {
@@ -84,7 +84,7 @@ interface NutritionState {
 
 export const useNutritionStore = create<NutritionState>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       plan: null,
       mealCompletion: {},
       waterGlasses: 4,

@@ -20,9 +20,22 @@
 | Roles & Permisos   | ✅ 6 roles con control de acceso por página |
 | Tenant Landing     | ✅ Banners promocionales + branding dinámico |
 | Form Validations   | ✅ Validación reforzada en todos los forms |
+| PWA                | ✅ Instalable + offline support + auto-update |
 | Missing Endpoints  | ⚠️ Progress sin backend                   |
 
 ## Funcionalidades Recientes (2026-07-14)
+
+### PWA (Progressive Web App)
+- `vite-plugin-pwa` con Workbox para service worker automático
+- Manifest: nombre, descripción, iconos, theme-color, display standalone
+- Iconos PWA: 192x192, 512x512, 512x512-maskable
+- Workbox precache: todos los assets JS/CSS/HTML/fonts
+- Runtime caching: Google Fonts (CacheFirst), API (NetworkFirst)
+- `index.html`: fix favicon, +apple-touch-icon, +theme-color, +apple-mobile-web-app-capable
+- Auto-update: service worker se actualiza automáticamente
+- **Desktop**: Botón "Instalar app" en barra de direcciones
+- **Mobile**: "Agregar a pantalla de inicio" en iOS/Android
+- **Offline**: La app carga contenido cacheado sin conexión
 
 ### Tenant Landing — Banners Promocionales
 - `TenantBanner.tsx` — componente de banner debajo del hero

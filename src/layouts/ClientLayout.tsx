@@ -18,6 +18,7 @@ import {
 import { getTenantUrl } from '@/lib/tenant'
 import { useTheme } from '@/hooks/useTheme'
 import { getAllowedPages } from '@/lib/permissions'
+import { InstallBanner } from '@/components/ui/InstallBanner'
 
 const clientNav = [
   { to: '/app/rutinas', icon: Dumbbell, label: 'Rutinas' },
@@ -51,6 +52,7 @@ export function ClientLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg-secondary)]">
+      <InstallBanner />
       {/* Header */}
       <header className="sticky top-0 z-30 bg-[var(--card)] border-b border-[var(--border)]">
         <div className="flex items-center justify-between px-4 py-3 lg:px-8">

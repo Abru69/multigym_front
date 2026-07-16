@@ -15,11 +15,9 @@ import { Modal } from '@/components/ui/Modal'
 import { useToastStore } from '@/components/ui/Toast'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { getExercises, createExercise, createWorkout, createWorkoutExercise, updateWorkout, fetchApi } from '@/lib/api'
-import { MUSCLE_GROUPS } from '@/data/constants'
 import { SearchBar } from '../components/SearchBar'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
-import type { ResponseDTO } from '@/types'
 
 interface ExerciseData {
   id: string
@@ -68,6 +66,8 @@ const DAYS: { key: DayOfWeek; label: string }[] = [
   { key: 'sabado', label: 'Sabado' },
   { key: 'domingo', label: 'Domingo' },
 ]
+
+let uniqueIdCounter = 0
 
 const ALL_GROUPS_LIST = [
   'Pecho',
@@ -122,6 +122,7 @@ export default function RoutineBuilder({
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadExercises()
     fetchApi<{ dto?: { data?: Array<{ id: string; email?: string; role?: string; isActive?: boolean; memberDTO?: { id: string } | null; name?: string }> } }>('/api/tenant/users')
       .then((res) => {
@@ -148,6 +149,7 @@ export default function RoutineBuilder({
 
   useEffect(() => {
     if (personalizedUser && !editingRoutine) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRoutineName(`Rutina Personalizada - ${personalizedUser.name || personalizedUser.email}`)
     }
   }, [personalizedUser, editingRoutine])
@@ -168,7 +170,7 @@ export default function RoutineBuilder({
         if (day && initialDays[day]) {
           initialDays[day].push({
             ...we.exercise!,
-            uniqueId: Math.random().toString(36).substring(2, 9),
+            uniqueId: `init-${uniqueIdCounter++}`,
             sets: we.sets || 4,
             reps: we.reps || '10-12',
             restSeconds: we.restTimeSeconds || 60,
@@ -251,7 +253,7 @@ export default function RoutineBuilder({
   const handleAddExercise = (exercise: ExerciseData) => {
     const exerciseCopy: DayExercise = {
       ...exercise,
-      uniqueId: Math.random().toString(36).substring(2, 9),
+      uniqueId: `add-${uniqueIdCounter++}`,
       sets: 4,
       reps: '10-12',
       restSeconds: 60,
@@ -345,17 +347,6 @@ export default function RoutineBuilder({
   const handleSaveTemplate = async () => {
     setIsSaving(true)
     try {
-      const exercisesPayload = Object.entries(dayExercises).flatMap(([dayOfWeek, exercises]) =>
-        exercises.map((ex, index) => ({
-          exerciseId: ex.id,
-          dayOfWeek,
-          sets: parseInt(String(ex.sets)) || 4,
-          reps: ex.reps || '12',
-          restSeconds: ex.restSeconds || 60,
-          orderIndex: index,
-        }))
-      )
-
       if (editingRoutine?.id) {
         await updateWorkout(editingRoutine.id, {
           memberId: editingRoutine.member?.id || '',
@@ -719,6 +710,7 @@ export default function RoutineBuilder({
             error={newExerciseErrors.name}
             htmlFor="new-ex-name"
           >
+            {/* eslint-disable jsx-a11y/no-autofocus */}
             <input
               id="new-ex-name"
               type="text"
@@ -728,6 +720,7 @@ export default function RoutineBuilder({
               autoFocus
               className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
             />
+            {/* eslint-enable jsx-a11y/no-autofocus */}
           </FormField>
           <FormField
             label="Grupo Muscular"
@@ -801,7 +794,7 @@ export default function RoutineBuilder({
                   key={user.id}
                   onClick={() => {
                     const next = new Set(selectedUsers)
-                    isSelected ? next.delete(key) : next.add(key)
+                    if (isSelected) { next.delete(key) } else { next.add(key) }
                     setSelectedUsers(next)
                   }}
                   className={`flex w-full items-center gap-4 rounded-xl border p-3 text-left transition-all ${

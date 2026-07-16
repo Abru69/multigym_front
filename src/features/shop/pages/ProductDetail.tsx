@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { fetchApi } from '@/lib/api'
-import type { Product, ResponseDTO } from '@/types'
+import type { Product, ProductDTO, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import { useCartStore } from '@/features/shop/store/cartStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -37,9 +37,9 @@ export default function ProductDetail() {
       if (!slug) return
       try {
         setProductLoading(true)
-        const response = await fetchApi<ResponseDTO<any>>(`/api/products?search=${slug}`)
+        const response = await fetchApi<ResponseDTO<ProductDTO[]>>(`/api/products?search=${slug}`)
         const products = response.dto?.data || []
-        const found = products.find((p: any) =>
+        const found = products.find((p) =>
           p.name.toLowerCase().replace(/ /g, '-') === slug
         )
         if (found) {
@@ -57,12 +57,12 @@ export default function ProductDetail() {
           })
         } else {
           const { mockProducts } = await import('@/data/products')
-          setProduct(mockProducts.find((p: any) => p.slug === slug) || null)
+          setProduct(mockProducts.find((p) => p.slug === slug) || null)
         }
       } catch {
         try {
           const { mockProducts } = await import('@/data/products')
-          setProduct(mockProducts.find((p: any) => p.slug === slug) || null)
+          setProduct(mockProducts.find((p) => p.slug === slug) || null)
         } catch {
           setProduct(null)
         }

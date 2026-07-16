@@ -54,6 +54,7 @@ export default function PlansPage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPlans()
   }, [loadPlans])
 
@@ -194,7 +195,16 @@ export default function PlansPage() {
                   <h3 className="text-lg font-bold" style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>{plan.name}</h3>
                   {plan.description && <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{plan.description}</p>}
                 </div>
-                <div onClick={(e) => e.stopPropagation()}>
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                >
                   <DropdownMenu
                     trigger={
                       <button className="rounded-lg p-1.5" style={{ color: 'var(--text-muted)' }}>

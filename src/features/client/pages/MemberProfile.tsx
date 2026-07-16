@@ -51,7 +51,7 @@ export default function MemberProfile() {
             getSubscriptionsByMember(user.id),
             getMyOrders(),
           ])
-          const subs = subRes.dto?.data ?? []
+          const subs = subRes.lista ?? subRes.dto?.data ?? []
           const active = subs.find((s) => s.status === 'ACTIVE') ?? subs[0] ?? null
           setSubscription(active)
           setOrders(ordersRes.dto?.data ?? [])
@@ -171,12 +171,13 @@ export default function MemberProfile() {
         </div>
         <div className="space-y-4 p-5">
           <div>
-            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+            <label htmlFor="profile-name" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
               Nombre completo
             </label>
             <div className="relative">
               <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
+                id="profile-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -185,12 +186,13 @@ export default function MemberProfile() {
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+            <label htmlFor="profile-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
               Correo electrónico
             </label>
             <div className="relative">
               <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
+                id="profile-email"
                 type="email"
                 value={email}
                 disabled
@@ -199,12 +201,13 @@ export default function MemberProfile() {
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+            <label htmlFor="profile-phone" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
               Teléfono
             </label>
             <div className="relative">
               <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
+                id="profile-phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}

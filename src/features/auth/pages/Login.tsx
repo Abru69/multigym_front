@@ -6,7 +6,7 @@ import { Eye, EyeOff, Loader2, Building2 } from 'lucide-react'
 import { getTenantFromSubdomain, getPlatformUrl } from '@/lib/tenant'
 import { resolveBranding } from '@/lib/tenantConfig'
 import { getAllowedPages } from '@/lib/permissions'
-import { getDefaultRoute } from '@/router/AdminGuard'
+import { getDefaultRoute } from '@/router/routes'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -32,7 +32,8 @@ export default function Login() {
       if (allowed.length > 0) {
         navigate(from || getDefaultRoute(user.role), { replace: true })
       } else {
-        window.location.href = from || '/'
+        // Cliente (sin páginas admin): ir al portal cliente sin hard-reload
+        navigate(from || '/app/rutinas', { replace: true })
       }
     }
   }, [isAuthenticated, navigate, location])

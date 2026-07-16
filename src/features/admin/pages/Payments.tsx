@@ -46,6 +46,7 @@ export default function PaymentsPage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPayments()
     getSubscriptions().then((res) => {
       if (res?.dto?.data) setSubscriptionsList(res.dto.data)

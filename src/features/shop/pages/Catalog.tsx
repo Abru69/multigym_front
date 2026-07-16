@@ -3,7 +3,7 @@ import { productCategories } from '@/data/products'
 import { getProducts } from '@/lib/api'
 import type { Product } from '@/types'
 import { ProductCard } from '@/components/molecules/ProductCard'
-import { Search, PackageX, X, SlidersHorizontal } from 'lucide-react'
+import { Search, PackageX, X } from 'lucide-react'
 
 export default function Catalog() {
   const [search, setSearch] = useState('')
@@ -12,6 +12,7 @@ export default function Catalog() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     getProducts()
       .then((response) => {

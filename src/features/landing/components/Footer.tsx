@@ -75,15 +75,15 @@ export function Footer() {
             © {new Date().getFullYear()} MultiGym. Todos los derechos reservados.
           </p>
           <div className="flex gap-6">
-            <a href="#" className="text-sm text-[var(--text-muted)] hover:text-[var(--accent)]">
+            <button type="button" className="text-sm text-[var(--text-muted)] hover:text-[var(--accent)]">
               Twitter
-            </a>
-            <a href="#" className="text-sm text-[var(--text-muted)] hover:text-[var(--accent)]">
+            </button>
+            <button type="button" className="text-sm text-[var(--text-muted)] hover:text-[var(--accent)]">
               LinkedIn
-            </a>
-            <a href="#" className="text-sm text-[var(--text-muted)] hover:text-[var(--accent)]">
+            </button>
+            <button type="button" className="text-sm text-[var(--text-muted)] hover:text-[var(--accent)]">
               GitHub
-            </a>
+            </button>
           </div>
         </div>
       </div>

@@ -15,7 +15,6 @@ import {
   Zap,
   Clock,
   RotateCcw,
-  X,
   Info,
 } from 'lucide-react'
 
@@ -492,6 +491,7 @@ export default function MyRoutines() {
 
   useEffect(() => {
     if (!localStorage.getItem('multigym-swipe-tip')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowSwipeTip(true)
       const t = setTimeout(() => {
         setShowSwipeTip(false)
@@ -513,7 +513,7 @@ export default function MyRoutines() {
   })
 
   const todayRoutine = currentRoutine?.days.find((d) => d.dayOfWeek === selectedDay)
-  const exercises = todayRoutine?.exercises ?? []
+  const exercises = useMemo(() => todayRoutine?.exercises ?? [], [todayRoutine?.exercises])
   const selectedDayData = DAYS.find((d) => d.key === selectedDay)
   const dayIndex = DAYS.findIndex((d) => d.key === selectedDay)
 
@@ -529,11 +529,6 @@ export default function MyRoutines() {
   const progress = totalSets > 0 ? (completedSetCount / totalSets) * 100 : 0
 
   const totalExercises = exercises.length
-  const completedExerciseCount = exercises.filter((ex) =>
-    Array.from({ length: ex.sets }).every((_, i) =>
-      completedSets.has(makeSetKey(selectedDay, ex.id, i))
-    )
-  ).length
 
   const estimatedMinutes = useMemo(() => {
     if (!exercises.length) return 0
@@ -545,10 +540,8 @@ export default function MyRoutines() {
     )
   }, [exercises])
 
-  const restQuote = useMemo(
-    () => REST_QUOTES[Math.floor(Math.random() * REST_QUOTES.length)],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedDay]
+  const [restQuote] = useState(
+    () => REST_QUOTES[Math.floor(Math.random() * REST_QUOTES.length)]
   )
 
   useEffect(() => {
@@ -592,7 +585,7 @@ export default function MyRoutines() {
 
     setCompletedSets((prev) => {
       const next = new Set(prev)
-      next.has(key) ? next.delete(key) : next.add(key)
+      if (next.has(key)) { next.delete(key) } else { next.add(key) }
       return next
     })
 

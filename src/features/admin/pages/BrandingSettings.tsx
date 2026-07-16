@@ -1,0 +1,232 @@
+import { useState, useEffect } from 'react'
+import { fetchApi } from '@/lib/api'
+import { useTenantSettingsStore, deriveColorPalette, isValidColor } from '@/features/admin/store/tenantSettingsStore'
+import { Palette, Save, Loader2, CheckCircle2 } from 'lucide-react'
+import type { TenantSettingDTO, ResponseDTO } from '@/types'
+import { useToastStore } from '@/components/ui/Toast'
+
+export default function BrandingSettings() {
+  const addToast = useToastStore((s) => s.addToast)
+  const { loadSettings } = useTenantSettingsStore()
+  const [brandColor, setBrandColor] = useState('#1976D2')
+  const [accentColor, setAccentColor] = useState('#FFC107')
+  const [isLoading, setIsLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings')
+        const settings = res.lista || []
+        const map = new Map(settings.map((s) => [s.key, s.value]))
+        if (map.get('brand_color')) setBrandColor(map.get('brand_color')!)
+        if (map.get('accent_color')) setAccentColor(map.get('accent_color')!)
+      } catch {
+        // use defaults
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const handleSave = async () => {
+    try {
+      setSaving(true)
+      setSaved(false)
+      await fetchApi('/api/tenant-settings', {
+        method: 'PUT',
+        body: JSON.stringify({
+          entries: {
+            brand_color: brandColor,
+            accent_color: accentColor,
+          },
+        }),
+      })
+      await loadSettings()
+      setSaved(true)
+      addToast('Colores de marca actualizados', 'success')
+      setTimeout(() => setSaved(false), 2000)
+    } catch {
+      addToast('Error al guardar colores', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const brandPalette = isValidColor(brandColor) ? deriveColorPalette(brandColor) : null
+  const accentPalette = isValidColor(accentColor) ? deriveColorPalette(accentColor) : null
+
+  if (isLoading) {
+    return (
+      <div className="flex h-80 items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+          <p className="text-xs text-[var(--text-muted)]">Cargando configuración...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-6 sm:py-8">
+      <div className="mb-6">
+        <h1 className="font-heading text-2xl font-black text-[var(--text-primary)]">
+          Colores de Marca
+        </h1>
+        <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+          Configura los colores principales de tu gimnasio. Se aplican en toda la plataforma.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {/* Brand Color */}
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
+          <div className="flex items-center gap-4 mb-4">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-xl transition-colors"
+              style={{ backgroundColor: `${brandColor}15`, color: brandColor }}
+            >
+              <Palette size={22} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-[var(--text-primary)]">Color Primario</p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Color principal de la marca (botones, acentos, headers)
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <input
+              type="color"
+              value={brandColor}
+              onChange={(e) => setBrandColor(e.target.value)}
+              className="h-12 w-12 cursor-pointer rounded-xl border-0 p-0"
+            />
+            <input
+              type="text"
+              value={brandColor}
+              onChange={(e) => setBrandColor(e.target.value)}
+              className="flex h-11 flex-1 rounded-xl px-4 py-2 text-sm font-mono transition-all duration-200 hover:border-[var(--border)] focus:ring-2 focus:outline-none"
+              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}
+              placeholder="#1976D2"
+            />
+          </div>
+
+          {/* Preview */}
+          {brandPalette && (
+            <div className="mt-4 flex items-center gap-2">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Preview:</span>
+              <div className="flex items-center gap-1.5">
+                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: brandColor }} title="Principal" />
+                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: brandPalette.hover }} title="Hover" />
+                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: brandPalette.light }} title="Light" />
+                <div className="h-6 w-6 rounded-md border border-[var(--border)]" style={{ backgroundColor: brandPalette.muted }} title="Muted" />
+                <div className="flex h-6 items-center rounded-md px-2 text-[10px] font-bold" style={{ backgroundColor: brandColor, color: brandPalette.text }}>
+                  Aa
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Accent Color */}
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
+          <div className="flex items-center gap-4 mb-4">
+            <div
+              className="flex h-12 w-12 items-center justify-center rounded-xl transition-colors"
+              style={{ backgroundColor: `${accentColor}15`, color: accentColor }}
+            >
+              <Palette size={22} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-[var(--text-primary)]">Color Secundario</p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Color de acento complementario (detalles, badges, highlights)
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <input
+              type="color"
+              value={accentColor}
+              onChange={(e) => setAccentColor(e.target.value)}
+              className="h-12 w-12 cursor-pointer rounded-xl border-0 p-0"
+            />
+            <input
+              type="text"
+              value={accentColor}
+              onChange={(e) => setAccentColor(e.target.value)}
+              className="flex h-11 flex-1 rounded-xl px-4 py-2 text-sm font-mono transition-all duration-200 hover:border-[var(--border)] focus:ring-2 focus:outline-none"
+              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}
+              placeholder="#FFC107"
+            />
+          </div>
+
+          {accentPalette && (
+            <div className="mt-4 flex items-center gap-2">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Preview:</span>
+              <div className="flex items-center gap-1.5">
+                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: accentColor }} title="Principal" />
+                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: accentPalette.hover }} title="Hover" />
+                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: accentPalette.light }} title="Light" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Live Preview Card */}
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] mb-3">Vista Previa</p>
+          <div className="space-y-3">
+            <button
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all"
+              style={{ backgroundColor: brandColor, color: brandPalette?.text || '#fff' }}
+            >
+              Botón Principal
+            </button>
+            <button
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all border-2"
+              style={{ borderColor: brandColor, color: brandColor }}
+            >
+              Botón Secundario
+            </button>
+            <div className="flex items-center gap-2">
+              <span
+                className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
+              >
+                Badge Secundario
+              </span>
+              <span
+                className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                style={{ backgroundColor: `${brandColor}20`, color: brandColor }}
+              >
+                Badge Primario
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {saving ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : saved ? (
+            <CheckCircle2 size={16} />
+          ) : (
+            <Save size={16} />
+          )}
+          {saving ? 'Guardando...' : saved ? 'Guardado' : 'Guardar Colores'}
+        </button>
+      </div>
+    </div>
+  )
+}

@@ -100,6 +100,18 @@ export const useAuthStore = create<AuthStore>()(
         return false
       },
     }),
-    { name: 'auth-storage' }
+    {
+      name: 'auth-storage',
+      onRehydrateStorage: () => (state) => {
+        // Si no hay token válido, invalidar la sesión rehidratada para
+        // evitar que los guards pasen con estado podrido de una sesión caducada.
+        if (state && (!state.token || state.token === 'fake-token')) {
+          state.user = null
+          state.token = null
+          state.tenantId = null
+          state.isAuthenticated = false
+        }
+      },
+    }
   )
 )

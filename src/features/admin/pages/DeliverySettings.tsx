@@ -3,7 +3,6 @@ import { fetchApi } from '@/lib/api'
 import type { TenantSettingDTO, ResponseDTO } from '@/types'
 import { useToastStore } from '@/components/ui/Toast'
 import {
-  Settings,
   Store,
   Truck,
   Save,
@@ -13,7 +12,7 @@ import {
 } from 'lucide-react'
 
 export default function DeliverySettings() {
-  const [settings, setSettings] = useState<TenantSettingDTO[]>([])
+  const [, setSettings] = useState<TenantSettingDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -22,29 +21,28 @@ export default function DeliverySettings() {
   const [pickupEnabled, setPickupEnabled] = useState(true)
   const [shippingEnabled, setShippingEnabled] = useState(true)
 
-  const loadSettings = async () => {
-    try {
-      setLoading(true)
-      const res = await fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings')
-      const list = res.lista || []
-      setSettings(list)
-
-      const pickup = list.find((s) => s.key === 'delivery_pickup_enabled')
-      const shipping = list.find((s) => s.key === 'delivery_shipping_enabled')
-
-      setPickupEnabled(pickup ? pickup.value === 'true' : true)
-      setShippingEnabled(shipping ? shipping.value === 'true' : true)
-    } catch (err) {
-      console.error('Failed to load settings:', err)
-      addToast('Error al cargar configuración', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        setLoading(true)
+        const res = await fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings')
+        const list = res.lista || []
+        setSettings(list)
+
+        const pickup = list.find((s) => s.key === 'delivery_pickup_enabled')
+        const shipping = list.find((s) => s.key === 'delivery_shipping_enabled')
+
+        setPickupEnabled(pickup ? pickup.value === 'true' : true)
+        setShippingEnabled(shipping ? shipping.value === 'true' : true)
+      } catch (err) {
+        console.error('Failed to load settings:', err)
+        addToast('Error al cargar configuración', 'error')
+      } finally {
+        setLoading(false)
+      }
+    }
     loadSettings()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = async () => {
     try {

@@ -507,3 +507,150 @@ export interface FoodItemRequest {
   carbs: number
   fats: number
 }
+
+// --- Check-In ---
+export interface CheckInDTO {
+  id: string
+  memberId: string
+  memberName?: string
+  checkInTime: string
+  checkOutTime?: string
+  durationMinutes?: number
+  checkInMethod: string
+  notes?: string
+}
+
+export interface CheckInRequest {
+  memberId: string
+  notes?: string
+}
+
+export interface CheckInStatsDTO {
+  today: { count: number; avgDuration: number }
+  thisWeek: { count: number; avgDuration: number }
+  thisMonth: { count: number; avgDuration: number }
+  peakHour: number
+}
+
+// --- Announcements ---
+export interface AnnouncementDTO {
+  id: string
+  title: string
+  description?: string
+  mediaType: 'IMAGE' | 'VIDEO' | 'TEXT'
+  mediaUrl?: string
+  linkUrl?: string
+  position: 'HERO' | 'SIDEBAR' | 'POPUP' | 'BANNER'
+  priority: number
+  isActive: boolean
+  startDate?: string
+  endDate?: string
+  viewCount: number
+  clickCount: number
+  createdBy?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface AnnouncementRequest {
+  title: string
+  description?: string
+  mediaType: 'IMAGE' | 'VIDEO' | 'TEXT'
+  mediaUrl?: string
+  linkUrl?: string
+  position: 'HERO' | 'SIDEBAR' | 'POPUP' | 'BANNER'
+  priority: number
+  isActive: boolean
+  startDate?: string
+  endDate?: string
+}
+
+// --- Reports ---
+export interface TenantDashboardDTO {
+  totalMembers: number
+  activeMembers: number
+  newMembersThisMonth: number
+  activeSubscriptions: number
+  expiringSubscriptions: number
+  monthlyRevenue: number
+  totalRevenue: number
+  todayCheckIns: number
+  currentOccupancy: number
+  peakHour: number
+  activeProducts: number
+  pendingOrders: number
+}
+
+export interface MemberReportDTO {
+  totalMembers: number
+  activeMembers: number
+  inactiveMembers: number
+  newThisMonth: number
+  monthlyTrend: Array<{ month: string; count: number }>
+}
+
+export interface SubscriptionReportDTO {
+  active: number
+  cancelled: number
+  expired: number
+  expiringIn7Days: number
+  mrr: number
+  monthlyTrend: Array<{ month: string; count: number }>
+}
+
+export interface CheckInReportDTO {
+  todayCheckIns: number
+  thisWeekCheckIns: number
+  thisMonthCheckIns: number
+  currentOccupancy: number
+  avgDurationMinutes: number
+  peakHour: number
+  dailyTrend: Array<{ day: string; count: number }>
+}
+
+export interface ProductReportDTO {
+  totalProducts: number
+  lowStockProducts: number
+  totalInventoryValue: number
+  topByRevenue: Array<{ name: string; value: number }>
+  topByQuantity: Array<{ name: string; value: number }>
+}
+
+export interface AnnouncementReportDTO {
+  totalAnnouncements: number
+  activeAnnouncements: number
+  totalViews: number
+  totalClicks: number
+  avgClickRate: number
+  topByViews: Array<{ title: string; views: number }>
+}
+
+export interface WorkoutReportDTO {
+  totalWorkouts: number
+  totalLogs: number
+  avgCaloriesBurned: number
+  avgDurationMinutes: number
+  activeNutritionPlans: number
+  workoutTrend: Array<{ month: string; count: number }>
+}
+
+// --- Platform Reports ---
+export interface PlatformDashboardDTO {
+  totalTenants: number
+  activeTenants: number
+  trialTenants: number
+  totalMRR: number
+  totalRevenue: number
+  totalMembers: number
+  totalActiveSubscriptions: number
+  todayCheckIns: number
+  monthlyTrend: Array<{ month: string; revenue: number; tenants: number }>
+}
+
+export interface TenantHealthDTO {
+  tenantId: string
+  name: string
+  status: string
+  memberCount: number
+  isTrial: boolean
+}

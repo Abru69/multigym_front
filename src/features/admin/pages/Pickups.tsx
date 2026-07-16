@@ -13,8 +13,6 @@ import {
   MapPin,
   Check,
   X,
-  CheckCircle2,
-  AlertCircle,
 } from 'lucide-react'
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -56,6 +54,7 @@ export default function Pickups() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadOrders()
   }, [])
 

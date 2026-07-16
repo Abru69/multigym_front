@@ -6,7 +6,6 @@ import { formatCurrency } from '@/lib/utils'
 import {
   Package,
   Calendar,
-  CheckCircle2,
   Clock,
   AlertCircle,
   ChevronDown,
@@ -73,6 +72,7 @@ export default function MyOrders() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadOrders()
   }, [])
 

@@ -6,7 +6,6 @@ import {
   Trash2,
   MoreVertical,
   Edit2,
-  ShieldCheck,
   ChevronRight,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -16,7 +15,6 @@ import { useToastStore } from '@/components/ui/Toast'
 import { DropdownMenu, DropdownItem, DropdownSeparator } from '@/components/ui/DropdownMenu'
 import type { ResponseDTO, UserDTO } from '@/types'
 import { ROLE_LABELS, ROLE_COLORS } from '@/lib/permissions'
-import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
 import { ConfirmDialog } from '../components/ConfirmDialog'
@@ -65,6 +63,7 @@ export default function UsersPage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadUsers()
   }, [loadUsers])
 
@@ -303,6 +302,14 @@ export default function UsersPage() {
             <div
               key={user.id}
               onClick={() => openEdit(user)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  openEdit(user)
+                }
+              }}
+              role="button"
+              tabIndex={0}
               className="group bg-[var(--card)] rounded-2xl p-5 transition-all duration-200 cursor-pointer"
               style={{
                 border: '1px solid var(--border)',
@@ -351,7 +358,16 @@ export default function UsersPage() {
                 </div>
 
                 {/* Dropdown */}
-                <div onClick={(e) => e.stopPropagation()}>
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                >
                   <DropdownMenu
                     trigger={
                       <button

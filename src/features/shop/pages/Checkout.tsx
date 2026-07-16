@@ -83,6 +83,13 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false)
   const [orderNumber, setOrderNumber] = useState('')
 
+  const [confettiOffsets] = useState(() =>
+    Array.from({ length: 6 }, () => ({
+      x: (Math.random() - 0.5) * 200,
+      y: (Math.random() - 0.5) * 200,
+    }))
+  )
+
   const [branches, setBranches] = useState<BranchDTO[]>([])
   const [deliveryMethods, setDeliveryMethods] = useState({ pickup: true, shipping: true })
   const [deliveryMethod, setDeliveryMethod] = useState<'PICKUP' | 'SHIPPING'>('PICKUP')
@@ -132,6 +139,7 @@ export default function Checkout() {
 
   useEffect(() => {
     if (branches.length > 0 && !selectedBranch) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedBranch(branches[0].id)
     }
   }, [branches, selectedBranch])
@@ -356,8 +364,9 @@ export default function Checkout() {
                   </h2>
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[var(--text-primary)]">Calle y Número</label>
+                      <label htmlFor="shipping-address" className="text-xs font-semibold text-[var(--text-primary)]">Calle y Número</label>
                       <input
+                        id="shipping-address"
                         required
                         type="text"
                         placeholder="Av. Principal 123"
@@ -368,8 +377,9 @@ export default function Checkout() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-[var(--text-primary)]">Código Postal</label>
+                        <label htmlFor="shipping-postal" className="text-xs font-semibold text-[var(--text-primary)]">Código Postal</label>
                         <input
+                          id="shipping-postal"
                           required
                           type="text"
                           placeholder="31000"
@@ -379,8 +389,9 @@ export default function Checkout() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-[var(--text-primary)]">Ciudad</label>
+                        <label htmlFor="shipping-city" className="text-xs font-semibold text-[var(--text-primary)]">Ciudad</label>
                         <input
+                          id="shipping-city"
                           required
                           type="text"
                           placeholder="Chihuahua"
@@ -504,8 +515,9 @@ export default function Checkout() {
 
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[var(--text-primary)]">Nombre en la Tarjeta</label>
+                      <label htmlFor="card-name" className="text-xs font-semibold text-[var(--text-primary)]">Nombre en la Tarjeta</label>
                       <input
+                        id="card-name"
                         required
                         type="text"
                         placeholder="Como aparece en la tarjeta"
@@ -513,8 +525,9 @@ export default function Checkout() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-[var(--text-primary)]">Número de Tarjeta</label>
+                      <label htmlFor="card-number" className="text-xs font-semibold text-[var(--text-primary)]">Número de Tarjeta</label>
                       <input
+                        id="card-number"
                         required
                         type="text"
                         maxLength={19}
@@ -524,8 +537,9 @@ export default function Checkout() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-[var(--text-primary)]">Vencimiento</label>
+                        <label htmlFor="card-expiry" className="text-xs font-semibold text-[var(--text-primary)]">Vencimiento</label>
                         <input
+                          id="card-expiry"
                           required
                           type="text"
                           maxLength={5}
@@ -534,8 +548,9 @@ export default function Checkout() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-[var(--text-primary)]">CVC</label>
+                        <label htmlFor="card-cvc" className="text-xs font-semibold text-[var(--text-primary)]">CVC</label>
                         <input
+                          id="card-cvc"
                           required
                           type="password"
                           maxLength={4}
@@ -594,8 +609,8 @@ export default function Checkout() {
                   animate={{
                     opacity: [0, 1, 0],
                     scale: [0, 1.5, 0],
-                    x: (Math.random() - 0.5) * 200,
-                    y: (Math.random() - 0.5) * 200,
+                    x: confettiOffsets[i].x,
+                    y: confettiOffsets[i].y,
                   }}
                   transition={{ delay: 0.3 + i * 0.1, duration: 0.8 }}
                   className="absolute left-1/2 top-1/2 h-2 w-2 rounded-full"

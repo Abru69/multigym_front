@@ -116,6 +116,7 @@ export default function PlatformLogin() {
             {/* Email */}
             <div>
               <label
+                htmlFor="platform-email"
                 className="mb-1.5 block text-xs font-semibold"
                 style={{ color: 'var(--text-secondary)' }}
               >
@@ -128,6 +129,7 @@ export default function PlatformLogin() {
                   style={{ color: 'var(--text-muted)' }}
                 />
                 <input
+                  id="platform-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -148,6 +150,7 @@ export default function PlatformLogin() {
             {/* Password */}
             <div>
               <label
+                htmlFor="platform-password"
                 className="mb-1.5 block text-xs font-semibold"
                 style={{ color: 'var(--text-secondary)' }}
               >
@@ -160,6 +163,7 @@ export default function PlatformLogin() {
                   style={{ color: 'var(--text-muted)' }}
                 />
                 <input
+                  id="platform-password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

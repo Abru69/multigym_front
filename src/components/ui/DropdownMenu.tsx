@@ -25,7 +25,19 @@ function DropdownMenu({ trigger, children, align = 'right', className }: Dropdow
 
   return (
     <div ref={menuRef} className="relative">
-      <div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setIsOpen(!isOpen)
+          }
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        {trigger}
+      </div>
       <AnimatePresence>
         {isOpen && (
           <motion.div

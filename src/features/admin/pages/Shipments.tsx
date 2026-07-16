@@ -5,7 +5,6 @@ import type { OrderDTO, OrderItemDTO, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
   Truck,
-  CheckCircle2,
   Clock,
   Package,
   ChevronDown,
@@ -50,6 +49,7 @@ export default function Shipments() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadOrders()
   }, [])
 

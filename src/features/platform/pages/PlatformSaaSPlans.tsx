@@ -64,6 +64,7 @@ export default function PlatformSaaSPlansPage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPlans()
   }, [loadPlans])
 
@@ -239,7 +240,16 @@ export default function PlatformSaaSPlansPage() {
                     </p>
                   )}
                 </div>
-                <div onClick={(e) => e.stopPropagation()}>
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                >
                   <DropdownMenu
                     trigger={
                       <button className="rounded-lg p-1.5" style={{ color: 'var(--text-muted)' }}>

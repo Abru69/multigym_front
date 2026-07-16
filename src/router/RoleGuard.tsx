@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { canAccessPage, getPageFromPath, type AdminPage } from '@/lib/permissions'
-import { getDefaultRoute } from './AdminGuard'
+import { getDefaultRoute } from './routes'
 import type { ReactNode } from 'react'
 
 interface RoleGuardProps {

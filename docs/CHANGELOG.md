@@ -8,6 +8,18 @@ Formato: [YYYY-MM-DD]
 
 ### Completado
 
+- **PWA (Progressive Web App) — Instalable + Offline**
+  - `vite-plugin-pwa` con Workbox para service worker automático
+  - Manifest: nombre, descripción, iconos, theme-color `#0a0a0a`, display standalone
+  - Iconos PWA generados desde `favicon.svg`: 192x192, 512x512, 512x512-maskable
+  - Workbox precache: todos los assets JS/CSS/HTML/fonts imágenes
+  - Runtime caching: Google Fonts (CacheFirst), API (NetworkFirst, timeout 10s)
+  - `index.html`: fix favicon `/vite.svg` → `/favicon.svg`, +apple-touch-icon, +theme-color, +apple-mobile-web-app-capable
+  - Auto-update: service worker se actualiza automáticamente en background
+  - **Desktop**: Botón "Instalar app" en barra de direcciones
+  - **Mobile**: "Agregar a pantalla de inicio" en iOS/Android
+  - **Offline**: La app carga y muestra contenido cacheado sin conexión
+
 - **Tenant Landing Page — Banners Promocionales**
   - Nuevo componente `TenantBanner.tsx` — banners promocionales debajo del hero
   - `TenantBranding.banners` array con imagen, título, subtítulo, link, botón, accentColor

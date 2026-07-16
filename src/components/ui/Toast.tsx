@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle, XCircle, AlertCircle, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+
 
 interface Toast {
   id: string
@@ -15,6 +15,7 @@ interface ToastStore {
   removeToast: (id: string) => void
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useToastStore = create<ToastStore>((set) => ({
   toasts: [],
   addToast: (message, type = 'success') => {

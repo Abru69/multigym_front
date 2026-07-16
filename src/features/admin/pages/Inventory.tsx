@@ -112,6 +112,7 @@ export default function Inventory() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadProducts()
   }, [loadProducts])
 
@@ -458,7 +459,14 @@ export default function Inventory() {
                   }
                 }}
                 onClick={() => fileInputRef.current?.click()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    fileInputRef.current?.click()
+                  }
+                }}
                 role="button"
+                tabIndex={0}
                 aria-label="Subir imagen del producto"
               >
                 {imagePreview ? (
