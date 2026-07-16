@@ -108,6 +108,8 @@ El backend `POST /api/members` requiere un `userId` existente. Para crear un mie
 - Docker solo para Postgres/Redis durante desarrollo local
 - Frontend env: `VITE_MP_PUBLIC_KEY=TEST-...`
 - Backend env: `MP_ACCESS_TOKEN=TEST-...`, `MP_PUBLIC_KEY=TEST-...`, `MP_NOTIFICATION_URL=https://connector-overlook-bucket.ngrok-free.dev/api/webhooks/mercadopago`
+- Ngrok static domain: use the project ngrok account and run `ngrok http --domain=connector-overlook-bucket.ngrok-free.dev 8080`; do not use random ngrok URLs for Mercado Pago tests.
+- Webhooks are backend-owned. Frontend only needs HTTPS local for Mercado Pago card tokenization.
 - Tenant de prueba: `gymx`
 - Usuario cliente: `client@gymx.com` / `admin123`
 - Tarjeta MLM aprobada: Visa `4075 5957 1648 3764`, CVV `123`, vencimiento `11/30`, titular `APRO`
