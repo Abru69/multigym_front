@@ -40,13 +40,17 @@ export function getTenantFromSubdomain(): string | null {
   return null
 }
 
-export function getTenantFromLocation(): string | null {
+export function getTenantFromUrl(): string | null {
   const subdomainTenant = getTenantFromSubdomain()
   if (subdomainTenant) return subdomainTenant
 
   const queryTenant = new URLSearchParams(window.location.search).get('tenant')?.trim()
   if (queryTenant) return queryTenant
 
+  return null
+}
+
+export function getStoredTenant(): string | null {
   const tenantData = localStorage.getItem('auth-storage')
   if (tenantData) {
     try {
@@ -59,6 +63,13 @@ export function getTenantFromLocation(): string | null {
   }
 
   return null
+}
+
+export function getTenantFromLocation(): string | null {
+  const urlTenant = getTenantFromUrl()
+  if (urlTenant) return urlTenant
+
+  return getStoredTenant()
 }
 
 export function isTenantContext(): boolean {

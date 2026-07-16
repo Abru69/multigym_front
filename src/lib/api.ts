@@ -63,7 +63,14 @@ export async function fetchApi<T>(
   options: RequestInit & { skipAuthRedirect?: boolean; skipAuthHeader?: boolean } = {}
 ): Promise<T> {
   const { skipAuthRedirect, skipAuthHeader, ...fetchOptions } = options
-  const isPlatformRequest = url.startsWith('/platform/') || url.startsWith('/platform-api/')
+  const isPlatformRequest =
+    url.startsWith('/platform/') ||
+    url.startsWith('/platform-api/') ||
+    url.startsWith('/api/tenants') ||
+    url.startsWith('/api/saas-plans') ||
+    url.startsWith('/api/platform-settings') ||
+    url.startsWith('/api/audits') ||
+    url.startsWith('/api/platform/')
   // Las llamadas de auth (login, reset) y de branding no deben disparar el
   // redirect destructivo de 401: el llamador maneja el error.
   const isAuthOrBrandingCall =
@@ -75,19 +82,19 @@ export async function fetchApi<T>(
   const suppressRedirect = skipAuthRedirect || isAuthOrBrandingCall
   let token = ''
 
-  const platformData = localStorage.getItem('platform-auth')
-  if (platformData) {
-    try {
-      const parsed = JSON.parse(platformData)
-      if (parsed.state && parsed.state.token) {
-        token = parsed.state.token
+  if (isPlatformRequest) {
+    const platformData = localStorage.getItem('platform-auth')
+    if (platformData) {
+      try {
+        const parsed = JSON.parse(platformData)
+        if (parsed.state && parsed.state.token) {
+          token = parsed.state.token
+        }
+      } catch (e) {
+        console.error('Failed to parse platform-auth', e)
       }
-    } catch (e) {
-      console.error('Failed to parse platform-auth', e)
     }
-  }
-
-  if (!token) {
+  } else {
     const tenantData = localStorage.getItem('auth-storage')
     if (tenantData) {
       try {

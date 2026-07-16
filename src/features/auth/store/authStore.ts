@@ -40,6 +40,7 @@ export const useAuthStore = create<AuthStore>()(
         try {
           const response = await fetchApi<ResponseDTO<LoginResponse>>('/api/auth/login', {
             method: 'POST',
+            headers: { 'X-Tenant-ID': tenantId },
             body: JSON.stringify({ email, password, tenantId }),
           })
 

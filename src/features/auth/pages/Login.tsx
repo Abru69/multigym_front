@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { Eye, EyeOff, Loader2, Building2 } from 'lucide-react'
-import { getTenantFromLocation, getPlatformUrl } from '@/lib/tenant'
+import { getTenantFromUrl, getPlatformUrl } from '@/lib/tenant'
 import { resolveBranding } from '@/lib/tenantConfig'
 import { getAllowedPages } from '@/lib/permissions'
 import { getDefaultRoute } from '@/router/routes'
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 
 export default function Login() {
-  const autoTenant = getTenantFromLocation()
+  const autoTenant = getTenantFromUrl()
   const branding = autoTenant ? resolveBranding(autoTenant) : null
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,12 +28,15 @@ export default function Login() {
       const user = useAuthStore.getState().user
       if (!user) return
       const from = (location.state as { from?: { pathname?: string } })?.from?.pathname
+      const safeFrom = from && !['/login', '/registro', '/forgot-password', '/reset-password', '/activate-account'].includes(from)
+        ? from
+        : undefined
       const allowed = getAllowedPages(user.role)
       if (allowed.length > 0) {
-        navigate(from || getDefaultRoute(user.role), { replace: true })
+        navigate(safeFrom || getDefaultRoute(user.role), { replace: true })
       } else {
         // Cliente (sin páginas admin): ir al portal cliente sin hard-reload
-        navigate(from || '/app/rutinas', { replace: true })
+        navigate(safeFrom || '/app/rutinas', { replace: true })
       }
     }
   }, [isAuthenticated, navigate, location])
