@@ -19,10 +19,10 @@ import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
 
 const positionLabels: Record<string, string> = {
-  HERO: 'Hero/Banner',
-  SIDEBAR: 'Sidebar',
-  POPUP: 'Popup',
+  HERO: 'Hero',
   BANNER: 'Banner',
+  POPUP: 'Popup',
+  FOOTER: 'Footer',
 }
 
 const mediaIcons: Record<string, typeof Image> = {
@@ -106,13 +106,26 @@ export default function AnnouncementsPage() {
       addToast('El título es requerido', 'error')
       return
     }
+    const payload: AnnouncementRequest = {
+      ...form,
+      title: form.title.trim(),
+      description: form.description?.trim() || undefined,
+      mediaUrl: form.mediaUrl?.trim() || undefined,
+      linkUrl: form.linkUrl?.trim() || undefined,
+      startDate: form.startDate ? `${form.startDate}T00:00:00` : undefined,
+      endDate: form.endDate ? `${form.endDate}T23:59:59` : undefined,
+    }
+    if ((payload.mediaType === 'IMAGE' || payload.mediaType === 'VIDEO') && !payload.mediaUrl) {
+      addToast('La URL del medio es requerida para imagen o video', 'error')
+      return
+    }
     try {
       setIsSaving(true)
       if (editingItem) {
-        await updateAnnouncement(editingItem.id, form)
+        await updateAnnouncement(editingItem.id, payload)
         addToast('Anuncio actualizado', 'success')
       } else {
-        await createAnnouncement(form)
+        await createAnnouncement(payload)
         addToast('Anuncio creado', 'success')
       }
       setShowModal(false)
@@ -309,10 +322,10 @@ export default function AnnouncementsPage() {
                 className="flex h-11 w-full appearance-none rounded-xl px-4 py-2 text-sm transition-all"
                 style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}
               >
-                <option value="HERO">Hero/Banner</option>
-                <option value="SIDEBAR">Sidebar</option>
-                <option value="POPUP">Popup</option>
+                <option value="HERO">Hero</option>
                 <option value="BANNER">Banner</option>
+                <option value="POPUP">Popup</option>
+                <option value="FOOTER">Footer</option>
               </select>
             </FormField>
           </div>

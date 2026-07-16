@@ -2,12 +2,16 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Building2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { getTenantFromLocation } from '@/lib/tenant'
 
 export default function Register() {
+  const tenantId = getTenantFromLocation()
+  const loginPath = tenantId ? `/login?tenant=${tenantId}` : '/login'
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
       <Link
-        to="/login"
+        to={loginPath}
         className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
       >
         <ArrowLeft size={14} />
@@ -51,7 +55,7 @@ export default function Register() {
           </div>
         </div>
 
-        <Link to="/login">
+        <Link to={loginPath}>
           <Button className="w-full gap-2 rounded-2xl py-3 text-sm font-bold">
             Ya tengo cuenta — Iniciar Sesión
           </Button>

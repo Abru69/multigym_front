@@ -28,7 +28,7 @@ export function TenantHero() {
     <section className="relative overflow-hidden bg-[var(--bg-primary)] py-20 lg:py-32">
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 via-transparent to-[var(--detail)]/5" />
 
-      {heroVideo && (
+      {heroVideo ? (
         <video
           autoPlay
           muted
@@ -39,7 +39,13 @@ export function TenantHero() {
         >
           <source src={heroVideo} type="video/mp4" />
         </video>
-      )}
+      ) : branding.heroImage ? (
+        <img
+          src={branding.heroImage}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-15"
+        />
+      ) : null}
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
@@ -96,8 +102,23 @@ export function TenantHero() {
           >
             <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-2 shadow-2xl">
               <div className="flex h-80 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[var(--accent)]/10 to-[var(--detail)]/10">
-                <div className="text-center">
-                  <div className="mb-2 text-6xl">💪</div>
+                {branding.heroImage && (
+                  <img
+                    src={branding.heroImage}
+                    alt={branding.name}
+                    className="absolute inset-2 h-[calc(100%-1rem)] w-[calc(100%-1rem)] rounded-xl object-cover opacity-40"
+                  />
+                )}
+                <div className="relative text-center">
+                  {branding.logoUrl ? (
+                    <img
+                      src={branding.logoUrl}
+                      alt={branding.name}
+                      className="mx-auto mb-4 h-20 w-20 rounded-2xl object-contain"
+                    />
+                  ) : (
+                    <div className="mb-2 text-6xl">💪</div>
+                  )}
                   <p className="text-lg font-semibold text-[var(--text-primary)]">
                     {branding.name}
                   </p>

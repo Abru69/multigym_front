@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
 import { Link, Outlet } from 'react-router-dom'
-import { Zap, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useRoutineStore } from '@/features/client/store/routineStore'
 import { getTenantUrl } from '@/lib/tenant'
+import { TenantLogo } from '@/components/tenant/TenantLogo'
 import { MemberSummary } from '../components/MemberSummary'
 import { MemberRoutines } from '../components/MemberRoutines'
 import { MemberShop } from '../components/MemberShop'
@@ -34,9 +35,7 @@ export default function TenantDashboard() {
       <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--header-bg)] backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent)] to-[var(--detail)] text-[var(--text-on-primary)]">
-              <Zap size={18} />
-            </div>
+            <TenantLogo />
             <span className="text-lg font-bold text-[var(--text-primary)]">{branding.name}</span>
           </Link>
 

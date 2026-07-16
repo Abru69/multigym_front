@@ -22,6 +22,7 @@ interface AuthStore {
   login: (email: string, password: string, tenantId: string) => Promise<boolean>
   logout: () => Promise<void>
   register: (name: string, email: string, password: string) => Promise<boolean>
+  setUserAvatar: (avatar: string) => void
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -61,6 +62,7 @@ export const useAuthStore = create<AuthStore>()(
               joinDate: new Date().toISOString(),
               isActive: userDTO?.isActive ?? true,
               memberId: userDTO?.memberDTO?.id || undefined,
+              avatar: userDTO?.avatarUrl || undefined,
             }
 
             set({
@@ -98,6 +100,12 @@ export const useAuthStore = create<AuthStore>()(
         await new Promise((r) => setTimeout(r, 500))
         set({ isLoading: false })
         return false
+      },
+
+      setUserAvatar: (avatar: string) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, avatar } : state.user,
+        }))
       },
     }),
     {

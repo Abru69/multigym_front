@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { Eye, EyeOff, Loader2, Building2 } from 'lucide-react'
-import { getTenantFromSubdomain, getPlatformUrl } from '@/lib/tenant'
+import { getTenantFromLocation, getPlatformUrl } from '@/lib/tenant'
 import { resolveBranding } from '@/lib/tenantConfig'
 import { getAllowedPages } from '@/lib/permissions'
 import { getDefaultRoute } from '@/router/routes'
@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 
 export default function Login() {
-  const autoTenant = getTenantFromSubdomain()
+  const autoTenant = getTenantFromLocation()
   const branding = autoTenant ? resolveBranding(autoTenant) : null
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -141,7 +141,7 @@ export default function Login() {
 
       <div className="mt-4 text-center">
         <Link
-          to="/forgot-password"
+          to={autoTenant ? `/forgot-password?tenant=${autoTenant}` : '/forgot-password'}
           className="text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
         >
           ¿Olvidaste tu contraseña?

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTheme } from '@/hooks/useTheme'
-import { getMyOrders, getSubscriptionsByMember } from '@/lib/api'
+import { getMyOrders, getSubscriptionsByMember, uploadMyAvatar } from '@/lib/api'
+import { getTenantUrl } from '@/lib/tenant'
 import type { OrderDTO, SubscriptionListItemDTO } from '@/types/api'
 import {
   User,
@@ -21,17 +22,21 @@ import {
   ChevronRight,
   LogOut,
   Crown,
+  Camera,
 } from 'lucide-react'
 
 export default function MemberProfile() {
-  const { user, logout } = useAuthStore()
+  const { user, logout, tenantId, setUserAvatar } = useAuthStore()
   const { isDark, toggleTheme } = useTheme()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [name, setName] = useState(user?.name ?? '')
   const [phone, setPhone] = useState(user?.phone ?? '')
   const [email] = useState(user?.email ?? '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
 
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -71,6 +76,26 @@ export default function MemberProfile() {
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
+  }
+
+  const handleAvatarChange = async (file?: File) => {
+    if (!file) return
+    setAvatarUploading(true)
+    setAvatarError(null)
+    try {
+      const response = await uploadMyAvatar(file)
+      const avatar = response.dto?.avatarUrl
+      if (avatar) {
+        setUserAvatar(avatar)
+      }
+    } catch (error) {
+      setAvatarError(error instanceof Error ? error.message : 'No se pudo actualizar el avatar')
+    } finally {
+      setAvatarUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
   }
 
   const handleChangePassword = async () => {
@@ -113,6 +138,22 @@ export default function MemberProfile() {
               initials
             )}
           </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            onChange={(event) => handleAvatarChange(event.target.files?.[0])}
+          />
+          <button
+            type="button"
+            disabled={avatarUploading}
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute bottom-0 left-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--bg-primary)] bg-[var(--surface)] text-[var(--text-primary)] shadow-sm transition-all hover:bg-[var(--surface-hover)] disabled:opacity-60"
+            aria-label="Cambiar avatar"
+          >
+            <Camera size={15} />
+          </button>
           {subscription?.status === 'ACTIVE' && (
             <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)] border-2 border-[var(--bg-primary)]">
               <Crown size={14} className="text-[var(--accent-text)]" />
@@ -123,6 +164,8 @@ export default function MemberProfile() {
           {user?.name ?? 'Usuario'}
         </h1>
         <p className="text-sm text-[var(--text-muted)]">{user?.email}</p>
+        {avatarUploading && <p className="mt-2 text-xs font-bold text-[var(--accent)]">Subiendo avatar...</p>}
+        {avatarError && <p className="mt-2 text-xs font-bold text-red-500">{avatarError}</p>}
         <div className="mt-3 flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-[var(--text-secondary)]">
             <Calendar size={12} />
@@ -363,9 +406,9 @@ export default function MemberProfile() {
           </button>
           <button
             onClick={async () => {
+              const currentTenantId = tenantId || user?.tenantId
               await logout()
-              const tid = window.location.pathname.match(/^\/([^/]+)/)?.[1]
-              window.location.href = tid ? `/${tid}/login` : '/'
+              window.location.href = currentTenantId ? getTenantUrl(currentTenantId) : '/'
             }}
             className="flex w-full items-center gap-3 px-5 py-4 text-red-400 transition-colors hover:bg-red-500/10"
           >

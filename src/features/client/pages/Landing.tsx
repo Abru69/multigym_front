@@ -17,6 +17,7 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 import { getTenantUrl } from '@/lib/tenant'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { getAllowedPages } from '@/lib/permissions'
+import { TenantLogo } from '@/components/tenant/TenantLogo'
 import SaaSLanding from './SaaSLanding'
 
 const features = [
@@ -90,9 +91,7 @@ export default function Landing() {
       <nav className="fixed top-0 right-0 left-0 z-50 mx-auto w-full border-b border-[var(--border)] bg-[var(--card)]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="bg-[var(--accent)] text-[var(--accent-text)] flex h-11 w-11 items-center justify-center rounded-xl text-sm font-black shadow-md shadow-[var(--accent)]/20">
-              {branding.logoAbbr}
-            </div>
+            <TenantLogo className="h-11 w-11 shadow-md shadow-[var(--accent)]/20" />
             <span className="font-heading text-xl font-black tracking-tight text-[var(--text-primary)]">
               {branding.name.toUpperCase()}
             </span>
@@ -491,9 +490,7 @@ export default function Landing() {
       <footer className="border-t border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 py-10 sm:flex-row">
           <div className="flex items-center gap-3">
-            <div className="bg-[var(--accent)] text-[var(--accent-text)] flex h-9 w-9 items-center justify-center rounded-lg text-xs font-black">
-              {branding.logoAbbr}
-            </div>
+            <TenantLogo className="rounded-lg" />
             <span className="font-heading text-sm font-bold tracking-tight text-[var(--text-primary)]">
               {branding.name.toUpperCase()}
             </span>

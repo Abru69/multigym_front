@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { fetchApi } from '@/lib/api'
-import type { OrderDTO, OrderItemDTO, ResponseDTO } from '@/types'
+import type { OrderDTO, OrderItemDTO, PaginatedResult, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
   Package,
@@ -36,6 +36,33 @@ const paymentIcons: Record<string, string> = {
   TRANSFER: '🏦',
 }
 
+const paymentStatusConfig: Record<string, { label: string; color: string }> = {
+  COMPLETED: { label: 'Pagado', color: 'var(--success, #22c55e)' },
+  PENDING: { label: 'Pendiente', color: 'var(--warning, #f59e0b)' },
+  FAILED: { label: 'Fallido', color: 'var(--error, #ef4444)' },
+  REFUNDED: { label: 'Reembolsado', color: 'var(--info, #3b82f6)' },
+  REFUND_FAILED: { label: 'Devolución en revisión', color: 'var(--warning, #f59e0b)' },
+}
+
+type OrderListResponse = PaginatedResult<OrderDTO> | { data?: OrderDTO[]; content?: OrderDTO[] } | OrderDTO[]
+
+function extractOrders(res: ResponseDTO<OrderListResponse>) {
+  const dto = res.dto
+  if (Array.isArray(dto)) return dto
+  if (Array.isArray(dto?.data)) return dto.data
+  if (dto && 'content' in dto && Array.isArray(dto.content)) return dto.content
+  if (Array.isArray(res.lista)) return res.lista as OrderDTO[]
+  return []
+}
+
+function getPaymentStatus(status?: string) {
+  return paymentStatusConfig[(status || 'PENDING').toUpperCase()] || paymentStatusConfig.PENDING
+}
+
+function normalizePaymentStatus(status?: string) {
+  return (status || 'PENDING').toUpperCase()
+}
+
 function formatDate(dateStr?: string) {
   if (!dateStr) return '—'
   const d = new Date(dateStr)
@@ -62,8 +89,8 @@ export default function MyOrders() {
     try {
       setLoading(true)
       setError('')
-      const res = await fetchApi<ResponseDTO<{ data: OrderDTO[] }>>('/api/orders/my')
-      setOrders(res.dto?.data || [])
+      const res = await fetchApi<ResponseDTO<OrderListResponse>>('/api/orders/my')
+      setOrders(extractOrders(res))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar órdenes')
     } finally {
@@ -255,6 +282,8 @@ export default function MyOrders() {
       <div className="space-y-3">
         {sortedOrders.map((order, i) => {
           const status = statusConfig[order.status] || statusConfig.PENDING
+          const paymentStatus = getPaymentStatus(order.paymentStatus)
+          const orderPaymentStatus = normalizePaymentStatus(order.paymentStatus)
           const items = (order as OrderDTO & { items?: OrderItemDTO[] }).items || []
           const isExpanded = expandedId === order.id
 
@@ -434,20 +463,8 @@ export default function MyOrders() {
                           <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
                             Estado
                           </p>
-                          <p
-                            className="mt-1 text-xs font-bold"
-                            style={{
-                              color: order.paymentStatus === 'COMPLETED'
-                                ? 'var(--success, #22c55e)'
-                                : 'var(--warning, #f59e0b)',
-                            }}
-                          >
-                            {order.paymentStatus === 'COMPLETED' ? 'Pagado' :
-                             order.paymentStatus === 'PENDING' ? 'Pendiente' :
-                             order.paymentStatus === 'FAILED' ? 'Fallido' :
-                             order.paymentStatus === 'REFUNDED' ? 'Reembolsado' :
-                             order.paymentStatus === 'REFUND_FAILED' ? 'Devolución en revisión' :
-                             order.paymentStatus || 'Pendiente'}
+                          <p className="mt-1 text-xs font-bold" style={{ color: paymentStatus.color }}>
+                            {paymentStatus.label}
                           </p>
                         </div>
                         <div className="rounded-xl bg-[var(--surface)] px-3 py-2">
@@ -468,12 +485,38 @@ export default function MyOrders() {
                             </p>
                           </div>
                         )}
+                        {order.refundReference && (
+                          <div className="rounded-xl bg-[var(--surface)] px-3 py-2">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                              Ref. devolución
+                            </p>
+                            <p className="mt-1 truncate text-xs font-mono font-bold text-[var(--text-primary)]">
+                              {order.refundReference.slice(0, 16)}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                      {order.paymentStatus === 'REFUND_FAILED' && (
+                      {orderPaymentStatus === 'REFUND_FAILED' && (
                         <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
                           <p className="text-xs font-bold text-amber-700">Devolución en revisión</p>
                           <p className="mt-1 text-[11px] text-amber-600">
                             El equipo está revisando tu devolución manualmente.
+                          </p>
+                        </div>
+                      )}
+                      {orderPaymentStatus === 'REFUNDED' && order.refundedAt && (
+                        <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5">
+                          <p className="text-xs font-bold text-blue-700">Devolución completada</p>
+                          <p className="mt-1 text-[11px] text-blue-600">
+                            {formatDate(order.refundedAt)} {formatTime(order.refundedAt)}
+                          </p>
+                        </div>
+                      )}
+                      {order.status === 'CANCELLED' && order.cancelledAt && (
+                        <div className="mt-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5">
+                          <p className="text-xs font-bold text-[var(--text-primary)]">Orden cancelada</p>
+                          <p className="mt-1 text-[11px] text-[var(--text-secondary)]">
+                            {formatDate(order.cancelledAt)} {formatTime(order.cancelledAt)}
                           </p>
                         </div>
                       )}

@@ -2,6 +2,7 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 import { getTenantUrl } from '@/lib/tenant'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { DashboardLayout, type NavItem } from '@/components/layout/DashboardLayout'
+import { TenantLogo } from '@/components/tenant/TenantLogo'
 import { LayoutDashboard, Package, Users, Dumbbell, CreditCard, Calendar, DollarSign, Store, Truck, Settings, Utensils, ClipboardList, Megaphone, BarChart3, Building2, Palette } from 'lucide-react'
 import { canAccessPage, type AdminPage } from '@/lib/permissions'
 import { InstallBanner } from '@/components/ui/InstallBanner'
@@ -49,9 +50,7 @@ export function AdminLayout() {
       <DashboardLayout
         navItems={navItems}
         logo={
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent)] text-sm font-black text-[var(--accent-text)] shadow-sm">
-            {branding.logoAbbr}
-          </div>
+          <TenantLogo className="rounded-lg shadow-sm" />
         }
         title={branding.name}
         subtitle="Admin Panel"

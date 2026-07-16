@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react'
-import { fetchApi } from '@/lib/api'
+import { fetchApi, uploadTenantLogo } from '@/lib/api'
 import { useTenantSettingsStore, deriveColorPalette, isValidColor } from '@/features/admin/store/tenantSettingsStore'
-import { Palette, Save, Loader2, CheckCircle2 } from 'lucide-react'
+import { getTenantFromLocation } from '@/lib/tenant'
+import { Image, Palette, Save, Loader2, CheckCircle2, Upload } from 'lucide-react'
 import type { TenantSettingDTO, ResponseDTO } from '@/types'
 import { useToastStore } from '@/components/ui/Toast'
 
 export default function BrandingSettings() {
   const addToast = useToastStore((s) => s.addToast)
-  const { loadSettings } = useTenantSettingsStore()
+  const { colors, setBrandingColors, setLogoUrl } = useTenantSettingsStore()
   const [brandColor, setBrandColor] = useState('#1976D2')
   const [accentColor, setAccentColor] = useState('#FFC107')
+  const [uploadedLogoUrl, setUploadedLogoUrl] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
@@ -31,6 +34,23 @@ export default function BrandingSettings() {
     load()
   }, [])
 
+  const handleLogoUpload = async (file?: File) => {
+    if (!file) return
+    try {
+      setUploadingLogo(true)
+      const res = await uploadTenantLogo(file)
+      const nextLogoUrl = res.dto?.logoUrl
+      if (!nextLogoUrl) throw new Error('Logo URL missing')
+      setUploadedLogoUrl(nextLogoUrl)
+      setLogoUrl(nextLogoUrl, getTenantFromLocation())
+      addToast('Logo actualizado', 'success')
+    } catch {
+      addToast('Error al subir logo', 'error')
+    } finally {
+      setUploadingLogo(false)
+    }
+  }
+
   const handleSave = async () => {
     try {
       setSaving(true)
@@ -44,7 +64,7 @@ export default function BrandingSettings() {
           },
         }),
       })
-      await loadSettings()
+      setBrandingColors(brandColor, accentColor, getTenantFromLocation())
       setSaved(true)
       addToast('Colores de marca actualizados', 'success')
       setTimeout(() => setSaved(false), 2000)
@@ -57,6 +77,7 @@ export default function BrandingSettings() {
 
   const brandPalette = isValidColor(brandColor) ? deriveColorPalette(brandColor) : null
   const accentPalette = isValidColor(accentColor) ? deriveColorPalette(accentColor) : null
+  const logoUrl = uploadedLogoUrl || colors.logoUrl || ''
 
   if (isLoading) {
     return (
@@ -81,6 +102,40 @@ export default function BrandingSettings() {
       </div>
 
       <div className="space-y-4">
+        {/* Logo */}
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
+          <div className="mb-4 flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Logo del gimnasio" className="h-full w-full object-contain" />
+              ) : (
+                <Image size={22} className="text-[var(--accent)]" />
+              )}
+            </div>
+            <div>
+              <p className="text-sm font-bold text-[var(--text-primary)]">Logo del Gimnasio</p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Se muestra en el home, login, panel admin y portal cliente.
+              </p>
+            </div>
+          </div>
+
+          <label className="flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] text-sm font-bold text-[var(--text-primary)] transition hover:bg-[var(--surface-hover)]">
+            {uploadingLogo ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+            {uploadingLogo ? 'Subiendo logo...' : 'Subir Logo'}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploadingLogo}
+              onChange={(e) => {
+                void handleLogoUpload(e.target.files?.[0])
+                e.target.value = ''
+              }}
+            />
+          </label>
+        </div>
+
         {/* Brand Color */}
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
           <div className="flex items-center gap-4 mb-4">

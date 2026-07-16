@@ -22,9 +22,18 @@ function formatTime(dateStr?: string) {
   return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
 }
 
+const paymentStatusLabels: Record<string, string> = {
+  COMPLETED: 'Pagado',
+  PENDING: 'Pendiente',
+  FAILED: 'Fallido',
+  REFUNDED: 'Reembolsado',
+  REFUND_FAILED: 'Devolución en revisión',
+}
+
 export function PickupVoucher({ isOpen, onClose, order }: PickupVoucherProps) {
   const items = (order as OrderDTO & { items?: OrderItemDTO[] }).items || []
   const orderShortId = order.id?.slice(0, 8).toUpperCase() || ''
+  const paymentStatus = paymentStatusLabels[(order.paymentStatus || 'PENDING').toUpperCase()] || 'Pendiente'
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="sm" showClose={true}>
@@ -121,7 +130,7 @@ export function PickupVoucher({ isOpen, onClose, order }: PickupVoucherProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
               <CreditCard size={12} />
-              <span className="text-xs">{order.paymentMethod?.replace('_', ' ') || 'N/A'}</span>
+              <span className="text-xs">{order.paymentMethod?.replace('_', ' ') || 'N/A'} · {paymentStatus}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Hash size={10} className="text-[var(--text-muted)]" />
@@ -130,6 +139,21 @@ export function PickupVoucher({ isOpen, onClose, order }: PickupVoucherProps) {
               </span>
             </div>
           </div>
+          {order.refundReference && (
+            <div className="mt-2 border-t border-[var(--border)] pt-2">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+                Referencia de devolución
+              </p>
+              <p className="mt-0.5 truncate text-[10px] font-mono text-[var(--text-muted)]">
+                {order.refundReference.slice(0, 16)}
+              </p>
+              {order.refundedAt && (
+                <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">
+                  {formatDate(order.refundedAt)} {formatTime(order.refundedAt)}
+                </p>
+              )}
+            </div>
+          )}
           <div className="mt-2 flex items-center justify-between border-t border-[var(--border)] pt-2">
             <span className="text-sm font-bold text-[var(--text-primary)]">Total</span>
             <span className="font-heading text-lg font-black text-[var(--text-primary)]">
@@ -139,8 +163,8 @@ export function PickupVoucher({ isOpen, onClose, order }: PickupVoucherProps) {
         </div>
 
         {/* Instructions */}
-        <div className="w-full rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-center">
-          <p className="text-xs font-semibold text-blue-700">
+        <div className="w-full rounded-xl border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-4 py-3 text-center">
+          <p className="text-xs font-semibold text-[var(--accent)]">
             Presenta este comprobante al personal de la sucursal para recoger tu pedido.
           </p>
         </div>

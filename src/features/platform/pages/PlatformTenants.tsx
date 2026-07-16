@@ -7,6 +7,7 @@ import {
   Building2,
   MoreVertical,
   CheckCircle,
+  Clock,
   PauseCircle,
   Loader2,
 } from 'lucide-react'
@@ -21,6 +22,7 @@ import type { TenantRequestDTO } from '@/types'
 const statusConfig = {
   ACTIVE: { label: 'Activo', color: 'var(--success)', icon: CheckCircle },
   INACTIVE: { label: 'Inactivo', color: 'var(--danger)', icon: PauseCircle },
+  TRIAL_EXPIRED: { label: 'Trial expirado', color: 'var(--warning)', icon: Clock },
 }
 
 const planColors: Record<string, string> = {
@@ -155,6 +157,12 @@ export default function PlatformTenants() {
       count: tenants.filter((t) => t.status === 'INACTIVE').length,
       color: 'var(--danger)',
     },
+    {
+      label: 'Trial expirado',
+      filterValue: 'TRIAL_EXPIRED',
+      count: tenants.filter((t) => t.status === 'TRIAL_EXPIRED').length,
+      color: 'var(--warning)',
+    },
   ]
 
   if (isLoading && tenants.length === 0) return <LoadingState text="Cargando gimnasios..." />
@@ -227,7 +235,7 @@ export default function PlatformTenants() {
           />
         </div>
         <div className="flex gap-1">
-          {['ALL', 'ACTIVE', 'INACTIVE'].map((f) => (
+          {['ALL', 'ACTIVE', 'INACTIVE', 'TRIAL_EXPIRED'].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -238,7 +246,7 @@ export default function PlatformTenants() {
                 border: filter === f ? '1px solid var(--accent)' : '1px solid var(--border)',
               }}
             >
-              {f === 'ALL' ? 'Todos' : f === 'ACTIVE' ? 'Activos' : 'Inactivos'}
+              {f === 'ALL' ? 'Todos' : f === 'ACTIVE' ? 'Activos' : f === 'INACTIVE' ? 'Inactivos' : 'Trial expirado'}
             </button>
           ))}
         </div>

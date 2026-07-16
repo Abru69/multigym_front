@@ -13,6 +13,8 @@ export interface TenantBranding {
   name: string
   /** Short abbreviation for the logo badge (2-3 chars) */
   logoAbbr: string
+  /** Optional uploaded logo image */
+  logoUrl?: string
   /** Tagline shown below the name in auth screens */
   tagline: string
 

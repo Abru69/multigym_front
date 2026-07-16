@@ -5,9 +5,9 @@ import { useTenantBranding } from '@/hooks/useTenantBranding'
 
 const stats = [
   { label: 'Rutinas Activas', value: '2', icon: Dumbbell, color: 'var(--accent)' },
-  { label: 'Calorías esta Semana', value: '1,850', icon: Flame, color: '#f97316' },
-  { label: 'Progreso Mensual', value: '+12%', icon: TrendingUp, color: '#22c55e' },
-  { label: 'Horas Entrenadas', value: '8.5', icon: Clock, color: '#8b5cf6' },
+  { label: 'Calorías esta Semana', value: '1,850', icon: Flame, color: 'var(--warning)' },
+  { label: 'Progreso Mensual', value: '+12%', icon: TrendingUp, color: 'var(--success)' },
+  { label: 'Horas Entrenadas', value: '8.5', icon: Clock, color: 'var(--detail)' },
 ]
 
 const recentActivity = [

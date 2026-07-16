@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
+import { TenantLogo } from '@/components/tenant/TenantLogo'
 
 export function AuthLayout() {
   const { branding } = useTenantBranding()
@@ -29,9 +30,7 @@ export function AuthLayout() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="mb-8 flex items-center justify-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent)] text-lg font-black text-[var(--accent-text)]">
-              {branding.logoAbbr}
-            </div>
+            <TenantLogo size="lg" />
             <span className="text-xl font-black tracking-tight text-[var(--text-primary)]">
               {branding.name || 'MULTIGYM'}
             </span>

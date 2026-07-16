@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, ArrowLeft, Loader2, CheckCircle, Building2 } from 'lucide-react'
-import { getTenantFromSubdomain } from '@/lib/tenant'
+import { getTenantFromLocation } from '@/lib/tenant'
 import { resolveBranding } from '@/lib/tenantConfig'
 import { fetchApi } from '@/lib/api'
 import type { ResponseDTO } from '@/types'
@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 
 export default function ForgotPassword() {
-  const autoTenant = getTenantFromSubdomain()
+  const autoTenant = getTenantFromLocation()
   const branding = autoTenant ? resolveBranding(autoTenant) : null
   const [email, setEmail] = useState('')
   const [tenantId, setTenantId] = useState(autoTenant || '')
@@ -59,7 +59,7 @@ export default function ForgotPassword() {
           , recibirás un enlace para restablecer tu contraseña.
         </p>
         <Link
-          to="/login"
+          to={autoTenant ? `/login?tenant=${autoTenant}` : '/login'}
           className="inline-flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
         >
           <ArrowLeft size={14} /> Volver al inicio de sesión
@@ -71,7 +71,7 @@ export default function ForgotPassword() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
       <Link
-        to="/login"
+        to={autoTenant ? `/login?tenant=${autoTenant}` : '/login'}
         className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
       >
         <ArrowLeft size={14} /> Volver

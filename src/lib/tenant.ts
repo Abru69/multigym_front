@@ -40,8 +40,29 @@ export function getTenantFromSubdomain(): string | null {
   return null
 }
 
+export function getTenantFromLocation(): string | null {
+  const subdomainTenant = getTenantFromSubdomain()
+  if (subdomainTenant) return subdomainTenant
+
+  const queryTenant = new URLSearchParams(window.location.search).get('tenant')?.trim()
+  if (queryTenant) return queryTenant
+
+  const tenantData = localStorage.getItem('auth-storage')
+  if (tenantData) {
+    try {
+      const parsed = JSON.parse(tenantData)
+      const storedTenant = parsed?.state?.tenantId?.trim()
+      if (storedTenant) return storedTenant
+    } catch {
+      // ignore invalid persisted auth state
+    }
+  }
+
+  return null
+}
+
 export function isTenantContext(): boolean {
-  return getTenantFromSubdomain() !== null
+  return getTenantFromLocation() !== null
 }
 
 function getBaseDomain(): string {

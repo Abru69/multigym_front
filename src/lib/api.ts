@@ -1,10 +1,14 @@
-import { getTenantFromSubdomain } from './tenant'
+import { getTenantFromLocation } from './tenant'
 import type {
   ResponseDTO,
   ProductDTO,
   ExerciseDTO,
   WorkoutDTO,
   TenantDTO,
+  TenantPaymentDTO,
+  TenantRenewalInfoDTO,
+  TenantRenewalPaymentRequest,
+  TenantRenewalResultDTO,
   TenantSummaryDTO,
   SaasPlanDTO,
   TenantRequestDTO,
@@ -29,6 +33,7 @@ import type {
   SubscriptionPlanChangeRequest,
   OrderRequest,
   OrderStatusRequest,
+  ManualRefundRequest,
   WorkoutRequest,
   HealthDTO,
   ReadinessDTO,
@@ -55,14 +60,16 @@ import type {
 
 export async function fetchApi<T>(
   url: string,
-  options: RequestInit & { skipAuthRedirect?: boolean } = {}
+  options: RequestInit & { skipAuthRedirect?: boolean; skipAuthHeader?: boolean } = {}
 ): Promise<T> {
-  const { skipAuthRedirect, ...fetchOptions } = options
+  const { skipAuthRedirect, skipAuthHeader, ...fetchOptions } = options
   const isPlatformRequest = url.startsWith('/platform/') || url.startsWith('/platform-api/')
   // Las llamadas de auth (login, reset) y de branding no deben disparar el
   // redirect destructivo de 401: el llamador maneja el error.
   const isAuthOrBrandingCall =
     url.startsWith('/api/auth/') ||
+    url.startsWith('/api/public/tenant-branding') ||
+    url.startsWith('/api/announcements/active') ||
     url.startsWith('/api/tenant-settings') ||
     url.startsWith('/platform/auth/')
   const suppressRedirect = skipAuthRedirect || isAuthOrBrandingCall
@@ -95,27 +102,16 @@ export async function fetchApi<T>(
   }
 
   const headers = new Headers(options.headers)
-  headers.set('Content-Type', 'application/json')
+  if (!(fetchOptions.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json')
+  }
 
-  if (token) {
+  if (token && !skipAuthHeader) {
     headers.set('Authorization', `Bearer ${token}`)
   }
 
   if (!isPlatformRequest) {
-    let tenantId = getTenantFromSubdomain()
-    if (!tenantId) {
-      const tenantData = localStorage.getItem('auth-storage')
-      if (tenantData) {
-        try {
-          const parsed = JSON.parse(tenantData)
-          if (parsed.state && parsed.state.tenantId) {
-            tenantId = parsed.state.tenantId
-          }
-        } catch {
-          // ignore
-        }
-      }
-    }
+    const tenantId = getTenantFromLocation()
     if (tenantId && !headers.has('X-Tenant-ID')) {
       headers.set('X-Tenant-ID', tenantId)
     }
@@ -450,6 +446,24 @@ export const updateTenantSettings = (entries: Record<string, string>) =>
     body: JSON.stringify({ entries }),
   })
 
+export const uploadTenantLogo = (file: File) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return fetchApi<ResponseDTO<{ logoUrl: string }>>('/api/tenant/logo', {
+    method: 'PATCH',
+    body: formData,
+  })
+}
+
+export const uploadMyAvatar = (file: File) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return fetchApi<ResponseDTO<UserDTO>>('/api/tenant/users/me/avatar', {
+    method: 'PATCH',
+    body: formData,
+  })
+}
+
 // --- Orders ---
 export const markOrderReady = (orderId: string) =>
   fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${orderId}/ready`, {
@@ -471,7 +485,7 @@ export const retryOrderRefund = (orderId: string) =>
     method: 'PATCH',
   })
 
-export const markOrderRefunded = (orderId: string, data: { refundReference?: string; note?: string }) =>
+export const markOrderRefunded = (orderId: string, data: ManualRefundRequest = {}) =>
   fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${orderId}/refund/mark-refunded`, {
     method: 'PATCH',
     body: JSON.stringify(data),
@@ -605,6 +619,17 @@ export const getTenantById = (tenantId: string) =>
   fetchApi<ResponseDTO<TenantDTO>>(`/api/tenants/${tenantId}`)
 export const getExpiredTenants = () =>
   fetchApi<ResponseDTO<TenantDTO[]>>('/api/tenants/expired')
+export const getTenantRenewalInfo = (tenantId: string) =>
+  fetchApi<ResponseDTO<TenantRenewalInfoDTO>>(`/api/public/tenants/${tenantId}/renewal-info`, { skipAuthRedirect: true })
+export const getTenantRenewalPayments = (tenantId: string) =>
+  fetchApi<ResponseDTO<TenantPaymentDTO[]>>(`/api/tenants/${tenantId}/renewal/payments`)
+export const simulateTenantRenewalPayment = (tenantId: string) =>
+  fetchApi<ResponseDTO<TenantRenewalResultDTO>>(`/api/tenants/${tenantId}/renewal/simulate-payment`, { method: 'POST' })
+export const processTenantRenewalMercadoPagoPayment = (tenantId: string, data: TenantRenewalPaymentRequest) =>
+  fetchApi<ResponseDTO<TenantRenewalResultDTO>>(`/api/tenants/${tenantId}/renewal/mercadopago-payment`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
 
 // --- Branches (detail) ---
 export const getBranchById = (id: string) =>
@@ -706,9 +731,9 @@ export const getAnnouncements = (params?: { position?: string; active?: boolean;
   return fetchApi<ResponseDTO<PaginatedResult<AnnouncementDTO>>>(`/api/announcements${qs ? '?' + qs : ''}`)
 }
 export const getActiveAnnouncements = () =>
-  fetchApi<ResponseDTO<AnnouncementDTO[]>>('/api/announcements/active')
+  fetchApi<ResponseDTO<AnnouncementDTO[]>>('/api/announcements/active', { skipAuthRedirect: true })
 export const getActiveAnnouncementsByPosition = (position: string) =>
-  fetchApi<ResponseDTO<AnnouncementDTO[]>>(`/api/announcements/active/${position}`)
+  fetchApi<ResponseDTO<AnnouncementDTO[]>>(`/api/announcements/active/${position}`, { skipAuthRedirect: true })
 export const getAnnouncementById = (id: string) =>
   fetchApi<ResponseDTO<AnnouncementDTO>>(`/api/announcements/${id}`)
 export const createAnnouncement = (data: AnnouncementRequest) =>
@@ -724,9 +749,9 @@ export const updateAnnouncement = (id: string, data: AnnouncementRequest) =>
 export const deleteAnnouncement = (id: string) =>
   fetchApi<ResponseDTO<unknown>>(`/api/announcements/${id}`, { method: 'DELETE' })
 export const trackAnnouncementView = (id: string) =>
-  fetchApi<ResponseDTO<unknown>>(`/api/announcements/${id}/view`, { method: 'PATCH' })
+  fetchApi<ResponseDTO<unknown>>(`/api/announcements/${id}/view`, { method: 'PATCH', skipAuthRedirect: true })
 export const trackAnnouncementClick = (id: string) =>
-  fetchApi<ResponseDTO<unknown>>(`/api/announcements/${id}/click`, { method: 'PATCH' })
+  fetchApi<ResponseDTO<unknown>>(`/api/announcements/${id}/click`, { method: 'PATCH', skipAuthRedirect: true })
 
 // --- Tenant Reports ---
 export const getTenantDashboardReport = () =>

@@ -36,7 +36,10 @@ const paymentStatusConfig: Record<string, { label: string; color: string; bg: st
 
 const pendingStatuses = new Set(['PENDING', 'PREPARING', 'PROCESSING', 'AUTHORIZED', 'CREATED', 'CONFIRMED', 'PAID'])
 const normalizeStatus = (status?: string) => (status || 'PENDING').toUpperCase()
+const normalizePaymentStatus = (status?: string) => (status || 'PENDING').toUpperCase()
 const isPendingStatus = (status?: string) => pendingStatuses.has(normalizeStatus(status))
+const canResolveRefund = (status?: string, paymentStatus?: string) =>
+  normalizeStatus(status) === 'CANCELLED' && ['REFUND_FAILED', 'COMPLETED'].includes(normalizePaymentStatus(paymentStatus))
 
 type OrderListResponse = PaginatedResult<OrderDTO> | { data?: OrderDTO[]; content?: OrderDTO[] } | OrderDTO[]
 
@@ -248,8 +251,9 @@ export default function Pickups() {
         ) : (
           filtered.map((order, i) => {
             const orderStatus = normalizeStatus(order.status)
+            const orderPaymentStatus = normalizePaymentStatus(order.paymentStatus)
             const status = statusConfig[orderStatus] || statusConfig.PENDING
-            const paymentStatus = paymentStatusConfig[(order.paymentStatus || 'PENDING').toUpperCase()] || paymentStatusConfig.PENDING
+            const paymentStatus = paymentStatusConfig[orderPaymentStatus] || paymentStatusConfig.PENDING
             const items = (order as OrderDTO & { items?: OrderItemDTO[] }).items || []
             const isExpanded = expandedId === order.id
 
@@ -332,7 +336,7 @@ export default function Pickups() {
                         Cancelar
                       </button>
                     )}
-                    {orderStatus === 'CANCELLED' && order.paymentStatus === 'REFUND_FAILED' && (
+                    {canResolveRefund(order.status, order.paymentStatus) && (
                       <>
                         <button
                           onClick={() => handleRetryRefund(order.id!)}
@@ -414,7 +418,7 @@ export default function Pickups() {
                             <span className="text-sm font-bold text-[var(--text-primary)]">{formatCurrency(Number(order.total))}</span>
                           </div>
                         </div>
-                        {order.paymentStatus === 'REFUND_FAILED' && (
+                        {orderPaymentStatus === 'REFUND_FAILED' && (
                           <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5">
                             <p className="text-xs font-bold text-red-700">Resolver devolución manualmente</p>
                             <p className="mt-1 text-[11px] text-red-600">
@@ -422,10 +426,23 @@ export default function Pickups() {
                             </p>
                           </div>
                         )}
-                        {order.paymentStatus === 'REFUNDED' && order.refundReference && (
+                        {orderPaymentStatus === 'REFUNDED' && order.refundReference && (
                           <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5">
                             <p className="text-xs font-bold text-blue-700">Devolución completada</p>
                             <p className="mt-1 truncate text-[11px] font-mono text-blue-600">{order.refundReference}</p>
+                            {order.refundedAt && (
+                              <p className="mt-1 text-[11px] text-blue-600">
+                                {formatDate(order.refundedAt)} {formatTime(order.refundedAt)}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {orderStatus === 'CANCELLED' && order.cancelledAt && (
+                          <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5">
+                            <p className="text-xs font-bold text-gray-700">Cancelada</p>
+                            <p className="mt-1 text-[11px] text-gray-600">
+                              {formatDate(order.cancelledAt)} {formatTime(order.cancelledAt)}
+                            </p>
                           </div>
                         )}
                       </div>

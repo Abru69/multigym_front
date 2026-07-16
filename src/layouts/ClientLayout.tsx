@@ -19,6 +19,7 @@ import { getTenantUrl } from '@/lib/tenant'
 import { useTheme } from '@/hooks/useTheme'
 import { getAllowedPages } from '@/lib/permissions'
 import { InstallBanner } from '@/components/ui/InstallBanner'
+import { TenantLogo } from '@/components/tenant/TenantLogo'
 
 const clientNav = [
   { to: '/app/rutinas', icon: Dumbbell, label: 'Rutinas' },
@@ -58,9 +59,7 @@ export function ClientLayout() {
         <div className="flex items-center justify-between px-4 py-3 lg:px-8">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent)] text-xs font-black text-[var(--accent-text)]">
-              {branding.logoAbbr}
-            </div>
+            <TenantLogo />
             <span className="text-sm font-bold tracking-tight text-[var(--text-primary)]">
               {branding?.name || 'MULTIGYM'}
             </span>

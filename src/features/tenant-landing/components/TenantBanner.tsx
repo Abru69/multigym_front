@@ -42,7 +42,7 @@ export function TenantBanner() {
                 href={banner.link}
                 className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold transition-all duration-200 hover:opacity-90 active:scale-[0.97]"
                 style={{
-                  backgroundColor: banner.accentColor || 'var(--accent)',
+                  backgroundColor: 'var(--accent)',
                   color: 'var(--accent-text)',
                 }}
               >
@@ -74,7 +74,7 @@ export function TenantBanner() {
         <div
           className="absolute bottom-0 left-0 h-1 w-full"
           style={{
-            background: `linear-gradient(to right, ${banner.accentColor || 'var(--accent)'}, transparent)`,
+            background: 'linear-gradient(to right, var(--accent), transparent)',
           }}
         />
       </motion.div>

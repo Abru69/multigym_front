@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { fetchApi } from '@/lib/api'
-import type { OrderDTO, OrderItemDTO, ResponseDTO } from '@/types'
+import { cancelOrder, fetchApi, markOrderRefunded, retryOrderRefund } from '@/lib/api'
+import type { OrderDTO, OrderItemDTO, PaginatedResult, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
   Truck,
@@ -11,11 +11,43 @@ import {
   ChevronUp,
   RefreshCw,
   MapPin,
+  CheckCircle2,
+  X,
 } from 'lucide-react'
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
   COMPLETED: { label: 'Entregado', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
   PENDING: { label: 'Enviado', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', dot: 'bg-blue-500' },
+  CANCELLED: { label: 'Cancelado', color: 'text-gray-500', bg: 'bg-gray-50 border-gray-200', dot: 'bg-gray-400' },
+}
+
+const paymentStatusConfig: Record<string, { label: string; color: string; bg: string }> = {
+  COMPLETED: { label: 'Pagado', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
+  REFUNDED: { label: 'Reembolsado', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+  REFUND_FAILED: { label: 'Reembolso fallido', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
+  FAILED: { label: 'Pago fallido', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
+  PENDING: { label: 'Pago pendiente', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
+}
+
+const normalizeStatus = (status?: string) => (status || 'PENDING').toUpperCase()
+const normalizePaymentStatus = (status?: string) => (status || 'PENDING').toUpperCase()
+const canCancelOrder = (status?: string) => ['PENDING', 'READY'].includes(normalizeStatus(status))
+const canResolveRefund = (status?: string, paymentStatus?: string) =>
+  normalizeStatus(status) === 'CANCELLED' && ['REFUND_FAILED', 'COMPLETED'].includes(normalizePaymentStatus(paymentStatus))
+
+type OrderListResponse = PaginatedResult<OrderDTO> | { data?: OrderDTO[]; content?: OrderDTO[] } | OrderDTO[]
+
+function extractOrders(res: ResponseDTO<OrderListResponse>) {
+  const dto = res.dto
+  if (Array.isArray(dto)) return dto
+  if (Array.isArray(dto?.data)) return dto.data
+  if (dto && 'content' in dto && Array.isArray(dto.content)) return dto.content
+  if (Array.isArray(res.lista)) return res.lista as OrderDTO[]
+  return []
+}
+
+function mergeUpdatedOrder(current: OrderDTO, response: ResponseDTO<OrderDTO>, fallbackStatus: string) {
+  return response.dto ? { ...current, ...response.dto } : { ...current, status: fallbackStatus }
 }
 
 function formatDate(dateStr?: string) {
@@ -33,14 +65,15 @@ function formatTime(dateStr?: string) {
 export default function Shipments() {
   const [orders, setOrders] = useState<OrderDTO[]>([])
   const [loading, setLoading] = useState(true)
+  const [actionId, setActionId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'COMPLETED'>('PENDING')
+  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'COMPLETED' | 'CANCELLED'>('PENDING')
 
   const loadOrders = async () => {
     try {
       setLoading(true)
-      const res = await fetchApi<ResponseDTO<{ data: OrderDTO[] }>>('/api/orders?deliveryMethod=SHIPPING')
-      setOrders(res.dto?.data || [])
+      const res = await fetchApi<ResponseDTO<OrderListResponse>>('/api/orders?deliveryMethod=SHIPPING')
+      setOrders(extractOrders(res))
     } catch (err) {
       console.error('Failed to load shipments:', err)
     } finally {
@@ -53,9 +86,53 @@ export default function Shipments() {
     loadOrders()
   }, [])
 
-  const filtered = orders.filter((o) => filter === 'ALL' || o.status === filter)
-  const pendingCount = orders.filter((o) => o.status === 'PENDING').length
-  const completedCount = orders.filter((o) => o.status === 'COMPLETED').length
+  const handleRetryRefund = async (orderId: string) => {
+    try {
+      setActionId(orderId)
+      const res = await retryOrderRefund(orderId)
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? mergeUpdatedOrder(o, res, 'CANCELLED') : o))
+      )
+    } catch (err) {
+      console.error('Failed to retry refund:', err)
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const handleCancel = async (orderId: string) => {
+    try {
+      setActionId(orderId)
+      const res = await cancelOrder(orderId)
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? mergeUpdatedOrder(o, res, 'CANCELLED') : o))
+      )
+    } catch (err) {
+      console.error('Failed to cancel order:', err)
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const handleMarkRefunded = async (orderId: string) => {
+    const refundReference = window.prompt('Referencia de devolución manual (opcional)') || undefined
+    const note = window.prompt('Nota de resolución manual (opcional)') || undefined
+    try {
+      setActionId(orderId)
+      const res = await markOrderRefunded(orderId, { refundReference, note })
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? mergeUpdatedOrder(o, res, 'CANCELLED') : o))
+      )
+    } catch (err) {
+      console.error('Failed to mark refund manually resolved:', err)
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const filtered = orders.filter((o) => filter === 'ALL' || normalizeStatus(o.status) === filter)
+  const pendingCount = orders.filter((o) => normalizeStatus(o.status) === 'PENDING').length
+  const completedCount = orders.filter((o) => normalizeStatus(o.status) === 'COMPLETED').length
 
   if (loading) {
     return (
@@ -103,7 +180,7 @@ export default function Shipments() {
       {/* Filter */}
       <div className="mb-4 flex items-center gap-2">
         <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Estado:</span>
-        {(['ALL', 'PENDING', 'COMPLETED'] as const).map((f) => (
+        {(['ALL', 'PENDING', 'COMPLETED', 'CANCELLED'] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -113,7 +190,7 @@ export default function Shipments() {
                 : 'border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)]'
             }`}
           >
-            {f === 'ALL' ? 'Todas' : f === 'PENDING' ? 'Enviados' : 'Entregados'}
+            {f === 'ALL' ? 'Todas' : f === 'PENDING' ? 'Enviados' : f === 'COMPLETED' ? 'Entregados' : 'Cancelados'}
           </button>
         ))}
       </div>
@@ -129,7 +206,10 @@ export default function Shipments() {
           </div>
         ) : (
           filtered.map((order, i) => {
-            const status = statusConfig[order.status] || statusConfig.PENDING
+            const orderStatus = normalizeStatus(order.status)
+            const orderPaymentStatus = normalizePaymentStatus(order.paymentStatus)
+            const status = statusConfig[orderStatus] || statusConfig.PENDING
+            const paymentStatus = paymentStatusConfig[orderPaymentStatus] || paymentStatusConfig.PENDING
             const items = (order as OrderDTO & { items?: OrderItemDTO[] }).items || []
             const isExpanded = expandedId === order.id
 
@@ -154,6 +234,9 @@ export default function Shipments() {
                         <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
                         {status.label}
                       </span>
+                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${paymentStatus.bg} ${paymentStatus.color}`}>
+                        {paymentStatus.label}
+                      </span>
                     </div>
                     <div className="mt-0.5 flex items-center gap-3 text-[11px] text-[var(--text-muted)]">
                       <span className="inline-flex items-center gap-1">
@@ -167,6 +250,40 @@ export default function Shipments() {
                     </div>
                   </button>
                   <div className="flex items-center gap-3">
+                    {canCancelOrder(order.status) && (
+                      <button
+                        onClick={() => handleCancel(order.id!)}
+                        disabled={actionId === order.id}
+                        className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+                      >
+                        {actionId === order.id ? (
+                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-400 border-t-transparent" />
+                        ) : (
+                          <X size={12} />
+                        )}
+                        Cancelar
+                      </button>
+                    )}
+                    {canResolveRefund(order.status, order.paymentStatus) && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleRetryRefund(order.id!)}
+                          disabled={actionId === order.id}
+                          className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          <RefreshCw size={12} className={actionId === order.id ? 'animate-spin' : ''} />
+                          Reintentar
+                        </button>
+                        <button
+                          onClick={() => handleMarkRefunded(order.id!)}
+                          disabled={actionId === order.id}
+                          className="flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50"
+                        >
+                          <CheckCircle2 size={12} />
+                          Manual
+                        </button>
+                      </div>
+                    )}
                     <div className="text-right">
                       <p className="font-heading text-sm font-black text-[var(--text-primary)]">
                         {formatCurrency(Number(order.total))}
@@ -229,6 +346,33 @@ export default function Shipments() {
                             <span className="text-sm font-bold text-[var(--text-primary)]">{formatCurrency(Number(order.total))}</span>
                           </div>
                         </div>
+                        {orderPaymentStatus === 'REFUND_FAILED' && (
+                          <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5">
+                            <p className="text-xs font-bold text-red-700">Resolver devolución manualmente</p>
+                            <p className="mt-1 text-[11px] text-red-600">
+                              {order.refundErrorMessage || 'Mercado Pago no aceptó el reembolso automático.'}
+                            </p>
+                          </div>
+                        )}
+                        {orderPaymentStatus === 'REFUNDED' && order.refundReference && (
+                          <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5">
+                            <p className="text-xs font-bold text-blue-700">Devolución completada</p>
+                            <p className="mt-1 truncate text-[11px] font-mono text-blue-600">{order.refundReference}</p>
+                            {order.refundedAt && (
+                              <p className="mt-1 text-[11px] text-blue-600">
+                                {formatDate(order.refundedAt)} {formatTime(order.refundedAt)}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {orderStatus === 'CANCELLED' && order.cancelledAt && (
+                          <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5">
+                            <p className="text-xs font-bold text-gray-700">Cancelada</p>
+                            <p className="mt-1 text-[11px] text-gray-600">
+                              {formatDate(order.cancelledAt)} {formatTime(order.cancelledAt)}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   )}

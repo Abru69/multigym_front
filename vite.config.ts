@@ -66,6 +66,13 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
+            urlPattern: /\/api\/public\/tenant-branding.*/i,
+            handler: 'NetworkOnly',
+            options: {
+              cacheName: 'tenant-branding-network-only',
+            },
+          },
+          {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
@@ -111,6 +118,10 @@ export default defineConfig({
     host: true, // Listen on all network interfaces
     proxy: {
       '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/uploads': {
         target: 'http://localhost:8080',
         changeOrigin: true,
       },

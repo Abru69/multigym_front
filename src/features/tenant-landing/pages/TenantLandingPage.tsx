@@ -1,14 +1,17 @@
 import { Link } from 'react-router-dom'
-import { Zap, Dumbbell, ShoppingBag, Package, LogOut } from 'lucide-react'
+import { Dumbbell, ShoppingBag, Package, LogOut } from 'lucide-react'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { getAllowedPages } from '@/lib/permissions'
 import { TenantHero } from '../components/TenantHero'
 import { TenantBanner } from '../components/TenantBanner'
+import { TenantAnnouncements } from '../components/TenantAnnouncements'
 import { GymSchedule } from '../components/GymSchedule'
 import { Trainers } from '../components/Trainers'
 import { GymPlans } from '../components/GymPlans'
 import { TenantFooter } from '../components/TenantFooter'
+import { getTenantUrl } from '@/lib/tenant'
+import { TenantLogo } from '@/components/tenant/TenantLogo'
 
 export default function TenantLandingPage() {
   const { branding, tenantId } = useTenantBranding()
@@ -17,8 +20,13 @@ export default function TenantLandingPage() {
   const portalLink = getAllowedPages(user?.role).length > 0 ? '/admin' : '/app/rutinas'
 
   const handleLogout = async () => {
+    const currentTenantId = tenantId || user?.tenantId
     await logout()
-    window.location.reload()
+    if (currentTenantId) {
+      window.location.href = getTenantUrl(currentTenantId)
+    } else {
+      window.location.href = '/'
+    }
   }
 
   return (
@@ -26,9 +34,7 @@ export default function TenantLandingPage() {
       <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--header-bg)] backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent)] to-[var(--detail)] text-[var(--text-on-primary)]">
-              <Zap size={18} />
-            </div>
+            <TenantLogo />
             <span className="text-lg font-bold text-[var(--text-primary)]">{branding.name}</span>
           </Link>
 
@@ -120,6 +126,9 @@ export default function TenantLandingPage() {
 
       <main>
         <TenantHero />
+        <TenantAnnouncements position="HERO" />
+        <TenantAnnouncements position="POPUP" />
+        <TenantAnnouncements position="BANNER" />
         <TenantBanner />
         <div id="horarios">
           <GymSchedule />
@@ -132,6 +141,7 @@ export default function TenantLandingPage() {
         </div>
       </main>
 
+      <TenantAnnouncements position="FOOTER" />
       <TenantFooter />
     </div>
   )

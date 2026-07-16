@@ -25,14 +25,63 @@ export interface TenantDTO {
   tenantId: string
   name: string
   subdomain: string
-  status: 'ACTIVE' | 'INACTIVE'
+  status: 'ACTIVE' | 'INACTIVE' | 'TRIAL_EXPIRED'
   planId: string | null
   trialEndsAt: string | null
+  subscriptionEndsAt: string | null
   createdAt: string
   memberCount: number
   memberLimit: number
   planPrice: number
   isTrial: boolean
+  announcementsEnabled?: boolean
+  logoUrl?: string | null
+}
+
+export interface TenantPaymentDTO {
+  id: string
+  tenantId: string
+  planId: string
+  planName: string
+  amount: number
+  currency: string
+  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED' | string
+  paymentMethod: string
+  paymentProvider: string
+  paymentReference?: string | null
+  checkoutUrl?: string | null
+  paidAt?: string | null
+  createdAt?: string | null
+  updatedAt?: string | null
+}
+
+export interface TenantRenewalInfoDTO {
+  tenantId: string
+  name: string
+  status: string
+  planId: string
+  planName: string
+  price: number
+  currency: string
+  trialEndsAt?: string | null
+  subscriptionEndsAt?: string | null
+  canRenew: boolean
+  renewalReason: string
+}
+
+export interface TenantRenewalResultDTO {
+  tenant: TenantDTO
+  payment: TenantPaymentDTO
+  previousSubscriptionEndsAt?: string | null
+  newSubscriptionEndsAt: string
+}
+
+export interface TenantRenewalPaymentRequest {
+  cardToken: string
+  paymentMethodId: string
+  issuerId?: string | null
+  installments: number
+  payerEmail: string
 }
 
 export interface TenantSummaryDTO {
@@ -78,6 +127,7 @@ export interface UserDTO {
   role: string
   isActive: boolean
   memberDTO: MemberDTO | null
+  avatarUrl?: string | null
 }
 
 export interface DashboardDTO {
@@ -361,7 +411,7 @@ export interface PaymentDTO {
   amount: number
   paymentDate: string | null
   paymentMethod: string
-  status: 'COMPLETED' | 'PENDING' | 'FAILED' | 'REFUNDED'
+  status: 'COMPLETED' | 'PENDING' | 'FAILED' | 'REFUNDED' | 'REFUND_FAILED'
   reference: string | null
 }
 
@@ -436,6 +486,13 @@ export interface OrderRequest {
 export interface OrderStatusRequest {
   status: string
 }
+
+export interface ManualRefundRequest {
+  refundReference?: string
+  note?: string
+}
+
+export type MarkRefundedRequest = ManualRefundRequest
 
 export interface WorkoutRequest {
   memberId: string
@@ -550,7 +607,7 @@ export interface AnnouncementDTO {
   mediaType: 'IMAGE' | 'VIDEO' | 'TEXT'
   mediaUrl?: string
   linkUrl?: string
-  position: 'HERO' | 'SIDEBAR' | 'POPUP' | 'BANNER'
+  position: 'HERO' | 'BANNER' | 'POPUP' | 'FOOTER'
   priority: number
   isActive: boolean
   startDate?: string
@@ -568,7 +625,7 @@ export interface AnnouncementRequest {
   mediaType: 'IMAGE' | 'VIDEO' | 'TEXT'
   mediaUrl?: string
   linkUrl?: string
-  position: 'HERO' | 'SIDEBAR' | 'POPUP' | 'BANNER'
+  position: 'HERO' | 'BANNER' | 'POPUP' | 'FOOTER'
   priority: number
   isActive: boolean
   startDate?: string
