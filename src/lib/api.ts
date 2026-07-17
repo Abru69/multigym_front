@@ -56,6 +56,11 @@ import type {
   WorkoutReportDTO,
   PlatformDashboardDTO,
   TenantHealthDTO,
+  PlatformAnalyticsDTO,
+  MrrReportDTO,
+  ChurnRetentionDTO,
+  PlanAnalyticsDTO,
+  FailedPaymentReportDTO,
 } from '@/types'
 
 export async function fetchApi<T>(
@@ -815,3 +820,37 @@ export const getPlatformDashboardReport = () =>
   fetchApi<ResponseDTO<PlatformDashboardDTO>>('/api/platform/reports/dashboard')
 export const getTenantsHealth = () =>
   fetchApi<ResponseDTO<TenantHealthDTO[]>>('/api/platform/reports/tenants/health')
+
+// --- Platform Analytics (Etapa 6) ---
+export const getPlatformAnalytics = () =>
+  fetchApi<ResponseDTO<PlatformAnalyticsDTO>>('/api/platform/reports/analytics')
+export const getMrrReport = () =>
+  fetchApi<ResponseDTO<MrrReportDTO>>('/api/platform/reports/mrr')
+export const getChurnRetention = () =>
+  fetchApi<ResponseDTO<ChurnRetentionDTO>>('/api/platform/reports/churn-retention')
+export const getPlanAnalytics = () =>
+  fetchApi<ResponseDTO<PlanAnalyticsDTO[]>>('/api/platform/reports/plan-analytics')
+export const getFailedPayments = () =>
+  fetchApi<ResponseDTO<FailedPaymentReportDTO>>('/api/platform/reports/failed-payments')
+export const exportPlatformDashboard = async (format: string): Promise<Blob> => {
+  const url = `/api/platform/reports/dashboard/export?format=${format}`
+  const platformData = localStorage.getItem('platform-auth')
+  let token = ''
+  if (platformData) {
+    try { token = JSON.parse(platformData).state?.token || '' } catch { /* ignore */ }
+  }
+  const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } })
+  if (!response.ok) throw new Error('Export failed')
+  return response.blob()
+}
+export const exportPlatformAnalytics = async (format: string): Promise<Blob> => {
+  const url = `/api/platform/reports/analytics/export?format=${format}`
+  const platformData = localStorage.getItem('platform-auth')
+  let token = ''
+  if (platformData) {
+    try { token = JSON.parse(platformData).state?.token || '' } catch { /* ignore */ }
+  }
+  const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } })
+  if (!response.ok) throw new Error('Export failed')
+  return response.blob()
+}

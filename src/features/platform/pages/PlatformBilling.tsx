@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Download, CreditCard, AlertCircle, CheckCircle, TrendingUp, DollarSign, Building2 } from 'lucide-react'
 import { usePlatformBillingStore } from '../store/platformBillingStore'
+import { formatCurrency } from '@/lib/utils'
 
 const planColorMap: Record<string, string> = {
   Basic: 'var(--info)',
@@ -12,7 +13,7 @@ const planColorMap: Record<string, string> = {
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }
 const fadeUp = { hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }
 
-function formatCurrency(value: number): string {
+function formatCurrencyCompact(value: number): string {
   if (value >= 1000) return `$${(value / 1000).toFixed(1)}k`
   return `$${value.toFixed(0)}`
 }
@@ -52,21 +53,21 @@ export default function PlatformBilling() {
     ? [
         {
           label: 'MRR',
-          value: formatCurrency(metrics.mrr),
+          value: formatCurrencyCompact(metrics.mrr),
           icon: DollarSign,
           color: 'var(--accent)',
           trend: `${metrics.activeTenants} tenants activos`,
         },
         {
           label: 'ARR Proyectado',
-          value: formatCurrency(metrics.arr),
+          value: formatCurrencyCompact(metrics.arr),
           icon: TrendingUp,
           color: 'var(--success)',
           trend: '+12 meses',
         },
         {
           label: 'Ingresos Totales',
-          value: formatCurrency(metrics.totalRevenue),
+          value: formatCurrencyCompact(metrics.totalRevenue),
           icon: CreditCard,
           color: 'var(--warning)',
           trend: `${metrics.totalPayments} pagos`,

@@ -224,8 +224,6 @@ export default function Checkout() {
         cardExpirationMonth: expirationMonth,
         cardExpirationYear: expirationYear,
         securityCode: cardCvc.trim(),
-        identificationType: 'RFC',
-        identificationNumber: 'CACX7605101P8',
       })
       const cardToken = tokenResponse?.id || tokenResponse?.token
       if (!cardToken) {

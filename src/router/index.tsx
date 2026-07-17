@@ -19,7 +19,7 @@ import {
   Billing,
   Catalog, ProductDetail, Cart, Checkout,
   PlatformLogin, PlatformDashboard, PlatformTenants, PlatformUsers,
-  PlatformSaaSPlans, PlatformBilling, PlatformLogs, PlatformSettings, PlatformReports,
+  PlatformSaaSPlans, PlatformBilling, PlatformLogs, PlatformSettings, PlatformReports, PlatformAnalytics,
   NotFound,
 } from './lazyRoutes'
 
@@ -57,6 +57,7 @@ export const router = createBrowserRouter([
       { path: 'logs', element: withSuspense(PlatformLogs) },
       { path: 'settings', element: withSuspense(PlatformSettings) },
       { path: 'reports', element: withSuspense(PlatformReports) },
+      { path: 'analytics', element: withSuspense(PlatformAnalytics) },
     ],
   },
 

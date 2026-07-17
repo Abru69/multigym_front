@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { CreditCard, Loader2, ReceiptText, ShieldCheck, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 import { useToastStore } from '@/components/ui/Toast'
 import {
   getTenantBillingPayments,
@@ -120,8 +121,6 @@ export default function Billing() {
         cardExpirationMonth: expirationMonth,
         cardExpirationYear: expirationYear,
         securityCode: cardCvc.trim(),
-        identificationType: 'RFC',
-        identificationNumber: 'CACX7605101P8',
       })
       const cardToken = tokenResponse?.id || tokenResponse?.token
       if (!cardToken) {
@@ -314,16 +313,6 @@ function InfoCard({ label, value }: { label: string; value: string }) {
       <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-muted)]">{label}</p>
       <p className="mt-2 font-bold text-[var(--text-primary)]">{value}</p>
     </div>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const isOk = status === 'COMPLETED'
-  const isPending = status === 'PENDING' || status === 'AUTHORIZED'
-  return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${isOk ? 'bg-[var(--success)]/15 text-[var(--success)]' : isPending ? 'bg-[var(--warning)]/15 text-[var(--warning)]' : 'bg-[var(--danger)]/15 text-[var(--danger)]'}`}>
-      {status}
-    </span>
   )
 }
 

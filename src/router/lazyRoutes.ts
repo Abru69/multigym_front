@@ -48,6 +48,7 @@ export const PlatformBilling = lazy(() => import('@/features/platform/pages/Plat
 export const PlatformLogs = lazy(() => import('@/features/platform/pages/PlatformLogs'))
 export const PlatformSettings = lazy(() => import('@/features/platform/pages/PlatformSettings'))
 export const PlatformReports = lazy(() => import('@/features/platform/pages/PlatformReports'))
+export const PlatformAnalytics = lazy(() => import('@/features/platform/pages/PlatformAnalyticsPage'))
 
 // 404 Page
 export const NotFound = lazy(() => import('@/pages/NotFound'))

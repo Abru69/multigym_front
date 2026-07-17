@@ -1,147 +1,95 @@
-# Próximos Pasos
+# Next Session
 
-**Última sesión:** 2026-07-15 — Mercado Pago Checkout Sandbox + Webhooks
+**Last session:** 2026-07-17 — Platform Analytics Frontend (Etapa 5 + Analytics)
 
-## Completado Reciente
+## Completed Recent
 
-- ✅ **PWA completa** — `vite-plugin-pwa` + Workbox, offline support, auto-update, iconos generados
-- ✅ **Tenant Landing Banners** — `TenantBanner.tsx` con banners promocionales debajo del hero
-- ✅ **API refactoring** — `fetchApi` separa platform vs tenant, mejor manejo de 401
-- ✅ **API pagination** — `getProducts`, `getWorkouts`, `getOrders`, `getNutritionPlans` con params
-- ✅ **Tenant Users CRUD** — create, update, toggleStatus, delete
-- ✅ **Nutrition simplificado** — `getMyNutritionPlan()` (sin memberId)
-- ✅ **RoutineBuilder fix** — Crea workout + ejercicios secuencialmente
-- ✅ **Validaciones mejoradas** — Users, NutritionPlans, Subscriptions, Payments, ActivateAccount
-- ✅ **Login redirect por rol** — `getDefaultRoute()` + useEffect auto-redirect
-- ✅ **AdminGuard/RoleGuard** — getDefaultRoute() para redirects por rol
-- ✅ **Cart tenant-scoped** — localStorage key con tenantId
-- ✅ **Cart badge** — Muestra número de items
-- ✅ **Roles y Permisos** — 6 roles con control de acceso por página
-- ✅ **Mercado Pago Checkout** — tokenización con `@mercadopago/sdk-js`, envío de `cardToken` a `/api/orders`, y datos sandbox MLM precargados en modo `TEST-*`
-- ✅ **Mercado Pago Sandbox Scenarios** — `APRO`, `OTHE`, `CONT`, `CALL`, `FUND`, `SECU`, `EXPI`, `FORM` probados contra backend local
-- ✅ **Mercado Pago Webhooks** — backend recibe `payment` notifications con `notification_url`; historial MercadoPago con entregas exitosas
+- ✅ **Platform Analytics Frontend** — 5-tab analytics page at `/platform/analytics`
+  - **Overview** — MRR, ARR, ARPU, LTV, churn rate, retention rate, tenant status breakdown
+  - **Revenue by Tenant** — table with tenant name, plan, price, total revenue, monthly revenue, payments, failed
+  - **Plans** — plan breakdown with MRR, active/total tenants, total revenue
+  - **Churn & Retention** — churn rate, retention rate, 30d/90d churned, monthly churn table
+  - **Failed Payments** — total failed, needs retry, failed amount, recent failed table
+- ✅ **7 API functions** — `getPlatformAnalytics`, `getMrrReport`, `getChurnRetention`, `getPlanAnalytics`, `getFailedPayments`, `exportPlatformDashboard`, `exportPlatformAnalytics`
+- ✅ **8 TypeScript types** — `MrrReportDTO`, `TenantRevenueDTO`, `ChurnRetentionDTO`, `PlanAnalyticsDTO`, `FailedPaymentReportDTO`, `PlatformAnalyticsDTO`, `TenantExpirationAlert`, updated `PlatformDashboardDTO`/`TenantHealthDTO`
+- ✅ **StatusBadge component** — shared `src/components/ui/StatusBadge.tsx`
+- ✅ **TenantStatus type** — updated to `TRIAL | ACTIVE | PAST_DUE | SUSPENDED | CANCELLED`
+- ✅ **MercadoPago fix** — removed `identificationType`/`identificationNumber` from card token creation
+- ✅ **All 6 etapas** of Subscription Renewal Plan completed
 
-## Endpoints Faltantes en Backend (Mock Data en Frontend)
+## Current Architecture
 
-### 1. Progress.tsx — Datos físicos del usuario
+### Frontend (multigym_front)
+- React 19, TypeScript 6, Vite 8, Tailwind 4, Zustand 5
+- PWA with Workbox
+- Platform admin: 9 pages (Dashboard, Tenants, Users, SaaS Plans, Billing, Reports, Analytics, Logs, Settings)
 
-**Necesita:** `GET /api/progress/{memberId}` o `GET /api/workout-logs/{workoutId}` extendido
+### Backend (multigym_back)
+- Spring Boot 3.3.5, Java 17, PostgreSQL 16, Redis 7
+- 139 tests pass
+- 167 endpoints consumed by frontend (~84% coverage)
 
-El frontend muestra: peso, % grasa corporal, medidas corporales (pecho, cintura, cadera, brazos, piernas).
-El backend actual `WorkoutLogDTO` solo tiene: `durationMinutes`, `caloriesBurned`, `completedAt`.
+## Key Files
 
-**Campos necesarios en el DTO:**
-```java
-public record ProgressDTO(
-    UUID id,
-    UUID memberId,
-    LocalDate date,
-    BigDecimal weight,
-    BigDecimal bodyFat,
-    Integer chest,    // cm
-    Integer waist,    // cm
-    Integer hips,     // cm
-    Integer arms,     // cm
-    Integer legs,     // cm
-    String notes
-) {}
+### Frontend
+- `src/features/platform/pages/PlatformAnalyticsPage.tsx` — NEW analytics page (5 tabs)
+- `src/types/api.ts` — all DTO types
+- `src/lib/api.ts` — all API functions
+- `src/router/lazyRoutes.ts` — lazy imports
+- `src/router/index.tsx` — routes
+- `src/layouts/PlatformLayout.tsx` — nav items
+
+### Backend
+- `src/main/java/com/hh/ss/multigym/service/PlatformAnalyticsService.java` — MRR, churn, ARPU/LTV
+- `src/main/java/com/hh/ss/multigym/controller/PlatformReportController.java` — 6 analytics endpoints
+- `src/main/java/com/hh/ss/multigym/dto/report/` — 7 DTOs
+
+## Backend Analytics Endpoints
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/platform/reports/analytics` | Full analytics (MRR + churn + plans + failed + ARPU) |
+| `GET /api/platform/reports/mrr` | MRR report with per-tenant breakdown |
+| `GET /api/platform/reports/churn-retention` | Churn rate and retention rate |
+| `GET /api/platform/reports/plan-analytics` | Revenue by plan |
+| `GET /api/platform/reports/failed-payments` | Failed payment report |
+| `GET /api/platform/reports/analytics/export?format=` | Export analytics CSV/PDF/XLSX |
+
+## Local Test Setup
+
+### Backend
+```bash
+cd multigym_back
+docker compose up -d postgres redis
+sh "./mvnw" spring-boot:run
+# Runs on http://localhost:8080
 ```
 
-**Endpoints necesarios:**
-- `GET /api/progress/member/{memberId}` — listar progreso de un miembro
-- `POST /api/progress` — registrar nuevo dato físico
-- `PUT /api/progress/{id}` — editar registro
-- `DELETE /api/progress/{id}` — eliminar registro
+### Frontend
+```bash
+cd multigym_front
+npm run dev
+# Runs on http://localhost:5173
+```
 
-### 2. Nutrition — Frontend listo, endpoints pendientes
+### Platform Login
+- URL: `http://localhost:5173/platform/login`
+- Email: `admin@saas.com`
+- Password: `admin123`
 
-**Frontend completado:** Admin CRUD + cliente con store. Fallback a mock data.
+### Tenant Login
+- URL: `http://localhost:5173/login`
+- Email: `client@gymx.com`
+- Password: `admin123`
 
-**Endpoints necesarios (para cuando el backend esté listo):**
-- `GET /api/nutrition/member/{memberId}` — plan de nutrición del miembro
-- `GET /api/nutrition` — listar todos los planes (admin)
-- `POST /api/nutrition` — crear plan
-- `PUT /api/nutrition/{id}` — actualizar plan
-- `DELETE /api/nutrition/{id}` — eliminar plan
-- `PATCH /api/nutrition/{id}/assign` — asignar plan a miembro
+## Known Issues
+- Embedded PostgreSQL cannot allocate shared memory — unit tests only
+- `GET /api/audits` returns 500 — backend bug pending fix
+- 132 lint errors (pre-existing: react-refresh, no-unused-vars, jsx-a11y)
 
-### 3. Miembro Creación — Formulario completo
-
-**Problema:** Members.tsx solo tiene lectura/edición, no creación.
-
-El backend `POST /api/members` requiere un `userId` existente. Para crear un miembro completo se necesita:
-1. Primero: `POST /api/tenant/users` → obtener userId
-2. Luego: `POST /api/members` con ese userId
-
-**Necesita:** Integrar el formulario de Users.tsx con la creación de miembros, o crear un flujo de "Crear Miembro" que combine ambos pasos.
-
-### 4. Subscription por Miembro — Perfil de miembro
-
-**Endpoint existe:** `GET /api/subscriptions/member/{memberId}`
-
-**Falta:** Página de detalle de miembro que muestre:
-- Datos personales
-- Suscripción activa
-- Historial de pagos
-- Rutina asignada
-
-### 5. Payment por Suscripción — Historial de pagos
-
-**Endpoint existe:** `GET /api/payments/subscription/{subscriptionId}`
-
-**Falta:** Vista de detalle de suscripción que muestre:
-- Historial de pagos de esa suscripción
-- Estado de la suscripción
-- Fechas de inicio/fin
-
-## Prioridad Alta
-
-1. **Decidir soporte de pagos pendientes Mercado Pago (`CONT`)** — hoy el backend devuelve `402`; si se requiere, crear orden con `paymentStatus=PENDING` y actualizar por webhook
-2. **Crear endpoints de Progress** — Necesario para que Progress.tsx deje de usar mock data
-3. **Integrar creación de miembros** — Formulario que combine User + Member
-4. **Verificar UI en navegador** — Ejecutar `npm run dev` y probar flujo checkout completo
-
-## Mercado Pago Local Test Setup
-
-- Frontend HTTPS: `https://localhost:5173`
-- Backend local: `http://localhost:8080`
-- Docker solo para Postgres/Redis durante desarrollo local
-- Frontend env: `VITE_MP_PUBLIC_KEY=TEST-...`
-- Backend env: `MP_ACCESS_TOKEN=TEST-...`, `MP_PUBLIC_KEY=TEST-...`, `MP_NOTIFICATION_URL=https://connector-overlook-bucket.ngrok-free.dev/api/webhooks/mercadopago`
-- Ngrok static domain: use the project ngrok account and run `ngrok http --domain=connector-overlook-bucket.ngrok-free.dev 8080`; do not use random ngrok URLs for Mercado Pago tests.
-- Webhooks are backend-owned. Frontend only needs HTTPS local for Mercado Pago card tokenization.
-- Tenant de prueba: `gymx`
-- Usuario cliente: `client@gymx.com` / `admin123`
-- Tarjeta MLM aprobada: Visa `4075 5957 1648 3764`, CVV `123`, vencimiento `11/30`, titular `APRO`
-
-## Prioridad Media
-
-5. **Fix Lint Errors (132)**
-   - `react-refresh/only-export-components`
-   - `@typescript-eslint/no-unused-vars`
-   - `jsx-a11y`
-
-6. **Performance Optimization**
-   - `React.memo()` donde sea necesario
-   - `useMemo` en listas grandes
-   - Lazy loading de imágenes
-
-7. **Tenant Branding — Banners dinámicos desde backend**
-   - Actualmente hardcodeados en `tenantConfig.ts`
-   - Necesita endpoint `GET /api/tenant-settings` para banners
-
-## Prioridad Baja
-
-8. **Tests Unitarios**
-   - Vitest o Jest
-   - Tests para stores y componentes UI
-
-## Bloqueado
-
-- **Audit Logs backend 500** — `GET /api/audits` retorna 500. Frontend listo, pendiente fix en backend
-- **Progress.tsx** — sin endpoints backend, se queda como mock data hasta que se cree el controlador Java
-
-## Pendiente Medio
-
-- **Exportar CSV** en Audit Logs — Botón existe en UI pero aún no implementado
-- **Fix Lint Errors (121)** — preexistentes: react-refresh, no-unused-vars, jsx-a11y
+## Mercado Pago Sandbox
+- Site: MLM (Mexico), MXN currency
+- Access Token: `TEST-...` (sandbox)
+- Public Key: `TEST-...` (sandbox)
+- Test cards: Visa `4075 5957 1648 3764`, Mastercard `5474 9254 3267 0366`, CVV `123`, exp `11/30`
+- Scenarios: APRO (approved), OTHE (rejected), CONT (pending), CALL, FUND, SECU, EXPI, FORM

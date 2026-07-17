@@ -21,11 +21,13 @@ export interface PlatformLoginResponse {
   role: string
 }
 
+export type TenantStatus = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'SUSPENDED' | 'CANCELLED'
+
 export interface TenantDTO {
   tenantId: string
   name: string
   subdomain: string
-  status: 'ACTIVE' | 'INACTIVE' | 'TRIAL_EXPIRED'
+  status: TenantStatus
   planId: string | null
   trialEndsAt: string | null
   subscriptionEndsAt: string | null
@@ -58,7 +60,7 @@ export interface TenantPaymentDTO {
 export interface TenantRenewalInfoDTO {
   tenantId: string
   name: string
-  status: string
+  status: TenantStatus
   planId: string
   planName: string
   price: number
@@ -706,18 +708,105 @@ export interface PlatformDashboardDTO {
   totalTenants: number
   activeTenants: number
   trialTenants: number
+  pastDueTenants: number
+  suspendedTenants: number
+  cancelledTenants: number
   totalMRR: number
   totalRevenue: number
+  arpu: number
+  churnRate: number
   totalMembers: number
   totalActiveSubscriptions: number
   todayCheckIns: number
-  monthlyTrend: Array<{ month: string; revenue: number; tenants: number }>
+  monthlyTrend: Array<{ year: number; month: number; revenue: number; paymentCount: number }>
+  expirationAlerts: TenantExpirationAlert[]
+}
+
+export interface TenantExpirationAlert {
+  tenantId: string
+  tenantName: string
+  status: TenantStatus
+  expiresAt: string
+  type: 'TRIAL' | 'SUBSCRIPTION'
+  daysUntilExpiry: number
 }
 
 export interface TenantHealthDTO {
   tenantId: string
   name: string
-  status: string
+  status: TenantStatus
   memberCount: number
   isTrial: boolean
+  subscriptionEndsAt: string | null
+  daysUntilExpiry: number
+}
+
+// --- Platform Analytics (Etapa 6) ---
+export interface TenantRevenueDTO {
+  tenantId: string
+  tenantName: string
+  planId: string | null
+  planName: string
+  planPrice: number
+  totalRevenue: number
+  monthlyRevenue: number
+  paymentCount: number
+  failedPayments: number
+  lastPaymentAt: string | null
+}
+
+export interface MrrReportDTO {
+  totalMRR: number
+  arr: number
+  payingTenants: number
+  trialTenants: number
+  pastDueTenants: number
+  suspendedTenants: number
+  cancelledTenants: number
+  tenants: TenantRevenueDTO[]
+}
+
+export interface ChurnRetentionDTO {
+  churnRate: number
+  churnedLast30Days: number
+  churnedLast90Days: number
+  retentionRate: number
+  monthlyChurn: Array<{ year: number; month: number; churned: number; total: number }>
+}
+
+export interface PlanAnalyticsDTO {
+  planId: string
+  planName: string
+  planPrice: number
+  activeTenants: number
+  totalTenants: number
+  mrr: number
+  totalRevenue: number
+  totalPayments: number
+}
+
+export interface FailedPaymentReportDTO {
+  totalFailed: number
+  needsRetry: number
+  failedAmount: number
+  recentFailed: Array<{
+    tenantId: string
+    tenantName: string
+    amount: number
+    lastError: string
+    retryCount: number
+    createdAt: string
+  }>
+}
+
+export interface PlatformAnalyticsDTO {
+  mrr: MrrReportDTO
+  churnRetention: ChurnRetentionDTO
+  planBreakdown: PlanAnalyticsDTO[]
+  failedPayments: FailedPaymentReportDTO
+  arpuLtv: {
+    arpu: number
+    averageLifetimeMonths: number
+    ltv: number
+  }
 }

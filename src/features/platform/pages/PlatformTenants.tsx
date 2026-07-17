@@ -9,6 +9,7 @@ import {
   CheckCircle,
   Clock,
   PauseCircle,
+  AlertTriangle,
   Loader2,
 } from 'lucide-react'
 import { usePlatformTenantsStore } from '@/features/platform/store/platformTenantsStore'
@@ -17,12 +18,14 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { ConfirmDialog } from '@/features/admin/components/ConfirmDialog'
 import { LoadingState } from '@/features/admin/components/LoadingState'
-import type { TenantRequestDTO } from '@/types'
+import type { TenantRequestDTO, TenantStatus } from '@/types'
 
-const statusConfig = {
+const statusConfig: Record<TenantStatus, { label: string; color: string; icon: typeof CheckCircle }> = {
   ACTIVE: { label: 'Activo', color: 'var(--success)', icon: CheckCircle },
-  INACTIVE: { label: 'Inactivo', color: 'var(--danger)', icon: PauseCircle },
-  TRIAL_EXPIRED: { label: 'Trial expirado', color: 'var(--warning)', icon: Clock },
+  TRIAL: { label: 'Trial', color: 'var(--info)', icon: Clock },
+  PAST_DUE: { label: 'Pago vencido', color: 'var(--warning)', icon: AlertTriangle },
+  SUSPENDED: { label: 'Suspendido', color: 'var(--danger)', icon: PauseCircle },
+  CANCELLED: { label: 'Cancelado', color: 'var(--danger)', icon: PauseCircle },
 }
 
 const planColors: Record<string, string> = {
@@ -152,16 +155,28 @@ export default function PlatformTenants() {
       color: 'var(--success)',
     },
     {
-      label: 'Inactivos',
-      filterValue: 'INACTIVE',
-      count: tenants.filter((t) => t.status === 'INACTIVE').length,
+      label: 'Trial',
+      filterValue: 'TRIAL',
+      count: tenants.filter((t) => t.status === 'TRIAL').length,
+      color: 'var(--info)',
+    },
+    {
+      label: 'Pago vencido',
+      filterValue: 'PAST_DUE',
+      count: tenants.filter((t) => t.status === 'PAST_DUE').length,
+      color: 'var(--warning)',
+    },
+    {
+      label: 'Suspendidos',
+      filterValue: 'SUSPENDED',
+      count: tenants.filter((t) => t.status === 'SUSPENDED').length,
       color: 'var(--danger)',
     },
     {
-      label: 'Trial expirado',
-      filterValue: 'TRIAL_EXPIRED',
-      count: tenants.filter((t) => t.status === 'TRIAL_EXPIRED').length,
-      color: 'var(--warning)',
+      label: 'Cancelados',
+      filterValue: 'CANCELLED',
+      count: tenants.filter((t) => t.status === 'CANCELLED').length,
+      color: 'var(--danger)',
     },
   ]
 
