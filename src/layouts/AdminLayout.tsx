@@ -1,9 +1,12 @@
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getTenantUrl } from '@/lib/tenant'
+import { getTenantBillingRenewalInfo } from '@/lib/api'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { DashboardLayout, type NavItem } from '@/components/layout/DashboardLayout'
 import { TenantLogo } from '@/components/tenant/TenantLogo'
-import { LayoutDashboard, Package, Users, Dumbbell, CreditCard, Calendar, DollarSign, Store, Truck, Settings, Utensils, ClipboardList, Megaphone, BarChart3, Building2, Palette } from 'lucide-react'
+import { LayoutDashboard, Package, Users, Dumbbell, CreditCard, Calendar, DollarSign, Store, Truck, Settings, Utensils, ClipboardList, Megaphone, BarChart3, Building2, Palette, ReceiptText } from 'lucide-react'
 import { canAccessPage, type AdminPage } from '@/lib/permissions'
 import { InstallBanner } from '@/components/ui/InstallBanner'
 
@@ -24,11 +27,14 @@ const ALL_NAV_ITEMS: (NavItem & { page: AdminPage })[] = [
   { to: '/admin/anuncios', icon: Megaphone, label: 'Anuncios', page: 'announcements' },
   { to: '/admin/reportes', icon: BarChart3, label: 'Reportes', page: 'reports' },
   { to: '/admin/branding', icon: Palette, label: 'Colores de Marca', page: 'branding' },
+  { to: '/admin/billing', icon: ReceiptText, label: 'Facturación SaaS', page: 'billing' },
 ]
 
 export function AdminLayout() {
   const { user, logout, tenantId } = useAuthStore()
   const { branding } = useTenantBranding()
+  const location = useLocation()
+  const navigate = useNavigate()
 
   const navItems = ALL_NAV_ITEMS.filter((item) =>
     canAccessPage(user?.role, item.page)
@@ -43,6 +49,29 @@ export function AdminLayout() {
       window.location.href = '/'
     }
   }
+
+  useEffect(() => {
+    if (user?.role !== 'admin' || location.pathname === '/admin/billing') return
+
+    let cancelled = false
+    getTenantBillingRenewalInfo()
+      .then((response) => {
+        if (cancelled || !response.dto) return
+        const info = response.dto
+        const subscriptionExpired = info.subscriptionEndsAt
+          ? new Date(info.subscriptionEndsAt).getTime() < Date.now()
+          : false
+        const blockedStatus = ['TRIAL_EXPIRED', 'PAST_DUE', 'INACTIVE'].includes(info.status)
+        if (blockedStatus || subscriptionExpired) {
+          navigate('/admin/billing', { replace: true })
+        }
+      })
+      .catch(() => undefined)
+
+    return () => {
+      cancelled = true
+    }
+  }, [location.pathname, navigate, user?.role])
 
   return (
     <>

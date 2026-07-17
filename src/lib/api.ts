@@ -76,6 +76,7 @@ export async function fetchApi<T>(
   const isAuthOrBrandingCall =
     url.startsWith('/api/auth/') ||
     url.startsWith('/api/public/tenant-branding') ||
+    url.startsWith('/api/public/tenants/') ||
     url.startsWith('/api/announcements/active') ||
     url.startsWith('/api/tenant-settings') ||
     url.startsWith('/platform/auth/')
@@ -634,6 +635,18 @@ export const simulateTenantRenewalPayment = (tenantId: string) =>
   fetchApi<ResponseDTO<TenantRenewalResultDTO>>(`/api/tenants/${tenantId}/renewal/simulate-payment`, { method: 'POST' })
 export const processTenantRenewalMercadoPagoPayment = (tenantId: string, data: TenantRenewalPaymentRequest) =>
   fetchApi<ResponseDTO<TenantRenewalResultDTO>>(`/api/tenants/${tenantId}/renewal/mercadopago-payment`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+
+export const getTenantBillingRenewalInfo = () =>
+  fetchApi<ResponseDTO<TenantRenewalInfoDTO>>('/api/tenant/billing/renewal-info')
+
+export const getTenantBillingPayments = () =>
+  fetchApi<ResponseDTO<TenantPaymentDTO[]>>('/api/tenant/billing/payments')
+
+export const processTenantBillingRenewalMercadoPagoPayment = (data: TenantRenewalPaymentRequest) =>
+  fetchApi<ResponseDTO<TenantRenewalResultDTO>>('/api/tenant/billing/renewal/mercadopago-payment', {
     method: 'POST',
     body: JSON.stringify(data),
   })

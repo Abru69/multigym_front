@@ -16,6 +16,7 @@ import {
   AdminDashboard, Inventory, Users, Exercises, Plans, Subscriptions, Payments,
   Pickups, Shipments, DeliverySettings, NutritionPlans, CheckIns, Announcements,
   Reports, Branches, BrandingSettings,
+  Billing,
   Catalog, ProductDetail, Cart, Checkout,
   PlatformLogin, PlatformDashboard, PlatformTenants, PlatformUsers,
   PlatformSaaSPlans, PlatformBilling, PlatformLogs, PlatformSettings, PlatformReports,
@@ -100,6 +101,7 @@ export const router = createBrowserRouter([
       { path: 'reportes', element: <RoleGuard page="reports">{withSuspense(Reports)}</RoleGuard> },
       { path: 'sucursales', element: <RoleGuard page="branches">{withSuspense(Branches)}</RoleGuard> },
       { path: 'branding', element: <RoleGuard page="branding">{withSuspense(BrandingSettings)}</RoleGuard> },
+      { path: 'billing', element: <RoleGuard page="billing">{withSuspense(Billing)}</RoleGuard> },
     ],
   },
 

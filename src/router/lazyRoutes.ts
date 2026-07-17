@@ -30,6 +30,7 @@ export const Announcements = lazy(() => import('@/features/admin/pages/Announcem
 export const Reports = lazy(() => import('@/features/admin/pages/Reports'))
 export const Branches = lazy(() => import('@/features/admin/pages/Branches'))
 export const BrandingSettings = lazy(() => import('@/features/admin/pages/BrandingSettings'))
+export const Billing = lazy(() => import('@/features/admin/pages/Billing'))
 
 // Shop Pages
 export const Catalog = lazy(() => import('@/features/shop/pages/Catalog'))

@@ -12,6 +12,7 @@ export const PAGE_ROUTE_INVERSE: Record<string, string> = {
   pickups: '/admin/recogidas',
   shipments: '/admin/envios',
   delivery: '/admin/entrega',
+  billing: '/admin/billing',
 }
 
 export function getDefaultRoute(role: string | undefined): string {
