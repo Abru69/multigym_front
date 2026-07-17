@@ -35,13 +35,25 @@ export default function Billing() {
   }, [])
 
   useEffect(() => {
-    try {
-      getMercadoPago()
-      setMpReady(true)
-    } catch (err) {
-      setMpReady(false)
-      addToast(err instanceof Error ? err.message : 'Mercado Pago no está configurado', 'warning')
+    const initMp = (retries = 0) => {
+      try {
+        if (typeof window.MercadoPago === 'undefined') {
+          if (retries < 5) {
+            setTimeout(() => initMp(retries + 1), 1000)
+            return
+          }
+          setMpReady(false)
+          addToast('SDK de Mercado Pago no se pudo cargar. Verifica tu conexión a internet.', 'warning')
+          return
+        }
+        getMercadoPago()
+        setMpReady(true)
+      } catch (err) {
+        setMpReady(false)
+        addToast(err instanceof Error ? err.message : 'Mercado Pago no está configurado', 'warning')
+      }
     }
+    initMp()
   }, [addToast])
 
   useEffect(() => {
@@ -192,7 +204,13 @@ export default function Billing() {
               </div>
             </div>
 
-            {isMercadoPagoTestMode && (
+            {!mpReady && (
+              <div className="mt-5 rounded-2xl border border-[var(--danger)]/40 bg-[var(--danger)]/10 p-4 text-sm text-[var(--text-secondary)]">
+                Mercado Pago no está disponible. Verifica tu conexión a internet y recarga la página.
+              </div>
+            )}
+
+            {isMercadoPagoTestMode && mpReady && (
               <div className="mt-5 rounded-2xl border border-[var(--info)]/40 bg-[var(--info)]/10 p-4 text-sm text-[var(--text-secondary)]">
                 Modo sandbox: usa APRO, Visa 4075 5957 1648 3764, CVV 123, vencimiento 11/30.
               </div>
