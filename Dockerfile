@@ -8,8 +8,7 @@ RUN npm ci --legacy-peer-deps
 COPY . .
 
 ARG VITE_MP_PUBLIC_KEY=
-ENV VITE_MP_PUBLIC_KEY=$VITE_MP_PUBLIC_KEY
-
+RUN if [ -n "$VITE_MP_PUBLIC_KEY" ]; then echo "VITE_MP_PUBLIC_KEY=$VITE_MP_PUBLIC_KEY" >> /app/.env; fi
 RUN npm run build
 
 FROM nginx:1.27-alpine

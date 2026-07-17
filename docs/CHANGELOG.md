@@ -13,7 +13,17 @@
 - **Resolución de devoluciones fallidas**
   - Soporte frontend para estados `REFUND_FAILED` y `REFUNDED` en órdenes.
   - Admin puede reintentar devolución fallida o marcarla como resuelta manualmente desde recogidas.
-  - Cliente ve `REFUND_FAILED` como “Devolución en revisión”.
+  - Cliente ve `REFUND_FAILED` como "Devolución en revisión".
+
+- **Dockerfile fix: VITE_MP_PUBLIC_KEY build injection**
+  - Eliminado `ENV VITE_MP_PUBLIC_KEY=$VITE_MP_PUBLIC_KEY` que sobreescribía el `.env` file con valor vacío.
+  - Ahora inyecta el key al `.env` via `RUN echo` antes del build.
+  - Agregado `.env` a `.gitignore` para evitar commitear credenciales.
+
+- **Billing page: MercadoPago SDK retry + self-hosted**
+  - MercadoPago SDK auto-hosteado en `public/mercadopago.js` (266KB) para evitar errores SSL con certificados self-signed.
+  - `Billing.tsx` reintentos de carga del SDK (5 intentos, 1s intervalo) con toast de error si falla.
+  - Build local exitoso con `VITE_MP_PUBLIC_KEY` y assets copiados al contenedor.
 
 Formato: [YYYY-MM-DD]
 
