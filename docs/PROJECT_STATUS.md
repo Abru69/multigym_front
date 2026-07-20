@@ -1,31 +1,58 @@
 # Estado del Proyecto
 
-**Última actualización:** 2026-07-14
+**Última actualización:** 2026-07-19
+
+## Sesión Actual — Navbar Y Temas
+
+- ✅ Navbar administrativo agrupado por secciones en `AdminLayout.tsx`.
+- ✅ Secciones del navbar contraíbles y desplegables en desktop y móvil.
+- ✅ Elementos del navbar filtrados por permisos; las secciones vacías se ocultan.
+- ✅ Contraste corregido para elemento activo y hover en tema claro.
+- ✅ Variables semánticas para estados `success`, `warning`, `error` e `info`.
+- ✅ Tooltips y gráficas administrativas adaptados a ambos temas.
+- ✅ Colores fijos corregidos en tarjetas, tablas, badges, overlays, modales, envíos, recogidas, pagos y suscripciones.
+- ✅ TypeScript, ESLint, build de producción y `git diff --check` pasan correctamente.
+- ℹ️ No se realizaron cambios en el backend.
+
+## Auditoría Frontend 2026-07-18
+
+- ✅ Toast global montado en `App.tsx`.
+- ✅ Logout de plataforma ya no envía el token de tenant a `/api/auth/logout`.
+- ✅ Refresh token tenant integrado en `fetchApi()` con un único reintento.
+- ✅ Perfil conectado a `PUT /api/tenant/users/{id}` y suscripciones usan `memberId`.
+- ✅ ProductDetail procesa respuestas paginadas y consulta por nombre.
+- ✅ Persistencia de nutrición y progreso de rutinas aislada por tenant y usuario.
+- ✅ Cache PWA eliminado para respuestas API autenticadas.
+- ✅ Errores de lint y accesibilidad corregidos.
+- ⚠️ Cambio de contraseña requiere un endpoint backend documentado.
+- ⚠️ Progreso físico todavía requiere página, ruta y endpoints backend.
+- ⚠️ Logout server-side de plataforma requiere endpoint backend específico.
 
 ## Resumen
 
-| Área               | Estado                                    |
-| ------------------ | ----------------------------------------- |
-| Build              | ✅ Passing (836ms)                        |
-| TypeScript         | ⚠️ Errores preexistentes (DeliverySettings, Checkout, MyOrders) |
-| Lint               | ⚠️ Problemas preexistentes               |
-| Dark Theme         | ✅ Near-black (#0a0a0a) + accent #aaff00 |
-| API Integration    | ✅ 30+ endpoints conectados + pagination  |
+| Área               | Estado                                                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Build              | ✅ Passing                                                                                                                                        |
+| TypeScript         | ✅ Passing                                                                                                                                        |
+| Lint               | ✅ Passing                                                                                                                                        |
+| Themes             | ✅ Light/dark variables, contrast and status colors corrected                                                                                   |
+| API Integration    | ✅ 30+ endpoints conectados + pagination                                                                                                         |
 | Admin Pages        | ✅ 14 páginas (Dashboard, Inventario, Usuarios, Ejercicios, Planes, Suscripciones, Pagos, Nutrición, Recogidas, Envíos, Métodos de Entrega, ...) |
-| Client Pages       | ✅ 4 páginas (Rutinas, Nutrición, Progreso, My Orders) |
-| Checkout           | ✅ Integrado con backend + delivery methods (3 pasos)|
-| Pickup Flow        | ✅ Estado READY, comprobante QR, entregado/cancelado |
-| Nutrition (Admin)  | ✅ CRUD planes nutricionales + assignación a miembros |
-| Nutrition (Client) | ✅ Conectado con store, fallback mock     |
-| Roles & Permisos   | ✅ 6 roles con control de acceso por página |
-| Tenant Landing     | ✅ Banners promocionales + branding dinámico |
-| Form Validations   | ✅ Validación reforzada en todos los forms |
-| PWA                | ✅ Instalable + offline support + auto-update |
-| Missing Endpoints  | ⚠️ Progress sin backend                   |
+| Client Pages       | ✅ 4 páginas (Rutinas, Nutrición, Progreso, My Orders)                                                                                           |
+| Checkout           | ✅ Integrado con backend + delivery methods (3 pasos)                                                                                            |
+| Pickup Flow        | ✅ Estado READY, comprobante QR, entregado/cancelado                                                                                             |
+| Nutrition (Admin)  | ✅ CRUD planes nutricionales + assignación a miembros                                                                                            |
+| Nutrition (Client) | ✅ Conectado con store, fallback mock                                                                                                            |
+| Roles & Permisos   | ✅ 6 roles con control de acceso por página                                                                                                      |
+| Tenant Landing     | ✅ Banners promocionales + branding dinámico                                                                                                     |
+| Form Validations   | ✅ Validación reforzada en todos los forms                                                                                                       |
+| PWA                | ✅ Instalable + offline support + auto-update                                                                                                    |
+| Missing Endpoints  | ⚠️ Progress sin backend                                                                                                                          |
 
 ## Funcionalidades Recientes (2026-07-14)
 
 ### PWA (Progressive Web App)
+
 - `vite-plugin-pwa` con Workbox para service worker automático
 - Manifest: nombre, descripción, iconos, theme-color, display standalone
 - Iconos PWA: 192x192, 512x512, 512x512-maskable
@@ -38,12 +65,14 @@
 - **Offline**: La app carga contenido cacheado sin conexión
 
 ### Tenant Landing — Banners Promocionales
+
 - `TenantBanner.tsx` — componente de banner debajo del hero
 - `TenantBranding.banners` array con imagen, título, subtítulo, link, botón, accentColor
 - Ejemplo: gym1 tiene banner "Summer Challenge 2026"
 - `TenantLandingPage.tsx` renderiza `<TenantBanner />` después de `<TenantHero />`
 
 ### API Refactoring
+
 - `fetchApi()` separa requests platform vs tenant automáticamente
 - Token de plataforma (`platform-auth`) para `/platform/` y `/platform-api/`
 - Token de tenant (`auth-storage`) para `/api/tenant/` y `/api/auth/`
@@ -51,24 +80,28 @@
 - Header `X-Tenant-ID` no se envía en requests de plataforma
 
 ### API Pagination
+
 - `getProducts({ name?, page?, size? })` — búsqueda y paginación
 - `getWorkouts({ title?, memberId?, page?, size? })` — búsqueda y paginación
 - `getOrders({ status?, userId?, page?, size? })` — filtrado y paginación
 - `getNutritionPlans({ search?, page?, size? })` — búsqueda y paginación
 
 ### Tenant Users CRUD
+
 - `createTenantUser(data)` — POST `/api/tenant/users`
 - `updateTenantUser(userId, data)` — PUT `/api/tenant/users/{id}`
 - `toggleTenantUserStatus(userId)` — PATCH `/api/tenant/users/{id}/status`
 - `deleteTenantUser(userId)` — DELETE `/api/tenant/users/{id}`
 
 ### RoutineBuilder Fix
+
 - Crea workout con `createWorkout({ memberId, title, startsAt, endsAt })`
 - Luego crea ejercicios con `createWorkoutExercise({ workoutId, exerciseId, ... })`
 - `memberId` resuelto desde `user.memberDTO.id`
 - `WorkoutExerciseRequest.dayOfWeek` cambiado a opcional
 
 ### Validaciones Reforzadas
+
 - **Users**: nombre y teléfono requeridos, password minLength=8
 - **NutritionPlans**: valida nombres de alimentos no vacíos
 - **Subscriptions**: endDate debe ser posterior a startDate
@@ -77,15 +110,18 @@
 - **Exercises**: valida nombre duplicado en grupos personalizados
 
 ### Login Redirect por Rol
+
 - `getDefaultRoute(role)` mapea page → route (ej: `users` → `/admin/usuarios`)
 - `Login.tsx`: useEffect auto-redirige si `isAuthenticated`
 - `RoleGuard` y `PathRoleGuard` usan getDefaultRoute() para redirects
 
 ### Cart Tenant-Scoped
+
 - localStorage key: `reto4-cart-{tenantId}` (antes genérico)
 - Cart badge muestra número de items
 
 ### Other Fixes
+
 - **MemberNav**: `/app/nutricion` → `/app/perfil`
 - **MyOrders**: paymentStatus labels en español
 - **Checkout**: tipado `OrderRequest`, fallback `dto || lista`
@@ -96,6 +132,7 @@
 ## Funcionalidades Recientes (2026-07-07)
 
 ### My Orders (`/app/mis-ordenes`)
+
 - Endpoint: `GET /api/orders/my` (filtra por JWT user)
 - Sort por fecha (default: recientes primero) y por total
 - Summary cards: total, completadas, gastado
@@ -103,34 +140,41 @@
 - Empty state con link a tienda
 
 ### Checkout
+
 - Flujo 3 pasos: método de entrega → detalles → pago
 - Recogida: selector de sucursal, sin costo de envío
 - Envío: formulario dirección, envío gratis >$1500, $150 si no
 - Envía `deliveryMethod`, `branchId` o `shippingAddress/City/PostalCode`
 
 ### Delivery Methods (Admin)
+
 - **Recogidas** (`/admin/recogidas`): lista pedidos PICKUP, "Marcar Listo" para cambiar a COMPLETED
 - **Envíos** (`/admin/envios`): lista pedidos SHIPPING con dirección de entrega
 - **Métodos de Entrega** (`/admin/entrega`): toggle habilitar/deshabilitar recogida y envío por tenant
 
 ### Image Mapping
+
 - `imageUrl`/`videoUrl` de ProductDTO mapeados a `image`/`video`
 - Fallback: `p.imageUrl || p.image` en Catalog, Detail, Inventory
 
-## Paleta de Colores (Dark Theme)
+## Paleta De Colores
 
-| Token          | Valor     | Uso                    |
-| -------------- | --------- | ---------------------- |
-| `--bg-primary` | `#0a0a0a` | Fondo principal        |
-| `--bg-secondary`| `#111111`| Fondo body             |
-| `--card`       | `#141414` | Tarjetas, paneles      |
-| `--surface`    | `#1a1a1a` | Superficies elevadas   |
-| `--border`     | `#222222` | Bordes sutiles         |
-| `--text-primary`| `#f5f5f5`| Texto principal        |
-| `--text-secondary`| `#a0a0a0`| Texto secundario     |
-| `--text-muted` | `#666666` | Texto apagado          |
-| `--accent`     | `#aaff00` | Verde neón             |
-| `--accent-text`| `#0a0a0a` | Texto sobre accent     |
+| Token              | Valor     | Uso                  |
+| ------------------ | --------- | -------------------- |
+| `--bg-primary`     | `#0a0a0a` | Fondo principal      |
+| `--bg-secondary`   | `#111111` | Fondo body           |
+| `--card`           | `#141414` | Tarjetas, paneles    |
+| `--surface`        | `#1a1a1a` | Superficies elevadas |
+| `--border`         | `#222222` | Bordes sutiles       |
+| `--text-primary`   | `#f5f5f5` | Texto principal      |
+| `--text-secondary` | `#a0a0a0` | Texto secundario     |
+| `--text-muted`     | `#666666` | Texto apagado        |
+| `--accent`         | `#f97316` | Acento              |
+| `--accent-text`    | Según tema | Texto sobre accent   |
+| `--success-muted`  | Según tema | Fondo tenue de éxito |
+| `--warning-muted`  | Según tema | Fondo tenue de aviso |
+| `--error-muted-bg` | Según tema | Fondo tenue de error |
+| `--info-muted`     | Según tema | Fondo tenue de info  |
 
 ## Completado
 
@@ -289,6 +333,7 @@
 **El backend `WorkoutLogDTO` solo tiene:** `durationMinutes`, `caloriesBurned`, `completedAt`
 
 **Campos necesarios en el DTO:**
+
 ```java
 public record ProgressDTO(
     UUID id, UUID memberId, LocalDate date,
@@ -299,6 +344,7 @@ public record ProgressDTO(
 ```
 
 **Endpoints necesarios:**
+
 - `GET /api/progress/member/{memberId}` — listar progreso
 - `POST /api/progress` — registrar dato físico
 - `PUT /api/progress/{id}` — editar registro
@@ -309,6 +355,7 @@ public record ProgressDTO(
 **Frontend completado:** Admin CRUD + cliente conectado con store. Fallback a mock data mientras el backend no exista.
 
 **Endpoints necesarios (para cuando el backend esté listo):**
+
 - `GET /api/nutrition/member/{memberId}` — plan de nutrición del miembro
 - `GET /api/nutrition` — listar todos los planes (admin)
 - `POST /api/nutrition` — crear plan
@@ -337,7 +384,9 @@ public record ProgressDTO(
 
 ## Bugs Conocidos
 
-- (Ninguno crítico en este momento)
+- Cambio de contraseña del cliente pendiente de endpoint backend.
+- Progreso físico pendiente de implementación frontend y backend.
+- El contrato de nutrición debe unificarse entre `/api/nutrition/my` y `/api/nutrition/member/{memberId}`.
 
 ## Archivos CSS Eliminados
 

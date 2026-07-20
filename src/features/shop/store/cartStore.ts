@@ -24,9 +24,7 @@ export const useCartStore = create<CartStore>()(
           if (existing.quantity < product.stock) {
             set({
               items: items.map((i) =>
-                i.product.id === product.id
-                  ? { ...i, quantity: i.quantity + 1 }
-                  : i
+                i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
               ),
             })
           }
@@ -70,8 +68,11 @@ export const useCartStore = create<CartStore>()(
           const data = localStorage.getItem('auth-storage')
           const parsed = data ? JSON.parse(data) : null
           const tenantId = parsed?.state?.tenantId || 'default'
-          return `reto4-cart-${tenantId}`
-        } catch { return 'reto4-cart' }
+          const userId = parsed?.state?.user?.id || 'guest'
+          return `multigym-cart-${tenantId}-${userId}`
+        } catch {
+          return 'multigym-cart-default-guest'
+        }
       })(),
     }
   )

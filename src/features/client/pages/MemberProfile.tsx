@@ -2,7 +2,8 @@ import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTheme } from '@/hooks/useTheme'
-import { getMyOrders, getSubscriptionsByMember, uploadMyAvatar } from '@/lib/api'
+import { getMyOrders, getSubscriptionsByMember, updateTenantUser, uploadMyAvatar } from '@/lib/api'
+import { useToastStore } from '@/components/ui/Toast'
 import { getTenantUrl } from '@/lib/tenant'
 import type { OrderDTO, SubscriptionListItemDTO } from '@/types/api'
 import {
@@ -26,7 +27,8 @@ import {
 } from 'lucide-react'
 
 export default function MemberProfile() {
-  const { user, logout, tenantId, setUserAvatar } = useAuthStore()
+  const { user, logout, tenantId, setUserAvatar, updateUserProfile } = useAuthStore()
+  const addToast = useToastStore((state) => state.addToast)
   const { isDark, toggleTheme } = useTheme()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -42,7 +44,7 @@ export default function MemberProfile() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPasswords, setShowPasswords] = useState(false)
-  const [changingPassword, setChangingPassword] = useState(false)
+  const changingPassword = false
 
   const [subscription, setSubscription] = useState<SubscriptionListItemDTO | null>(null)
   const [orders, setOrders] = useState<OrderDTO[]>([])
@@ -53,7 +55,7 @@ export default function MemberProfile() {
       try {
         if (user?.id) {
           const [subRes, ordersRes] = await Promise.all([
-            getSubscriptionsByMember(user.id),
+            getSubscriptionsByMember(user.memberId || user.id),
             getMyOrders(),
           ])
           const subs = subRes.lista ?? subRes.dto ?? []
@@ -68,14 +70,27 @@ export default function MemberProfile() {
       }
     }
     loadData()
-  }, [user?.id])
+  }, [user?.id, user?.memberId])
 
   const handleSaveProfile = async () => {
     setSaving(true)
-    await new Promise((r) => setTimeout(r, 800))
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    try {
+      if (!user) return
+      await updateTenantUser(user.id, {
+        email: user.email,
+        name,
+        phone,
+        role: user.role.toUpperCase(),
+      })
+      updateUserProfile({ name, phone })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+      addToast('Perfil actualizado correctamente', 'success')
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : 'No se pudo actualizar el perfil', 'error')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleAvatarChange = async (file?: File) => {
@@ -99,13 +114,11 @@ export default function MemberProfile() {
   }
 
   const handleChangePassword = async () => {
-    if (!newPassword || newPassword !== confirmPassword) return
-    setChangingPassword(true)
-    await new Promise((r) => setTimeout(r, 800))
-    setChangingPassword(false)
-    setCurrentPassword('')
-    setNewPassword('')
-    setConfirmPassword('')
+    if (!currentPassword || !newPassword || newPassword !== confirmPassword) return
+    addToast(
+      'El cambio de contraseña requiere un endpoint de backend pendiente de integrar.',
+      'warning'
+    )
   }
 
   const totalSpent = orders.reduce((sum, o) => sum + Number(o.total || 0), 0)
@@ -155,21 +168,27 @@ export default function MemberProfile() {
             <Camera size={15} />
           </button>
           {subscription?.status === 'ACTIVE' && (
-            <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)] border-2 border-[var(--bg-primary)]">
+            <div className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-[var(--bg-primary)] bg-[var(--accent)]">
               <Crown size={14} className="text-[var(--accent-text)]" />
             </div>
           )}
         </div>
-        <h1 className="text-xl font-black text-[var(--text-primary)]">
-          {user?.name ?? 'Usuario'}
-        </h1>
+        <h1 className="text-xl font-black text-[var(--text-primary)]">{user?.name ?? 'Usuario'}</h1>
         <p className="text-sm text-[var(--text-muted)]">{user?.email}</p>
-        {avatarUploading && <p className="mt-2 text-xs font-bold text-[var(--accent)]">Subiendo avatar...</p>}
+        {avatarUploading && (
+          <p className="mt-2 text-xs font-bold text-[var(--accent)]">Subiendo avatar...</p>
+        )}
         {avatarError && <p className="mt-2 text-xs font-bold text-red-500">{avatarError}</p>}
         <div className="mt-3 flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-[var(--text-secondary)]">
             <Calendar size={12} />
-            Miembro desde {user?.joinDate ? new Date(user.joinDate).toLocaleDateString('es-MX', { month: 'short', year: 'numeric' }) : '—'}
+            Miembro desde{' '}
+            {user?.joinDate
+              ? new Date(user.joinDate).toLocaleDateString('es-MX', {
+                  month: 'short',
+                  year: 'numeric',
+                })
+              : '—'}
           </span>
         </div>
       </motion.div>
@@ -190,10 +209,8 @@ export default function MemberProfile() {
             className="flex flex-col items-center rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3 py-4"
           >
             <stat.icon size={18} className="mb-2 text-[var(--accent)]" />
-            <span className="text-lg font-black text-[var(--text-primary)]">
-              {stat.value}
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+            <span className="text-lg font-black text-[var(--text-primary)]">{stat.value}</span>
+            <span className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
               {stat.label}
             </span>
           </div>
@@ -207,55 +224,73 @@ export default function MemberProfile() {
         className="rounded-2xl border border-[var(--border)] bg-[var(--card)]"
       >
         <div className="border-b border-[var(--border)] px-5 py-4">
-          <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-[var(--text-primary)]">
+          <h2 className="flex items-center gap-2 text-sm font-black tracking-wider text-[var(--text-primary)] uppercase">
             <User size={16} className="text-[var(--accent)]" />
             Información Personal
           </h2>
         </div>
         <div className="space-y-4 p-5">
           <div>
-            <label htmlFor="profile-name" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+            <label
+              htmlFor="profile-name"
+              className="mb-1.5 block text-xs font-bold tracking-wider text-[var(--text-muted)] uppercase"
+            >
               Nombre completo
             </label>
             <div className="relative">
-              <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+              <User
+                size={16}
+                className="absolute top-1/2 left-3 -translate-y-1/2 text-[var(--text-muted)]"
+              />
               <input
                 id="profile-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2.5 pl-10 pr-4 text-sm font-medium text-[var(--text-primary)] outline-none transition-all focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2.5 pr-4 pl-10 text-sm font-medium text-[var(--text-primary)] transition-all outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
               />
             </div>
           </div>
           <div>
-            <label htmlFor="profile-email" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+            <label
+              htmlFor="profile-email"
+              className="mb-1.5 block text-xs font-bold tracking-wider text-[var(--text-muted)] uppercase"
+            >
               Correo electrónico
             </label>
             <div className="relative">
-              <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+              <Mail
+                size={16}
+                className="absolute top-1/2 left-3 -translate-y-1/2 text-[var(--text-muted)]"
+              />
               <input
                 id="profile-email"
                 type="email"
                 value={email}
                 disabled
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2.5 pl-10 pr-4 text-sm font-medium text-[var(--text-muted)] opacity-60"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2.5 pr-4 pl-10 text-sm font-medium text-[var(--text-muted)] opacity-60"
               />
             </div>
           </div>
           <div>
-            <label htmlFor="profile-phone" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+            <label
+              htmlFor="profile-phone"
+              className="mb-1.5 block text-xs font-bold tracking-wider text-[var(--text-muted)] uppercase"
+            >
               Teléfono
             </label>
             <div className="relative">
-              <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+              <Phone
+                size={16}
+                className="absolute top-1/2 left-3 -translate-y-1/2 text-[var(--text-muted)]"
+              />
               <input
                 id="profile-phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Tu número de teléfono"
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2.5 pl-10 pr-4 text-sm font-medium text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
+                className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2.5 pr-4 pl-10 text-sm font-medium text-[var(--text-primary)] transition-all outline-none placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
               />
             </div>
           </div>
@@ -279,10 +314,14 @@ export default function MemberProfile() {
         className="rounded-2xl border border-[var(--border)] bg-[var(--card)]"
       >
         <div className="border-b border-[var(--border)] px-5 py-4">
-          <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-[var(--text-primary)]">
+          <h2 className="flex items-center gap-2 text-sm font-black tracking-wider text-[var(--text-primary)] uppercase">
             <Shield size={16} className="text-[var(--accent)]" />
             Cambiar Contraseña
           </h2>
+          <p className="mt-2 text-xs text-[var(--text-muted)]">
+            Esta operación quedará disponible cuando el backend exponga el endpoint de cambio de
+            contraseña.
+          </p>
         </div>
         <div className="space-y-4 p-5">
           {[
@@ -291,16 +330,19 @@ export default function MemberProfile() {
             { label: 'Confirmar contraseña', value: confirmPassword, onChange: setConfirmPassword },
           ].map((field) => (
             <div key={field.label}>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+              <label className="mb-1.5 block text-xs font-bold tracking-wider text-[var(--text-muted)] uppercase">
                 {field.label}
               </label>
               <div className="relative">
-                <Shield size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                <Shield
+                  size={16}
+                  className="absolute top-1/2 left-3 -translate-y-1/2 text-[var(--text-muted)]"
+                />
                 <input
                   type={showPasswords ? 'text' : 'password'}
                   value={field.value}
                   onChange={(e) => field.onChange(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2.5 pl-10 pr-10 text-sm font-medium text-[var(--text-primary)] outline-none transition-all focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2.5 pr-10 pl-10 text-sm font-medium text-[var(--text-primary)] transition-all outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20"
                 />
               </div>
             </div>
@@ -315,7 +357,12 @@ export default function MemberProfile() {
             </button>
             <button
               onClick={handleChangePassword}
-              disabled={changingPassword || !currentPassword || !newPassword || newPassword !== confirmPassword}
+              disabled={
+                changingPassword ||
+                !currentPassword ||
+                !newPassword ||
+                newPassword !== confirmPassword
+              }
               className="flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] active:scale-[0.97] disabled:opacity-40"
             >
               <Shield size={14} />
@@ -332,7 +379,7 @@ export default function MemberProfile() {
         className="rounded-2xl border border-[var(--border)] bg-[var(--card)]"
       >
         <div className="border-b border-[var(--border)] px-5 py-4">
-          <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-[var(--text-primary)]">
+          <h2 className="flex items-center gap-2 text-sm font-black tracking-wider text-[var(--text-primary)] uppercase">
             <CreditCard size={16} className="text-[var(--accent)]" />
             Mi Plan
           </h2>
@@ -360,7 +407,7 @@ export default function MemberProfile() {
               </span>
             </div>
           ) : (
-            <div className="text-center py-6">
+            <div className="py-6 text-center">
               <p className="text-sm text-[var(--text-muted)]">No tienes un plan activo</p>
             </div>
           )}
@@ -374,7 +421,7 @@ export default function MemberProfile() {
         className="rounded-2xl border border-[var(--border)] bg-[var(--card)]"
       >
         <div className="border-b border-[var(--border)] px-5 py-4">
-          <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-[var(--text-primary)]">
+          <h2 className="flex items-center gap-2 text-sm font-black tracking-wider text-[var(--text-primary)] uppercase">
             <Settings size={16} className="text-[var(--accent)]" />
             Configuración
           </h2>
@@ -385,7 +432,11 @@ export default function MemberProfile() {
             className="flex w-full items-center justify-between px-5 py-4 transition-colors hover:bg-[var(--surface-hover)]"
           >
             <div className="flex items-center gap-3">
-              {isDark ? <Sun size={18} className="text-[var(--accent)]" /> : <Moon size={18} className="text-[var(--accent)]" />}
+              {isDark ? (
+                <Sun size={18} className="text-[var(--accent)]" />
+              ) : (
+                <Moon size={18} className="text-[var(--accent)]" />
+              )}
               <span className="text-sm font-medium text-[var(--text-primary)]">
                 Modo {isDark ? 'Claro' : 'Oscuro'}
               </span>

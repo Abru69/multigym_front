@@ -1,13 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { fetchApi } from '@/lib/api'
-import {
-  UserPlus,
-  Dumbbell,
-  Trash2,
-  MoreVertical,
-  Edit2,
-  ChevronRight,
-} from 'lucide-react'
+import { UserPlus, Dumbbell, Trash2, MoreVertical, Edit2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -20,6 +13,7 @@ import { LoadingState } from '../components/LoadingState'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
+import { DataTable, type DataTableColumn } from '@/components/ui/DataTable'
 
 type RoleFilter = 'ALL' | 'ADMIN' | 'CLIENT' | 'NUTRICIONIST' | 'STAFF' | 'RECEPTIONIST' | 'SELLER'
 
@@ -73,8 +67,7 @@ export default function UsersPage() {
       const name = u.memberDTO?.name || u.email
       const matchesSearch =
         name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)
-      const matchesRole =
-        roleFilter === 'ALL' || u.role === roleFilter
+      const matchesRole = roleFilter === 'ALL' || u.role === roleFilter
       return matchesSearch && matchesRole
     })
   }, [clients, debouncedSearch, roleFilter])
@@ -197,15 +190,112 @@ export default function UsersPage() {
     { key: 'SELLER', label: 'Vendedor' },
   ]
 
+  const columns: DataTableColumn<UserDTO>[] = [
+    {
+      key: 'name',
+      label: 'Usuario',
+      render: (user) => (
+        <div className="flex min-w-52 items-center gap-3">
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-black"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+          >
+            {getInitials(user)}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate font-semibold text-[var(--text-primary)]">{getName(user)}</p>
+            <p className="truncate text-xs text-[var(--text-muted)]">{user.email}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'role',
+      label: 'Rol',
+      sortable: true,
+      render: (user) => {
+        const colors = ROLE_COLORS[user.role] || ROLE_COLORS.CLIENT
+        return (
+          <span
+            className="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"
+            style={{ backgroundColor: colors.bg, color: colors.text }}
+          >
+            {ROLE_LABELS[user.role] || user.role}
+          </span>
+        )
+      },
+    },
+    {
+      key: 'phone',
+      label: 'Teléfono',
+      render: (user) => (
+        <span className="text-sm text-[var(--text-secondary)]">
+          {user.memberDTO?.phone || 'Sin teléfono'}
+        </span>
+      ),
+    },
+    {
+      key: 'isActive',
+      label: 'Estado',
+      sortable: true,
+      render: (user) => (
+        <span
+          className="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"
+          style={{
+            backgroundColor: user.isActive ? 'var(--success-muted)' : 'var(--error-muted-bg)',
+            color: user.isActive ? 'var(--success)' : 'var(--error)',
+          }}
+        >
+          {user.isActive ? 'Activo' : 'Inactivo'}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      label: 'Acciones',
+      className: 'w-16 text-right',
+      headerClassName: 'text-right',
+      render: (user) => (
+        <div>
+          <DropdownMenu
+            trigger={
+              <button
+                type="button"
+                className="rounded-lg p-1.5 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                aria-label={`Acciones para ${getName(user)}`}
+              >
+                <MoreVertical size={16} />
+              </button>
+            }
+          >
+            <DropdownItem onClick={() => openEdit(user)}>
+              <Edit2 size={14} /> Editar
+            </DropdownItem>
+            <DropdownItem
+              onClick={() => navigate(`/admin/ejercicios?tab=routines&userId=${user.id}`)}
+              className="text-[var(--accent-text)]"
+            >
+              <Dumbbell size={14} /> Crear Rutina
+            </DropdownItem>
+            <DropdownItem onClick={() => toggleStatus(user)}>
+              {user.isActive ? '⏸ Desactivar' : '▶ Activar'}
+            </DropdownItem>
+            <DropdownSeparator />
+            <DropdownItem danger onClick={() => setDeleteTarget(user)}>
+              <Trash2 size={14} /> Eliminar
+            </DropdownItem>
+          </DropdownMenu>
+        </div>
+      ),
+    },
+  ]
+
   return (
     <div style={{ fontFamily: 'var(--font-body)' }} className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1
-            style={{ fontFamily: 'var(--font-heading)' }}
-            className="text-2xl font-black"
-          >
+          <h1 style={{ fontFamily: 'var(--font-heading)' }} className="text-2xl font-black">
             Clientes
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -224,13 +314,15 @@ export default function UsersPage() {
       {error && (
         <div
           className="flex items-center gap-3 rounded-xl px-4 py-3"
-          style={{ border: '1px solid #fecaca', backgroundColor: '#fef2f2' }}
+          style={{ border: '1px solid var(--error)', backgroundColor: 'var(--error-muted-bg)' }}
         >
-          <p className="flex-1 text-sm" style={{ color: '#b91c1c' }}>{error}</p>
+          <p className="flex-1 text-sm" style={{ color: 'var(--error)' }}>
+            {error}
+          </p>
           <button
             onClick={loadUsers}
             className="text-sm font-semibold hover:underline"
-            style={{ color: '#b91c1c' }}
+            style={{ color: 'var(--error)' }}
           >
             Reintentar
           </button>
@@ -252,14 +344,10 @@ export default function UsersPage() {
               onClick={() => setRoleFilter(rf.key)}
               className="rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200"
               style={{
-                backgroundColor:
-                  roleFilter === rf.key ? 'var(--accent)' : 'var(--card)',
-                color:
-                  roleFilter === rf.key ? 'var(--accent-text)' : 'var(--text-secondary)',
+                backgroundColor: roleFilter === rf.key ? 'var(--accent)' : 'var(--card)',
+                color: roleFilter === rf.key ? 'var(--accent-text)' : 'var(--text-secondary)',
                 border:
-                  roleFilter === rf.key
-                    ? '1px solid var(--accent)'
-                    : '1px solid var(--border)',
+                  roleFilter === rf.key ? '1px solid var(--accent)' : '1px solid var(--border)',
               }}
             >
               {rf.label}
@@ -277,7 +365,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* User Cards Grid */}
+      {/* User table */}
       {isLoading ? (
         <LoadingState text="Cargando usuarios..." />
       ) : filtered.length === 0 ? (
@@ -287,7 +375,7 @@ export default function UsersPage() {
         >
           <UserPlus size={48} style={{ color: 'var(--text-muted)' }} className="mb-4" />
           <p
-            className="text-lg font-bold mb-1"
+            className="mb-1 text-lg font-bold"
             style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
           >
             No hay usuarios
@@ -297,167 +385,14 @@ export default function UsersPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((user) => (
-            <div
-              key={user.id}
-              onClick={() => openEdit(user)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  openEdit(user)
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              className="group bg-[var(--card)] rounded-2xl p-5 transition-all duration-200 cursor-pointer"
-              style={{
-                border: '1px solid var(--border)',
-                borderLeftWidth: 3,
-                borderLeftColor:
-                  ROLE_COLORS[user.role]?.bg || 'var(--border)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06)'
-                e.currentTarget.style.transform = 'translateY(-1px)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = 'none'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  {/* Avatar */}
-                  <div
-                    className="flex items-center justify-center rounded-full flex-shrink-0"
-                    style={{
-                      width: 56,
-                      height: 56,
-                      backgroundColor: 'var(--accent)',
-                      color: 'var(--accent-text)',
-                      fontFamily: 'var(--font-heading)',
-                    }}
-                  >
-                    <span className="text-lg font-black">{getInitials(user)}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <p
-                      className="text-sm font-bold truncate"
-                      style={{ color: 'var(--text-primary)' }}
-                    >
-                      {getName(user)}
-                    </p>
-                    <p
-                      className="text-xs truncate"
-                      style={{ color: 'var(--text-muted)' }}
-                    >
-                      {user.email}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Dropdown */}
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <DropdownMenu
-                    trigger={
-                      <button
-                        className="rounded-lg p-1.5 transition-all duration-200"
-                        style={{
-                          border: '1px solid transparent',
-                          color: 'var(--text-muted)',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = 'var(--border)'
-                          e.currentTarget.style.color = 'var(--text-primary)'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = 'transparent'
-                          e.currentTarget.style.color = 'var(--text-muted)'
-                        }}
-                        aria-label="Más opciones"
-                      >
-                        <MoreVertical size={16} />
-                      </button>
-                    }
-                  >
-                    <DropdownItem onClick={() => openEdit(user)}>
-                      <Edit2 size={14} /> Editar
-                    </DropdownItem>
-                    <DropdownItem
-                      onClick={() =>
-                        navigate(`/admin/ejercicios?tab=routines&userId=${user.id}`)
-                      }
-                      className="text-[var(--accent-text)]"
-                    >
-                      <Dumbbell size={14} /> Crear Rutina
-                    </DropdownItem>
-                    <DropdownItem onClick={() => toggleStatus(user)}>
-                      {user.isActive ? '⏸ Desactivar' : '▶ Activar'}
-                    </DropdownItem>
-                    <DropdownSeparator />
-                    <DropdownItem danger onClick={() => setDeleteTarget(user)}>
-                      <Trash2 size={14} /> Eliminar
-                    </DropdownItem>
-                  </DropdownMenu>
-                </div>
-              </div>
-
-              {/* Badges */}
-              <div className="flex items-center gap-2 mt-3">
-                {(() => {
-                  const colors = ROLE_COLORS[user.role] || ROLE_COLORS.CLIENT
-                  const label = ROLE_LABELS[user.role] || user.role
-                  return (
-                    <span
-                      className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
-                      style={{ backgroundColor: colors.bg, color: colors.text }}
-                    >
-                      {label}
-                    </span>
-                  )
-                })()}
-                <span
-                  className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
-                  style={{
-                    backgroundColor: user.isActive ? '#f0fdf4' : '#fef2f2',
-                    color: user.isActive ? '#16a34a' : '#dc2626',
-                  }}
-                >
-                  {user.isActive ? 'Activo' : 'Inactivo'}
-                </span>
-              </div>
-
-              {/* Bottom row */}
-              <div
-                className="flex items-center justify-between mt-3 pt-3"
-                style={{ borderTop: '1px solid #f1f5f9' }}
-              >
-                <span
-                  className="text-xs font-medium"
-                  style={{ color: 'var(--text-secondary)' }}
-                >
-                  {user.memberDTO?.phone || 'Sin teléfono'}
-                </span>
-                <span
-                  className="text-xs font-semibold flex items-center gap-1 transition-opacity duration-200 opacity-0 group-hover:opacity-100"
-                  style={{ color: 'var(--accent)' }}
-                >
-                  Ver detalles <ChevronRight size={12} />
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <DataTable
+          columns={columns}
+          data={filtered}
+          keyExtractor={(user) => user.id}
+          emptyIcon={UserPlus}
+          emptyTitle="No hay usuarios"
+          emptyDescription="Comienza agregando tu primer cliente al gimnasio."
+        />
       )}
 
       {/* Create/Edit Modal */}
@@ -507,7 +442,10 @@ export default function UsersPage() {
           </FormField>
 
           {!selectedUser && (
-            <p className="rounded-xl px-3 py-2 text-xs" style={{ backgroundColor: 'var(--accent-muted)', color: 'var(--accent)' }}>
+            <p
+              className="rounded-xl px-3 py-2 text-xs"
+              style={{ backgroundColor: 'var(--accent-muted)', color: 'var(--accent)' }}
+            >
               Se enviará un correo de activación al nuevo usuario para que establezca su contraseña.
             </p>
           )}
@@ -517,14 +455,23 @@ export default function UsersPage() {
               type="button"
               onClick={async () => {
                 try {
-                  await fetchApi(`/api/tenant/users/${selectedUser.id}/reset-password`, { method: 'POST' })
+                  await fetchApi(`/api/tenant/users/${selectedUser.id}/reset-password`, {
+                    method: 'POST',
+                  })
                   addToast('Correo de restablecimiento enviado', 'success')
                 } catch (err: unknown) {
-                  addToast(err instanceof Error ? err.message : 'Error al enviar restablecimiento', 'error')
+                  addToast(
+                    err instanceof Error ? err.message : 'Error al enviar restablecimiento',
+                    'error'
+                  )
                 }
               }}
               className="w-full rounded-xl border px-4 py-2.5 text-left text-sm font-medium transition-all hover:opacity-80"
-              style={{ borderColor: 'var(--accent)', color: 'var(--accent)', backgroundColor: 'var(--accent-muted)' }}
+              style={{
+                borderColor: 'var(--accent)',
+                color: 'var(--accent)',
+                backgroundColor: 'var(--accent-muted)',
+              }}
             >
               Enviar correo de restablecimiento de contraseña
             </button>
@@ -537,12 +484,14 @@ export default function UsersPage() {
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
                 className="flex h-11 w-full appearance-none rounded-xl px-4 py-2 text-sm transition-all duration-200 hover:border-[var(--border)] focus:ring-2 focus:outline-none"
-                style={{
-                  border: '1px solid var(--border)',
-                  backgroundColor: 'var(--card)',
-                  color: 'var(--text-primary)',
-                  '--tw-ring-color': 'var(--accent)',
-                } as React.CSSProperties}
+                style={
+                  {
+                    border: '1px solid var(--border)',
+                    backgroundColor: 'var(--card)',
+                    color: 'var(--text-primary)',
+                    '--tw-ring-color': 'var(--accent)',
+                  } as React.CSSProperties
+                }
               >
                 <option value="CLIENT">Cliente</option>
                 <option value="ADMIN">Administrador</option>
@@ -562,10 +511,7 @@ export default function UsersPage() {
                   className="h-4 w-4 rounded"
                   style={{ accentColor: 'var(--accent)' }}
                 />
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: 'var(--text-primary)' }}
-                >
+                <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                   Activo
                 </span>
               </label>
@@ -583,11 +529,11 @@ export default function UsersPage() {
             className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
             style={{
               border: '1px solid var(--border)',
-backgroundColor: 'var(--card)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                Cancelar
+              backgroundColor: 'var(--card)',
+              color: 'var(--text-primary)',
+            }}
+          >
+            Cancelar
           </button>
           <button
             onClick={handleSaveUser}
@@ -599,7 +545,10 @@ backgroundColor: 'var(--card)',
             }}
           >
             {isSaving && (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }} />
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
+                style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }}
+              />
             )}
             Guardar
           </button>

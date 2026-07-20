@@ -12,8 +12,14 @@ export interface NavItem {
   end?: boolean
 }
 
+export interface NavSection {
+  label: string
+  items: NavItem[]
+}
+
 interface DashboardLayoutProps {
   navItems: NavItem[]
+  navSections?: NavSection[]
   logo: ReactNode
   title: string
   subtitle: string
@@ -28,6 +34,7 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({
   navItems,
+  navSections,
   logo,
   title,
   subtitle,
@@ -38,11 +45,22 @@ export function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const { isDark, toggleTheme } = useTheme()
+  const sections = navSections?.length ? navSections : [{ label: '', items: navItems }]
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(sections.map((section) => [section.label || 'main', true]))
+  )
+
+  const toggleSection = (sectionLabel: string) => {
+    setExpandedSections((current) => ({
+      ...current,
+      [sectionLabel]: !current[sectionLabel],
+    }))
+  }
 
   return (
     <div className="flex min-h-screen bg-[var(--bg-secondary)]">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-64 lg:flex-col bg-[var(--card)] border-r border-[var(--border)]">
+      <aside className="hidden border-r border-[var(--border)] bg-[var(--card)] lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-64 lg:flex-col">
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 py-6">
           {logo}
@@ -57,38 +75,68 @@ export function DashboardLayout({
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all',
-                  isActive
-                    ? 'bg-[var(--accent)]/10 text-[var(--accent-text)] font-semibold border-l-3 border-[var(--accent)]'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
-                )
-              }
-            >
-              <item.icon size={18} />
-              <span>{item.label}</span>
-            </NavLink>
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+          {sections.map((section) => (
+            <div key={section.label || 'main'} className="mb-3 last:mb-0">
+              {section.label && (
+                <button
+                  type="button"
+                  onClick={() => toggleSection(section.label)}
+                  aria-expanded={expandedSections[section.label] ?? true}
+                  className="flex w-full items-center justify-between rounded-lg px-4 py-2 text-left text-[10px] font-bold tracking-[0.18em] text-[var(--text-muted)] uppercase transition-colors hover:bg-[var(--surface-hover)]"
+                >
+                  {section.label}
+                  <ChevronDown
+                    size={14}
+                    className={cn(
+                      'transition-transform',
+                      expandedSections[section.label] === false && '-rotate-90'
+                    )}
+                  />
+                </button>
+              )}
+              <div
+                className={cn(
+                  'space-y-1 overflow-hidden transition-[max-height,opacity] duration-200',
+                  expandedSections[section.label || 'main'] === false
+                    ? 'max-h-0 opacity-0'
+                    : 'max-h-[500px] opacity-100'
+                )}
+              >
+                {section.items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all',
+                        isActive
+                          ? 'border-l-3 border-[var(--accent)] bg-[var(--accent)]/10 font-semibold text-[var(--accent)]'
+                          : 'text-[var(--text-secondary)] hover:bg-[var(--accent-muted)] hover:text-[var(--accent)]'
+                      )
+                    }
+                  >
+                    <item.icon size={18} />
+                    <span>{item.label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
         {/* User */}
         <div className="border-t border-[var(--border)] p-4">
-          <div className="flex items-center gap-3 mb-3">
+          <div className="mb-3 flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-bold text-[var(--accent-text)]">
               {user?.initials ?? 'U'}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
                 {user?.name ?? 'User'}
               </p>
-              <p className="text-xs text-[var(--text-secondary)] truncate">
+              <p className="truncate text-xs text-[var(--text-secondary)]">
                 {user?.email ?? 'user@email.com'}
               </p>
             </div>
@@ -117,7 +165,7 @@ export function DashboardLayout({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-50 bg-[var(--overlay)] lg:hidden"
             onClick={() => setSidebarOpen(false)}
           >
             <motion.aside
@@ -125,7 +173,7 @@ export function DashboardLayout({
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.3 }}
-              className="absolute top-0 left-0 flex h-screen w-64 flex-col bg-[var(--card)] border-r border-[var(--border)] shadow-xl"
+              className="absolute top-0 left-0 flex h-screen w-64 flex-col border-r border-[var(--border)] bg-[var(--card)] shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-5">
@@ -148,38 +196,68 @@ export function DashboardLayout({
                 </button>
               </div>
 
-              <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
-                {navItems.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    onClick={() => setSidebarOpen(false)}
-                    className={({ isActive }) =>
-                      cn(
-                        'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all',
-                        isActive
-                          ? 'bg-[var(--accent)]/10 text-[var(--accent-text)] font-semibold border-l-3 border-[var(--accent)]'
-                          : 'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]'
-                      )
-                    }
-                  >
-                    <item.icon size={18} />
-                    <span>{item.label}</span>
-                  </NavLink>
+              <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+                {sections.map((section) => (
+                  <div key={section.label || 'main'} className="mb-3 last:mb-0">
+                    {section.label && (
+                      <button
+                        type="button"
+                        onClick={() => toggleSection(section.label)}
+                        aria-expanded={expandedSections[section.label] ?? true}
+                        className="flex w-full items-center justify-between rounded-lg px-4 py-2 text-left text-[10px] font-bold tracking-[0.18em] text-[var(--text-muted)] uppercase transition-colors hover:bg-[var(--surface-hover)]"
+                      >
+                        {section.label}
+                        <ChevronDown
+                          size={14}
+                          className={cn(
+                            'transition-transform',
+                            expandedSections[section.label] === false && '-rotate-90'
+                          )}
+                        />
+                      </button>
+                    )}
+                    <div
+                      className={cn(
+                        'space-y-1 overflow-hidden transition-[max-height,opacity] duration-200',
+                        expandedSections[section.label || 'main'] === false
+                          ? 'max-h-0 opacity-0'
+                          : 'max-h-[500px] opacity-100'
+                      )}
+                    >
+                      {section.items.map((item) => (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          end={item.end}
+                          onClick={() => setSidebarOpen(false)}
+                          className={({ isActive }) =>
+                            cn(
+                              'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all',
+                              isActive
+                                ? 'border-l-3 border-[var(--accent)] bg-[var(--accent)]/10 font-semibold text-[var(--accent)]'
+                                : 'text-[var(--text-secondary)] hover:bg-[var(--accent-muted)] hover:text-[var(--accent)]'
+                            )
+                          }
+                        >
+                          <item.icon size={18} />
+                          <span>{item.label}</span>
+                        </NavLink>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </nav>
 
               <div className="border-t border-[var(--border)] p-4">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="mb-3 flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-bold text-[var(--accent-text)]">
                     {user?.initials ?? 'U'}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[var(--text-primary)] truncate">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
                       {user?.name ?? 'User'}
                     </p>
-                    <p className="text-xs text-[var(--text-secondary)] truncate">
+                    <p className="truncate text-xs text-[var(--text-secondary)]">
                       {user?.email ?? 'user@email.com'}
                     </p>
                   </div>
@@ -277,7 +355,7 @@ export function DashboardLayout({
 
       {/* Main Content */}
       <main className="flex-1 lg:ml-64">
-        <div className="hidden lg:flex items-center justify-between border-b border-[var(--border)] bg-[var(--card)] px-8 py-4">
+        <div className="hidden items-center justify-between border-b border-[var(--border)] bg-[var(--card)] px-8 py-4 lg:flex">
           <div className="flex items-center gap-6">
             <Link to={navItems[0].to} className="flex items-center gap-3">
               {logo}

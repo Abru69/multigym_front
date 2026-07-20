@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { Eye, EyeOff, Loader2, Building2 } from 'lucide-react'
-import { getTenantFromUrl, getPlatformUrl } from '@/lib/tenant'
+import { getTenantFromUrl, getPlatformUrl, getTenantHomeUrl } from '@/lib/tenant'
 import { resolveBranding } from '@/lib/tenantConfig'
-import { getAllowedPages } from '@/lib/permissions'
 import { getDefaultRoute } from '@/router/routes'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -21,25 +20,19 @@ export default function Login() {
   const [error, setError] = useState('')
   const { login, isLoading, isAuthenticated } = useAuthStore()
   const navigate = useNavigate()
-  const location = useLocation()
 
   useEffect(() => {
     if (isAuthenticated) {
       const user = useAuthStore.getState().user
       if (!user) return
-      const from = (location.state as { from?: { pathname?: string } })?.from?.pathname
-      const safeFrom = from && !['/login', '/registro', '/forgot-password', '/reset-password', '/activate-account'].includes(from)
-        ? from
-        : undefined
-      const allowed = getAllowedPages(user.role)
-      if (allowed.length > 0) {
-        navigate(safeFrom || getDefaultRoute(user.role), { replace: true })
+      if (user.role === 'client') {
+        // Clients see the tenant landing page first, not the routines portal.
+        window.location.href = getTenantHomeUrl(useAuthStore.getState().tenantId || autoTenant)
       } else {
-        // Cliente (sin páginas admin): ir al portal cliente sin hard-reload
-        navigate(safeFrom || '/app/rutinas', { replace: true })
+        navigate(getDefaultRoute(user.role), { replace: true })
       }
     }
-  }, [isAuthenticated, navigate, location])
+  }, [isAuthenticated, navigate, autoTenant])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,7 +53,7 @@ export default function Login() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-      <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">
+      <h2 className="font-heading mb-1 text-2xl font-black text-[var(--text-primary)]">
         Bienvenido de vuelta
       </h2>
       <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">

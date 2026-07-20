@@ -1,5 +1,12 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { CreditCard, Loader2, ReceiptText, ShieldCheck, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import {
+  CreditCard,
+  Loader2,
+  ReceiptText,
+  ShieldCheck,
+  AlertTriangle,
+  CheckCircle2,
+} from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { StatusBadge } from '@/components/ui/StatusBadge'
@@ -31,39 +38,7 @@ export default function Billing() {
   const [cardCvc, setCardCvc] = useState(isMercadoPagoTestMode ? '123' : '')
   const [payerEmail, setPayerEmail] = useState(user?.email || '')
 
-  useEffect(() => {
-    loadBilling()
-  }, [])
-
-  useEffect(() => {
-    const initMp = (retries = 0) => {
-      try {
-        if (typeof window.MercadoPago === 'undefined') {
-          if (retries < 5) {
-            setTimeout(() => initMp(retries + 1), 1000)
-            return
-          }
-          setMpReady(false)
-          addToast('SDK de Mercado Pago no se pudo cargar. Verifica tu conexión a internet.', 'warning')
-          return
-        }
-        getMercadoPago()
-        setMpReady(true)
-      } catch (err) {
-        setMpReady(false)
-        addToast(err instanceof Error ? err.message : 'Mercado Pago no está configurado', 'warning')
-      }
-    }
-    initMp()
-  }, [addToast])
-
-  useEffect(() => {
-    if (user?.email && !payerEmail) {
-      setPayerEmail(user.email)
-    }
-  }, [user?.email, payerEmail])
-
-  const loadBilling = async () => {
+  const loadBilling = useCallback(async () => {
     setIsLoading(true)
     try {
       const [infoRes, paymentsRes] = await Promise.all([
@@ -77,7 +52,38 @@ export default function Billing() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [addToast])
+
+  useEffect(() => {
+    // Initial data loading updates the view after the async request resolves.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadBilling()
+  }, [loadBilling])
+
+  useEffect(() => {
+    const initMp = (retries = 0) => {
+      try {
+        if (typeof window.MercadoPago === 'undefined') {
+          if (retries < 5) {
+            setTimeout(() => initMp(retries + 1), 1000)
+            return
+          }
+          setMpReady(false)
+          addToast(
+            'SDK de Mercado Pago no se pudo cargar. Verifica tu conexión a internet.',
+            'warning'
+          )
+          return
+        }
+        getMercadoPago()
+        setMpReady(true)
+      } catch (err) {
+        setMpReady(false)
+        addToast(err instanceof Error ? err.message : 'Mercado Pago no está configurado', 'warning')
+      }
+    }
+    initMp()
+  }, [addToast])
 
   const formatCardNumber = (value: string) =>
     value
@@ -107,12 +113,14 @@ export default function Billing() {
       const cardDigits = cardNumber.replace(/\D/g, '')
       const [expirationMonth, expirationYearShort] = cardExpiry.split('/')
       if (cardDigits.length < 13) throw new Error('Ingresa un número de tarjeta válido')
-      if (!expirationMonth || !expirationYearShort) throw new Error('Ingresa el vencimiento en formato MM/YY')
+      if (!expirationMonth || !expirationYearShort)
+        throw new Error('Ingresa el vencimiento en formato MM/YY')
       if (!cardCvc.trim()) throw new Error('Ingresa el CVC')
       if (!cardholderName.trim()) throw new Error('Ingresa el nombre del titular')
       if (!payerEmail.trim()) throw new Error('Ingresa el email del pagador')
 
-      const expirationYear = expirationYearShort.length === 2 ? `20${expirationYearShort}` : expirationYearShort
+      const expirationYear =
+        expirationYearShort.length === 2 ? `20${expirationYearShort}` : expirationYearShort
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mp: any = getMercadoPago()
       const tokenResponse = await mp.createCardToken({
@@ -138,7 +146,10 @@ export default function Billing() {
       if (response.dto?.payment.status === 'COMPLETED') {
         addToast('Suscripción renovada correctamente', 'success')
       } else {
-        addToast(`Pago registrado con estado ${response.dto?.payment.status || 'pendiente'}`, 'warning')
+        addToast(
+          `Pago registrado con estado ${response.dto?.payment.status || 'pendiente'}`,
+          'warning'
+        )
       }
       await loadBilling()
     } catch (err) {
@@ -174,20 +185,32 @@ export default function Billing() {
                 <ShieldCheck size={24} />
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Suscripción SaaS</p>
-                <h2 className="mt-1 text-xl font-black text-[var(--text-primary)]">{renewalInfo.name}</h2>
+                <p className="text-xs font-black tracking-[0.2em] text-[var(--text-muted)] uppercase">
+                  Suscripción SaaS
+                </p>
+                <h2 className="mt-1 text-xl font-black text-[var(--text-primary)]">
+                  {renewalInfo.name}
+                </h2>
                 <p className="mt-1 text-sm text-[var(--text-secondary)]">{renewalInfo.planName}</p>
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
               <InfoCard label="Estado" value={renewalInfo.status} />
-              <InfoCard label="Precio mensual" value={`${formatCurrency(renewalInfo.price)} ${renewalInfo.currency}`} />
+              <InfoCard
+                label="Precio mensual"
+                value={`${formatCurrency(renewalInfo.price)} ${renewalInfo.currency}`}
+              />
               <InfoCard label="Fin de prueba" value={formatDateTime(renewalInfo.trialEndsAt)} />
-              <InfoCard label="Fin de suscripción" value={formatDateTime(renewalInfo.subscriptionEndsAt)} />
+              <InfoCard
+                label="Fin de suscripción"
+                value={formatDateTime(renewalInfo.subscriptionEndsAt)}
+              />
             </div>
 
-            <div className={`mt-5 rounded-2xl border p-4 ${renewalInfo.canRenew ? 'border-[var(--success)]/40 bg-[var(--success)]/10' : 'border-[var(--warning)]/40 bg-[var(--warning)]/10'}`}>
+            <div
+              className={`mt-5 rounded-2xl border p-4 ${renewalInfo.canRenew ? 'border-[var(--success)]/40 bg-[var(--success)]/10' : 'border-[var(--warning)]/40 bg-[var(--warning)]/10'}`}
+            >
               <div className="flex gap-3">
                 {renewalInfo.canRenew ? (
                   <CheckCircle2 className="mt-0.5 text-[var(--success)]" size={20} />
@@ -198,14 +221,17 @@ export default function Billing() {
                   <p className="text-sm font-bold text-[var(--text-primary)]">
                     {renewalInfo.canRenew ? 'Renovación disponible' : 'Renovación no disponible'}
                   </p>
-                  <p className="mt-1 text-sm text-[var(--text-secondary)]">{renewalInfo.renewalReason}</p>
+                  <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                    {renewalInfo.renewalReason}
+                  </p>
                 </div>
               </div>
             </div>
 
             {!mpReady && (
               <div className="mt-5 rounded-2xl border border-[var(--danger)]/40 bg-[var(--danger)]/10 p-4 text-sm text-[var(--text-secondary)]">
-                Mercado Pago no está disponible. Verifica tu conexión a internet y recarga la página.
+                Mercado Pago no está disponible. Verifica tu conexión a internet y recarga la
+                página.
               </div>
             )}
 
@@ -229,25 +255,53 @@ export default function Billing() {
 
             <form onSubmit={payRenewal} className="space-y-4">
               <Field label="Email pagador">
-                <Input type="email" value={payerEmail} onChange={(e) => setPayerEmail(e.target.value)} disabled={!renewalInfo.canRenew || isPaying} />
+                <Input
+                  type="email"
+                  value={payerEmail}
+                  onChange={(e) => setPayerEmail(e.target.value)}
+                  disabled={!renewalInfo.canRenew || isPaying}
+                />
               </Field>
               <Field label="Nombre del titular">
-                <Input value={cardholderName} onChange={(e) => setCardholderName(e.target.value)} disabled={!renewalInfo.canRenew || isPaying} />
+                <Input
+                  value={cardholderName}
+                  onChange={(e) => setCardholderName(e.target.value)}
+                  disabled={!renewalInfo.canRenew || isPaying}
+                />
               </Field>
               <Field label="Número de tarjeta">
-                <Input inputMode="numeric" value={cardNumber} onChange={(e) => setCardNumber(formatCardNumber(e.target.value))} disabled={!renewalInfo.canRenew || isPaying} />
+                <Input
+                  inputMode="numeric"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                  disabled={!renewalInfo.canRenew || isPaying}
+                />
               </Field>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Vencimiento">
-                  <Input placeholder="MM/YY" value={cardExpiry} onChange={(e) => setCardExpiry(formatExpiry(e.target.value))} disabled={!renewalInfo.canRenew || isPaying} />
+                  <Input
+                    placeholder="MM/YY"
+                    value={cardExpiry}
+                    onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                    disabled={!renewalInfo.canRenew || isPaying}
+                  />
                 </Field>
                 <Field label="CVC">
-                  <Input inputMode="numeric" value={cardCvc} onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))} disabled={!renewalInfo.canRenew || isPaying} />
+                  <Input
+                    inputMode="numeric"
+                    value={cardCvc}
+                    onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    disabled={!renewalInfo.canRenew || isPaying}
+                  />
                 </Field>
               </div>
 
               <Button type="submit" disabled={!canPay} className="w-full gap-2">
-                {isPaying ? <Loader2 className="animate-spin" size={18} /> : <CreditCard size={18} />}
+                {isPaying ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  <CreditCard size={18} />
+                )}
                 {isPaying ? 'Procesando...' : `Renovar por ${formatCurrency(renewalInfo.price)}`}
               </Button>
             </form>
@@ -264,7 +318,7 @@ export default function Billing() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[var(--border)] text-left text-xs uppercase tracking-wide text-[var(--text-muted)]">
+              <tr className="border-b border-[var(--border)] text-left text-xs tracking-wide text-[var(--text-muted)] uppercase">
                 <th className="py-3 pr-4">Fecha</th>
                 <th className="py-3 pr-4">Plan</th>
                 <th className="py-3 pr-4">Monto</th>
@@ -276,17 +330,31 @@ export default function Billing() {
             <tbody>
               {payments.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-[var(--text-muted)]">Sin pagos registrados</td>
+                  <td colSpan={6} className="py-10 text-center text-[var(--text-muted)]">
+                    Sin pagos registrados
+                  </td>
                 </tr>
               ) : (
                 payments.map((payment) => (
                   <tr key={payment.id} className="border-b border-[var(--border)] last:border-0">
-                    <td className="py-3 pr-4 text-[var(--text-secondary)]">{formatDateTime(payment.paidAt || payment.createdAt)}</td>
-                    <td className="py-3 pr-4 font-semibold text-[var(--text-primary)]">{payment.planName}</td>
-                    <td className="py-3 pr-4 text-[var(--text-primary)]">{formatCurrency(payment.amount)} {payment.currency}</td>
-                    <td className="py-3 pr-4"><StatusBadge status={payment.status} /></td>
-                    <td className="py-3 pr-4 text-[var(--text-secondary)]">{payment.paymentProvider}</td>
-                    <td className="max-w-[220px] truncate py-3 pr-4 text-[var(--text-muted)]">{payment.paymentReference || '-'}</td>
+                    <td className="py-3 pr-4 text-[var(--text-secondary)]">
+                      {formatDateTime(payment.paidAt || payment.createdAt)}
+                    </td>
+                    <td className="py-3 pr-4 font-semibold text-[var(--text-primary)]">
+                      {payment.planName}
+                    </td>
+                    <td className="py-3 pr-4 text-[var(--text-primary)]">
+                      {formatCurrency(payment.amount)} {payment.currency}
+                    </td>
+                    <td className="py-3 pr-4">
+                      <StatusBadge status={payment.status} />
+                    </td>
+                    <td className="py-3 pr-4 text-[var(--text-secondary)]">
+                      {payment.paymentProvider}
+                    </td>
+                    <td className="max-w-[220px] truncate py-3 pr-4 text-[var(--text-muted)]">
+                      {payment.paymentReference || '-'}
+                    </td>
                   </tr>
                 ))
               )}
@@ -310,7 +378,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
-      <p className="text-xs font-bold uppercase tracking-wide text-[var(--text-muted)]">{label}</p>
+      <p className="text-xs font-bold tracking-wide text-[var(--text-muted)] uppercase">{label}</p>
       <p className="mt-2 font-bold text-[var(--text-primary)]">{value}</p>
     </div>
   )

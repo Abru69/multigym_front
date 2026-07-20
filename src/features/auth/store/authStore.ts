@@ -13,6 +13,14 @@ const ROLE_MAP: Record<string, UserRole> = {
   SELLER: 'seller',
 }
 
+function normalizeRole(value: string | undefined): UserRole | null {
+  const normalized = value
+    ?.trim()
+    .toUpperCase()
+    .replace(/^ROLE_/, '')
+  return normalized ? ROLE_MAP[normalized] || null : null
+}
+
 interface AuthStore {
   user: User | null
   token: string | null
@@ -23,11 +31,12 @@ interface AuthStore {
   logout: () => Promise<void>
   register: (name: string, email: string, password: string) => Promise<boolean>
   setUserAvatar: (avatar: string) => void
+  updateUserProfile: (data: { name: string; phone: string }) => void
 }
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
       tenantId: null,
@@ -45,8 +54,10 @@ export const useAuthStore = create<AuthStore>()(
           })
 
           if (response && response.dto && response.dto.accessToken) {
-            const rawRole = response.dto.role?.toUpperCase() || 'CLIENT'
-            const role = ROLE_MAP[rawRole] || 'client'
+            const role = normalizeRole(response.dto.role)
+            if (!role) {
+              throw new Error('El backend devolvió un rol no reconocido.')
+            }
 
             // Extract real user data from response.lista[0] if available
             const userDTO =
@@ -59,7 +70,7 @@ export const useAuthStore = create<AuthStore>()(
               name: userDTO?.memberDTO?.name || email.split('@')[0],
               email: userDTO?.email || email,
               phone: userDTO?.memberDTO?.phone || undefined,
-              role: role as UserRole,
+              role,
               joinDate: new Date().toISOString(),
               isActive: userDTO?.isActive ?? true,
               memberId: userDTO?.memberDTO?.id || undefined,
@@ -86,12 +97,14 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       logout: async () => {
-        try {
-          await apiLogout()
-        } catch {
-          // Ignore logout errors — still clear local state
-        }
+        const { token, tenantId } = get()
+
+        // Clear local auth before navigation so a slow API request cannot
+        // remount the tenant landing page with the old session.
         set({ user: null, token: null, tenantId: null, isAuthenticated: false })
+
+        // Invalidate the server session without blocking the UI logout.
+        void apiLogout(token || undefined, tenantId).catch(() => undefined)
       },
 
       register: async (_name: string, _email: string, _password: string) => {
@@ -106,6 +119,12 @@ export const useAuthStore = create<AuthStore>()(
       setUserAvatar: (avatar: string) => {
         set((state) => ({
           user: state.user ? { ...state.user, avatar } : state.user,
+        }))
+      },
+
+      updateUserProfile: (data) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, ...data } : state.user,
         }))
       },
     }),

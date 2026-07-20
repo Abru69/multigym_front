@@ -2,14 +2,7 @@ import { useState, useEffect } from 'react'
 import { fetchApi } from '@/lib/api'
 import type { TenantSettingDTO, ResponseDTO } from '@/types'
 import { useToastStore } from '@/components/ui/Toast'
-import {
-  Store,
-  Truck,
-  Save,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-} from 'lucide-react'
+import { Store, Truck, Save, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 
 export default function DeliverySettings() {
   const [, setSettings] = useState<TenantSettingDTO[]>([])
@@ -26,7 +19,7 @@ export default function DeliverySettings() {
       try {
         setLoading(true)
         const res = await fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings')
-        const list = res.lista || []
+        const list = res.lista || (Array.isArray(res.dto) ? res.dto : [])
         setSettings(list)
 
         const pickup = list.find((s) => s.key === 'delivery_pickup_enabled')
@@ -95,9 +88,13 @@ export default function DeliverySettings() {
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
-                pickupEnabled ? 'bg-[var(--accent)]/10 text-[var(--accent)]' : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
-              }`}>
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
+                  pickupEnabled
+                    ? 'bg-[var(--accent)]/10 text-[var(--accent)]'
+                    : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
+                }`}
+              >
                 <Store size={22} />
               </div>
               <div>
@@ -123,7 +120,8 @@ export default function DeliverySettings() {
           {pickupEnabled && (
             <div className="mt-3 ml-16 rounded-xl bg-[var(--surface)] px-3 py-2">
               <p className="text-[11px] text-[var(--text-secondary)]">
-                El cliente verá las sucursales disponibles en el checkout y podrá elegir la más cercana.
+                El cliente verá las sucursales disponibles en el checkout y podrá elegir la más
+                cercana.
               </p>
             </div>
           )}
@@ -133,9 +131,13 @@ export default function DeliverySettings() {
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
-                shippingEnabled ? 'bg-[var(--accent)]/10 text-[var(--accent)]' : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
-              }`}>
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
+                  shippingEnabled
+                    ? 'bg-[var(--accent)]/10 text-[var(--accent)]'
+                    : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
+                }`}
+              >
                 <Truck size={22} />
               </div>
               <div>
@@ -161,7 +163,8 @@ export default function DeliverySettings() {
           {shippingEnabled && (
             <div className="mt-3 ml-16 rounded-xl bg-[var(--surface)] px-3 py-2">
               <p className="text-[11px] text-[var(--text-secondary)]">
-                El cliente ingresará su dirección durante el checkout. Envío gratis para compras mayores a $1,500.
+                El cliente ingresará su dirección durante el checkout. Envío gratis para compras
+                mayores a $1,500.
               </p>
             </div>
           )}
@@ -174,7 +177,8 @@ export default function DeliverySettings() {
             <div>
               <p className="text-sm font-semibold text-amber-700">Sin métodos de entrega</p>
               <p className="text-xs text-amber-600">
-                Debes tener al menos un método de entrega habilitado para que los clientes puedan realizar compras.
+                Debes tener al menos un método de entrega habilitado para que los clientes puedan
+                realizar compras.
               </p>
             </div>
           </div>
@@ -184,7 +188,7 @@ export default function DeliverySettings() {
         <button
           onClick={handleSave}
           disabled={saving || (!pickupEnabled && !shippingEnabled)}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold tracking-wide text-[var(--accent-text)] uppercase shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
         >
           {saving ? (
             <Loader2 size={16} className="animate-spin" />

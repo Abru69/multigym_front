@@ -10,14 +10,7 @@ import {
   ClipboardList,
   Activity,
 } from 'lucide-react'
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { useNavigate } from 'react-router-dom'
 import { getTenantDashboardReport, getRevenueReportData } from '@/lib/api'
 import type { TenantDashboardDTO, RevenueReportDTO } from '@/types'
@@ -57,7 +50,9 @@ export default function AdminDashboard() {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
-          <p className="mb-4" style={{ color: 'var(--error)' }}>{error || 'No se pudo cargar el dashboard'}</p>
+          <p className="mb-4" style={{ color: 'var(--error)' }}>
+            {error || 'No se pudo cargar el dashboard'}
+          </p>
           <button
             onClick={loadDashboard}
             className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
@@ -78,32 +73,32 @@ export default function AdminDashboard() {
       value: dashboard.activeMembers.toLocaleString(),
       sub: `${dashboard.newMembersThisMonth} nuevos este mes`,
       icon: Users,
-      iconBg: '#eff6ff',
-      iconColor: '#3b82f6',
+      iconBg: 'var(--info-muted)',
+      iconColor: 'var(--info)',
     },
     {
       label: 'Ingresos del Mes',
       value: formatCurrency(dashboard.monthlyRevenue),
       sub: `Total: ${formatCurrency(dashboard.totalRevenue)}`,
       icon: DollarSign,
-      iconBg: '#f0fdf4',
-      iconColor: '#22c55e',
+      iconBg: 'var(--success-muted)',
+      iconColor: 'var(--success)',
     },
     {
       label: 'Check-ins Hoy',
       value: dashboard.todayCheckIns.toLocaleString(),
       sub: `Ocupación: ${dashboard.currentOccupancy}`,
       icon: ClipboardList,
-      iconBg: '#faf5ff',
-      iconColor: '#a855f7',
+      iconBg: 'var(--accent-muted)',
+      iconColor: 'var(--accent)',
     },
     {
       label: 'Suscripciones',
       value: dashboard.activeSubscriptions.toLocaleString(),
       sub: `${dashboard.expiringSubscriptions} por vencer`,
       icon: Calendar,
-      iconBg: '#fff7ed',
-      iconColor: '#f97316',
+      iconBg: 'var(--accent-muted)',
+      iconColor: 'var(--accent)',
     },
   ]
 
@@ -114,11 +109,11 @@ export default function AdminDashboard() {
   return (
     <div style={{ fontFamily: 'var(--font-body)' }} className="space-y-6">
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpiCards.map((card) => (
           <div
             key={card.label}
-            className="bg-[var(--card)] rounded-2xl p-6 transition-shadow duration-200"
+            className="rounded-2xl bg-[var(--card)] p-6 transition-shadow duration-200"
             style={{ border: '1px solid var(--border)' }}
             onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.06)')}
             onMouseLeave={(e) => (e.currentTarget.style.boxShadow = 'none')}
@@ -147,86 +142,183 @@ export default function AdminDashboard() {
       </div>
 
       {/* Chart + Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
         {/* Revenue Chart */}
-        <div className="bg-[var(--card)] rounded-2xl p-6" style={{ border: '1px solid var(--border)' }}>
-          <div className="flex items-center justify-between mb-6">
+        <div
+          className="rounded-2xl bg-[var(--card)] p-6"
+          style={{ border: '1px solid var(--border)' }}
+        >
+          <div className="mb-6 flex items-center justify-between">
             <h3 style={{ fontFamily: 'var(--font-heading)' }} className="text-lg font-bold">
               Ingresos Mensuales
             </h3>
-            <div className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium" style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+            <div
+              className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium"
+              style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+            >
               <Calendar size={14} />
               <span>{revenue ? `${revenue.month}/${revenue.year}` : 'Sin datos'}</span>
             </div>
           </div>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={salesData.length > 0 ? salesData : [{ month: 'Sin datos', ventas: 0 }]} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+              <AreaChart
+                data={salesData.length > 0 ? salesData : [{ month: 'Sin datos', ventas: 0 }]}
+                margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+              >
                 <defs>
                   <linearGradient id="gradientAccent" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.25} />
                     <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
-                <YAxis tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v / 1000}k`} />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fill: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}
+                  axisLine={false}
+                  tickLine={false}
+                  dy={10}
+                />
+                <YAxis
+                  tick={{ fill: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `$${v / 1000}k`}
+                />
                 <Tooltip
-                  contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', color: '#0f172a', fontSize: 13, fontWeight: 700, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}
+                  contentStyle={{
+                    background: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '12px',
+                    color: 'var(--text-primary)',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    boxShadow: 'var(--shadow-lg)',
+                  }}
                   itemStyle={{ color: 'var(--accent)' }}
                   formatter={(value) => [`$${Number(value).toLocaleString()} MXN`, 'Ventas']}
                 />
-                <Area type="monotone" dataKey="ventas" stroke="var(--accent)" strokeWidth={3} fill="url(#gradientAccent)" dot={{ fill: '#ffffff', stroke: 'var(--accent)', strokeWidth: 3, r: 5 }} activeDot={{ r: 7, fill: 'var(--accent)', stroke: '#ffffff', strokeWidth: 2 }} />
+                <Area
+                  type="monotone"
+                  dataKey="ventas"
+                  stroke="var(--accent)"
+                  strokeWidth={3}
+                  fill="url(#gradientAccent)"
+                  dot={{ fill: 'var(--card)', stroke: 'var(--accent)', strokeWidth: 3, r: 5 }}
+                  activeDot={{ r: 7, fill: 'var(--accent)', stroke: 'var(--card)', strokeWidth: 2 }}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-[var(--card)] rounded-2xl p-6" style={{ border: '1px solid var(--border)' }}>
-          <h3 style={{ fontFamily: 'var(--font-heading)' }} className="text-lg font-bold mb-4">
+        <div
+          className="rounded-2xl bg-[var(--card)] p-6"
+          style={{ border: '1px solid var(--border)' }}
+        >
+          <h3 style={{ fontFamily: 'var(--font-heading)' }} className="mb-4 text-lg font-bold">
             Acciones Rápidas
           </h3>
           <div className="space-y-3">
-            <QuickAction onClick={() => navigate('/admin/usuarios')} icon={Users} iconBg="#f0fdf4" iconColor="#22c55e" title="Nuevo Cliente" subtitle="Registrar usuario" />
-            <QuickAction onClick={() => navigate('/admin/check-ins')} icon={ClipboardList} iconBg="#eff6ff" iconColor="#3b82f6" title="Check-In" subtitle="Registrar asistencia" />
-            <QuickAction onClick={() => navigate('/admin/reportes')} icon={Activity} iconBg="#faf5ff" iconColor="#a855f7" title="Reportes" subtitle="Ver analíticas" />
-            <QuickAction onClick={() => navigate('/admin/inventario')} icon={Package} iconBg="#fff7ed" iconColor="#f97316" title="Inventario" subtitle="Gestionar productos" />
+            <QuickAction
+              onClick={() => navigate('/admin/usuarios')}
+              icon={Users}
+              iconBg="var(--success-muted)"
+              iconColor="var(--success)"
+              title="Nuevo Cliente"
+              subtitle="Registrar usuario"
+            />
+            <QuickAction
+              onClick={() => navigate('/admin/check-ins')}
+              icon={ClipboardList}
+              iconBg="var(--info-muted)"
+              iconColor="var(--info)"
+              title="Check-In"
+              subtitle="Registrar asistencia"
+            />
+            <QuickAction
+              onClick={() => navigate('/admin/reportes')}
+              icon={Activity}
+              iconBg="var(--accent-muted)"
+              iconColor="var(--accent)"
+              title="Reportes"
+              subtitle="Ver analíticas"
+            />
+            <QuickAction
+              onClick={() => navigate('/admin/inventario')}
+              icon={Package}
+              iconBg="var(--accent-muted)"
+              iconColor="var(--accent)"
+              title="Inventario"
+              subtitle="Gestionar productos"
+            />
           </div>
         </div>
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[var(--card)] rounded-2xl p-5" style={{ border: '1px solid var(--border)' }}>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div
+          className="rounded-2xl bg-[var(--card)] p-5"
+          style={{ border: '1px solid var(--border)' }}
+        >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: 'rgba(249,115,22,0.1)' }}>
-              <AlertCircle size={20} style={{ color: '#f97316' }} />
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-xl"
+              style={{ backgroundColor: 'var(--accent-muted)' }}
+            >
+              <AlertCircle size={20} style={{ color: 'var(--accent)' }} />
             </div>
             <div>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Próximas a vencer</p>
-              <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>{dashboard.expiringSubscriptions}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                Próximas a vencer
+              </p>
+              <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>
+                {dashboard.expiringSubscriptions}
+              </p>
             </div>
           </div>
         </div>
-        <div className="bg-[var(--card)] rounded-2xl p-5" style={{ border: '1px solid var(--border)' }}>
+        <div
+          className="rounded-2xl bg-[var(--card)] p-5"
+          style={{ border: '1px solid var(--border)' }}
+        >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: 'rgba(139,92,246,0.1)' }}>
-              <Package size={20} style={{ color: '#8b5cf6' }} />
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-xl"
+              style={{ backgroundColor: 'var(--accent-muted)' }}
+            >
+              <Package size={20} style={{ color: 'var(--accent)' }} />
             </div>
             <div>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Productos activos</p>
-              <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>{dashboard.activeProducts}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                Productos activos
+              </p>
+              <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>
+                {dashboard.activeProducts}
+              </p>
             </div>
           </div>
         </div>
-        <div className="bg-[var(--card)] rounded-2xl p-5" style={{ border: '1px solid var(--border)' }}>
+        <div
+          className="rounded-2xl bg-[var(--card)] p-5"
+          style={{ border: '1px solid var(--border)' }}
+        >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: 'rgba(6,182,212,0.1)' }}>
-              <Dumbbell size={20} style={{ color: '#06b6d4' }} />
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-xl"
+              style={{ backgroundColor: 'var(--info-muted)' }}
+            >
+              <Dumbbell size={20} style={{ color: 'var(--info)' }} />
             </div>
             <div>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Órdenes pendientes</p>
-              <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>{dashboard.pendingOrders}</p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                Órdenes pendientes
+              </p>
+              <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>
+                {dashboard.pendingOrders}
+              </p>
             </div>
           </div>
         </div>
@@ -235,7 +327,14 @@ export default function AdminDashboard() {
   )
 }
 
-function QuickAction({ onClick, icon: Icon, iconBg, iconColor, title, subtitle }: {
+function QuickAction({
+  onClick,
+  icon: Icon,
+  iconBg,
+  iconColor,
+  title,
+  subtitle,
+}: {
   onClick: () => void
   icon: typeof Users
   iconBg: string
@@ -251,14 +350,25 @@ function QuickAction({ onClick, icon: Icon, iconBg, iconColor, title, subtitle }
       onMouseEnter={(e) => (e.currentTarget.style.borderColor = iconColor)}
       onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
     >
-      <div className="flex items-center justify-center rounded-full" style={{ width: 44, height: 44, backgroundColor: iconBg }}>
+      <div
+        className="flex items-center justify-center rounded-full"
+        style={{ width: 44, height: 44, backgroundColor: iconBg }}
+      >
         <Icon size={20} style={{ color: iconColor }} />
       </div>
       <div className="flex-1 text-left">
-        <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{title}</p>
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{subtitle}</p>
+        <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+          {title}
+        </p>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          {subtitle}
+        </p>
       </div>
-      <ChevronRight size={18} className="transition-transform duration-200 group-hover:translate-x-1" style={{ color: 'var(--text-muted)' }} />
+      <ChevronRight
+        size={18}
+        className="transition-transform duration-200 group-hover:translate-x-1"
+        style={{ color: 'var(--text-muted)' }}
+      />
     </button>
   )
 }

@@ -65,9 +65,13 @@ import type {
 
 export async function fetchApi<T>(
   url: string,
-  options: RequestInit & { skipAuthRedirect?: boolean; skipAuthHeader?: boolean } = {}
+  options: RequestInit & {
+    skipAuthRedirect?: boolean
+    skipAuthHeader?: boolean
+    retryAuth?: boolean
+  } = {}
 ): Promise<T> {
-  const { skipAuthRedirect, skipAuthHeader, ...fetchOptions } = options
+  const { skipAuthRedirect, skipAuthHeader, retryAuth, ...fetchOptions } = options
   const isPlatformRequest =
     url.startsWith('/platform/') ||
     url.startsWith('/platform-api/') ||
@@ -138,6 +142,14 @@ export async function fetchApi<T>(
       // (p.ej. login con credenciales incorrectas, o fetch de branding sin token).
       throw new Error('No autorizado')
     }
+
+    if (!isPlatformRequest && !retryAuth && token) {
+      const refreshedToken = await tryRefreshToken(token)
+      if (refreshedToken) {
+        return fetchApi<T>(url, { ...options, retryAuth: true })
+      }
+    }
+
     if (isPlatformRequest) {
       localStorage.removeItem('platform-auth')
       window.location.href = '/platform/login'
@@ -172,6 +184,39 @@ export async function fetchApi<T>(
   return null as T
 }
 
+async function tryRefreshToken(token: string): Promise<string | null> {
+  try {
+    const headers = new Headers({ Authorization: `Bearer ${token}` })
+    const tenantId = getTenantFromLocation()
+    if (tenantId) headers.set('X-Tenant-ID', tenantId)
+
+    const response = await fetch('/api/auth/refresh-token', {
+      method: 'POST',
+      headers,
+    })
+    if (!response.ok) return null
+
+    const body = (await response.json()) as ResponseDTO<{
+      accessToken: string
+      type: string
+      expiresIn: number
+      tenantId: string
+      role: string
+    }>
+    const nextToken = body.dto?.accessToken
+    if (!nextToken) return null
+
+    const stored = localStorage.getItem('auth-storage')
+    if (!stored) return null
+    const parsed = JSON.parse(stored)
+    parsed.state = { ...parsed.state, token: nextToken, isAuthenticated: true }
+    localStorage.setItem('auth-storage', JSON.stringify(parsed))
+    return nextToken
+  } catch {
+    return null
+  }
+}
+
 export const getProducts = (params?: { name?: string; page?: number; size?: number }) => {
   const q = new URLSearchParams()
   if (params?.name) q.set('name', params.name)
@@ -194,7 +239,12 @@ export const createExercise = (data: Partial<ExerciseDTO>) =>
     body: JSON.stringify(data),
   })
 
-export const getWorkouts = (params?: { title?: string; memberId?: string; page?: number; size?: number }) => {
+export const getWorkouts = (params?: {
+  title?: string
+  memberId?: string
+  page?: number
+  size?: number
+}) => {
   const q = new URLSearchParams()
   if (params?.title) q.set('title', params.title)
   if (params?.memberId) q.set('memberId', params.memberId)
@@ -203,7 +253,12 @@ export const getWorkouts = (params?: { title?: string; memberId?: string; page?:
   const qs = q.toString()
   return fetchApi<ResponseDTO<PaginatedResult<WorkoutDTO>>>(`/api/workouts${qs ? '?' + qs : ''}`)
 }
-export const createWorkout = (data: { memberId: string; title: string; startsAt: string; endsAt: string }) =>
+export const createWorkout = (data: {
+  memberId: string
+  title: string
+  startsAt: string
+  endsAt: string
+}) =>
   fetchApi<ResponseDTO<WorkoutDTO>>('/api/workouts', { method: 'POST', body: JSON.stringify(data) })
 export const deleteWorkout = (id: string) =>
   fetchApi<ResponseDTO<unknown>>(`/api/workouts/${id}`, { method: 'DELETE' })
@@ -214,7 +269,15 @@ export const activateAccount = (data: { token: string; newPassword?: string }) =
     body: JSON.stringify(data),
   })
 
-export const logout = () => fetchApi<ResponseDTO<unknown>>('/api/auth/logout', { method: 'POST' })
+export const logout = (token?: string, tenantId?: string | null) =>
+  fetchApi<ResponseDTO<unknown>>('/api/auth/logout', {
+    method: 'POST',
+    skipAuthRedirect: true,
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(tenantId ? { 'X-Tenant-ID': tenantId } : {}),
+    },
+  })
 
 export const refreshToken = () =>
   fetchApi<
@@ -272,8 +335,7 @@ export const deletePlatformUser = (id: string) =>
   fetchApi<ResponseDTO<unknown>>(`/platform-api/users/${id}`, { method: 'DELETE' })
 
 // --- Plans ---
-export const getPlans = () =>
-  fetchApi<ResponseDTO<PaginatedResult<PlanListItemDTO>>>('/api/plans')
+export const getPlans = () => fetchApi<ResponseDTO<PaginatedResult<PlanListItemDTO>>>('/api/plans')
 export const createPlan = (data: {
   name: string
   description?: string
@@ -387,9 +449,7 @@ export const deleteWorkoutExercise = (id: string) =>
 
 // --- Workout Logs ---
 export const getWorkoutLogs = (workoutId: string) =>
-  fetchApi<ResponseDTO<PaginatedResult<WorkoutLogListItemDTO>>>(
-    `/api/workout-logs/${workoutId}`
-  )
+  fetchApi<ResponseDTO<PaginatedResult<WorkoutLogListItemDTO>>>(`/api/workout-logs/${workoutId}`)
 export const createWorkoutLog = (data: {
   workoutId: string
   durationMinutes: number
@@ -446,8 +506,7 @@ export const updatePlatformSettings = (entries: Record<string, string>) =>
   })
 
 // --- Branches ---
-export const getBranches = () =>
-  fetchApi<ResponseDTO<BranchDTO[]>>('/api/branches')
+export const getBranches = () => fetchApi<ResponseDTO<BranchDTO[]>>('/api/branches')
 
 // --- Tenant Settings ---
 export const getTenantSettings = () =>
@@ -583,7 +642,12 @@ export const getPaymentById = (id: string) =>
   fetchApi<ResponseDTO<PaymentListItemDTO>>(`/api/payments/${id}`)
 
 // --- Orders (list, my, detail, update, status, delete) ---
-export const getOrders = (params?: { status?: string; userId?: string; page?: number; size?: number }) => {
+export const getOrders = (params?: {
+  status?: string
+  userId?: string
+  page?: number
+  size?: number
+}) => {
   const q = new URLSearchParams()
   if (params?.status) q.set('status', params.status)
   if (params?.userId) q.set('userId', params.userId)
@@ -592,10 +656,8 @@ export const getOrders = (params?: { status?: string; userId?: string; page?: nu
   const qs = q.toString()
   return fetchApi<ResponseDTO<PaginatedResult<OrderDTO>>>(`/api/orders${qs ? '?' + qs : ''}`)
 }
-export const getMyOrders = () =>
-  fetchApi<ResponseDTO<PaginatedResult<OrderDTO>>>('/api/orders/my')
-export const getOrderById = (id: string) =>
-  fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${id}`)
+export const getMyOrders = () => fetchApi<ResponseDTO<PaginatedResult<OrderDTO>>>('/api/orders/my')
+export const getOrderById = (id: string) => fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${id}`)
 export const updateOrder = (id: string, data: OrderRequest) =>
   fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${id}`, {
     method: 'PUT',
@@ -630,19 +692,29 @@ export const toggleSaasPlanStatus = (id: string) =>
 // --- Tenants (detail, expired) ---
 export const getTenantById = (tenantId: string) =>
   fetchApi<ResponseDTO<TenantDTO>>(`/api/tenants/${tenantId}`)
-export const getExpiredTenants = () =>
-  fetchApi<ResponseDTO<TenantDTO[]>>('/api/tenants/expired')
+export const getExpiredTenants = () => fetchApi<ResponseDTO<TenantDTO[]>>('/api/tenants/expired')
 export const getTenantRenewalInfo = (tenantId: string) =>
-  fetchApi<ResponseDTO<TenantRenewalInfoDTO>>(`/api/public/tenants/${tenantId}/renewal-info`, { skipAuthRedirect: true })
+  fetchApi<ResponseDTO<TenantRenewalInfoDTO>>(`/api/public/tenants/${tenantId}/renewal-info`, {
+    skipAuthRedirect: true,
+  })
 export const getTenantRenewalPayments = (tenantId: string) =>
   fetchApi<ResponseDTO<TenantPaymentDTO[]>>(`/api/tenants/${tenantId}/renewal/payments`)
 export const simulateTenantRenewalPayment = (tenantId: string) =>
-  fetchApi<ResponseDTO<TenantRenewalResultDTO>>(`/api/tenants/${tenantId}/renewal/simulate-payment`, { method: 'POST' })
-export const processTenantRenewalMercadoPagoPayment = (tenantId: string, data: TenantRenewalPaymentRequest) =>
-  fetchApi<ResponseDTO<TenantRenewalResultDTO>>(`/api/tenants/${tenantId}/renewal/mercadopago-payment`, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  })
+  fetchApi<ResponseDTO<TenantRenewalResultDTO>>(
+    `/api/tenants/${tenantId}/renewal/simulate-payment`,
+    { method: 'POST' }
+  )
+export const processTenantRenewalMercadoPagoPayment = (
+  tenantId: string,
+  data: TenantRenewalPaymentRequest
+) =>
+  fetchApi<ResponseDTO<TenantRenewalResultDTO>>(
+    `/api/tenants/${tenantId}/renewal/mercadopago-payment`,
+    {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }
+  )
 
 export const getTenantBillingRenewalInfo = () =>
   fetchApi<ResponseDTO<TenantRenewalInfoDTO>>('/api/tenant/billing/renewal-info')
@@ -657,8 +729,7 @@ export const processTenantBillingRenewalMercadoPagoPayment = (data: TenantRenewa
   })
 
 // --- Branches (detail) ---
-export const getBranchById = (id: string) =>
-  fetchApi<ResponseDTO<BranchDTO>>(`/api/branches/${id}`)
+export const getBranchById = (id: string) => fetchApi<ResponseDTO<BranchDTO>>(`/api/branches/${id}`)
 
 // --- Tenant Users (detail) ---
 export const getTenantUserById = (userId: string) =>
@@ -684,7 +755,9 @@ export const deleteTenantUser = (userId: string) =>
 
 // --- Client Members (excludes admins) ---
 export const getClientUsers = () =>
-  fetchApi<ResponseDTO<PaginatedResult<UserDTO>>>('/api/tenant/users?role=CLIENT&isActive=true&size=9999')
+  fetchApi<ResponseDTO<PaginatedResult<UserDTO>>>(
+    '/api/tenant/users?role=CLIENT&isActive=true&size=9999'
+  )
 
 // --- Nutrition Plans ---
 export const getNutritionPlans = (params?: { search?: string; page?: number; size?: number }) => {
@@ -693,12 +766,13 @@ export const getNutritionPlans = (params?: { search?: string; page?: number; siz
   if (params?.page !== undefined) q.set('page', String(params.page))
   if (params?.size !== undefined) q.set('size', String(params.size))
   const qs = q.toString()
-  return fetchApi<ResponseDTO<PaginatedResult<NutritionPlanDTO>>>(`/api/nutrition${qs ? '?' + qs : ''}`)
+  return fetchApi<ResponseDTO<PaginatedResult<NutritionPlanDTO>>>(
+    `/api/nutrition${qs ? '?' + qs : ''}`
+  )
 }
 export const getNutritionPlanByMember = (memberId: string) =>
   fetchApi<ResponseDTO<NutritionPlanDTO>>(`/api/nutrition/member/${memberId}`)
-export const getMyNutritionPlan = () =>
-  fetchApi<ResponseDTO<NutritionPlanDTO>>('/api/nutrition/my')
+export const getMyNutritionPlan = () => fetchApi<ResponseDTO<NutritionPlanDTO>>('/api/nutrition/my')
 export const createNutritionPlan = (data: NutritionPlanRequest) =>
   fetchApi<ResponseDTO<NutritionPlanDTO>>('/api/nutrition', {
     method: 'POST',
@@ -725,7 +799,13 @@ export const checkIn = (data: CheckInRequest) =>
   })
 export const checkOut = (id: string) =>
   fetchApi<ResponseDTO<CheckInDTO>>(`/api/check-ins/${id}/checkout`, { method: 'PATCH' })
-export const getCheckIns = (params?: { memberId?: string; fromDate?: string; toDate?: string; page?: number; size?: number }) => {
+export const getCheckIns = (params?: {
+  memberId?: string
+  fromDate?: string
+  toDate?: string
+  page?: number
+  size?: number
+}) => {
   const q = new URLSearchParams()
   if (params?.memberId) q.set('memberId', params.memberId)
   if (params?.fromDate) q.set('fromDate', params.fromDate)
@@ -737,15 +817,18 @@ export const getCheckIns = (params?: { memberId?: string; fromDate?: string; toD
 }
 export const getCheckInsByMember = (memberId: string) =>
   fetchApi<ResponseDTO<CheckInDTO[]>>(`/api/check-ins/member/${memberId}`)
-export const getActiveCheckIns = () =>
-  fetchApi<ResponseDTO<CheckInDTO[]>>('/api/check-ins/active')
-export const getOccupancy = () =>
-  fetchApi<ResponseDTO<number>>('/api/check-ins/occupancy')
-export const getCheckInStats = () =>
-  fetchApi<ResponseDTO<CheckInStatsDTO>>('/api/check-ins/stats')
+export const getActiveCheckIns = () => fetchApi<ResponseDTO<CheckInDTO[]>>('/api/check-ins/active')
+export const getOccupancy = () => fetchApi<ResponseDTO<number>>('/api/check-ins/occupancy')
+export const getCheckInStats = () => fetchApi<ResponseDTO<CheckInStatsDTO>>('/api/check-ins/stats')
 
 // --- Announcements ---
-export const getAnnouncements = (params?: { position?: string; active?: boolean; search?: string; page?: number; size?: number }) => {
+export const getAnnouncements = (params?: {
+  position?: string
+  active?: boolean
+  search?: string
+  page?: number
+  size?: number
+}) => {
   const q = new URLSearchParams()
   if (params?.position) q.set('position', params.position)
   if (params?.active !== undefined) q.set('active', String(params.active))
@@ -753,12 +836,16 @@ export const getAnnouncements = (params?: { position?: string; active?: boolean;
   if (params?.page !== undefined) q.set('page', String(params.page))
   if (params?.size !== undefined) q.set('size', String(params.size))
   const qs = q.toString()
-  return fetchApi<ResponseDTO<PaginatedResult<AnnouncementDTO>>>(`/api/announcements${qs ? '?' + qs : ''}`)
+  return fetchApi<ResponseDTO<PaginatedResult<AnnouncementDTO>>>(
+    `/api/announcements${qs ? '?' + qs : ''}`
+  )
 }
 export const getActiveAnnouncements = () =>
   fetchApi<ResponseDTO<AnnouncementDTO[]>>('/api/announcements/active', { skipAuthRedirect: true })
 export const getActiveAnnouncementsByPosition = (position: string) =>
-  fetchApi<ResponseDTO<AnnouncementDTO[]>>(`/api/announcements/active/${position}`, { skipAuthRedirect: true })
+  fetchApi<ResponseDTO<AnnouncementDTO[]>>(`/api/announcements/active/${position}`, {
+    skipAuthRedirect: true,
+  })
 export const getAnnouncementById = (id: string) =>
   fetchApi<ResponseDTO<AnnouncementDTO>>(`/api/announcements/${id}`)
 export const createAnnouncement = (data: AnnouncementRequest) =>
@@ -774,9 +861,15 @@ export const updateAnnouncement = (id: string, data: AnnouncementRequest) =>
 export const deleteAnnouncement = (id: string) =>
   fetchApi<ResponseDTO<unknown>>(`/api/announcements/${id}`, { method: 'DELETE' })
 export const trackAnnouncementView = (id: string) =>
-  fetchApi<ResponseDTO<unknown>>(`/api/announcements/${id}/view`, { method: 'PATCH', skipAuthRedirect: true })
+  fetchApi<ResponseDTO<unknown>>(`/api/announcements/${id}/view`, {
+    method: 'PATCH',
+    skipAuthRedirect: true,
+  })
 export const trackAnnouncementClick = (id: string) =>
-  fetchApi<ResponseDTO<unknown>>(`/api/announcements/${id}/click`, { method: 'PATCH', skipAuthRedirect: true })
+  fetchApi<ResponseDTO<unknown>>(`/api/announcements/${id}/click`, {
+    method: 'PATCH',
+    skipAuthRedirect: true,
+  })
 
 // --- Tenant Reports ---
 export const getTenantDashboardReport = () =>
@@ -788,8 +881,7 @@ export const getRevenueReportData = (params?: { fromDate?: string; toDate?: stri
   const qs = q.toString()
   return fetchApi<ResponseDTO<RevenueReportDTO>>(`/api/reports/revenue${qs ? '?' + qs : ''}`)
 }
-export const getMemberReport = () =>
-  fetchApi<ResponseDTO<MemberReportDTO>>('/api/reports/members')
+export const getMemberReport = () => fetchApi<ResponseDTO<MemberReportDTO>>('/api/reports/members')
 export const getSubscriptionReport = () =>
   fetchApi<ResponseDTO<SubscriptionReportDTO>>('/api/reports/subscriptions')
 export const getCheckInReport = () =>
@@ -807,7 +899,10 @@ export const createBranch = (data: { name: string; address?: string; phone?: str
     method: 'POST',
     body: JSON.stringify(data),
   })
-export const updateBranch = (id: string, data: { name: string; address?: string; phone?: string; isActive?: boolean }) =>
+export const updateBranch = (
+  id: string,
+  data: { name: string; address?: string; phone?: string; isActive?: boolean }
+) =>
   fetchApi<ResponseDTO<BranchDTO>>(`/api/branches/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
@@ -824,8 +919,7 @@ export const getTenantsHealth = () =>
 // --- Platform Analytics (Etapa 6) ---
 export const getPlatformAnalytics = () =>
   fetchApi<ResponseDTO<PlatformAnalyticsDTO>>('/api/platform/reports/analytics')
-export const getMrrReport = () =>
-  fetchApi<ResponseDTO<MrrReportDTO>>('/api/platform/reports/mrr')
+export const getMrrReport = () => fetchApi<ResponseDTO<MrrReportDTO>>('/api/platform/reports/mrr')
 export const getChurnRetention = () =>
   fetchApi<ResponseDTO<ChurnRetentionDTO>>('/api/platform/reports/churn-retention')
 export const getPlanAnalytics = () =>
@@ -837,9 +931,13 @@ export const exportPlatformDashboard = async (format: string): Promise<Blob> => 
   const platformData = localStorage.getItem('platform-auth')
   let token = ''
   if (platformData) {
-    try { token = JSON.parse(platformData).state?.token || '' } catch { /* ignore */ }
+    try {
+      token = JSON.parse(platformData).state?.token || ''
+    } catch {
+      /* ignore */
+    }
   }
-  const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } })
+  const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
   if (!response.ok) throw new Error('Export failed')
   return response.blob()
 }
@@ -848,9 +946,13 @@ export const exportPlatformAnalytics = async (format: string): Promise<Blob> => 
   const platformData = localStorage.getItem('platform-auth')
   let token = ''
   if (platformData) {
-    try { token = JSON.parse(platformData).state?.token || '' } catch { /* ignore */ }
+    try {
+      token = JSON.parse(platformData).state?.token || ''
+    } catch {
+      /* ignore */
+    }
   }
-  const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } })
+  const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
   if (!response.ok) throw new Error('Export failed')
   return response.blob()
 }

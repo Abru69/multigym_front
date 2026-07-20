@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { fetchApi } from '@/lib/api'
-import type { Product, ProductCategory, ProductDTO, ResponseDTO } from '@/types'
+import type { PaginatedResult, Product, ProductCategory, ProductDTO, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import { useCartStore } from '@/features/shop/store/cartStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -37,22 +37,36 @@ export default function ProductDetail() {
       if (!slug) return
       try {
         setProductLoading(true)
-        const response = await fetchApi<ResponseDTO<ProductDTO[]>>(`/api/products?search=${slug}`)
-        const products = response.lista || response.dto || []
-        const found = products.find((p) =>
-          p.name.toLowerCase().replace(/ /g, '-') === slug
+        const productNameQuery = slug.replace(/-/g, ' ')
+        const response = await fetchApi<ResponseDTO<PaginatedResult<ProductDTO>>>(
+          `/api/products?name=${encodeURIComponent(productNameQuery)}`
         )
+        const products: ProductDTO[] =
+          response.dto?.data ??
+          (Array.isArray(response.lista) ? (response.lista as unknown as ProductDTO[]) : [])
+        const found = products.find((p) => p.name.toLowerCase().replace(/\s+/g, '-') === slug)
         if (found) {
-          const validCategories: ProductCategory[] = ['proteinas', 'pre-entrenos', 'creatina', 'aminoacidos', 'vitaminas', 'barras', 'accesorios']
+          const validCategories: ProductCategory[] = [
+            'proteinas',
+            'pre-entrenos',
+            'creatina',
+            'aminoacidos',
+            'vitaminas',
+            'barras',
+            'accesorios',
+          ]
           const category = validCategories.includes(found.category as ProductCategory)
             ? (found.category as ProductCategory)
             : 'proteinas'
 
           setProduct({
             ...found,
-            slug: found.name.toLowerCase().replace(/ /g, '-'),
+            slug: found.name.toLowerCase().replace(/\s+/g, '-'),
             brand: found.brand || 'MultiGym',
-            image: found.imageUrl || found.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=600&h=600&fit=crop',
+            image:
+              found.imageUrl ||
+              found.image ||
+              'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=600&h=600&fit=crop',
             category,
             rating: found.rating || 5.0,
             reviewCount: found.reviewCount || 0,
@@ -89,13 +103,10 @@ export default function ProductDetail() {
   if (!product) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-        <h2 className="mb-3 font-heading text-2xl font-black text-[var(--text-primary)]">
+        <h2 className="font-heading mb-3 text-2xl font-black text-[var(--text-primary)]">
           Producto no encontrado
         </h2>
-        <Link
-          to="/tienda"
-          className="text-sm font-semibold text-[var(--accent)]"
-        >
+        <Link to="/tienda" className="text-sm font-semibold text-[var(--accent)]">
           Volver a la tienda
         </Link>
       </div>
@@ -133,11 +144,7 @@ export default function ProductDetail() {
           transition={{ duration: 0.4 }}
         >
           <div className="aspect-square overflow-hidden rounded-3xl bg-[var(--surface-hover)]">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="h-full w-full object-cover"
-            />
+            <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
           </div>
         </motion.div>
 
@@ -151,7 +158,7 @@ export default function ProductDetail() {
             {product.brand}
           </span>
 
-          <h1 className="mb-4 font-heading text-3xl font-black text-[var(--text-primary)] sm:text-4xl">
+          <h1 className="font-heading mb-4 text-3xl font-black text-[var(--text-primary)] sm:text-4xl">
             {product.name}
           </h1>
 
@@ -205,7 +212,7 @@ export default function ProductDetail() {
                 >
                   <Minus size={18} />
                 </button>
-                <span className="w-12 text-center font-heading text-lg font-black text-[var(--text-primary)]">
+                <span className="font-heading w-12 text-center text-lg font-black text-[var(--text-primary)]">
                   {quantity}
                 </span>
                 <button
@@ -219,7 +226,7 @@ export default function ProductDetail() {
               <button
                 onClick={handleAddToCart}
                 disabled={!product.isAvailable}
-                className="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold tracking-wide text-[var(--accent-text)] uppercase shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ShoppingCart size={20} />
                 {cartItem ? 'Actualizar Carrito' : 'Agregar al Carrito'}
@@ -237,7 +244,9 @@ export default function ProductDetail() {
                   className="flex flex-col items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-4 text-center"
                 >
                   <f.icon size={18} className="text-[var(--accent)]" />
-                  <span className="text-[11px] font-medium text-[var(--text-secondary)]">{f.text}</span>
+                  <span className="text-[11px] font-medium text-[var(--text-secondary)]">
+                    {f.text}
+                  </span>
                 </div>
               ))}
             </div>
@@ -300,7 +309,7 @@ export default function ProductDetail() {
             </div>
 
             <div>
-              <h3 className="mb-4 font-heading font-bold text-[var(--text-primary)]">
+              <h3 className="font-heading mb-4 font-bold text-[var(--text-primary)]">
                 Detalles del producto
               </h3>
               <ul className="space-y-3 text-sm">
@@ -316,7 +325,7 @@ export default function ProductDetail() {
                         className="flex justify-between border-b border-[var(--border)] pb-3"
                       >
                         <span className="text-[var(--text-muted)]">{d.label}</span>
-                        <span className="font-medium capitalize text-[var(--text-primary)]">
+                        <span className="font-medium text-[var(--text-primary)] capitalize">
                           {d.value}
                         </span>
                       </li>

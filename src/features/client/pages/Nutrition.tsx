@@ -11,8 +11,16 @@ const macroConfig = [
 ] as const
 
 export default function Nutrition() {
-  const { plan, mealCompletion, waterGlasses, isLoading, loadPlan, toggleMeal, setWaterGlasses } =
-    useNutritionStore()
+  const {
+    plan,
+    mealCompletion,
+    waterGlasses,
+    isLoading,
+    error,
+    loadPlan,
+    toggleMeal,
+    setWaterGlasses,
+  } = useNutritionStore()
 
   useEffect(() => {
     loadPlan()
@@ -26,10 +34,22 @@ export default function Nutrition() {
 
   const dailyMacros = plan
     ? {
-        calories: { current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.calories : 0), 0), target: plan.targetCalories },
-        protein: { current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.protein : 0), 0), target: plan.targetProtein },
-        carbs: { current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.carbs : 0), 0), target: plan.targetCarbs },
-        fats: { current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.fats : 0), 0), target: plan.targetFats },
+        calories: {
+          current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.calories : 0), 0),
+          target: plan.targetCalories,
+        },
+        protein: {
+          current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.protein : 0), 0),
+          target: plan.targetProtein,
+        },
+        carbs: {
+          current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.carbs : 0), 0),
+          target: plan.targetCarbs,
+        },
+        fats: {
+          current: meals.reduce((sum, m) => sum + (mealCompletion[m.id] ? m.fats : 0), 0),
+          target: plan.targetFats,
+        },
       }
     : {
         calories: { current: 0, target: 2400 },
@@ -42,6 +62,39 @@ export default function Nutrition() {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <Loader2 size={32} className="animate-spin text-[var(--accent)]" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 text-center">
+        <Info size={42} className="mb-4 text-red-400" />
+        <h1 className="mb-2 text-2xl font-black text-[var(--text-primary)]">
+          No pudimos cargar tu plan
+        </h1>
+        <p className="mb-5 text-sm text-[var(--text-secondary)]">{error}</p>
+        <button
+          type="button"
+          onClick={loadPlan}
+          className="rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-[var(--accent-text)]"
+        >
+          Reintentar
+        </button>
+      </div>
+    )
+  }
+
+  if (!plan) {
+    return (
+      <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 text-center">
+        <Utensils size={42} className="mb-4 text-[var(--text-muted)]" />
+        <h1 className="mb-2 text-2xl font-black text-[var(--text-primary)]">
+          Aún no tienes un plan nutricional
+        </h1>
+        <p className="text-sm leading-relaxed text-[var(--text-secondary)]">
+          Tu nutriólogo todavía no te ha asignado un plan. Cuando esté disponible aparecerá aquí.
+        </p>
       </div>
     )
   }
@@ -87,7 +140,7 @@ export default function Nutrition() {
                 style={{ backgroundColor: macro.color }}
               />
               <div className="relative">
-                <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                <p className="mb-3 text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                   {macro.label}
                 </p>
                 <div className="mb-3 flex items-center gap-3">
@@ -120,11 +173,12 @@ export default function Nutrition() {
                     </span>
                   </div>
                   <div>
-                    <p className="text-xl font-black leading-none text-[var(--text-primary)]">
+                    <p className="text-xl leading-none font-black text-[var(--text-primary)]">
                       {data.current}
                     </p>
                     <p className="text-[11px] text-[var(--text-muted)]">
-                      / {data.target}{macro.unit}
+                      / {data.target}
+                      {macro.unit}
                     </p>
                   </div>
                 </div>
@@ -140,13 +194,13 @@ export default function Nutrition() {
         <div>
           <div className="mb-4 flex items-center gap-2">
             <Utensils size={16} className="text-[var(--accent)]" />
-            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--text-primary)]">
+            <h2 className="text-sm font-black tracking-wider text-[var(--text-primary)] uppercase">
               Comidas de Hoy
             </h2>
           </div>
 
           <div className="relative">
-            <div className="absolute left-[19px] top-2 bottom-2 w-px bg-[var(--border)]" />
+            <div className="absolute top-2 bottom-2 left-[19px] w-px bg-[var(--border)]" />
 
             <div className="space-y-2">
               {meals.map((meal, i) => (
@@ -205,10 +259,8 @@ export default function Nutrition() {
                       ))}
                     </ul>
 
-                    <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                      <span style={{ color: macroConfig[0].color }}>
-                        {meal.calories} kcal
-                      </span>
+                    <div className="flex items-center gap-3 text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
+                      <span style={{ color: macroConfig[0].color }}>{meal.calories} kcal</span>
                       <span>P: {meal.protein}g</span>
                       <span>C: {meal.carbs}g</span>
                       <span>G: {meal.fats}g</span>
@@ -230,10 +282,10 @@ export default function Nutrition() {
             className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"
           >
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-wider text-[var(--text-primary)]">
+              <h3 className="text-sm font-black tracking-wider text-[var(--text-primary)] uppercase">
                 Hidratación
               </h3>
-              <div className="flex items-center gap-1.5 text-xs text-[var(--info, #3b82f6)]">
+              <div className="text-[var(--info, #3b82f6)] flex items-center gap-1.5 text-xs">
                 <Droplets size={14} />
                 <span className="font-bold">{waterGlasses}/8</span>
               </div>
@@ -247,13 +299,10 @@ export default function Nutrition() {
                   className={`flex h-10 items-center justify-center rounded-lg border transition-all active:scale-95 ${
                     i < waterGlasses
                       ? 'border-[var(--info, #3b82f6)]/30 bg-[var(--info, #3b82f6)]/10 text-[var(--info, #3b82f6)]'
-                      : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:border-[var(--info, #3b82f6)]/20'
+                      : 'hover:border-[var(--info, #3b82f6)]/20 border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)]'
                   }`}
                 >
-                  <Droplets
-                    size={14}
-                    fill={i < waterGlasses ? 'currentColor' : 'none'}
-                  />
+                  <Droplets size={14} fill={i < waterGlasses ? 'currentColor' : 'none'} />
                 </button>
               ))}
             </div>
@@ -274,7 +323,7 @@ export default function Nutrition() {
               <div className="flex gap-3">
                 <Info size={16} className="mt-0.5 shrink-0 text-[var(--accent)]" />
                 <div>
-                  <h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--accent)]">
+                  <h4 className="mb-1.5 text-[10px] font-bold tracking-widest text-[var(--accent)] uppercase">
                     Nota del Coach
                   </h4>
                   <p className="text-sm leading-relaxed text-[var(--text-secondary)]">

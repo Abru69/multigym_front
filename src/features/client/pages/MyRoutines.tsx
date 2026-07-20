@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { useRoutineStore } from '@/features/client/store/routineStore'
+import { useAuthStore } from '@/features/auth/store/authStore'
 import { createWorkoutLog } from '@/lib/api'
 import type { DayOfWeek, Exercise } from '@/types'
 import {
@@ -16,6 +18,7 @@ import {
   Clock,
   RotateCcw,
   Info,
+  Loader2,
 } from 'lucide-react'
 
 const DAYS: { key: DayOfWeek; short: string; full: string }[] = [
@@ -132,7 +135,7 @@ function ProgressRing({
             <span className="text-lg leading-none font-black text-[var(--text-primary)]">
               {Math.round(progress)}
             </span>
-            <span className="text-[7px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+            <span className="text-[7px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
               %
             </span>
           </>
@@ -187,7 +190,7 @@ function ExerciseCard({
       {/* Collapsed header */}
       <button
         onClick={onToggle}
-        className="flex w-full items-center gap-3 p-3 text-left select-none active:scale-[0.98] transition-transform"
+        className="flex w-full items-center gap-3 p-3 text-left transition-transform select-none active:scale-[0.98]"
         style={{ opacity: allDone && !isExpanded ? 0.5 : 1 }}
       >
         {/* Thumbnail */}
@@ -205,7 +208,7 @@ function ExerciseCard({
             </div>
           )}
           {allDone && (
-            <div className="absolute inset-0 flex items-center justify-center bg-[var(--success, #22c55e)]/20">
+            <div className="bg-[var(--success, #22c55e)]/20 absolute inset-0 flex items-center justify-center">
               <CheckCircle2 size={18} className="text-[var(--success, #22c55e)]" />
             </div>
           )}
@@ -247,7 +250,9 @@ function ExerciseCard({
               {restTimer.seconds}s
             </motion.span>
           )}
-          <span className={`text-xs font-bold tabular-nums ${allDone ? 'text-[var(--success, #22c55e)]' : 'text-[var(--text-muted)]'}`}>
+          <span
+            className={`text-xs font-bold tabular-nums ${allDone ? 'text-[var(--success, #22c55e)]' : 'text-[var(--text-muted)]'}`}
+          >
             {doneSets}/{exercise.sets}
           </span>
           <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -267,7 +272,7 @@ function ExerciseCard({
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden"
           >
-            <div className="space-y-4 border-t border-[var(--border)] px-3 pb-4 pt-3">
+            <div className="space-y-4 border-t border-[var(--border)] px-3 pt-3 pb-4">
               {/* Rest timer inline */}
               {hasActiveTimer && restTimer && (
                 <motion.div
@@ -278,10 +283,10 @@ function ExerciseCard({
                   <div className="flex items-center gap-3">
                     <Timer size={16} className="text-[var(--accent)]" />
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                      <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                         Descanso
                       </p>
-                      <p className="text-xl font-black tabular-nums text-[var(--accent)]">
+                      <p className="text-xl font-black text-[var(--accent)] tabular-nums">
                         {restTimer.seconds}s
                       </p>
                     </div>
@@ -335,7 +340,7 @@ function ExerciseCard({
                     >
                       {s.val}
                     </p>
-                    <p className="mt-0.5 text-[8px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                    <p className="mt-0.5 text-[8px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       {s.label}
                     </p>
                   </div>
@@ -344,7 +349,7 @@ function ExerciseCard({
 
               {/* Set tracking — large circles */}
               <div>
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                <p className="mb-2 text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                   Series
                 </p>
                 <div className="flex gap-2">
@@ -376,13 +381,16 @@ function ExerciseCard({
                 <div className="rounded-xl bg-[var(--surface)] p-3">
                   <div className="mb-1.5 flex items-center gap-1.5">
                     <Zap size={10} className="text-[var(--accent)]" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                    <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                       Consejos
                     </p>
                   </div>
                   <div className="space-y-1">
                     {exercise.tips.map((tip, i) => (
-                      <p key={i} className="flex items-start gap-1.5 text-xs text-[var(--text-secondary)]">
+                      <p
+                        key={i}
+                        className="flex items-start gap-1.5 text-xs text-[var(--text-secondary)]"
+                      >
                         <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-[var(--accent)]/40" />
                         {tip}
                       </p>
@@ -417,16 +425,18 @@ const slideVariants = {
 }
 
 export default function MyRoutines() {
-  const { currentRoutine, selectedDay, setSelectedDay, loadRoutines } = useRoutineStore()
+  const { currentRoutine, selectedDay, setSelectedDay, loadRoutines, routines, isLoading, error } =
+    useRoutineStore()
+  const { tenantId, user } = useAuthStore()
 
   const todayKey = JS_DAY_MAP[new Date().getDay()]
   const todayDateStr = useMemo(() => new Date().toISOString().split('T')[0], [])
-  const STORAGE_KEY = `multigym-progress-${todayDateStr}`
+  const STORAGE_KEY = `multigym-progress-${tenantId || 'default'}-${user?.id || 'guest'}-${todayDateStr}`
 
   const [completedSets, setCompletedSets] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem(
-        `multigym-progress-${new Date().toISOString().split('T')[0]}`
+        `multigym-progress-${tenantId || 'default'}-${user?.id || 'guest'}-${new Date().toISOString().split('T')[0]}`
       )
       return saved ? new Set(JSON.parse(saved) as string[]) : new Set()
     } catch {
@@ -540,9 +550,7 @@ export default function MyRoutines() {
     )
   }, [exercises])
 
-  const [restQuote] = useState(
-    () => REST_QUOTES[Math.floor(Math.random() * REST_QUOTES.length)]
-  )
+  const [restQuote] = useState(() => REST_QUOTES[Math.floor(Math.random() * REST_QUOTES.length)])
 
   useEffect(() => {
     if (
@@ -568,7 +576,61 @@ export default function MyRoutines() {
       }
     }
     prevProgressRef.current = progress
-  }, [progress, todayRoutine?.isRestDay, totalSets, currentRoutine?.id, elapsedSeconds, totalExercises])
+  }, [
+    progress,
+    todayRoutine?.isRestDay,
+    totalSets,
+    currentRoutine?.id,
+    elapsedSeconds,
+    totalExercises,
+  ])
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 size={32} className="animate-spin text-[var(--accent)]" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 text-center">
+        <Dumbbell size={42} className="mb-4 text-red-400" />
+        <h1 className="mb-2 text-2xl font-black text-[var(--text-primary)]">
+          No pudimos cargar tus rutinas
+        </h1>
+        <p className="mb-5 text-sm text-[var(--text-secondary)]">{error}</p>
+        <button
+          type="button"
+          onClick={loadRoutines}
+          className="rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-bold text-[var(--accent-text)]"
+        >
+          Reintentar
+        </button>
+      </div>
+    )
+  }
+
+  if (routines.length === 0) {
+    return (
+      <div className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 text-center">
+        <Dumbbell size={42} className="mb-4 text-[var(--text-muted)]" />
+        <h1 className="mb-2 text-2xl font-black text-[var(--text-primary)]">
+          Aún no tienes rutinas
+        </h1>
+        <p className="mb-5 text-sm leading-relaxed text-[var(--text-secondary)]">
+          Tu entrenador todavía no te ha asignado una rutina. Cuando esté disponible aparecerá aquí.
+        </p>
+        <Link
+          to="/"
+          className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-bold text-[var(--text-primary)]"
+        >
+          Volver al inicio
+        </Link>
+      </div>
+    )
+  }
 
   const goToDay = (newDay: DayOfWeek) => {
     const oldIdx = DAYS.findIndex((d) => d.key === selectedDay)
@@ -585,7 +647,11 @@ export default function MyRoutines() {
 
     setCompletedSets((prev) => {
       const next = new Set(prev)
-      if (next.has(key)) { next.delete(key) } else { next.add(key) }
+      if (next.has(key)) {
+        next.delete(key)
+      } else {
+        next.add(key)
+      }
       return next
     })
 
@@ -660,7 +726,7 @@ export default function MyRoutines() {
       {/* Header — Day name + Progress ring */}
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+          <p className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
             Rutina de
           </p>
           <h1 className="text-4xl font-black tracking-tighter text-[var(--text-primary)] sm:text-5xl">
@@ -691,7 +757,7 @@ export default function MyRoutines() {
       </div>
 
       {/* Week selector — horizontal scroll */}
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <div className="mb-6 flex scrollbar-none gap-2 overflow-x-auto pb-2">
         {DAYS.map((d, i) => {
           const isSelected = d.key === selectedDay
           const isToday = d.key === todayKey
@@ -718,11 +784,11 @@ export default function MyRoutines() {
               className={`relative flex min-w-[52px] flex-col items-center gap-1 rounded-2xl px-3 py-3 transition-all active:scale-95 ${
                 isSelected
                   ? 'bg-[var(--accent)] shadow-sm'
-                  : 'bg-[var(--card)] border border-[var(--border)]'
+                  : 'border border-[var(--border)] bg-[var(--card)]'
               }`}
             >
               <span
-                className={`text-[10px] font-bold uppercase tracking-wider ${
+                className={`text-[10px] font-bold tracking-wider uppercase ${
                   isSelected ? 'text-[var(--accent-text)]' : 'text-[var(--text-muted)]'
                 }`}
               >
@@ -806,12 +872,8 @@ export default function MyRoutines() {
               >
                 <Moon size={40} className="text-[var(--text-muted)]" />
               </motion.div>
-              <p className="mt-4 text-lg font-black text-[var(--text-primary)]">
-                Día de Descanso
-              </p>
-              <p className="mt-2 max-w-xs text-sm text-[var(--text-muted)]">
-                {restQuote}
-              </p>
+              <p className="mt-4 text-lg font-black text-[var(--text-primary)]">Día de Descanso</p>
+              <p className="mt-2 max-w-xs text-sm text-[var(--text-muted)]">{restQuote}</p>
             </motion.div>
           ) : (
             <>
@@ -836,10 +898,10 @@ export default function MyRoutines() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="flex flex-col items-center rounded-2xl border border-[var(--success, #22c55e)]/20 bg-[var(--success, #22c55e)]/5 py-10 text-center"
+                  className="border-[var(--success, #22c55e)]/20 bg-[var(--success, #22c55e)]/5 flex flex-col items-center rounded-2xl border py-10 text-center"
                 >
                   <Trophy size={32} className="text-[var(--success, #22c55e)]" />
-                  <p className="mt-3 text-base font-black text-[var(--success, #22c55e)]">
+                  <p className="text-[var(--success, #22c55e)] mt-3 text-base font-black">
                     ¡Rutina Completada!
                   </p>
                   <p className="mt-1 text-sm text-[var(--text-muted)]">
@@ -873,11 +935,11 @@ export default function MyRoutines() {
 
               <div className="min-w-0 flex-1">
                 <div className="mb-1.5 flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
+                  <span className="text-[10px] font-bold tracking-widest text-[var(--text-muted)] uppercase">
                     {completedSetCount}/{totalSets} series
                   </span>
                   {workoutStarted && (
-                    <span className="text-xs font-bold tabular-nums text-[var(--accent)]">
+                    <span className="text-xs font-bold text-[var(--accent)] tabular-nums">
                       <Clock size={10} className="mr-1 inline" />
                       {formatTime(elapsedSeconds)}
                     </span>
@@ -898,7 +960,7 @@ export default function MyRoutines() {
                 onClick={() => {
                   if (progress < 100) setWorkoutStarted(!workoutStarted)
                 }}
-                className={`flex h-11 items-center gap-2 whitespace-nowrap rounded-xl px-5 text-xs font-black uppercase tracking-wider transition-all active:scale-95 ${
+                className={`flex h-11 items-center gap-2 rounded-xl px-5 text-xs font-black tracking-wider whitespace-nowrap uppercase transition-all active:scale-95 ${
                   progress >= 100
                     ? 'bg-[var(--success, #22c55e)] text-white'
                     : workoutStarted
@@ -965,8 +1027,16 @@ export default function MyRoutines() {
               <div className="mx-auto mt-8 grid max-w-xs grid-cols-3 gap-3">
                 {[
                   { val: formatTime(elapsedSeconds), label: 'Tiempo', color: 'var(--accent)' },
-                  { val: String(completedSetCount), label: 'Series', color: 'var(--success, #22c55e)' },
-                  { val: String(totalExercises), label: 'Ejercicios', color: 'var(--text-secondary)' },
+                  {
+                    val: String(completedSetCount),
+                    label: 'Series',
+                    color: 'var(--success, #22c55e)',
+                  },
+                  {
+                    val: String(totalExercises),
+                    label: 'Ejercicios',
+                    color: 'var(--text-secondary)',
+                  },
                 ].map((s) => (
                   <div
                     key={s.label}
@@ -975,7 +1045,7 @@ export default function MyRoutines() {
                     <p className="text-xl font-black" style={{ color: s.color }}>
                       {s.val}
                     </p>
-                    <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                    <p className="mt-0.5 text-[9px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       {s.label}
                     </p>
                   </div>

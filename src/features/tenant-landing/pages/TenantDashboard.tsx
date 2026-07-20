@@ -4,7 +4,7 @@ import { LogOut } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useRoutineStore } from '@/features/client/store/routineStore'
-import { getTenantUrl } from '@/lib/tenant'
+import { getTenantHomeUrl } from '@/lib/tenant'
 import { TenantLogo } from '@/components/tenant/TenantLogo'
 import { MemberSummary } from '../components/MemberSummary'
 import { MemberRoutines } from '../components/MemberRoutines'
@@ -23,11 +23,7 @@ export default function TenantDashboard() {
   const handleLogout = async () => {
     const currentTenantId = tenantId || user?.tenantId
     await logout()
-    if (currentTenantId) {
-      window.location.href = getTenantUrl(currentTenantId)
-    } else {
-      window.location.href = '/'
-    }
+    window.location.href = getTenantHomeUrl(currentTenantId)
   }
 
   return (

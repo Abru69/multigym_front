@@ -15,7 +15,7 @@ import {
   Sun,
   Moon,
 } from 'lucide-react'
-import { getTenantUrl } from '@/lib/tenant'
+import { getTenantHomeUrl } from '@/lib/tenant'
 import { useTheme } from '@/hooks/useTheme'
 import { getAllowedPages } from '@/lib/permissions'
 import { InstallBanner } from '@/components/ui/InstallBanner'
@@ -44,18 +44,14 @@ export function ClientLayout() {
     const currentTenantId = tenantId || user?.tenantId
     await logout()
     setShowMenu(false)
-    if (currentTenantId) {
-      window.location.href = getTenantUrl(currentTenantId)
-    } else {
-      window.location.href = '/'
-    }
+    window.location.href = getTenantHomeUrl(currentTenantId)
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-[var(--bg-secondary)]">
       <InstallBanner />
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[var(--card)] border-b border-[var(--border)]">
+      <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--card)]">
         <div className="flex items-center justify-between px-4 py-3 lg:px-8">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
@@ -67,7 +63,7 @@ export function ClientLayout() {
 
           {/* Desktop Nav */}
           {isAuthenticated && (
-            <nav className="hidden lg:flex items-center gap-1">
+            <nav className="hidden items-center gap-1 lg:flex">
               {clientNav.map((item) => (
                 <NavLink
                   key={item.to}
@@ -75,7 +71,7 @@ export function ClientLayout() {
                   className={({ isActive }) =>
                     `flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all ${
                       isActive
-                        ? 'text-[var(--accent-text)] font-semibold border-b-2 border-[var(--accent)]'
+                        ? 'border-b-2 border-[var(--accent)] font-semibold text-[var(--accent-text)]'
                         : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                     }`
                   }
@@ -204,9 +200,7 @@ export function ClientLayout() {
               to={item.to}
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 rounded-xl px-3 py-1.5 transition-all ${
-                  isActive
-                    ? 'text-[var(--accent-text)]'
-                    : 'text-[var(--text-muted)]'
+                  isActive ? 'text-[var(--accent-text)]' : 'text-[var(--text-muted)]'
                 }`
               }
             >

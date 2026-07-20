@@ -111,7 +111,7 @@ export const useTenantSettingsStore = create<TenantSettingsStore>()((set, get) =
       const res = await fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings', {
         skipAuthRedirect: true,
       })
-      const settings = res.lista || []
+       const settings = res.lista || (Array.isArray(res.dto) ? res.dto : [])
       set({
         allSettings: settings,
         colors: parseColors(settings),
@@ -141,7 +141,7 @@ export const useTenantSettingsStore = create<TenantSettingsStore>()((set, get) =
         skipAuthRedirect: true,
         skipAuthHeader: true,
       })
-      const settings = res.lista || []
+       const settings = res.lista || (Array.isArray(res.dto) ? res.dto : [])
       if (settings.length === 0 && cachedColors) {
         set({ isLoading: false, loaded: true, loadedTenantId: tenantId || null })
         return

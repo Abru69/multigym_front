@@ -1,12 +1,30 @@
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { getTenantUrl } from '@/lib/tenant'
+import { getTenantHomeUrl } from '@/lib/tenant'
 import { getTenantBillingRenewalInfo } from '@/lib/api'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
-import { DashboardLayout, type NavItem } from '@/components/layout/DashboardLayout'
+import { DashboardLayout, type NavItem, type NavSection } from '@/components/layout/DashboardLayout'
 import { TenantLogo } from '@/components/tenant/TenantLogo'
-import { LayoutDashboard, Package, Users, Dumbbell, CreditCard, Calendar, DollarSign, Store, Truck, Settings, Utensils, ClipboardList, Megaphone, BarChart3, Building2, Palette, ReceiptText } from 'lucide-react'
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  Dumbbell,
+  CreditCard,
+  Calendar,
+  DollarSign,
+  Store,
+  Truck,
+  Settings,
+  Utensils,
+  ClipboardList,
+  Megaphone,
+  BarChart3,
+  Building2,
+  Palette,
+  ReceiptText,
+} from 'lucide-react'
 import { canAccessPage, type AdminPage } from '@/lib/permissions'
 import { InstallBanner } from '@/components/ui/InstallBanner'
 
@@ -30,24 +48,37 @@ const ALL_NAV_ITEMS: (NavItem & { page: AdminPage })[] = [
   { to: '/admin/billing', icon: ReceiptText, label: 'Facturación SaaS', page: 'billing' },
 ]
 
+const ADMIN_NAV_SECTIONS: { label: string; pages: AdminPage[] }[] = [
+  { label: 'Principal', pages: ['dashboard'] },
+  {
+    label: 'Gestión de Miembros',
+    pages: ['users', 'checkins', 'plans', 'subscriptions', 'payments'],
+  },
+  { label: 'Entrenamiento y Bienestar', pages: ['exercises', 'nutrition'] },
+  { label: 'Tienda y Operación', pages: ['inventory', 'pickups', 'shipments', 'delivery'] },
+  { label: 'Organización', pages: ['branches', 'announcements'] },
+  { label: 'Reportes y Configuración', pages: ['reports', 'branding', 'billing'] },
+]
+
 export function AdminLayout() {
   const { user, logout, tenantId } = useAuthStore()
   const { branding } = useTenantBranding()
   const location = useLocation()
   const navigate = useNavigate()
 
-  const navItems = ALL_NAV_ITEMS.filter((item) =>
-    canAccessPage(user?.role, item.page)
-  )
+  const navSections: NavSection[] = ADMIN_NAV_SECTIONS.map((section) => ({
+    label: section.label,
+    items: section.pages
+      .map((page) => ALL_NAV_ITEMS.find((item) => item.page === page))
+      .filter((item): item is NavItem & { page: AdminPage } => Boolean(item))
+      .filter((item) => canAccessPage(user?.role, item.page)),
+  })).filter((section) => section.items.length > 0)
+  const navItems = navSections.flatMap((section) => section.items)
 
   const handleLogout = async () => {
     const currentTenantId = tenantId || user?.tenantId
     await logout()
-    if (currentTenantId) {
-      window.location.href = getTenantUrl(currentTenantId)
-    } else {
-      window.location.href = '/'
-    }
+    window.location.href = getTenantHomeUrl(currentTenantId)
   }
 
   useEffect(() => {
@@ -78,9 +109,8 @@ export function AdminLayout() {
       <InstallBanner />
       <DashboardLayout
         navItems={navItems}
-        logo={
-          <TenantLogo className="rounded-lg shadow-sm" />
-        }
+        navSections={navSections}
+        logo={<TenantLogo className="rounded-lg shadow-sm" />}
         title={branding.name}
         subtitle="Admin Panel"
         user={

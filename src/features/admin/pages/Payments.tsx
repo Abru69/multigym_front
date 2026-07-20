@@ -1,5 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { getPayments, createPayment, updatePayment, deletePayment, getSubscriptions } from '@/lib/api'
+import {
+  getPayments,
+  createPayment,
+  updatePayment,
+  deletePayment,
+  getSubscriptions,
+} from '@/lib/api'
 import { Plus, DollarSign, Edit2, Trash2 } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -26,7 +32,12 @@ export default function PaymentsPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const [form, setForm] = useState({ subscriptionId: '', amount: '', paymentMethod: 'EFECTIVO', reference: '' })
+  const [form, setForm] = useState({
+    subscriptionId: '',
+    amount: '',
+    paymentMethod: 'EFECTIVO',
+    reference: '',
+  })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [subscriptionsList, setSubscriptionsList] = useState<SubscriptionListItemDTO[]>([])
 
@@ -48,9 +59,11 @@ export default function PaymentsPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPayments()
-    getSubscriptions().then((res) => {
-      if (res?.dto?.data) setSubscriptionsList(res.dto.data)
-    }).catch(() => {})
+    getSubscriptions()
+      .then((res) => {
+        if (res?.dto?.data) setSubscriptionsList(res.dto.data)
+      })
+      .catch(() => {})
   }, [loadPayments])
 
   const filtered = useMemo(() => {
@@ -64,10 +77,11 @@ export default function PaymentsPage() {
     })
   }, [payments, debouncedSearch])
 
-  const totalAmount = useMemo(() =>
-    payments
-      .filter((p) => p.status === 'COMPLETED' || p.status === 'APPROVED')
-      .reduce((sum, p) => sum + (Number(p.amount) || 0), 0),
+  const totalAmount = useMemo(
+    () =>
+      payments
+        .filter((p) => p.status === 'COMPLETED' || p.status === 'APPROVED')
+        .reduce((sum, p) => sum + (Number(p.amount) || 0), 0),
     [payments]
   )
 
@@ -155,26 +169,45 @@ export default function PaymentsPage() {
 
   const statusColor = (status: string) => {
     switch (status) {
-      case 'COMPLETED': return { bg: '#f0fdf4', color: '#16a34a' }
-      case 'PENDING': return { bg: '#fefce8', color: '#ca8a04' }
-      case 'FAILED': return { bg: '#fef2f2', color: '#dc2626' }
-      case 'REFUNDED': return { bg: '#eff6ff', color: '#2563eb' }
-      default: return { bg: '#f1f5f9', color: '#64748b' }
+      case 'COMPLETED':
+        return { bg: 'var(--success-muted)', color: 'var(--success)' }
+      case 'PENDING':
+        return { bg: 'var(--warning-muted)', color: 'var(--warning)' }
+      case 'FAILED':
+        return { bg: 'var(--error-muted-bg)', color: 'var(--error)' }
+      case 'REFUNDED':
+        return { bg: 'var(--info-muted)', color: 'var(--info)' }
+      default:
+        return { bg: 'var(--surface)', color: 'var(--text-secondary)' }
     }
   }
 
   const formatDate = (d: string) => {
-    try { return new Date(d).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }
-    catch { return d }
+    try {
+      return new Date(d).toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    } catch {
+      return d
+    }
   }
 
   const methodLabel = (m: string) => {
     switch (m) {
-      case 'EFECTIVO': return 'Efectivo'
-      case 'TARJETA_CREDITO': return 'Tarjeta Crédito'
-      case 'TARJETA_DEBITO': return 'Tarjeta Débito'
-      case 'TRANSFERENCIA': return 'Transferencia'
-      default: return m
+      case 'EFECTIVO':
+        return 'Efectivo'
+      case 'TARJETA_CREDITO':
+        return 'Tarjeta Crédito'
+      case 'TARJETA_DEBITO':
+        return 'Tarjeta Débito'
+      case 'TRANSFERENCIA':
+        return 'Transferencia'
+      default:
+        return m
     }
   }
 
@@ -196,29 +229,71 @@ export default function PaymentsPage() {
       />
 
       {error && (
-        <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ border: '1px solid #fecaca', backgroundColor: '#fef2f2' }}>
-          <p className="flex-1 text-sm" style={{ color: '#b91c1c' }}>{error}</p>
-          <button onClick={loadPayments} className="text-sm font-semibold hover:underline" style={{ color: '#b91c1c' }}>Reintentar</button>
+        <div
+          className="flex items-center gap-3 rounded-xl px-4 py-3"
+          style={{ border: '1px solid var(--error)', backgroundColor: 'var(--error-muted-bg)' }}
+        >
+          <p className="flex-1 text-sm" style={{ color: 'var(--error)' }}>
+            {error}
+          </p>
+          <button
+            onClick={loadPayments}
+            className="text-sm font-semibold hover:underline"
+            style={{ color: 'var(--error)' }}
+          >
+            Reintentar
+          </button>
         </div>
       )}
 
-      <SearchBar value={search} onChange={setSearch} placeholder="Buscar por método, estado o referencia..." />
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Buscar por método, estado o referencia..."
+      />
 
       {isLoading ? (
         <LoadingState text="Cargando pagos..." />
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl py-16" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}>
+        <div
+          className="flex flex-col items-center justify-center rounded-2xl py-16"
+          style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+        >
           <DollarSign size={48} style={{ color: 'var(--text-muted)' }} className="mb-4" />
-          <p className="text-lg font-bold mb-1" style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>No hay pagos</p>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Los pagos registrados aparecerán aquí.</p>
+          <p
+            className="mb-1 text-lg font-bold"
+            style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
+          >
+            No hay pagos
+          </p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Los pagos registrados aparecerán aquí.
+          </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}>
+        <div
+          className="overflow-x-auto rounded-2xl"
+          style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+        >
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
-                {['Monto', 'Método', 'Estado', 'Referencia', 'Fecha', 'ID Suscripción', 'Acciones'].map((h) => (
-                  <th key={h} className="px-5 py-3.5 text-left text-xs font-bold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                {[
+                  'Monto',
+                  'Método',
+                  'Estado',
+                  'Referencia',
+                  'Fecha',
+                  'ID Suscripción',
+                  'Acciones',
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="px-5 py-3.5 text-left text-xs font-bold tracking-wider uppercase"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -226,17 +301,37 @@ export default function PaymentsPage() {
               {filtered.map((pay) => {
                 const sc = statusColor(pay.status)
                 return (
-                  <tr key={pay.id} className="border-b transition-colors duration-150" style={{ borderColor: 'var(--border)' }}>
-                    <td className="px-5 py-3.5 font-bold" style={{ color: 'var(--accent)' }}>{formatCurrency(pay.amount)}</td>
-                    <td className="px-5 py-3.5" style={{ color: 'var(--text-primary)' }}>{methodLabel(pay.paymentMethod)}</td>
+                  <tr
+                    key={pay.id}
+                    className="border-b transition-colors duration-150"
+                    style={{ borderColor: 'var(--border)' }}
+                  >
+                    <td className="px-5 py-3.5 font-bold" style={{ color: 'var(--accent)' }}>
+                      {formatCurrency(pay.amount)}
+                    </td>
+                    <td className="px-5 py-3.5" style={{ color: 'var(--text-primary)' }}>
+                      {methodLabel(pay.paymentMethod)}
+                    </td>
                     <td className="px-5 py-3.5">
-                      <span className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: sc.bg, color: sc.color }}>
+                      <span
+                        className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                        style={{ backgroundColor: sc.bg, color: sc.color }}
+                      >
                         {pay.status}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5" style={{ color: 'var(--text-secondary)' }}>{pay.reference || '—'}</td>
-                    <td className="px-5 py-3.5" style={{ color: 'var(--text-secondary)' }}>{formatDate(pay.paymentDate)}</td>
-                    <td className="px-5 py-3.5 font-mono text-xs" style={{ color: 'var(--text-muted)' }}>{pay.subscriptionId.slice(0, 8)}...</td>
+                    <td className="px-5 py-3.5" style={{ color: 'var(--text-secondary)' }}>
+                      {pay.reference || '—'}
+                    </td>
+                    <td className="px-5 py-3.5" style={{ color: 'var(--text-secondary)' }}>
+                      {formatDate(pay.paymentDate)}
+                    </td>
+                    <td
+                      className="px-5 py-3.5 font-mono text-xs"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {pay.subscriptionId.slice(0, 8)}...
+                    </td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-1">
                         <button
@@ -265,23 +360,45 @@ export default function PaymentsPage() {
         </div>
       )}
 
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingPay(null) }} title={editingPay ? 'Editar Pago' : 'Registrar Pago'} size="md">
+      <Modal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false)
+          setEditingPay(null)
+        }}
+        title={editingPay ? 'Editar Pago' : 'Registrar Pago'}
+        size="md"
+      >
         <div className="space-y-4">
-          <FormField label="Suscripción" required htmlFor="pay-sub" error={formErrors.subscriptionId}>
+          <FormField
+            label="Suscripción"
+            required
+            htmlFor="pay-sub"
+            error={formErrors.subscriptionId}
+          >
             <Select
               id="pay-sub"
               value={form.subscriptionId}
               onChange={(e) => setForm({ ...form, subscriptionId: e.target.value })}
-              options={subscriptionsList.filter((s) => s.status === 'ACTIVE').map((s) => ({
-                value: s.id,
-                label: `${s.member?.name || 'N/A'} — ${s.plan?.name || 'N/A'}`,
-              }))}
+              options={subscriptionsList
+                .filter((s) => s.status === 'ACTIVE')
+                .map((s) => ({
+                  value: s.id,
+                  label: `${s.member?.name || 'N/A'} — ${s.plan?.name || 'N/A'}`,
+                }))}
               placeholder="Selecciona una suscripción"
               error={!!formErrors.subscriptionId}
             />
           </FormField>
           <FormField label="Monto" required htmlFor="pay-amount" error={formErrors.amount}>
-            <Input id="pay-amount" type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0.00" error={!!formErrors.amount} />
+            <Input
+              id="pay-amount"
+              type="number"
+              value={form.amount}
+              onChange={(e) => setForm({ ...form, amount: e.target.value })}
+              placeholder="0.00"
+              error={!!formErrors.amount}
+            />
           </FormField>
           <FormField label="Método de Pago" required htmlFor="pay-method">
             <select
@@ -289,7 +406,11 @@ export default function PaymentsPage() {
               value={form.paymentMethod}
               onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
               className="flex h-11 w-full appearance-none rounded-xl px-4 py-2 text-sm transition-all duration-200 focus:ring-2 focus:outline-none"
-              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}
+              style={{
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--card)',
+                color: 'var(--text-primary)',
+              }}
             >
               <option value="EFECTIVO">Efectivo</option>
               <option value="TARJETA_CREDITO">Tarjeta Crédito</option>
@@ -298,15 +419,46 @@ export default function PaymentsPage() {
             </select>
           </FormField>
           <FormField label="Referencia" htmlFor="pay-ref">
-            <Input id="pay-ref" type="text" value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} placeholder="Opcional" />
+            <Input
+              id="pay-ref"
+              type="text"
+              value={form.reference}
+              onChange={(e) => setForm({ ...form, reference: e.target.value })}
+              placeholder="Opcional"
+            />
           </FormField>
         </div>
-        <div className="mt-6 flex justify-end gap-3 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-          <button onClick={() => { setShowModal(false); setEditingPay(null) }} disabled={isSaving} className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}>
+        <div
+          className="mt-6 flex justify-end gap-3 pt-4"
+          style={{ borderTop: '1px solid var(--border)' }}
+        >
+          <button
+            onClick={() => {
+              setShowModal(false)
+              setEditingPay(null)
+            }}
+            disabled={isSaving}
+            className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
+            style={{
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--card)',
+              color: 'var(--text-primary)',
+            }}
+          >
             Cancelar
           </button>
-          <button onClick={editingPay ? handleEdit : handleCreate} disabled={isSaving} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
-            {isSaving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }} />}
+          <button
+            onClick={editingPay ? handleEdit : handleCreate}
+            disabled={isSaving}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+          >
+            {isSaving && (
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
+                style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }}
+              />
+            )}
             {editingPay ? 'Guardar' : 'Registrar'}
           </button>
         </div>

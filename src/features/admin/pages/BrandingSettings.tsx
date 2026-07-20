@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import { fetchApi, uploadTenantLogo } from '@/lib/api'
-import { useTenantSettingsStore, deriveColorPalette, isValidColor } from '@/features/admin/store/tenantSettingsStore'
+import {
+  useTenantSettingsStore,
+  deriveColorPalette,
+  isValidColor,
+} from '@/features/admin/store/tenantSettingsStore'
 import { getTenantFromLocation } from '@/lib/tenant'
 import { Image, Palette, Save, Loader2, CheckCircle2, Upload } from 'lucide-react'
 import type { TenantSettingDTO, ResponseDTO } from '@/types'
@@ -21,7 +25,7 @@ export default function BrandingSettings() {
     const load = async () => {
       try {
         const res = await fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings')
-        const settings = res.lista || []
+        const settings = res.lista || (Array.isArray(res.dto) ? res.dto : [])
         const map = new Map(settings.map((s) => [s.key, s.value]))
         if (map.get('brand_color')) setBrandColor(map.get('brand_color')!)
         if (map.get('accent_color')) setAccentColor(map.get('accent_color')!)
@@ -107,7 +111,11 @@ export default function BrandingSettings() {
           <div className="mb-4 flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]">
               {logoUrl ? (
-                <img src={logoUrl} alt="Logo del gimnasio" className="h-full w-full object-contain" />
+                <img
+                  src={logoUrl}
+                  alt="Logo del gimnasio"
+                  className="h-full w-full object-contain"
+                />
               ) : (
                 <Image size={22} className="text-[var(--accent)]" />
               )}
@@ -138,7 +146,7 @@ export default function BrandingSettings() {
 
         {/* Brand Color */}
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-          <div className="flex items-center gap-4 mb-4">
+          <div className="mb-4 flex items-center gap-4">
             <div
               className="flex h-12 w-12 items-center justify-center rounded-xl transition-colors"
               style={{ backgroundColor: `${brandColor}15`, color: brandColor }}
@@ -164,8 +172,12 @@ export default function BrandingSettings() {
               type="text"
               value={brandColor}
               onChange={(e) => setBrandColor(e.target.value)}
-              className="flex h-11 flex-1 rounded-xl px-4 py-2 text-sm font-mono transition-all duration-200 hover:border-[var(--border)] focus:ring-2 focus:outline-none"
-              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}
+              className="flex h-11 flex-1 rounded-xl px-4 py-2 font-mono text-sm transition-all duration-200 hover:border-[var(--border)] focus:ring-2 focus:outline-none"
+              style={{
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--card)',
+                color: 'var(--text-primary)',
+              }}
               placeholder="#1976D2"
             />
           </div>
@@ -173,13 +185,34 @@ export default function BrandingSettings() {
           {/* Preview */}
           {brandPalette && (
             <div className="mt-4 flex items-center gap-2">
-              <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Preview:</span>
+              <span className="text-[10px] font-medium tracking-wider text-[var(--text-muted)] uppercase">
+                Preview:
+              </span>
               <div className="flex items-center gap-1.5">
-                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: brandColor }} title="Principal" />
-                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: brandPalette.hover }} title="Hover" />
-                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: brandPalette.light }} title="Light" />
-                <div className="h-6 w-6 rounded-md border border-[var(--border)]" style={{ backgroundColor: brandPalette.muted }} title="Muted" />
-                <div className="flex h-6 items-center rounded-md px-2 text-[10px] font-bold" style={{ backgroundColor: brandColor, color: brandPalette.text }}>
+                <div
+                  className="h-6 w-6 rounded-md"
+                  style={{ backgroundColor: brandColor }}
+                  title="Principal"
+                />
+                <div
+                  className="h-6 w-6 rounded-md"
+                  style={{ backgroundColor: brandPalette.hover }}
+                  title="Hover"
+                />
+                <div
+                  className="h-6 w-6 rounded-md"
+                  style={{ backgroundColor: brandPalette.light }}
+                  title="Light"
+                />
+                <div
+                  className="h-6 w-6 rounded-md border border-[var(--border)]"
+                  style={{ backgroundColor: brandPalette.muted }}
+                  title="Muted"
+                />
+                <div
+                  className="flex h-6 items-center rounded-md px-2 text-[10px] font-bold"
+                  style={{ backgroundColor: brandColor, color: brandPalette.text }}
+                >
                   Aa
                 </div>
               </div>
@@ -189,7 +222,7 @@ export default function BrandingSettings() {
 
         {/* Accent Color */}
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-          <div className="flex items-center gap-4 mb-4">
+          <div className="mb-4 flex items-center gap-4">
             <div
               className="flex h-12 w-12 items-center justify-center rounded-xl transition-colors"
               style={{ backgroundColor: `${accentColor}15`, color: accentColor }}
@@ -215,19 +248,37 @@ export default function BrandingSettings() {
               type="text"
               value={accentColor}
               onChange={(e) => setAccentColor(e.target.value)}
-              className="flex h-11 flex-1 rounded-xl px-4 py-2 text-sm font-mono transition-all duration-200 hover:border-[var(--border)] focus:ring-2 focus:outline-none"
-              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}
+              className="flex h-11 flex-1 rounded-xl px-4 py-2 font-mono text-sm transition-all duration-200 hover:border-[var(--border)] focus:ring-2 focus:outline-none"
+              style={{
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--card)',
+                color: 'var(--text-primary)',
+              }}
               placeholder="#FFC107"
             />
           </div>
 
           {accentPalette && (
             <div className="mt-4 flex items-center gap-2">
-              <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Preview:</span>
+              <span className="text-[10px] font-medium tracking-wider text-[var(--text-muted)] uppercase">
+                Preview:
+              </span>
               <div className="flex items-center gap-1.5">
-                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: accentColor }} title="Principal" />
-                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: accentPalette.hover }} title="Hover" />
-                <div className="h-6 w-6 rounded-md" style={{ backgroundColor: accentPalette.light }} title="Light" />
+                <div
+                  className="h-6 w-6 rounded-md"
+                  style={{ backgroundColor: accentColor }}
+                  title="Principal"
+                />
+                <div
+                  className="h-6 w-6 rounded-md"
+                  style={{ backgroundColor: accentPalette.hover }}
+                  title="Hover"
+                />
+                <div
+                  className="h-6 w-6 rounded-md"
+                  style={{ backgroundColor: accentPalette.light }}
+                  title="Light"
+                />
               </div>
             </div>
           )}
@@ -235,7 +286,9 @@ export default function BrandingSettings() {
 
         {/* Live Preview Card */}
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] mb-3">Vista Previa</p>
+          <p className="mb-3 text-[10px] font-medium tracking-wider text-[var(--text-muted)] uppercase">
+            Vista Previa
+          </p>
           <div className="space-y-3">
             <button
               className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all"
@@ -244,7 +297,7 @@ export default function BrandingSettings() {
               Botón Principal
             </button>
             <button
-              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all border-2"
+              className="inline-flex items-center gap-2 rounded-xl border-2 px-5 py-2.5 text-sm font-bold transition-all"
               style={{ borderColor: brandColor, color: brandColor }}
             >
               Botón Secundario
@@ -270,7 +323,7 @@ export default function BrandingSettings() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold tracking-wide text-[var(--accent-text)] uppercase shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
         >
           {saving ? (
             <Loader2 size={16} className="animate-spin" />

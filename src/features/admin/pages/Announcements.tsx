@@ -5,7 +5,17 @@ import {
   updateAnnouncement,
   deleteAnnouncement,
 } from '@/lib/api'
-import { Plus, Megaphone, Edit2, Trash2, Eye, MousePointerClick, Image, Video, FileText } from 'lucide-react'
+import {
+  Plus,
+  Megaphone,
+  Edit2,
+  Trash2,
+  Eye,
+  MousePointerClick,
+  Image,
+  Video,
+  FileText,
+} from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { useToastStore } from '@/components/ui/Toast'
@@ -187,33 +197,44 @@ export default function AnnouncementsPage() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((item) => {
             const MediaIcon = mediaIcons[item.mediaType] || Image
             return (
               <div
                 key={item.id}
-                className="bg-[var(--card)] rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-md"
+                className="overflow-hidden rounded-2xl bg-[var(--card)] transition-all duration-200 hover:shadow-md"
                 style={{ border: '1px solid var(--border)' }}
               >
                 {item.mediaUrl && item.mediaType === 'IMAGE' && (
-                  <div className="h-32 bg-[var(--surface)] flex items-center justify-center">
-                    <img src={item.mediaUrl} alt={item.title} className="h-full w-full object-cover" />
+                  <div className="flex h-32 items-center justify-center bg-[var(--surface)]">
+                    <img
+                      src={item.mediaUrl}
+                      alt={item.title}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                 )}
                 {!item.mediaUrl && (
-                  <div className="h-20 flex items-center justify-center" style={{ backgroundColor: 'var(--surface)' }}>
+                  <div
+                    className="flex h-20 items-center justify-center"
+                    style={{ backgroundColor: 'var(--surface)' }}
+                  >
                     <MediaIcon size={32} style={{ color: 'var(--text-muted)' }} />
                   </div>
                 )}
                 <div className="p-5">
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{item.title}</h4>
+                  <div className="mb-2 flex items-start justify-between">
+                    <h4 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                      {item.title}
+                    </h4>
                     <span
                       className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
                       style={{
-                        backgroundColor: item.isActive ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-                        color: item.isActive ? '#22c55e' : '#ef4444',
+                        backgroundColor: item.isActive
+                          ? 'rgba(34,197,94,0.1)'
+                          : 'rgba(239,68,68,0.1)',
+                        color: item.isActive ? 'var(--success)' : 'var(--error)',
                       }}
                     >
                       {item.isActive ? 'Activo' : 'Inactivo'}
@@ -221,36 +242,51 @@ export default function AnnouncementsPage() {
                   </div>
 
                   {item.description && (
-                    <p className="text-xs mb-3 line-clamp-2" style={{ color: 'var(--text-muted)' }}>
+                    <p className="mb-3 line-clamp-2 text-xs" style={{ color: 'var(--text-muted)' }}>
                       {item.description}
                     </p>
                   )}
 
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: 'rgba(59,130,246,0.1)', color: '#3b82f6' }}>
+                  <div className="mb-3 flex items-center gap-3">
+                    <span
+                      className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                      style={{ backgroundColor: 'rgba(59,130,246,0.1)', color: '#3b82f6' }}
+                    >
                       {positionLabels[item.position] || item.position}
                     </span>
-                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: 'rgba(168,85,247,0.1)', color: '#a855f7' }}>
+                    <span
+                      className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                      style={{ backgroundColor: 'rgba(168,85,247,0.1)', color: '#a855f7' }}
+                    >
                       {item.mediaType}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-4 mb-3">
+                  <div className="mb-3 flex items-center gap-4">
                     <div className="flex items-center gap-1">
                       <Eye size={12} style={{ color: 'var(--text-muted)' }} />
-                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.viewCount}</span>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {item.viewCount}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1">
                       <MousePointerClick size={12} style={{ color: 'var(--text-muted)' }} />
-                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.clickCount}</span>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {item.clickCount}
+                      </span>
                     </div>
-                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>P:{item.priority}</span>
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      P:{item.priority}
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+                  <div
+                    className="flex items-center gap-2 pt-3"
+                    style={{ borderTop: '1px solid var(--border)' }}
+                  >
                     <button
                       onClick={() => openEdit(item)}
-                      className="flex-1 inline-flex items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold transition-all"
+                      className="inline-flex flex-1 items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold transition-all"
                       style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
                     >
                       <Edit2 size={12} /> Editar
@@ -258,7 +294,11 @@ export default function AnnouncementsPage() {
                     <button
                       onClick={() => setDeleteTarget(item)}
                       className="inline-flex items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold transition-all"
-                      style={{ border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}
+                      style={{
+                        border: '1px solid var(--error)',
+                        color: 'var(--error)',
+                        backgroundColor: 'var(--error-muted-bg)',
+                      }}
                     >
                       <Trash2 size={12} />
                     </button>
@@ -296,7 +336,11 @@ export default function AnnouncementsPage() {
               placeholder="Descripción del anuncio"
               rows={3}
               className="flex w-full rounded-xl px-4 py-2 text-sm transition-all duration-200 hover:border-[var(--border)] focus:ring-2 focus:outline-none"
-              style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}
+              style={{
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--card)',
+                color: 'var(--text-primary)',
+              }}
             />
           </FormField>
 
@@ -305,9 +349,18 @@ export default function AnnouncementsPage() {
               <select
                 id="ann-media"
                 value={form.mediaType}
-                onChange={(e) => setForm({ ...form, mediaType: e.target.value as AnnouncementRequest['mediaType'] })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    mediaType: e.target.value as AnnouncementRequest['mediaType'],
+                  })
+                }
                 className="flex h-11 w-full appearance-none rounded-xl px-4 py-2 text-sm transition-all"
-                style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}
+                style={{
+                  border: '1px solid var(--border)',
+                  backgroundColor: 'var(--card)',
+                  color: 'var(--text-primary)',
+                }}
               >
                 <option value="IMAGE">Imagen</option>
                 <option value="VIDEO">Video</option>
@@ -318,9 +371,15 @@ export default function AnnouncementsPage() {
               <select
                 id="ann-position"
                 value={form.position}
-                onChange={(e) => setForm({ ...form, position: e.target.value as AnnouncementRequest['position'] })}
+                onChange={(e) =>
+                  setForm({ ...form, position: e.target.value as AnnouncementRequest['position'] })
+                }
                 className="flex h-11 w-full appearance-none rounded-xl px-4 py-2 text-sm transition-all"
-                style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}
+                style={{
+                  border: '1px solid var(--border)',
+                  backgroundColor: 'var(--card)',
+                  color: 'var(--text-primary)',
+                }}
               >
                 <option value="HERO">Hero</option>
                 <option value="BANNER">Banner</option>
@@ -388,18 +447,27 @@ export default function AnnouncementsPage() {
                   className="h-4 w-4 rounded"
                   style={{ accentColor: 'var(--accent)' }}
                 />
-                <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Activo</span>
+                <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  Activo
+                </span>
               </label>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-3 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
+        <div
+          className="mt-6 flex justify-end gap-3 pt-4"
+          style={{ borderTop: '1px solid var(--border)' }}
+        >
           <button
             onClick={() => setShowModal(false)}
             disabled={isSaving}
             className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all"
-            style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}
+            style={{
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--card)',
+              color: 'var(--text-primary)',
+            }}
           >
             Cancelar
           </button>
@@ -409,7 +477,12 @@ export default function AnnouncementsPage() {
             className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
             style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
           >
-            {isSaving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }} />}
+            {isSaving && (
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
+                style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }}
+              />
+            )}
             {editingItem ? 'Actualizar' : 'Crear'}
           </button>
         </div>

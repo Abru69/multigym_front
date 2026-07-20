@@ -16,26 +16,63 @@ import {
 } from 'lucide-react'
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  COMPLETED: { label: 'Entregado', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
-  PENDING: { label: 'Enviado', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', dot: 'bg-blue-500' },
-  CANCELLED: { label: 'Cancelado', color: 'text-gray-500', bg: 'bg-gray-50 border-gray-200', dot: 'bg-gray-400' },
+  COMPLETED: {
+    label: 'Entregado',
+    color: 'text-[var(--success)]',
+    bg: 'bg-[var(--success-muted)] border-[var(--success)]/30',
+    dot: 'bg-[var(--success)]',
+  },
+  PENDING: {
+    label: 'Enviado',
+    color: 'text-[var(--info)]',
+    bg: 'bg-[var(--info-muted)] border-[var(--info)]/30',
+    dot: 'bg-[var(--info)]',
+  },
+  CANCELLED: {
+    label: 'Cancelado',
+    color: 'text-[var(--text-secondary)]',
+    bg: 'bg-[var(--surface)] border-[var(--border)]',
+    dot: 'bg-[var(--text-muted)]',
+  },
 }
 
 const paymentStatusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  COMPLETED: { label: 'Pagado', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
-  REFUNDED: { label: 'Reembolsado', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
-  REFUND_FAILED: { label: 'Reembolso fallido', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
-  FAILED: { label: 'Pago fallido', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
-  PENDING: { label: 'Pago pendiente', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
+  COMPLETED: {
+    label: 'Pagado',
+    color: 'text-[var(--success)]',
+    bg: 'bg-[var(--success-muted)] border-[var(--success)]/30',
+  },
+  REFUNDED: {
+    label: 'Reembolsado',
+    color: 'text-[var(--info)]',
+    bg: 'bg-[var(--info-muted)] border-[var(--info)]/30',
+  },
+  REFUND_FAILED: {
+    label: 'Reembolso fallido',
+    color: 'text-[var(--error)]',
+    bg: 'bg-[var(--error-muted-bg)] border-[var(--error)]/30',
+  },
+  FAILED: {
+    label: 'Pago fallido',
+    color: 'text-[var(--error)]',
+    bg: 'bg-[var(--error-muted-bg)] border-[var(--error)]/30',
+  },
+  PENDING: {
+    label: 'Pago pendiente',
+    color: 'text-[var(--warning)]',
+    bg: 'bg-[var(--warning-muted)] border-[var(--warning)]/30',
+  },
 }
 
 const normalizeStatus = (status?: string) => (status || 'PENDING').toUpperCase()
 const normalizePaymentStatus = (status?: string) => (status || 'PENDING').toUpperCase()
 const canCancelOrder = (status?: string) => ['PENDING', 'READY'].includes(normalizeStatus(status))
 const canResolveRefund = (status?: string, paymentStatus?: string) =>
-  normalizeStatus(status) === 'CANCELLED' && ['REFUND_FAILED', 'COMPLETED'].includes(normalizePaymentStatus(paymentStatus))
+  normalizeStatus(status) === 'CANCELLED' &&
+  ['REFUND_FAILED', 'COMPLETED'].includes(normalizePaymentStatus(paymentStatus))
 
-type OrderListResponse = PaginatedResult<OrderDTO> | { data?: OrderDTO[]; content?: OrderDTO[] } | OrderDTO[]
+type OrderListResponse =
+  PaginatedResult<OrderDTO> | { data?: OrderDTO[]; content?: OrderDTO[] } | OrderDTO[]
 
 function extractOrders(res: ResponseDTO<OrderListResponse>) {
   const dto = res.dto
@@ -46,7 +83,11 @@ function extractOrders(res: ResponseDTO<OrderListResponse>) {
   return []
 }
 
-function mergeUpdatedOrder(current: OrderDTO, response: ResponseDTO<OrderDTO>, fallbackStatus: string) {
+function mergeUpdatedOrder(
+  current: OrderDTO,
+  response: ResponseDTO<OrderDTO>,
+  fallbackStatus: string
+) {
   return response.dto ? { ...current, ...response.dto } : { ...current, status: fallbackStatus }
 }
 
@@ -72,7 +113,9 @@ export default function Shipments() {
   const loadOrders = async () => {
     try {
       setLoading(true)
-      const res = await fetchApi<ResponseDTO<OrderListResponse>>('/api/orders?deliveryMethod=SHIPPING')
+      const res = await fetchApi<ResponseDTO<OrderListResponse>>(
+        '/api/orders?deliveryMethod=SHIPPING'
+      )
       setOrders(extractOrders(res))
     } catch (err) {
       console.error('Failed to load shipments:', err)
@@ -153,7 +196,8 @@ export default function Shipments() {
             Envíos a Domicilio
           </h1>
           <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-            {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''} · {completedCount} entregado{completedCount !== 1 ? 's' : ''}
+            {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''} · {completedCount} entregado
+            {completedCount !== 1 ? 's' : ''}
           </p>
         </div>
         <button
@@ -167,19 +211,29 @@ export default function Shipments() {
 
       {/* Summary Cards */}
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-3 text-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-blue-600">Enviados</p>
-          <p className="mt-0.5 font-heading text-lg font-black text-blue-700">{pendingCount}</p>
+        <div className="rounded-xl border border-[var(--info)]/30 bg-[var(--info-muted)] p-3 text-center">
+          <p className="text-[10px] font-medium tracking-wider text-[var(--info)] uppercase">
+            Enviados
+          </p>
+          <p className="font-heading mt-0.5 text-lg font-black text-[var(--info)]">
+            {pendingCount}
+          </p>
         </div>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 text-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-600">Entregados</p>
-          <p className="mt-0.5 font-heading text-lg font-black text-emerald-700">{completedCount}</p>
+        <div className="rounded-xl border border-[var(--success)]/30 bg-[var(--success-muted)] p-3 text-center">
+          <p className="text-[10px] font-medium tracking-wider text-[var(--success)] uppercase">
+            Entregados
+          </p>
+          <p className="font-heading mt-0.5 text-lg font-black text-[var(--success)]">
+            {completedCount}
+          </p>
         </div>
       </div>
 
       {/* Filter */}
       <div className="mb-4 flex items-center gap-2">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Estado:</span>
+        <span className="text-[10px] font-medium tracking-wider text-[var(--text-muted)] uppercase">
+          Estado:
+        </span>
         {(['ALL', 'PENDING', 'COMPLETED', 'CANCELLED'] as const).map((f) => (
           <button
             key={f}
@@ -190,7 +244,13 @@ export default function Shipments() {
                 : 'border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)]'
             }`}
           >
-            {f === 'ALL' ? 'Todas' : f === 'PENDING' ? 'Enviados' : f === 'COMPLETED' ? 'Entregados' : 'Cancelados'}
+            {f === 'ALL'
+              ? 'Todas'
+              : f === 'PENDING'
+                ? 'Enviados'
+                : f === 'COMPLETED'
+                  ? 'Entregados'
+                  : 'Cancelados'}
           </button>
         ))}
       </div>
@@ -209,7 +269,8 @@ export default function Shipments() {
             const orderStatus = normalizeStatus(order.status)
             const orderPaymentStatus = normalizePaymentStatus(order.paymentStatus)
             const status = statusConfig[orderStatus] || statusConfig.PENDING
-            const paymentStatus = paymentStatusConfig[orderPaymentStatus] || paymentStatusConfig.PENDING
+            const paymentStatus =
+              paymentStatusConfig[orderPaymentStatus] || paymentStatusConfig.PENDING
             const items = (order as OrderDTO & { items?: OrderItemDTO[] }).items || []
             const isExpanded = expandedId === order.id
 
@@ -230,11 +291,15 @@ export default function Shipments() {
                       <p className="text-sm font-bold text-[var(--text-primary)]">
                         Orden #{order.id?.slice(0, 8).toUpperCase()}
                       </p>
-                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${status.bg} ${status.color}`}>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${status.bg} ${status.color}`}
+                      >
                         <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
                         {status.label}
                       </span>
-                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${paymentStatus.bg} ${paymentStatus.color}`}>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${paymentStatus.bg} ${paymentStatus.color}`}
+                      >
                         {paymentStatus.label}
                       </span>
                     </div>
@@ -254,10 +319,10 @@ export default function Shipments() {
                       <button
                         onClick={() => handleCancel(order.id!)}
                         disabled={actionId === order.id}
-                        className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+                        className="flex items-center gap-1.5 rounded-xl border border-[var(--error)]/30 bg-[var(--error-muted-bg)] px-3 py-2 text-xs font-bold text-[var(--error)] transition hover:bg-[var(--error-muted-bg)] disabled:opacity-50"
                       >
                         {actionId === order.id ? (
-                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-400 border-t-transparent" />
+                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--error)] border-t-transparent" />
                         ) : (
                           <X size={12} />
                         )}
@@ -269,15 +334,18 @@ export default function Shipments() {
                         <button
                           onClick={() => handleRetryRefund(order.id!)}
                           disabled={actionId === order.id}
-                          className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
+                          className="flex items-center gap-1.5 rounded-xl bg-[var(--info)] px-3 py-2 text-xs font-bold text-[var(--text-on-primary)] transition hover:opacity-90 disabled:opacity-50"
                         >
-                          <RefreshCw size={12} className={actionId === order.id ? 'animate-spin' : ''} />
+                          <RefreshCw
+                            size={12}
+                            className={actionId === order.id ? 'animate-spin' : ''}
+                          />
                           Reintentar
                         </button>
                         <button
                           onClick={() => handleMarkRefunded(order.id!)}
                           disabled={actionId === order.id}
-                          className="flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50"
+                          className="flex items-center gap-1.5 rounded-xl border border-[var(--success)]/30 bg-[var(--success-muted)] px-3 py-2 text-xs font-bold text-[var(--success)] transition hover:bg-[var(--success-muted)] disabled:opacity-50"
                         >
                           <CheckCircle2 size={12} />
                           Manual
@@ -314,12 +382,17 @@ export default function Shipments() {
                             <div className="flex items-start gap-2">
                               <MapPin size={14} className="mt-0.5 shrink-0 text-[var(--accent)]" />
                               <div>
-                                <p className="text-xs font-bold text-[var(--text-primary)]">Dirección de envío</p>
+                                <p className="text-xs font-bold text-[var(--text-primary)]">
+                                  Dirección de envío
+                                </p>
                                 <p className="mt-0.5 text-[11px] text-[var(--text-secondary)]">
                                   {order.shippingAddress}
                                 </p>
                                 <p className="text-[11px] text-[var(--text-secondary)]">
-                                  {order.shippingCity}{order.shippingPostalCode ? ` CP ${order.shippingPostalCode}` : ''}
+                                  {order.shippingCity}
+                                  {order.shippingPostalCode
+                                    ? ` CP ${order.shippingPostalCode}`
+                                    : ''}
                                 </p>
                               </div>
                             </div>
@@ -329,11 +402,20 @@ export default function Shipments() {
                         {/* Items */}
                         {items.length > 0 && (
                           <div className="mb-3 space-y-1.5">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Artículos</p>
+                            <p className="text-[10px] font-semibold tracking-wider text-[var(--text-muted)] uppercase">
+                              Artículos
+                            </p>
                             {items.map((item) => (
-                              <div key={item.id} className="flex items-center justify-between rounded-lg bg-[var(--surface)] px-3 py-2">
-                                <span className="text-xs font-medium text-[var(--text-primary)]">{item.productName}</span>
-                                <span className="text-xs text-[var(--text-secondary)]">{item.quantity} x {formatCurrency(Number(item.unitPrice))}</span>
+                              <div
+                                key={item.id}
+                                className="flex items-center justify-between rounded-lg bg-[var(--surface)] px-3 py-2"
+                              >
+                                <span className="text-xs font-medium text-[var(--text-primary)]">
+                                  {item.productName}
+                                </span>
+                                <span className="text-xs text-[var(--text-secondary)]">
+                                  {item.quantity} x {formatCurrency(Number(item.unitPrice))}
+                                </span>
                               </div>
                             ))}
                           </div>
@@ -343,21 +425,28 @@ export default function Shipments() {
                         <div className="rounded-xl bg-[var(--surface)] px-3 py-2">
                           <div className="flex justify-between">
                             <span className="text-xs text-[var(--text-muted)]">Total + Envío</span>
-                            <span className="text-sm font-bold text-[var(--text-primary)]">{formatCurrency(Number(order.total))}</span>
+                            <span className="text-sm font-bold text-[var(--text-primary)]">
+                              {formatCurrency(Number(order.total))}
+                            </span>
                           </div>
                         </div>
                         {orderPaymentStatus === 'REFUND_FAILED' && (
                           <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5">
-                            <p className="text-xs font-bold text-red-700">Resolver devolución manualmente</p>
+                            <p className="text-xs font-bold text-red-700">
+                              Resolver devolución manualmente
+                            </p>
                             <p className="mt-1 text-[11px] text-red-600">
-                              {order.refundErrorMessage || 'Mercado Pago no aceptó el reembolso automático.'}
+                              {order.refundErrorMessage ||
+                                'Mercado Pago no aceptó el reembolso automático.'}
                             </p>
                           </div>
                         )}
                         {orderPaymentStatus === 'REFUNDED' && order.refundReference && (
                           <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5">
                             <p className="text-xs font-bold text-blue-700">Devolución completada</p>
-                            <p className="mt-1 truncate text-[11px] font-mono text-blue-600">{order.refundReference}</p>
+                            <p className="mt-1 truncate font-mono text-[11px] text-blue-600">
+                              {order.refundReference}
+                            </p>
                             {order.refundedAt && (
                               <p className="mt-1 text-[11px] text-blue-600">
                                 {formatDate(order.refundedAt)} {formatTime(order.refundedAt)}

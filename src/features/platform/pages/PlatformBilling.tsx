@@ -1,8 +1,15 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Download, CreditCard, AlertCircle, CheckCircle, TrendingUp, DollarSign, Building2 } from 'lucide-react'
+import {
+  Download,
+  CreditCard,
+  AlertCircle,
+  CheckCircle,
+  TrendingUp,
+  DollarSign,
+  Building2,
+} from 'lucide-react'
 import { usePlatformBillingStore } from '../store/platformBillingStore'
-import { formatCurrency } from '@/lib/utils'
 
 const planColorMap: Record<string, string> = {
   Basic: 'var(--info)',
@@ -25,7 +32,8 @@ function formatDate(dateStr: string | null): string {
 }
 
 export default function PlatformBilling() {
-  const { metrics, plans, billingSummaries, isLoading, error, loadBillingData } = usePlatformBillingStore()
+  const { metrics, plans, billingSummaries, isLoading, error, loadBillingData } =
+    usePlatformBillingStore()
 
   useEffect(() => {
     loadBillingData()
@@ -34,17 +42,27 @@ export default function PlatformBilling() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-transparent" style={{ borderTopColor: 'var(--accent)' }} />
+        <div
+          className="h-8 w-8 animate-spin rounded-full border-4 border-transparent"
+          style={{ borderTopColor: 'var(--accent)' }}
+        />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="rounded-2xl p-6 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--danger)' }}>
+      <div
+        className="rounded-2xl p-6 text-center"
+        style={{ background: 'var(--surface)', border: '1px solid var(--danger)' }}
+      >
         <AlertCircle size={32} style={{ color: 'var(--danger)' }} className="mx-auto mb-2" />
-        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Error al cargar billing</p>
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{error}</p>
+        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+          Error al cargar billing
+        </p>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          {error}
+        </p>
       </div>
     )
   }
@@ -204,11 +222,19 @@ export default function PlatformBilling() {
                   {pw.tenantCount} {pw.tenantCount === 1 ? 'gimnasio' : 'gimnasios'} activos
                 </p>
                 <ul className="space-y-2.5">
-                  <li className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  <li
+                    className="flex items-center gap-2 text-xs"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
                     <CheckCircle size={14} style={{ color: 'var(--success)' }} />
-                    {pw.plan.memberLimit === -1 ? 'Miembros ilimitados' : `Hasta ${pw.plan.memberLimit} miembros`}
+                    {pw.plan.memberLimit === -1
+                      ? 'Miembros ilimitados'
+                      : `Hasta ${pw.plan.memberLimit} miembros`}
                   </li>
-                  <li className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  <li
+                    className="flex items-center gap-2 text-xs"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
                     <CheckCircle size={14} style={{ color: 'var(--success)' }} />
                     {pw.plan.trialDays} días de prueba
                   </li>
@@ -281,7 +307,10 @@ export default function PlatformBilling() {
                     style={{ borderColor: 'var(--border)' }}
                   >
                     <td className="px-4 py-3">
-                      <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      <span
+                        className="text-sm font-semibold"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
                         {s.tenantName}
                       </span>
                     </td>

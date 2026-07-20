@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/Label'
 export default function ActivateAccount() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') || ''
+  const tenant = searchParams.get('tenant') || ''
+  const loginPath = tenant ? `/login?tenant=${encodeURIComponent(tenant)}` : '/login'
 
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -60,13 +62,13 @@ export default function ActivateAccount() {
         <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent)]/10">
           <CheckCircle size={32} className="text-[var(--accent)]" />
         </div>
-        <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">
+        <h2 className="font-heading mb-1 text-2xl font-black text-[var(--text-primary)]">
           ¡Cuenta Activada!
         </h2>
         <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">
           Tu cuenta ha sido activada correctamente. Ya puedes iniciar sesión en la plataforma.
         </p>
-        <Link to="/login">
+        <Link to={loginPath}>
           <Button className="w-full gap-2 rounded-2xl py-3 text-sm font-bold">
             Ir al inicio de sesión
           </Button>
@@ -78,7 +80,7 @@ export default function ActivateAccount() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
       <Link
-        to="/login"
+        to={loginPath}
         className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
       >
         <ArrowLeft size={14} />

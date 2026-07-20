@@ -10,11 +10,10 @@ const buttonVariants = cva(
         default:
           'bg-[var(--accent)] text-[var(--accent-text)] hover:bg-[var(--accent-hover)] shadow-sm hover:shadow-md',
         destructive:
-          'bg-[var(--error)] text-white hover:bg-[var(--error-hover)]',
+          'bg-[var(--error)] text-[var(--text-on-primary)] hover:bg-[var(--error-hover)]',
         outline:
           'border border-[var(--border)] bg-[var(--card)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]',
-        secondary:
-          'bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]',
+        secondary: 'bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]',
         ghost:
           'text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]',
         link: 'text-[var(--accent)] underline-offset-4 hover:underline',

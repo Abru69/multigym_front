@@ -5,21 +5,53 @@ import { AdminGuard } from './AdminGuard'
 import { PlatformGuard } from './PlatformGuard'
 import { TenantRouter } from './TenantRouter'
 import { RoleGuard } from './RoleGuard'
+import { ClientGuard } from './ClientGuard'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { ClientLayout } from '@/layouts/ClientLayout'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { PlatformLayout } from '@/layouts/PlatformLayout'
 import { Spinner } from '@/components/ui/Spinner'
 import {
-  Login, Register, ForgotPassword, ResetPassword, ActivateAccount,
-  MyRoutines, Nutrition, MyOrders, MemberProfile,
-  AdminDashboard, Inventory, Users, Exercises, Plans, Subscriptions, Payments,
-  Pickups, Shipments, DeliverySettings, NutritionPlans, CheckIns, Announcements,
-  Reports, Branches, BrandingSettings,
+  Login,
+  Register,
+  ForgotPassword,
+  ResetPassword,
+  ActivateAccount,
+  MyRoutines,
+  Nutrition,
+  MyOrders,
+  MemberProfile,
+  AdminDashboard,
+  Inventory,
+  Users,
+  Exercises,
+  Plans,
+  Subscriptions,
+  Payments,
+  Pickups,
+  Shipments,
+  DeliverySettings,
+  NutritionPlans,
+  CheckIns,
+  Announcements,
+  Reports,
+  Branches,
+  BrandingSettings,
   Billing,
-  Catalog, ProductDetail, Cart, Checkout,
-  PlatformLogin, PlatformDashboard, PlatformTenants, PlatformUsers,
-  PlatformSaaSPlans, PlatformBilling, PlatformLogs, PlatformSettings, PlatformReports, PlatformAnalytics,
+  Catalog,
+  ProductDetail,
+  Cart,
+  Checkout,
+  PlatformLogin,
+  PlatformDashboard,
+  PlatformTenants,
+  PlatformUsers,
+  PlatformSaaSPlans,
+  PlatformBilling,
+  PlatformLogs,
+  PlatformSettings,
+  PlatformReports,
+  PlatformAnalytics,
   NotFound,
 } from './lazyRoutes'
 
@@ -86,22 +118,55 @@ export const router = createBrowserRouter([
       </AdminGuard>
     ),
     children: [
-      { index: true, element: <RoleGuard page="dashboard">{withSuspense(AdminDashboard)}</RoleGuard> },
-      { path: 'inventario', element: <RoleGuard page="inventory">{withSuspense(Inventory)}</RoleGuard> },
+      {
+        index: true,
+        element: <RoleGuard page="dashboard">{withSuspense(AdminDashboard)}</RoleGuard>,
+      },
+      {
+        path: 'inventario',
+        element: <RoleGuard page="inventory">{withSuspense(Inventory)}</RoleGuard>,
+      },
       { path: 'usuarios', element: <RoleGuard page="users">{withSuspense(Users)}</RoleGuard> },
-      { path: 'ejercicios', element: <RoleGuard page="exercises">{withSuspense(Exercises)}</RoleGuard> },
+      {
+        path: 'ejercicios',
+        element: <RoleGuard page="exercises">{withSuspense(Exercises)}</RoleGuard>,
+      },
       { path: 'planes', element: <RoleGuard page="plans">{withSuspense(Plans)}</RoleGuard> },
-      { path: 'suscripciones', element: <RoleGuard page="subscriptions">{withSuspense(Subscriptions)}</RoleGuard> },
+      {
+        path: 'suscripciones',
+        element: <RoleGuard page="subscriptions">{withSuspense(Subscriptions)}</RoleGuard>,
+      },
       { path: 'pagos', element: <RoleGuard page="payments">{withSuspense(Payments)}</RoleGuard> },
       { path: 'recogidas', element: <RoleGuard page="pickups">{withSuspense(Pickups)}</RoleGuard> },
-      { path: 'envios', element: <RoleGuard page="shipments">{withSuspense(Shipments)}</RoleGuard> },
-      { path: 'entrega', element: <RoleGuard page="delivery">{withSuspense(DeliverySettings)}</RoleGuard> },
-      { path: 'nutricion', element: <RoleGuard page="nutrition">{withSuspense(NutritionPlans)}</RoleGuard> },
-      { path: 'check-ins', element: <RoleGuard page="checkins">{withSuspense(CheckIns)}</RoleGuard> },
-      { path: 'anuncios', element: <RoleGuard page="announcements">{withSuspense(Announcements)}</RoleGuard> },
+      {
+        path: 'envios',
+        element: <RoleGuard page="shipments">{withSuspense(Shipments)}</RoleGuard>,
+      },
+      {
+        path: 'entrega',
+        element: <RoleGuard page="delivery">{withSuspense(DeliverySettings)}</RoleGuard>,
+      },
+      {
+        path: 'nutricion',
+        element: <RoleGuard page="nutrition">{withSuspense(NutritionPlans)}</RoleGuard>,
+      },
+      {
+        path: 'check-ins',
+        element: <RoleGuard page="checkins">{withSuspense(CheckIns)}</RoleGuard>,
+      },
+      {
+        path: 'anuncios',
+        element: <RoleGuard page="announcements">{withSuspense(Announcements)}</RoleGuard>,
+      },
       { path: 'reportes', element: <RoleGuard page="reports">{withSuspense(Reports)}</RoleGuard> },
-      { path: 'sucursales', element: <RoleGuard page="branches">{withSuspense(Branches)}</RoleGuard> },
-      { path: 'branding', element: <RoleGuard page="branding">{withSuspense(BrandingSettings)}</RoleGuard> },
+      {
+        path: 'sucursales',
+        element: <RoleGuard page="branches">{withSuspense(Branches)}</RoleGuard>,
+      },
+      {
+        path: 'branding',
+        element: <RoleGuard page="branding">{withSuspense(BrandingSettings)}</RoleGuard>,
+      },
       { path: 'billing', element: <RoleGuard page="billing">{withSuspense(Billing)}</RoleGuard> },
     ],
   },
@@ -110,9 +175,11 @@ export const router = createBrowserRouter([
   {
     path: '/app',
     element: (
-      <AuthGuard>
-        <ClientLayout />
-      </AuthGuard>
+      <ClientGuard>
+        <AuthGuard>
+          <ClientLayout />
+        </AuthGuard>
+      </ClientGuard>
     ),
     children: [
       { index: true, element: <Navigate to="rutinas" replace /> },

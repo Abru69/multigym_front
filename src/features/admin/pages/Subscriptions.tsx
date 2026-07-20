@@ -60,24 +60,28 @@ export default function SubscriptionsPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData()
-    getClientUsers().then((res) => {
-      if (res?.dto?.data) {
-        setMembers(
-          res.dto.data
-            .filter((u) => u.memberDTO)
-            .map((u) => ({
-              id: u.memberDTO!.id,
-              name: u.memberDTO!.name,
-              phone: u.memberDTO!.phone,
-              email: u.email,
-              isActive: u.isActive,
-            }))
-        )
-      }
-    }).catch(() => {})
-    getPlans().then((res) => {
-      if (res?.dto?.data) setPlans(res.dto.data)
-    }).catch(() => {})
+    getClientUsers()
+      .then((res) => {
+        if (res?.dto?.data) {
+          setMembers(
+            res.dto.data
+              .filter((u) => u.memberDTO)
+              .map((u) => ({
+                id: u.memberDTO!.id,
+                name: u.memberDTO!.name,
+                phone: u.memberDTO!.phone,
+                email: u.email,
+                isActive: u.isActive,
+              }))
+          )
+        }
+      })
+      .catch(() => {})
+    getPlans()
+      .then((res) => {
+        if (res?.dto?.data) setPlans(res.dto.data)
+      })
+      .catch(() => {})
   }, [loadData])
 
   const filtered = useMemo(() => {
@@ -207,16 +211,27 @@ export default function SubscriptionsPage() {
 
   const statusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE': return { bg: '#f0fdf4', color: '#16a34a' }
-      case 'EXPIRED': return { bg: '#fef2f2', color: '#dc2626' }
-      case 'CANCELLED': return { bg: '#fefce8', color: '#ca8a04' }
-      default: return { bg: '#f1f5f9', color: '#64748b' }
+      case 'ACTIVE':
+        return { bg: 'var(--success-muted)', color: 'var(--success)' }
+      case 'EXPIRED':
+        return { bg: 'var(--error-muted-bg)', color: 'var(--error)' }
+      case 'CANCELLED':
+        return { bg: 'var(--warning-muted)', color: 'var(--warning)' }
+      default:
+        return { bg: 'var(--surface)', color: 'var(--text-secondary)' }
     }
   }
 
   const formatDate = (d: string) => {
-    try { return new Date(d).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }) }
-    catch { return d }
+    try {
+      return new Date(d).toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    } catch {
+      return d
+    }
   }
 
   return (
@@ -237,9 +252,20 @@ export default function SubscriptionsPage() {
       />
 
       {error && (
-        <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ border: '1px solid #fecaca', backgroundColor: '#fef2f2' }}>
-          <p className="flex-1 text-sm" style={{ color: '#b91c1c' }}>{error}</p>
-          <button onClick={loadData} className="text-sm font-semibold hover:underline" style={{ color: '#b91c1c' }}>Reintentar</button>
+        <div
+          className="flex items-center gap-3 rounded-xl px-4 py-3"
+          style={{ border: '1px solid var(--error)', backgroundColor: 'var(--error-muted-bg)' }}
+        >
+          <p className="flex-1 text-sm" style={{ color: 'var(--error)' }}>
+            {error}
+          </p>
+          <button
+            onClick={loadData}
+            className="text-sm font-semibold hover:underline"
+            style={{ color: 'var(--error)' }}
+          >
+            Reintentar
+          </button>
         </div>
       )}
 
@@ -248,18 +274,37 @@ export default function SubscriptionsPage() {
       {isLoading ? (
         <LoadingState text="Cargando suscripciones..." />
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl py-16" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}>
+        <div
+          className="flex flex-col items-center justify-center rounded-2xl py-16"
+          style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+        >
           <Calendar size={48} style={{ color: 'var(--text-muted)' }} className="mb-4" />
-          <p className="text-lg font-bold mb-1" style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>No hay suscripciones</p>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Crea la primera suscripción para un miembro.</p>
+          <p
+            className="mb-1 text-lg font-bold"
+            style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
+          >
+            No hay suscripciones
+          </p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Crea la primera suscripción para un miembro.
+          </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}>
+        <div
+          className="overflow-x-auto rounded-2xl"
+          style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+        >
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
                 {['Miembro', 'Plan', 'Inicio', 'Fin', 'Estado', 'Acciones'].map((h) => (
-                  <th key={h} className="px-5 py-3.5 text-left text-xs font-bold tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                  <th
+                    key={h}
+                    className="px-5 py-3.5 text-left text-xs font-bold tracking-wider uppercase"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -267,16 +312,36 @@ export default function SubscriptionsPage() {
               {filtered.map((sub) => {
                 const sc = statusColor(sub.status)
                 return (
-                  <tr key={sub.id} className="border-b transition-colors duration-150" style={{ borderColor: 'var(--border)' }}>
+                  <tr
+                    key={sub.id}
+                    className="border-b transition-colors duration-150"
+                    style={{ borderColor: 'var(--border)' }}
+                  >
                     <td className="px-5 py-3.5">
-                      <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{sub.member?.name || 'N/A'}</p>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{sub.member?.email || ''}</p>
+                      <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        {sub.member?.name || 'N/A'}
+                      </p>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {sub.member?.email || ''}
+                      </p>
                     </td>
-                    <td className="px-5 py-3.5 font-medium" style={{ color: 'var(--text-primary)' }}>{sub.plan?.name || 'N/A'}</td>
-                    <td className="px-5 py-3.5" style={{ color: 'var(--text-secondary)' }}>{formatDate(sub.startDate)}</td>
-                    <td className="px-5 py-3.5" style={{ color: 'var(--text-secondary)' }}>{formatDate(sub.endDate)}</td>
+                    <td
+                      className="px-5 py-3.5 font-medium"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {sub.plan?.name || 'N/A'}
+                    </td>
+                    <td className="px-5 py-3.5" style={{ color: 'var(--text-secondary)' }}>
+                      {formatDate(sub.startDate)}
+                    </td>
+                    <td className="px-5 py-3.5" style={{ color: 'var(--text-secondary)' }}>
+                      {formatDate(sub.endDate)}
+                    </td>
                     <td className="px-5 py-3.5">
-                      <span className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold" style={{ backgroundColor: sc.bg, color: sc.color }}>
+                      <span
+                        className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
+                        style={{ backgroundColor: sc.bg, color: sc.color }}
+                      >
                         {sub.status}
                       </span>
                     </td>
@@ -293,9 +358,12 @@ export default function SubscriptionsPage() {
                               <Edit2 size={14} />
                             </button>
                             <button
-                              onClick={() => { setPlanChangeTarget(sub); setNewPlanId(sub.plan?.id || '') }}
+                              onClick={() => {
+                                setPlanChangeTarget(sub)
+                                setNewPlanId(sub.plan?.id || '')
+                              }}
                               className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
-                              style={{ color: '#2563eb' }}
+                              style={{ color: 'var(--info)' }}
                               title="Cambiar plan"
                             >
                               <RefreshCw size={14} />
@@ -303,7 +371,7 @@ export default function SubscriptionsPage() {
                             <button
                               onClick={() => setCancelTarget(sub)}
                               className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
-                              style={{ color: '#dc2626' }}
+                              style={{ color: 'var(--error)' }}
                               title="Cancelar"
                             >
                               <XCircle size={14} />
@@ -313,7 +381,7 @@ export default function SubscriptionsPage() {
                         <button
                           onClick={() => setDeleteTarget(sub)}
                           className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-all hover:opacity-80"
-                          style={{ color: '#9ca3af' }}
+                          style={{ color: 'var(--text-muted)' }}
                           title="Eliminar"
                         >
                           <Trash2 size={14} />
@@ -328,7 +396,15 @@ export default function SubscriptionsPage() {
         </div>
       )}
 
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingSub(null) }} title={editingSub ? 'Editar Suscripción' : 'Nueva Suscripción'} size="md">
+      <Modal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false)
+          setEditingSub(null)
+        }}
+        title={editingSub ? 'Editar Suscripción' : 'Nueva Suscripción'}
+        size="md"
+      >
         <div className="space-y-4">
           <FormField label="Miembro" required htmlFor="sub-member" error={formErrors.memberId}>
             <Select
@@ -351,20 +427,62 @@ export default function SubscriptionsPage() {
             />
           </FormField>
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Fecha de Inicio" required htmlFor="sub-start" error={formErrors.startDate}>
-              <Input id="sub-start" type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} error={!!formErrors.startDate} />
+            <FormField
+              label="Fecha de Inicio"
+              required
+              htmlFor="sub-start"
+              error={formErrors.startDate}
+            >
+              <Input
+                id="sub-start"
+                type="date"
+                value={form.startDate}
+                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                error={!!formErrors.startDate}
+              />
             </FormField>
             <FormField label="Fecha de Fin" required htmlFor="sub-end" error={formErrors.endDate}>
-              <Input id="sub-end" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} error={!!formErrors.endDate} />
+              <Input
+                id="sub-end"
+                type="date"
+                value={form.endDate}
+                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                error={!!formErrors.endDate}
+              />
             </FormField>
           </div>
         </div>
-        <div className="mt-6 flex justify-end gap-3 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-          <button onClick={() => { setShowModal(false); setEditingSub(null) }} disabled={isSaving} className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}>
+        <div
+          className="mt-6 flex justify-end gap-3 pt-4"
+          style={{ borderTop: '1px solid var(--border)' }}
+        >
+          <button
+            onClick={() => {
+              setShowModal(false)
+              setEditingSub(null)
+            }}
+            disabled={isSaving}
+            className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
+            style={{
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--card)',
+              color: 'var(--text-primary)',
+            }}
+          >
             Cancelar
           </button>
-          <button onClick={editingSub ? handleEdit : handleCreate} disabled={isSaving} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
-            {isSaving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }} />}
+          <button
+            onClick={editingSub ? handleEdit : handleCreate}
+            disabled={isSaving}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+          >
+            {isSaving && (
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
+                style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }}
+              />
+            )}
             {editingSub ? 'Guardar' : 'Crear'}
           </button>
         </div>
@@ -386,10 +504,19 @@ export default function SubscriptionsPage() {
         message={`¿Eliminar permanentemente la suscripción de ${deleteTarget?.member?.name || ''}? Esta acción no se puede deshacer.`}
       />
 
-      <Modal isOpen={!!planChangeTarget} onClose={() => { setPlanChangeTarget(null); setNewPlanId('') }} title="Cambiar Plan" size="sm">
+      <Modal
+        isOpen={!!planChangeTarget}
+        onClose={() => {
+          setPlanChangeTarget(null)
+          setNewPlanId('')
+        }}
+        title="Cambiar Plan"
+        size="sm"
+      >
         <div className="space-y-4">
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Cambiar el plan de <strong>{planChangeTarget?.member?.name || ''}</strong> de <strong>{planChangeTarget?.plan?.name || ''}</strong> a:
+            Cambiar el plan de <strong>{planChangeTarget?.member?.name || ''}</strong> de{' '}
+            <strong>{planChangeTarget?.plan?.name || ''}</strong> a:
           </p>
           <FormField label="Nuevo Plan" required htmlFor="plan-change-id">
             <Select
@@ -401,12 +528,37 @@ export default function SubscriptionsPage() {
             />
           </FormField>
         </div>
-        <div className="mt-6 flex justify-end gap-3 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-          <button onClick={() => { setPlanChangeTarget(null); setNewPlanId('') }} disabled={isSaving} className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}>
+        <div
+          className="mt-6 flex justify-end gap-3 pt-4"
+          style={{ borderTop: '1px solid var(--border)' }}
+        >
+          <button
+            onClick={() => {
+              setPlanChangeTarget(null)
+              setNewPlanId('')
+            }}
+            disabled={isSaving}
+            className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
+            style={{
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--card)',
+              color: 'var(--text-primary)',
+            }}
+          >
             Cancelar
           </button>
-          <button onClick={handlePlanChange} disabled={isSaving || !newPlanId} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
-            {isSaving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }} />}
+          <button
+            onClick={handlePlanChange}
+            disabled={isSaving || !newPlanId}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+          >
+            {isSaving && (
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
+                style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }}
+              />
+            )}
             Cambiar Plan
           </button>
         </div>

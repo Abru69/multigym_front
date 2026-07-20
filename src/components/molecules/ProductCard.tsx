@@ -48,7 +48,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               className={`rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase ${
                 tag === 'nuevo'
                   ? 'bg-[var(--accent)] text-[var(--accent-text)]'
-                  : 'bg-black/80 text-white backdrop-blur-sm'
+                  : 'bg-[var(--overlay)] text-[var(--text-on-primary)] backdrop-blur-sm'
               }`}
             >
               {tag}
@@ -64,7 +64,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               handleAddToCart()
             }}
             disabled={!product.isAvailable}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-lg transition-colors hover:bg-[var(--accent)]/90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-sm font-bold tracking-wide text-[var(--accent-text)] uppercase shadow-lg transition-colors hover:bg-[var(--accent)]/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ShoppingCart size={16} />
             {product.isAvailable ? 'Añadir al Carrito' : 'Agotado'}

@@ -59,14 +59,14 @@ export default function BranchesPage() {
           description="Aún no se han registrado sucursales para este tenant."
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {branches.map((branch) => (
             <div
               key={branch.id}
-              className="bg-[var(--card)] rounded-2xl p-5 transition-all duration-200 hover:shadow-md"
+              className="rounded-2xl bg-[var(--card)] p-5 transition-all duration-200 hover:shadow-md"
               style={{ border: '1px solid var(--border)' }}
             >
-              <div className="flex items-start justify-between mb-3">
+              <div className="mb-3 flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div
                     className="flex h-10 w-10 items-center justify-center rounded-xl"
@@ -84,7 +84,7 @@ export default function BranchesPage() {
                         backgroundColor: branch.isActive
                           ? 'rgba(34,197,94,0.1)'
                           : 'rgba(239,68,68,0.1)',
-                        color: branch.isActive ? '#22c55e' : '#ef4444',
+                        color: branch.isActive ? 'var(--success)' : 'var(--error)',
                       }}
                     >
                       {branch.isActive ? 'Activa' : 'Inactiva'}
@@ -93,7 +93,7 @@ export default function BranchesPage() {
                 </div>
               </div>
 
-              <div className="space-y-2 mb-4">
+              <div className="mb-4 space-y-2">
                 {branch.address && (
                   <div className="flex items-center gap-2">
                     <MapPin size={14} style={{ color: 'var(--text-muted)' }} />

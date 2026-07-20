@@ -10,23 +10,21 @@ import { GymSchedule } from '../components/GymSchedule'
 import { Trainers } from '../components/Trainers'
 import { GymPlans } from '../components/GymPlans'
 import { TenantFooter } from '../components/TenantFooter'
-import { getTenantUrl } from '@/lib/tenant'
+import { MemberPlanSummary } from '../components/MemberPlanSummary'
+import { getTenantHomeUrl } from '@/lib/tenant'
 import { TenantLogo } from '@/components/tenant/TenantLogo'
 
 export default function TenantLandingPage() {
   const { branding, tenantId } = useTenantBranding()
   const { isAuthenticated, user, logout } = useAuthStore()
+  const isClient = user?.role === 'client'
 
   const portalLink = getAllowedPages(user?.role).length > 0 ? '/admin' : '/app/rutinas'
 
   const handleLogout = async () => {
     const currentTenantId = tenantId || user?.tenantId
     await logout()
-    if (currentTenantId) {
-      window.location.href = getTenantUrl(currentTenantId)
-    } else {
-      window.location.href = '/'
-    }
+    window.location.href = getTenantHomeUrl(currentTenantId)
   }
 
   return (
@@ -68,29 +66,31 @@ export default function TenantLandingPage() {
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <nav className="hidden items-center gap-1 sm:flex">
-                  <Link
-                    to="/app/rutinas"
-                    className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                  >
-                    <Dumbbell size={14} />
-                    Rutinas
-                  </Link>
-                  <Link
-                    to="/tienda"
-                    className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                  >
-                    <ShoppingBag size={14} />
-                    Tienda
-                  </Link>
-                  <Link
-                    to="/app/mis-ordenes"
-                    className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                  >
-                    <Package size={14} />
-                    Mis Órdenes
-                  </Link>
-                </nav>
+                {isClient && (
+                  <nav className="hidden items-center gap-1 sm:flex">
+                    <Link
+                      to="/app/rutinas"
+                      className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    >
+                      <Dumbbell size={14} />
+                      Rutinas
+                    </Link>
+                    <Link
+                      to="/tienda"
+                      className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    >
+                      <ShoppingBag size={14} />
+                      Tienda
+                    </Link>
+                    <Link
+                      to="/app/mis-ordenes"
+                      className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    >
+                      <Package size={14} />
+                      Mis Órdenes
+                    </Link>
+                  </nav>
+                )}
                 <Link
                   to={portalLink}
                   className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-text)] shadow-sm transition-all hover:brightness-110 active:scale-[0.98]"
@@ -123,6 +123,8 @@ export default function TenantLandingPage() {
           </div>
         </div>
       </header>
+
+      {isAuthenticated && isClient && <MemberPlanSummary />}
 
       <main>
         <TenantHero />

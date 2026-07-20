@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { fetchApi, logout as apiLogout } from '@/lib/api'
+import { fetchApi } from '@/lib/api'
 import type { ResponseDTO, PlatformLoginResponse } from '@/types'
 
 interface PlatformAdmin {
@@ -57,11 +57,8 @@ export const usePlatformAuthStore = create<PlatformAuthStore>()(
       },
 
       logout: async () => {
-        try {
-          await apiLogout()
-        } catch {
-          // Ignore logout errors — still clear local state
-        }
+        // Do not send the tenant token to /api/auth/logout. The backend does
+        // not currently document a platform logout endpoint.
         set({ admin: null, token: null, isAuthenticated: false })
       },
     }),

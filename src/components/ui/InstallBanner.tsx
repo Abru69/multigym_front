@@ -34,7 +34,7 @@ export function InstallBanner() {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: -80, opacity: 0 }}
         transition={{ type: 'spring', damping: 20, stiffness: 200 }}
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between gap-4 border-b px-4 py-3 sm:px-6"
+        className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between gap-4 border-b px-4 py-3 sm:px-6"
         style={{
           backgroundColor: 'var(--card)',
           borderColor: 'var(--border)',
@@ -71,7 +71,7 @@ export function InstallBanner() {
           </button>
           <button
             onClick={handleDismiss}
-            className="rounded-lg p-2 transition-colors hover:bg-white/5"
+            className="rounded-lg p-2 transition-colors hover:bg-[var(--surface-hover)]"
             style={{ color: 'var(--text-muted)' }}
           >
             <X size={18} />

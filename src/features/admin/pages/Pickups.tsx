@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { cancelOrder, fetchApi, markOrderComplete, markOrderReady, markOrderRefunded, retryOrderRefund } from '@/lib/api'
+import {
+  cancelOrder,
+  fetchApi,
+  markOrderComplete,
+  markOrderReady,
+  markOrderRefunded,
+  retryOrderRefund,
+} from '@/lib/api'
 import type { OrderDTO, OrderItemDTO, PaginatedResult, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
@@ -17,31 +24,96 @@ import {
 } from 'lucide-react'
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  PENDING: { label: 'Esperando', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
-  PREPARING: { label: 'Preparando', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
-  PROCESSING: { label: 'Preparando', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
-  AUTHORIZED: { label: 'Esperando', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
-  READY: { label: 'Listo para Recoger', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', dot: 'bg-blue-500' },
-  COMPLETED: { label: 'Recogida', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
-  CANCELLED: { label: 'Cancelada', color: 'text-gray-500', bg: 'bg-gray-50 border-gray-200', dot: 'bg-gray-400' },
+  PENDING: {
+    label: 'Esperando',
+    color: 'text-[var(--warning)]',
+    bg: 'bg-[var(--warning-muted)] border-[var(--warning)]/30',
+    dot: 'bg-[var(--warning)]',
+  },
+  PREPARING: {
+    label: 'Preparando',
+    color: 'text-[var(--warning)]',
+    bg: 'bg-[var(--warning-muted)] border-[var(--warning)]/30',
+    dot: 'bg-[var(--warning)]',
+  },
+  PROCESSING: {
+    label: 'Preparando',
+    color: 'text-[var(--warning)]',
+    bg: 'bg-[var(--warning-muted)] border-[var(--warning)]/30',
+    dot: 'bg-[var(--warning)]',
+  },
+  AUTHORIZED: {
+    label: 'Esperando',
+    color: 'text-[var(--warning)]',
+    bg: 'bg-[var(--warning-muted)] border-[var(--warning)]/30',
+    dot: 'bg-[var(--warning)]',
+  },
+  READY: {
+    label: 'Listo para Recoger',
+    color: 'text-[var(--info)]',
+    bg: 'bg-[var(--info-muted)] border-[var(--info)]/30',
+    dot: 'bg-[var(--info)]',
+  },
+  COMPLETED: {
+    label: 'Recogida',
+    color: 'text-[var(--success)]',
+    bg: 'bg-[var(--success-muted)] border-[var(--success)]/30',
+    dot: 'bg-[var(--success)]',
+  },
+  CANCELLED: {
+    label: 'Cancelada',
+    color: 'text-[var(--text-secondary)]',
+    bg: 'bg-[var(--surface)] border-[var(--border)]',
+    dot: 'bg-[var(--text-muted)]',
+  },
 }
 
 const paymentStatusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  COMPLETED: { label: 'Pagado', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
-  REFUNDED: { label: 'Reembolsado', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
-  REFUND_FAILED: { label: 'Reembolso fallido', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
-  FAILED: { label: 'Pago fallido', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
-  PENDING: { label: 'Pago pendiente', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
+  COMPLETED: {
+    label: 'Pagado',
+    color: 'text-[var(--success)]',
+    bg: 'bg-[var(--success-muted)] border-[var(--success)]/30',
+  },
+  REFUNDED: {
+    label: 'Reembolsado',
+    color: 'text-[var(--info)]',
+    bg: 'bg-[var(--info-muted)] border-[var(--info)]/30',
+  },
+  REFUND_FAILED: {
+    label: 'Reembolso fallido',
+    color: 'text-[var(--error)]',
+    bg: 'bg-[var(--error-muted-bg)] border-[var(--error)]/30',
+  },
+  FAILED: {
+    label: 'Pago fallido',
+    color: 'text-[var(--error)]',
+    bg: 'bg-[var(--error-muted-bg)] border-[var(--error)]/30',
+  },
+  PENDING: {
+    label: 'Pago pendiente',
+    color: 'text-[var(--warning)]',
+    bg: 'bg-[var(--warning-muted)] border-[var(--warning)]/30',
+  },
 }
 
-const pendingStatuses = new Set(['PENDING', 'PREPARING', 'PROCESSING', 'AUTHORIZED', 'CREATED', 'CONFIRMED', 'PAID'])
+const pendingStatuses = new Set([
+  'PENDING',
+  'PREPARING',
+  'PROCESSING',
+  'AUTHORIZED',
+  'CREATED',
+  'CONFIRMED',
+  'PAID',
+])
 const normalizeStatus = (status?: string) => (status || 'PENDING').toUpperCase()
 const normalizePaymentStatus = (status?: string) => (status || 'PENDING').toUpperCase()
 const isPendingStatus = (status?: string) => pendingStatuses.has(normalizeStatus(status))
 const canResolveRefund = (status?: string, paymentStatus?: string) =>
-  normalizeStatus(status) === 'CANCELLED' && ['REFUND_FAILED', 'COMPLETED'].includes(normalizePaymentStatus(paymentStatus))
+  normalizeStatus(status) === 'CANCELLED' &&
+  ['REFUND_FAILED', 'COMPLETED'].includes(normalizePaymentStatus(paymentStatus))
 
-type OrderListResponse = PaginatedResult<OrderDTO> | { data?: OrderDTO[]; content?: OrderDTO[] } | OrderDTO[]
+type OrderListResponse =
+  PaginatedResult<OrderDTO> | { data?: OrderDTO[]; content?: OrderDTO[] } | OrderDTO[]
 
 function extractOrders(res: ResponseDTO<OrderListResponse>) {
   const dto = res.dto
@@ -52,7 +124,11 @@ function extractOrders(res: ResponseDTO<OrderListResponse>) {
   return []
 }
 
-function mergeUpdatedOrder(current: OrderDTO, response: ResponseDTO<OrderDTO>, fallbackStatus: string) {
+function mergeUpdatedOrder(
+  current: OrderDTO,
+  response: ResponseDTO<OrderDTO>,
+  fallbackStatus: string
+) {
   return response.dto ? { ...current, ...response.dto } : { ...current, status: fallbackStatus }
 }
 
@@ -73,12 +149,16 @@ export default function Pickups() {
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'READY' | 'COMPLETED' | 'CANCELLED'>('PENDING')
+  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'READY' | 'COMPLETED' | 'CANCELLED'>(
+    'PENDING'
+  )
 
   const loadOrders = async () => {
     try {
       setLoading(true)
-      const res = await fetchApi<ResponseDTO<OrderListResponse>>('/api/orders?deliveryMethod=PICKUP')
+      const res = await fetchApi<ResponseDTO<OrderListResponse>>(
+        '/api/orders?deliveryMethod=PICKUP'
+      )
       setOrders(extractOrders(res))
     } catch (err) {
       console.error('Failed to load pickup orders:', err)
@@ -193,7 +273,9 @@ export default function Pickups() {
             Recogidas en Sucursal
           </h1>
           <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-            {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''} · {readyCount} listo{readyCount !== 1 ? 's' : ''} · {completedCount} completada{completedCount !== 1 ? 's' : ''}
+            {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''} · {readyCount} listo
+            {readyCount !== 1 ? 's' : ''} · {completedCount} completada
+            {completedCount !== 1 ? 's' : ''}
           </p>
         </div>
         <button
@@ -207,23 +289,35 @@ export default function Pickups() {
 
       {/* Summary Cards */}
       <div className="mb-6 grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 text-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-amber-600">Nuevas</p>
-          <p className="mt-0.5 font-heading text-lg font-black text-amber-700">{pendingCount}</p>
+        <div className="rounded-xl border border-[var(--warning)]/30 bg-[var(--warning-muted)] p-3 text-center">
+          <p className="text-[10px] font-medium tracking-wider text-[var(--warning)] uppercase">
+            Nuevas
+          </p>
+          <p className="font-heading mt-0.5 text-lg font-black text-[var(--warning)]">
+            {pendingCount}
+          </p>
         </div>
-        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-3 text-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-blue-600">Listas</p>
-          <p className="mt-0.5 font-heading text-lg font-black text-blue-700">{readyCount}</p>
+        <div className="rounded-xl border border-[var(--info)]/30 bg-[var(--info-muted)] p-3 text-center">
+          <p className="text-[10px] font-medium tracking-wider text-[var(--info)] uppercase">
+            Listas
+          </p>
+          <p className="font-heading mt-0.5 text-lg font-black text-[var(--info)]">{readyCount}</p>
         </div>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 text-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-600">Entregadas</p>
-          <p className="mt-0.5 font-heading text-lg font-black text-emerald-700">{completedCount}</p>
+        <div className="rounded-xl border border-[var(--success)]/30 bg-[var(--success-muted)] p-3 text-center">
+          <p className="text-[10px] font-medium tracking-wider text-[var(--success)] uppercase">
+            Entregadas
+          </p>
+          <p className="font-heading mt-0.5 text-lg font-black text-[var(--success)]">
+            {completedCount}
+          </p>
         </div>
       </div>
 
       {/* Filter */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">Estado:</span>
+        <span className="text-[10px] font-medium tracking-wider text-[var(--text-muted)] uppercase">
+          Estado:
+        </span>
         {(['ALL', 'PENDING', 'READY', 'COMPLETED', 'CANCELLED'] as const).map((f) => (
           <button
             key={f}
@@ -234,7 +328,15 @@ export default function Pickups() {
                 : 'border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:bg-[var(--surface-hover)]'
             }`}
           >
-            {f === 'ALL' ? 'Todas' : f === 'PENDING' ? 'Nuevas' : f === 'READY' ? 'Listas' : f === 'COMPLETED' ? 'Entregadas' : 'Canceladas'}
+            {f === 'ALL'
+              ? 'Todas'
+              : f === 'PENDING'
+                ? 'Nuevas'
+                : f === 'READY'
+                  ? 'Listas'
+                  : f === 'COMPLETED'
+                    ? 'Entregadas'
+                    : 'Canceladas'}
           </button>
         ))}
       </div>
@@ -245,7 +347,11 @@ export default function Pickups() {
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center">
             <Store size={32} className="mx-auto mb-3 text-[var(--text-muted)]" />
             <p className="text-sm text-[var(--text-secondary)]">
-              {filter === 'PENDING' ? 'No hay pedidos nuevos' : filter === 'READY' ? 'No hay pedidos listos' : 'No hay órdenes de recogida'}
+              {filter === 'PENDING'
+                ? 'No hay pedidos nuevos'
+                : filter === 'READY'
+                  ? 'No hay pedidos listos'
+                  : 'No hay órdenes de recogida'}
             </p>
           </div>
         ) : (
@@ -253,7 +359,8 @@ export default function Pickups() {
             const orderStatus = normalizeStatus(order.status)
             const orderPaymentStatus = normalizePaymentStatus(order.paymentStatus)
             const status = statusConfig[orderStatus] || statusConfig.PENDING
-            const paymentStatus = paymentStatusConfig[orderPaymentStatus] || paymentStatusConfig.PENDING
+            const paymentStatus =
+              paymentStatusConfig[orderPaymentStatus] || paymentStatusConfig.PENDING
             const items = (order as OrderDTO & { items?: OrderItemDTO[] }).items || []
             const isExpanded = expandedId === order.id
 
@@ -274,11 +381,15 @@ export default function Pickups() {
                       <p className="text-sm font-bold text-[var(--text-primary)]">
                         Orden #{order.id?.slice(0, 8).toUpperCase()}
                       </p>
-                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${status.bg} ${status.color}`}>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${status.bg} ${status.color}`}
+                      >
                         <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
                         {status.label}
                       </span>
-                      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${paymentStatus.bg} ${paymentStatus.color}`}>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${paymentStatus.bg} ${paymentStatus.color}`}
+                      >
                         {paymentStatus.label}
                       </span>
                     </div>
@@ -298,10 +409,10 @@ export default function Pickups() {
                       <button
                         onClick={() => handleMarkReady(order.id!)}
                         disabled={actionId === order.id}
-                        className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
+                        className="flex items-center gap-1.5 rounded-xl bg-[var(--info)] px-3 py-2 text-xs font-bold text-[var(--text-on-primary)] transition hover:opacity-90 disabled:opacity-50"
                       >
                         {actionId === order.id ? (
-                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--text-on-primary)] border-t-transparent" />
                         ) : (
                           <Check size={12} />
                         )}
@@ -312,7 +423,7 @@ export default function Pickups() {
                       <button
                         onClick={() => handleMarkComplete(order.id!)}
                         disabled={actionId === order.id}
-                        className="flex items-center gap-1.5 rounded-xl bg-[var(--success)] px-3 py-2 text-xs font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                        className="flex items-center gap-1.5 rounded-xl bg-[var(--success)] px-3 py-2 text-xs font-bold text-[var(--text-on-primary)] transition hover:opacity-90 disabled:opacity-50"
                       >
                         {actionId === order.id ? (
                           <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -343,7 +454,10 @@ export default function Pickups() {
                           disabled={actionId === order.id}
                           className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
                         >
-                          <RefreshCw size={12} className={actionId === order.id ? 'animate-spin' : ''} />
+                          <RefreshCw
+                            size={12}
+                            className={actionId === order.id ? 'animate-spin' : ''}
+                          />
                           Reintentar
                         </button>
                         <button
@@ -381,7 +495,9 @@ export default function Pickups() {
                             <div className="flex items-center gap-2">
                               <Store size={14} className="text-[var(--accent)]" />
                               <div>
-                                <p className="text-xs font-bold text-[var(--text-primary)]">{order.branchName}</p>
+                                <p className="text-xs font-bold text-[var(--text-primary)]">
+                                  {order.branchName}
+                                </p>
                                 <p className="flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
                                   <MapPin size={10} /> Sucursal de recogida
                                 </p>
@@ -393,19 +509,32 @@ export default function Pickups() {
                         {/* Client Info */}
                         {order.user && (
                           <div className="mb-3 rounded-xl bg-[var(--surface)] px-3 py-2.5">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Cliente</p>
-                            <p className="mt-0.5 text-xs font-bold text-[var(--text-primary)]">{order.user.memberDTO?.name || order.user.email}</p>
+                            <p className="text-[10px] font-semibold tracking-wider text-[var(--text-muted)] uppercase">
+                              Cliente
+                            </p>
+                            <p className="mt-0.5 text-xs font-bold text-[var(--text-primary)]">
+                              {order.user.memberDTO?.name || order.user.email}
+                            </p>
                           </div>
                         )}
 
                         {/* Items */}
                         {items.length > 0 && (
                           <div className="mb-3 space-y-1.5">
-                            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Artículos</p>
+                            <p className="text-[10px] font-semibold tracking-wider text-[var(--text-muted)] uppercase">
+                              Artículos
+                            </p>
                             {items.map((item) => (
-                              <div key={item.id} className="flex items-center justify-between rounded-lg bg-[var(--surface)] px-3 py-2">
-                                <span className="text-xs font-medium text-[var(--text-primary)]">{item.productName}</span>
-                                <span className="text-xs text-[var(--text-secondary)]">{item.quantity} x {formatCurrency(Number(item.unitPrice))}</span>
+                              <div
+                                key={item.id}
+                                className="flex items-center justify-between rounded-lg bg-[var(--surface)] px-3 py-2"
+                              >
+                                <span className="text-xs font-medium text-[var(--text-primary)]">
+                                  {item.productName}
+                                </span>
+                                <span className="text-xs text-[var(--text-secondary)]">
+                                  {item.quantity} x {formatCurrency(Number(item.unitPrice))}
+                                </span>
                               </div>
                             ))}
                           </div>
@@ -415,21 +544,28 @@ export default function Pickups() {
                         <div className="rounded-xl bg-[var(--surface)] px-3 py-2">
                           <div className="flex justify-between">
                             <span className="text-xs text-[var(--text-muted)]">Total</span>
-                            <span className="text-sm font-bold text-[var(--text-primary)]">{formatCurrency(Number(order.total))}</span>
+                            <span className="text-sm font-bold text-[var(--text-primary)]">
+                              {formatCurrency(Number(order.total))}
+                            </span>
                           </div>
                         </div>
                         {orderPaymentStatus === 'REFUND_FAILED' && (
                           <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5">
-                            <p className="text-xs font-bold text-red-700">Resolver devolución manualmente</p>
+                            <p className="text-xs font-bold text-red-700">
+                              Resolver devolución manualmente
+                            </p>
                             <p className="mt-1 text-[11px] text-red-600">
-                              {order.refundErrorMessage || 'Mercado Pago no aceptó el reembolso automático.'}
+                              {order.refundErrorMessage ||
+                                'Mercado Pago no aceptó el reembolso automático.'}
                             </p>
                           </div>
                         )}
                         {orderPaymentStatus === 'REFUNDED' && order.refundReference && (
                           <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5">
                             <p className="text-xs font-bold text-blue-700">Devolución completada</p>
-                            <p className="mt-1 truncate text-[11px] font-mono text-blue-600">{order.refundReference}</p>
+                            <p className="mt-1 truncate font-mono text-[11px] text-blue-600">
+                              {order.refundReference}
+                            </p>
                             {order.refundedAt && (
                               <p className="mt-1 text-[11px] text-blue-600">
                                 {formatDate(order.refundedAt)} {formatTime(order.refundedAt)}

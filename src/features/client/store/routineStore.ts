@@ -15,7 +15,15 @@ const DAY_LABELS: Record<DayOfWeek, string> = {
   domingo: 'Domingo',
 }
 
-const ALL_DAYS: DayOfWeek[] = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']
+const ALL_DAYS: DayOfWeek[] = [
+  'lunes',
+  'martes',
+  'miercoles',
+  'jueves',
+  'viernes',
+  'sabado',
+  'domingo',
+]
 
 interface RoutineStore {
   routines: Routine[]
@@ -35,7 +43,15 @@ interface RoutineStore {
 }
 
 function getTodayDay(): DayOfWeek {
-  const days: DayOfWeek[] = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']
+  const days: DayOfWeek[] = [
+    'domingo',
+    'lunes',
+    'martes',
+    'miercoles',
+    'jueves',
+    'viernes',
+    'sabado',
+  ]
   return days[new Date().getDay()]
 }
 
@@ -91,10 +107,15 @@ export const useRoutineStore = create<RoutineStore>()(
       error: null,
 
       loadRoutines: async () => {
-        set({ isLoading: true, error: null })
+        set({ isLoading: true, error: null, routines: [], currentRoutine: null })
         try {
           const memberId = useAuthStore.getState().user?.memberId
-          const url = memberId ? `/api/workouts?memberId=${memberId}` : '/api/workouts'
+          if (!memberId) {
+            set({ isLoading: false, error: 'Tu cuenta no tiene un miembro asociado.' })
+            return
+          }
+
+          const url = `/api/workouts?memberId=${encodeURIComponent(memberId)}`
           const workoutsRes = await fetchApi<ResponseDTO<PaginatedResult<WorkoutDTO>>>(url)
           const workouts = workoutsRes.dto?.data || []
 
@@ -112,7 +133,7 @@ export const useRoutineStore = create<RoutineStore>()(
             return mapWorkoutToRoutine(w, exercises)
           })
 
-          set({ routines, isLoading: false })
+          set({ routines, currentRoutine: null, isLoading: false })
 
           const state = get()
           if (state.currentRoutineId && routines.length > 0) {
@@ -122,7 +143,7 @@ export const useRoutineStore = create<RoutineStore>()(
             } else if (!state.currentRoutine) {
               set({ currentRoutine: routines[0] })
             }
-          } else if (!state.currentRoutine && routines.length > 0) {
+          } else if (routines.length > 0) {
             set({ currentRoutine: routines[0] })
           }
         } catch (err) {

@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { getPlans, createPlan, updatePlan, deletePlan, togglePlanStatus } from '@/lib/api'
-import { Plus, Trash2, MoreVertical, Edit2, ToggleLeft, ToggleRight, CreditCard } from 'lucide-react'
+import {
+  Plus,
+  Trash2,
+  MoreVertical,
+  Edit2,
+  ToggleLeft,
+  ToggleRight,
+  CreditCard,
+} from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { useToastStore } from '@/components/ui/Toast'
@@ -67,13 +75,23 @@ export default function PlansPage() {
     const errors: Record<string, string> = {}
     if (!form.name) errors.name = 'El nombre es requerido'
     if (!form.price || Number(form.price) <= 0) errors.price = 'Precio inválido'
-    if (!form.durationMonths || Number(form.durationMonths) <= 0) errors.durationMonths = 'Duración inválida'
+    if (!form.durationMonths || Number(form.durationMonths) <= 0)
+      errors.durationMonths = 'Duración inválida'
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
 
   const openCreate = () => {
-    setForm({ name: '', description: '', price: '', durationMonths: '', maxWorkoutsPerWeek: '', maxClasses: '', accessHours: '', features: '' })
+    setForm({
+      name: '',
+      description: '',
+      price: '',
+      durationMonths: '',
+      maxWorkoutsPerWeek: '',
+      maxClasses: '',
+      accessHours: '',
+      features: '',
+    })
     setFormErrors({})
     setSelectedPlan(null)
     setShowModal(true)
@@ -104,8 +122,10 @@ export default function PlansPage() {
         description: form.description || undefined,
         price: parseFloat(form.price),
         durationMonths: parseInt(form.durationMonths) || 1,
-        maxWorkoutsPerWeek: form.maxWorkoutsPerWeek ? (parseInt(form.maxWorkoutsPerWeek) || undefined) : undefined,
-        maxClasses: form.maxClasses ? (parseInt(form.maxClasses) || undefined) : undefined,
+        maxWorkoutsPerWeek: form.maxWorkoutsPerWeek
+          ? parseInt(form.maxWorkoutsPerWeek) || undefined
+          : undefined,
+        maxClasses: form.maxClasses ? parseInt(form.maxClasses) || undefined : undefined,
         accessHours: form.accessHours || undefined,
         features: form.features || undefined,
       }
@@ -166,9 +186,20 @@ export default function PlansPage() {
       />
 
       {error && (
-        <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ border: '1px solid #fecaca', backgroundColor: '#fef2f2' }}>
-          <p className="flex-1 text-sm" style={{ color: '#b91c1c' }}>{error}</p>
-          <button onClick={loadPlans} className="text-sm font-semibold hover:underline" style={{ color: '#b91c1c' }}>Reintentar</button>
+        <div
+          className="flex items-center gap-3 rounded-xl px-4 py-3"
+          style={{ border: '1px solid var(--error)', backgroundColor: 'var(--error-muted-bg)' }}
+        >
+          <p className="flex-1 text-sm" style={{ color: 'var(--error)' }}>
+            {error}
+          </p>
+          <button
+            onClick={loadPlans}
+            className="text-sm font-semibold hover:underline"
+            style={{ color: 'var(--error)' }}
+          >
+            Reintentar
+          </button>
         </div>
       )}
 
@@ -177,23 +208,42 @@ export default function PlansPage() {
       {isLoading ? (
         <LoadingState text="Cargando planes..." />
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl py-16" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}>
+        <div
+          className="flex flex-col items-center justify-center rounded-2xl py-16"
+          style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)' }}
+        >
           <CreditCard size={48} style={{ color: 'var(--text-muted)' }} className="mb-4" />
-          <p className="text-lg font-bold mb-1" style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>No hay planes</p>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Crea tu primer plan de membresía.</p>
+          <p
+            className="mb-1 text-lg font-bold"
+            style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
+          >
+            No hay planes
+          </p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Crea tu primer plan de membresía.
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((plan) => (
             <div
               key={plan.id}
-              className="bg-[var(--card)] rounded-2xl p-5 transition-all duration-200"
+              className="rounded-2xl bg-[var(--card)] p-5 transition-all duration-200"
               style={{ border: '1px solid var(--border)' }}
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-lg font-bold" style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>{plan.name}</h3>
-                  {plan.description && <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>{plan.description}</p>}
+                  <h3
+                    className="text-lg font-bold"
+                    style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
+                  >
+                    {plan.name}
+                  </h3>
+                  {plan.description && (
+                    <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                      {plan.description}
+                    </p>
+                  )}
                 </div>
                 <div
                   onClick={(e) => e.stopPropagation()}
@@ -212,39 +262,70 @@ export default function PlansPage() {
                       </button>
                     }
                   >
-                    <DropdownItem onClick={() => openEdit(plan)}><Edit2 size={14} /> Editar</DropdownItem>
+                    <DropdownItem onClick={() => openEdit(plan)}>
+                      <Edit2 size={14} /> Editar
+                    </DropdownItem>
                     <DropdownItem onClick={() => handleToggleStatus(plan)}>
-                      {plan.isActive ? <><ToggleLeft size={14} /> Desactivar</> : <><ToggleRight size={14} /> Activar</>}
+                      {plan.isActive ? (
+                        <>
+                          <ToggleLeft size={14} /> Desactivar
+                        </>
+                      ) : (
+                        <>
+                          <ToggleRight size={14} /> Activar
+                        </>
+                      )}
                     </DropdownItem>
                     <DropdownSeparator />
-                    <DropdownItem danger onClick={() => setDeleteTarget(plan)}><Trash2 size={14} /> Eliminar</DropdownItem>
+                    <DropdownItem danger onClick={() => setDeleteTarget(plan)}>
+                      <Trash2 size={14} /> Eliminar
+                    </DropdownItem>
                   </DropdownMenu>
                 </div>
               </div>
 
               <div className="mt-4">
-                <p className="text-3xl font-black" style={{ fontFamily: 'var(--font-heading)', color: 'var(--accent)' }}>
+                <p
+                  className="text-3xl font-black"
+                  style={{ fontFamily: 'var(--font-heading)', color: 'var(--accent)' }}
+                >
                   {formatCurrency(plan.price)}
                 </p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>/ {plan.durationMonths} meses</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  / {plan.durationMonths} meses
+                </p>
               </div>
 
               <div className="mt-4 space-y-2">
                 {plan.maxWorkoutsPerWeek && (
-                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{plan.maxWorkoutsPerWeek} entrenamientos/semana</p>
+                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    {plan.maxWorkoutsPerWeek} entrenamientos/semana
+                  </p>
                 )}
                 {plan.maxClasses && (
-                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{plan.maxClasses} clases/mes</p>
+                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    {plan.maxClasses} clases/mes
+                  </p>
                 )}
                 {plan.accessHours && (
-                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Acceso: {plan.accessHours}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    Acceso: {plan.accessHours}
+                  </p>
                 )}
               </div>
 
-              <div className="mt-4 pt-3 flex items-center justify-between" style={{ borderTop: '1px solid var(--border)' }}>
+              <div
+                className="mt-4 flex items-center justify-between pt-3"
+                style={{ borderTop: '1px solid var(--border)' }}
+              >
                 <span
                   className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
-                  style={{ backgroundColor: plan.isActive ? '#f0fdf4' : '#fef2f2', color: plan.isActive ? '#16a34a' : '#dc2626' }}
+                  style={{
+                    backgroundColor: plan.isActive
+                      ? 'var(--success-muted)'
+                      : 'var(--error-muted-bg)',
+                    color: plan.isActive ? 'var(--success)' : 'var(--error)',
+                  }}
                 >
                   {plan.isActive ? 'Activo' : 'Inactivo'}
                 </span>
@@ -254,43 +335,126 @@ export default function PlansPage() {
         </div>
       )}
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={selectedPlan ? 'Editar Plan' : 'Nuevo Plan'} size="md">
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={selectedPlan ? 'Editar Plan' : 'Nuevo Plan'}
+        size="md"
+      >
         <div className="space-y-4">
           <FormField label="Nombre" required htmlFor="plan-name" error={formErrors.name}>
-            <Input id="plan-name" type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ej: Plan Premium" error={!!formErrors.name} />
+            <Input
+              id="plan-name"
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Ej: Plan Premium"
+              error={!!formErrors.name}
+            />
           </FormField>
           <FormField label="Descripción" htmlFor="plan-desc">
-            <Input id="plan-desc" type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Opcional" />
+            <Input
+              id="plan-desc"
+              type="text"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Opcional"
+            />
           </FormField>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Precio" required htmlFor="plan-price" error={formErrors.price}>
-              <Input id="plan-price" type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="0.00" error={!!formErrors.price} />
+              <Input
+                id="plan-price"
+                type="number"
+                value={form.price}
+                onChange={(e) => setForm({ ...form, price: e.target.value })}
+                placeholder="0.00"
+                error={!!formErrors.price}
+              />
             </FormField>
-            <FormField label="Duración (meses)" required htmlFor="plan-duration" error={formErrors.durationMonths}>
-              <Input id="plan-duration" type="number" value={form.durationMonths} onChange={(e) => setForm({ ...form, durationMonths: e.target.value })} placeholder="1" error={!!formErrors.durationMonths} />
+            <FormField
+              label="Duración (meses)"
+              required
+              htmlFor="plan-duration"
+              error={formErrors.durationMonths}
+            >
+              <Input
+                id="plan-duration"
+                type="number"
+                value={form.durationMonths}
+                onChange={(e) => setForm({ ...form, durationMonths: e.target.value })}
+                placeholder="1"
+                error={!!formErrors.durationMonths}
+              />
             </FormField>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Entrenamientos/semana" htmlFor="plan-workouts">
-              <Input id="plan-workouts" type="number" value={form.maxWorkoutsPerWeek} onChange={(e) => setForm({ ...form, maxWorkoutsPerWeek: e.target.value })} placeholder="Opcional" />
+              <Input
+                id="plan-workouts"
+                type="number"
+                value={form.maxWorkoutsPerWeek}
+                onChange={(e) => setForm({ ...form, maxWorkoutsPerWeek: e.target.value })}
+                placeholder="Opcional"
+              />
             </FormField>
             <FormField label="Clases/mes" htmlFor="plan-classes">
-              <Input id="plan-classes" type="number" value={form.maxClasses} onChange={(e) => setForm({ ...form, maxClasses: e.target.value })} placeholder="Opcional" />
+              <Input
+                id="plan-classes"
+                type="number"
+                value={form.maxClasses}
+                onChange={(e) => setForm({ ...form, maxClasses: e.target.value })}
+                placeholder="Opcional"
+              />
             </FormField>
           </div>
           <FormField label="Horario de acceso" htmlFor="plan-hours">
-            <Input id="plan-hours" type="text" value={form.accessHours} onChange={(e) => setForm({ ...form, accessHours: e.target.value })} placeholder="Ej: 6am-10pm" />
+            <Input
+              id="plan-hours"
+              type="text"
+              value={form.accessHours}
+              onChange={(e) => setForm({ ...form, accessHours: e.target.value })}
+              placeholder="Ej: 6am-10pm"
+            />
           </FormField>
           <FormField label="Características" htmlFor="plan-features">
-            <Input id="plan-features" type="text" value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} placeholder="Ej: WiFi, Estacionamiento, Locker" />
+            <Input
+              id="plan-features"
+              type="text"
+              value={form.features}
+              onChange={(e) => setForm({ ...form, features: e.target.value })}
+              placeholder="Ej: WiFi, Estacionamiento, Locker"
+            />
           </FormField>
         </div>
-        <div className="mt-6 flex justify-end gap-3 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-          <button onClick={() => setShowModal(false)} disabled={isSaving} className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50" style={{ border: '1px solid var(--border)', backgroundColor: 'var(--card)', color: 'var(--text-primary)' }}>
+        <div
+          className="mt-6 flex justify-end gap-3 pt-4"
+          style={{ borderTop: '1px solid var(--border)' }}
+        >
+          <button
+            onClick={() => setShowModal(false)}
+            disabled={isSaving}
+            className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50"
+            style={{
+              border: '1px solid var(--border)',
+              backgroundColor: 'var(--card)',
+              color: 'var(--text-primary)',
+            }}
+          >
             Cancelar
           </button>
-          <button onClick={handleSave} disabled={isSaving} className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
-            {isSaving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }} />}
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+          >
+            {isSaving && (
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
+                style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }}
+              />
+            )}
             Guardar
           </button>
         </div>

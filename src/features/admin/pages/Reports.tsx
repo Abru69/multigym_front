@@ -29,7 +29,14 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import type { TenantDashboardDTO, MemberReportDTO, SubscriptionReportDTO, CheckInReportDTO, ProductReportDTO, WorkoutReportDTO } from '@/types'
+import type {
+  TenantDashboardDTO,
+  MemberReportDTO,
+  SubscriptionReportDTO,
+  CheckInReportDTO,
+  ProductReportDTO,
+  WorkoutReportDTO,
+} from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import { LoadingState } from '../components/LoadingState'
 
@@ -86,12 +93,19 @@ export default function ReportsPage() {
   return (
     <div style={{ fontFamily: 'var(--font-body)' }} className="space-y-6">
       <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
+        <div
+          className="flex h-12 w-12 items-center justify-center rounded-xl"
+          style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+        >
           <BarChart3 size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Reportes</h1>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Análisis completo del rendimiento de tu gimnasio</p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            Reportes
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Análisis completo del rendimiento de tu gimnasio
+          </p>
         </div>
       </div>
 
@@ -116,17 +130,57 @@ export default function ReportsPage() {
       {/* Overview Tab */}
       {activeTab === 'overview' && dashboard && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard label="Miembros Totales" value={dashboard.totalMembers} icon={Users} color="#3b82f6" />
-            <KPICard label="Ingresos del Mes" value={formatCurrency(dashboard.monthlyRevenue)} icon={TrendingUp} color="#22c55e" />
-            <KPICard label="Check-ins Hoy" value={dashboard.todayCheckIns} icon={ClipboardList} color="#a855f7" />
-            <KPICard label="Ocupación Actual" value={dashboard.currentOccupancy} icon={Activity} color="#f59e0b" />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <KPICard
+              label="Miembros Totales"
+              value={dashboard.totalMembers}
+              icon={Users}
+              color="#3b82f6"
+            />
+            <KPICard
+              label="Ingresos del Mes"
+              value={formatCurrency(dashboard.monthlyRevenue)}
+              icon={TrendingUp}
+              color="#22c55e"
+            />
+            <KPICard
+              label="Check-ins Hoy"
+              value={dashboard.todayCheckIns}
+              icon={ClipboardList}
+              color="#a855f7"
+            />
+            <KPICard
+              label="Ocupación Actual"
+              value={dashboard.currentOccupancy}
+              icon={Activity}
+              color="var(--warning)"
+            />
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard label="Suscripciones Activas" value={dashboard.activeSubscriptions} icon={CalendarCheck} color="#06b6d4" />
-            <KPICard label="Próximas a Vencer" value={dashboard.expiringSubscriptions} icon={Clock} color="#ef4444" />
-            <KPICard label="Productos Activos" value={dashboard.activeProducts} icon={Package} color="#8b5cf6" />
-            <KPICard label="Órdenes Pendientes" value={dashboard.pendingOrders} icon={ClipboardList} color="#f97316" />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <KPICard
+              label="Suscripciones Activas"
+              value={dashboard.activeSubscriptions}
+              icon={CalendarCheck}
+              color="#06b6d4"
+            />
+            <KPICard
+              label="Próximas a Vencer"
+              value={dashboard.expiringSubscriptions}
+              icon={Clock}
+              color="var(--error)"
+            />
+            <KPICard
+              label="Productos Activos"
+              value={dashboard.activeProducts}
+              icon={Package}
+              color="#8b5cf6"
+            />
+            <KPICard
+              label="Órdenes Pendientes"
+              value={dashboard.pendingOrders}
+              icon={ClipboardList}
+              color="var(--accent)"
+            />
           </div>
         </div>
       )}
@@ -134,21 +188,58 @@ export default function ReportsPage() {
       {/* Members Tab */}
       {activeTab === 'members' && memberReport && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             <KPICard label="Total" value={memberReport.totalMembers} icon={Users} color="#3b82f6" />
-            <KPICard label="Activos" value={memberReport.activeMembers} icon={TrendingUp} color="#22c55e" />
-            <KPICard label="Inactivos" value={memberReport.inactiveMembers} icon={TrendingDown} color="#ef4444" />
-            <KPICard label="Nuevos este mes" value={memberReport.newThisMonth} icon={Users} color="#a855f7" />
+            <KPICard
+              label="Activos"
+              value={memberReport.activeMembers}
+              icon={TrendingUp}
+              color="#22c55e"
+            />
+            <KPICard
+              label="Inactivos"
+              value={memberReport.inactiveMembers}
+              icon={TrendingDown}
+              color="var(--error)"
+            />
+            <KPICard
+              label="Nuevos este mes"
+              value={memberReport.newThisMonth}
+              icon={Users}
+              color="#a855f7"
+            />
           </div>
           {memberReport.monthlyTrend.length > 0 && (
-            <div className="bg-[var(--card)] rounded-2xl p-6" style={{ border: '1px solid var(--border)' }}>
-              <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Tendencia de Miembros</h3>
+            <div
+              className="rounded-2xl bg-[var(--card)] p-6"
+              style={{ border: '1px solid var(--border)' }}
+            >
+              <h3 className="mb-4 text-lg font-bold" style={{ fontFamily: 'var(--font-heading)' }}>
+                Tendencia de Miembros
+              </h3>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={memberReport.monthlyTrend}>
-                    <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 13 }} />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 12,
+                        color: 'var(--text-primary)',
+                        fontSize: 13,
+                      }}
+                    />
                     <Bar dataKey="count" fill="var(--accent)" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -161,22 +252,71 @@ export default function ReportsPage() {
       {/* Subscriptions Tab */}
       {activeTab === 'subscriptions' && subReport && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard label="Activas" value={subReport.active} icon={CalendarCheck} color="#22c55e" />
-            <KPICard label="Canceladas" value={subReport.cancelled} icon={TrendingDown} color="#ef4444" />
-            <KPICard label="Expiradas" value={subReport.expired} icon={Clock} color="#f59e0b" />
-            <KPICard label="MRR" value={formatCurrency(subReport.mrr)} icon={TrendingUp} color="#3b82f6" />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <KPICard
+              label="Activas"
+              value={subReport.active}
+              icon={CalendarCheck}
+              color="#22c55e"
+            />
+            <KPICard
+              label="Canceladas"
+              value={subReport.cancelled}
+              icon={TrendingDown}
+              color="var(--error)"
+            />
+            <KPICard
+              label="Expiradas"
+              value={subReport.expired}
+              icon={Clock}
+              color="var(--warning)"
+            />
+            <KPICard
+              label="MRR"
+              value={formatCurrency(subReport.mrr)}
+              icon={TrendingUp}
+              color="#3b82f6"
+            />
           </div>
           {subReport.monthlyTrend.length > 0 && (
-            <div className="bg-[var(--card)] rounded-2xl p-6" style={{ border: '1px solid var(--border)' }}>
-              <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Tendencia de Suscripciones</h3>
+            <div
+              className="rounded-2xl bg-[var(--card)] p-6"
+              style={{ border: '1px solid var(--border)' }}
+            >
+              <h3 className="mb-4 text-lg font-bold" style={{ fontFamily: 'var(--font-heading)' }}>
+                Tendencia de Suscripciones
+              </h3>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={subReport.monthlyTrend}>
-                    <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 13 }} />
-                    <Area type="monotone" dataKey="count" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.15} strokeWidth={2} />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text-primary)',
+                        borderRadius: 12,
+                        fontSize: 13,
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="count"
+                      stroke="var(--accent)"
+                      fill="var(--accent)"
+                      fillOpacity={0.15}
+                      strokeWidth={2}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -188,22 +328,64 @@ export default function ReportsPage() {
       {/* Check-Ins Tab */}
       {activeTab === 'checkins' && checkinReport && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard label="Hoy" value={checkinReport.todayCheckIns} icon={ClipboardList} color="#3b82f6" />
-            <KPICard label="Esta Semana" value={checkinReport.thisWeekCheckIns} icon={TrendingUp} color="#22c55e" />
-            <KPICard label="Este Mes" value={checkinReport.thisMonthCheckIns} icon={CalendarCheck} color="#a855f7" />
-            <KPICard label="Promedio (min)" value={checkinReport.avgDurationMinutes} icon={Clock} color="#f59e0b" />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <KPICard
+              label="Hoy"
+              value={checkinReport.todayCheckIns}
+              icon={ClipboardList}
+              color="#3b82f6"
+            />
+            <KPICard
+              label="Esta Semana"
+              value={checkinReport.thisWeekCheckIns}
+              icon={TrendingUp}
+              color="#22c55e"
+            />
+            <KPICard
+              label="Este Mes"
+              value={checkinReport.thisMonthCheckIns}
+              icon={CalendarCheck}
+              color="#a855f7"
+            />
+            <KPICard
+              label="Promedio (min)"
+              value={checkinReport.avgDurationMinutes}
+              icon={Clock}
+              color="var(--warning)"
+            />
           </div>
           {checkinReport.dailyTrend.length > 0 && (
-            <div className="bg-[var(--card)] rounded-2xl p-6" style={{ border: '1px solid var(--border)' }}>
-              <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Tendencia Diaria</h3>
+            <div
+              className="rounded-2xl bg-[var(--card)] p-6"
+              style={{ border: '1px solid var(--border)' }}
+            >
+              <h3 className="mb-4 text-lg font-bold" style={{ fontFamily: 'var(--font-heading)' }}>
+                Tendencia Diaria
+              </h3>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={checkinReport.dailyTrend}>
-                    <XAxis dataKey="day" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 13 }} />
-                    <Bar dataKey="count" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                    <XAxis
+                      dataKey="day"
+                      tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text-primary)',
+                        borderRadius: 12,
+                        fontSize: 13,
+                      }}
+                    />
+                    <Bar dataKey="count" fill="var(--info)" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -215,19 +397,48 @@ export default function ReportsPage() {
       {/* Products Tab */}
       {activeTab === 'products' && productReport && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-            <KPICard label="Total Productos" value={productReport.totalProducts} icon={Package} color="#3b82f6" />
-            <KPICard label="Stock Bajo" value={productReport.lowStockProducts} icon={TrendingDown} color="#ef4444" />
-            <KPICard label="Valor Inventario" value={formatCurrency(productReport.totalInventoryValue)} icon={TrendingUp} color="#22c55e" />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+            <KPICard
+              label="Total Productos"
+              value={productReport.totalProducts}
+              icon={Package}
+              color="#3b82f6"
+            />
+            <KPICard
+              label="Stock Bajo"
+              value={productReport.lowStockProducts}
+              icon={TrendingDown}
+              color="var(--error)"
+            />
+            <KPICard
+              label="Valor Inventario"
+              value={formatCurrency(productReport.totalInventoryValue)}
+              icon={TrendingUp}
+              color="#22c55e"
+            />
           </div>
           {productReport.topByRevenue.length > 0 && (
-            <div className="bg-[var(--card)] rounded-2xl p-6" style={{ border: '1px solid var(--border)' }}>
-              <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Top Productos por Ingresos</h3>
+            <div
+              className="rounded-2xl bg-[var(--card)] p-6"
+              style={{ border: '1px solid var(--border)' }}
+            >
+              <h3 className="mb-4 text-lg font-bold" style={{ fontFamily: 'var(--font-heading)' }}>
+                Top Productos por Ingresos
+              </h3>
               <div className="space-y-3">
                 {productReport.topByRevenue.map((p, i) => (
-                  <div key={`${p.name}-${i}`} className="flex items-center justify-between rounded-xl px-4 py-3" style={{ backgroundColor: 'var(--surface)' }}>
+                  <div
+                    key={`${p.name}-${i}`}
+                    className="flex items-center justify-between rounded-xl px-4 py-3"
+                    style={{ backgroundColor: 'var(--surface)' }}
+                  >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold" style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>{i + 1}</span>
+                      <span
+                        className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold"
+                        style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+                      >
+                        {i + 1}
+                      </span>
                       <span className="text-sm font-medium">{p.name}</span>
                     </div>
                     <span className="text-sm font-bold">{formatCurrency(p.value)}</span>
@@ -242,22 +453,71 @@ export default function ReportsPage() {
       {/* Workouts Tab */}
       {activeTab === 'workouts' && workoutReport && (
         <div className="space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard label="Total Rutinas" value={workoutReport.totalWorkouts} icon={Dumbbell} color="#3b82f6" />
-            <KPICard label="Total Logs" value={workoutReport.totalLogs} icon={ClipboardList} color="#22c55e" />
-            <KPICard label="Calorías Promedio" value={workoutReport.avgCaloriesBurned} icon={Activity} color="#f59e0b" />
-            <KPICard label="Duración Promedio (min)" value={workoutReport.avgDurationMinutes} icon={Clock} color="#a855f7" />
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <KPICard
+              label="Total Rutinas"
+              value={workoutReport.totalWorkouts}
+              icon={Dumbbell}
+              color="#3b82f6"
+            />
+            <KPICard
+              label="Total Logs"
+              value={workoutReport.totalLogs}
+              icon={ClipboardList}
+              color="#22c55e"
+            />
+            <KPICard
+              label="Calorías Promedio"
+              value={workoutReport.avgCaloriesBurned}
+              icon={Activity}
+              color="var(--warning)"
+            />
+            <KPICard
+              label="Duración Promedio (min)"
+              value={workoutReport.avgDurationMinutes}
+              icon={Clock}
+              color="#a855f7"
+            />
           </div>
           {workoutReport.workoutTrend.length > 0 && (
-            <div className="bg-[var(--card)] rounded-2xl p-6" style={{ border: '1px solid var(--border)' }}>
-              <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Tendencia de Entrenamientos</h3>
+            <div
+              className="rounded-2xl bg-[var(--card)] p-6"
+              style={{ border: '1px solid var(--border)' }}
+            >
+              <h3 className="mb-4 text-lg font-bold" style={{ fontFamily: 'var(--font-heading)' }}>
+                Tendencia de Entrenamientos
+              </h3>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={workoutReport.workoutTrend}>
-                    <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 13 }} />
-                    <Area type="monotone" dataKey="count" stroke="#a855f7" fill="#a855f7" fillOpacity={0.15} strokeWidth={2} />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fill: 'var(--text-muted)', fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text-primary)',
+                        borderRadius: 12,
+                        fontSize: 13,
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="count"
+                      stroke="var(--accent)"
+                      fill="var(--accent)"
+                      fillOpacity={0.15}
+                      strokeWidth={2}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -269,16 +529,33 @@ export default function ReportsPage() {
   )
 }
 
-function KPICard({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: typeof Users; color: string }) {
+function KPICard({
+  label,
+  value,
+  icon: Icon,
+  color,
+}: {
+  label: string
+  value: string | number
+  icon: typeof Users
+  color: string
+}) {
   return (
-    <div className="bg-[var(--card)] rounded-2xl p-5" style={{ border: '1px solid var(--border)' }}>
+    <div className="rounded-2xl bg-[var(--card)] p-5" style={{ border: '1px solid var(--border)' }}>
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: `${color}15` }}>
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-xl"
+          style={{ backgroundColor: 'var(--surface-hover)' }}
+        >
           <Icon size={20} style={{ color }} />
         </div>
         <div>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{label}</p>
-          <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>{value}</p>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            {label}
+          </p>
+          <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>
+            {value}
+          </p>
         </div>
       </div>
     </div>

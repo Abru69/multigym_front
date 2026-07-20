@@ -1,15 +1,8 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import {
-  Dumbbell,
-  Store,
-  LineChart,
-  ChevronRight,
-  Shield,
-  Zap,
-  Building2,
-} from 'lucide-react'
+import { Dumbbell, Store, LineChart, ChevronRight, Shield, Zap, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { useToastStore } from '@/components/ui/Toast'
 
 const features = [
   {
@@ -101,8 +94,13 @@ const heroItem = {
 }
 
 export default function SaaSLanding() {
+  const addToast = useToastStore((state) => state.addToast)
+
   const openRegistration = (planId: string) => {
-    alert(`Para contratar el plan ${planId}, por favor contacta al administrador en admin@saas.com`)
+    addToast(
+      `Para contratar el plan ${planId}, contacta al administrador en admin@saas.com`,
+      'warning'
+    )
   }
 
   return (
@@ -111,7 +109,7 @@ export default function SaaSLanding() {
       <nav className="fixed top-0 right-0 left-0 z-50 w-full border-b border-[var(--border)] bg-[var(--card)]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="bg-[var(--accent)] text-[var(--accent-text)] flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black shadow-md shadow-[var(--accent)]/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)] text-sm font-black text-[var(--accent-text)] shadow-[var(--accent)]/20 shadow-md">
               MG
             </div>
             <span className="font-heading text-lg font-black tracking-tight text-[var(--text-primary)]">
@@ -166,14 +164,14 @@ export default function SaaSLanding() {
             className="flex flex-col items-center"
           >
             <motion.div variants={heroItem} className="mb-6">
-              <span className="inline-flex items-center rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-5 py-2 text-xs font-bold uppercase tracking-widest text-[var(--accent-text)]">
+              <span className="inline-flex items-center rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-5 py-2 text-xs font-bold tracking-widest text-[var(--accent-text)] uppercase">
                 LA PLATAFORMA DEFINITIVA
               </span>
             </motion.div>
 
             <motion.h1
               variants={heroItem}
-              className="font-heading text-6xl sm:text-7xl lg:text-8xl font-black uppercase text-[var(--text-primary)] leading-[0.95] tracking-tight"
+              className="font-heading text-6xl leading-[0.95] font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-7xl lg:text-8xl"
             >
               ESCALE SU
               <br />
@@ -182,7 +180,7 @@ export default function SaaSLanding() {
 
             <motion.p
               variants={heroItem}
-              className="mx-auto mt-8 mb-10 max-w-3xl text-xl text-[var(--text-secondary)] leading-relaxed"
+              className="mx-auto mt-8 mb-10 max-w-3xl text-xl leading-relaxed text-[var(--text-secondary)]"
             >
               La solución "todo en uno" para dueños de gimnasios. Administra sedes, diseña rutinas
               interactivas, vende suplementación y fideliza a tus atletas bajo tu propia marca.
@@ -194,7 +192,7 @@ export default function SaaSLanding() {
             >
               <Button
                 onClick={() => openRegistration('PRO')}
-                className="bg-[var(--accent)] text-[var(--accent-text)] px-8 py-4 rounded-xl font-bold text-base uppercase tracking-wider hover:brightness-110 shadow-lg shadow-[var(--accent)]/20 w-full sm:w-auto"
+                className="w-full rounded-xl bg-[var(--accent)] px-8 py-4 text-base font-bold tracking-wider text-[var(--accent-text)] uppercase shadow-[var(--accent)]/20 shadow-lg hover:brightness-110 sm:w-auto"
               >
                 Contactar Ventas
                 <ChevronRight size={18} strokeWidth={3} />
@@ -204,7 +202,7 @@ export default function SaaSLanding() {
                   document.getElementById('precios')?.scrollIntoView({ behavior: 'smooth' })
                 }}
                 variant="outline"
-                className="border-2 border-[var(--border)] text-[var(--text-primary)] px-8 py-4 rounded-xl font-bold text-base uppercase tracking-wider hover:border-[var(--text-primary)] w-full sm:w-auto"
+                className="w-full rounded-xl border-2 border-[var(--border)] px-8 py-4 text-base font-bold tracking-wider text-[var(--text-primary)] uppercase hover:border-[var(--text-primary)] sm:w-auto"
               >
                 Ver Planes
               </Button>
@@ -241,7 +239,7 @@ export default function SaaSLanding() {
                           <div
                             key={i}
                             className="flex-1 rounded-t-sm bg-[var(--accent)]"
-                            style={{ height: `${h}%`, opacity: 0.3 + (i * 0.09) }}
+                            style={{ height: `${h}%`, opacity: 0.3 + i * 0.09 }}
                           />
                         ))}
                       </div>
@@ -265,15 +263,12 @@ export default function SaaSLanding() {
       {/* ─── LOGOS ────────────────────────────────────────────── */}
       <section className="border-y border-[var(--border)] bg-[var(--bg-secondary)] py-12">
         <div className="mx-auto max-w-7xl px-6 text-center">
-          <p className="mb-8 text-sm font-bold uppercase tracking-widest text-[var(--text-muted)]">
+          <p className="mb-8 text-sm font-bold tracking-widest text-[var(--text-muted)] uppercase">
             Confiado por más de 500 gimnasios en todo el mundo
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 opacity-40 grayscale transition-all duration-500 hover:grayscale-0 md:gap-16">
             {['FitZone', 'Iron Temple', 'PowerGym', 'Alpha Fitness', 'Zeus Gym'].map((logo) => (
-              <div
-                key={logo}
-                className="font-heading text-2xl font-black text-[var(--text-muted)]"
-              >
+              <div key={logo} className="font-heading text-2xl font-black text-[var(--text-muted)]">
                 {logo}
               </div>
             ))}
@@ -285,10 +280,10 @@ export default function SaaSLanding() {
       <section id="caracteristicas" className="bg-[var(--card)]">
         <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32">
           <div className="mb-16 text-center">
-            <span className="mb-3 inline-block text-sm font-bold uppercase tracking-widest text-[var(--accent)]">
+            <span className="mb-3 inline-block text-sm font-bold tracking-widest text-[var(--accent)] uppercase">
               Características
             </span>
-            <h2 className="font-heading text-4xl sm:text-5xl font-black text-[var(--text-primary)]">
+            <h2 className="font-heading text-4xl font-black text-[var(--text-primary)] sm:text-5xl">
               Control <span className="text-[var(--accent)]">Absoluto</span>
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-[var(--text-secondary)]">
@@ -304,7 +299,7 @@ export default function SaaSLanding() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-80px' }}
                 transition={{ duration: 0.5, delay: i * 0.08 }}
-                className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-[var(--shadow-sm)] transition-all duration-300 hover:shadow-[var(--shadow-lg)] hover:-translate-y-1"
+                className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 shadow-[var(--shadow-sm)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-lg)]"
               >
                 <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent)]/10 transition-transform duration-300 group-hover:scale-110">
                   <f.icon size={26} className="text-[var(--accent)]" strokeWidth={2} />
@@ -323,10 +318,10 @@ export default function SaaSLanding() {
       <section id="precios" className="bg-[var(--bg-secondary)]">
         <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32">
           <div className="mb-16 text-center">
-            <span className="mb-3 inline-block text-sm font-bold uppercase tracking-widest text-[var(--accent)]">
+            <span className="mb-3 inline-block text-sm font-bold tracking-widest text-[var(--accent)] uppercase">
               Precios
             </span>
-            <h2 className="font-heading text-4xl sm:text-5xl font-black text-[var(--text-primary)]">
+            <h2 className="font-heading text-4xl font-black text-[var(--text-primary)] sm:text-5xl">
               Planes <span className="text-[var(--accent)]">Transparentes</span>
             </h2>
             <p className="mt-4 text-base font-semibold text-[var(--text-muted)]">
@@ -342,12 +337,12 @@ export default function SaaSLanding() {
                   key={p.name}
                   className={`relative flex flex-col overflow-hidden rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 ${
                     p.featured
-                      ? 'bg-[var(--text-primary)] text-white shadow-2xl scale-[1.04]'
-                      : 'bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-md)]'
+                      ? 'scale-[1.04] bg-[var(--text-primary)] text-white shadow-2xl'
+                      : 'border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-md)]'
                   }`}
                 >
                   {p.featured && (
-                    <div className="absolute top-0 left-0 right-0 bg-[var(--accent)] px-4 py-1.5 text-center text-xs font-black uppercase tracking-widest text-[var(--accent-text)]">
+                    <div className="absolute top-0 right-0 left-0 bg-[var(--accent)] px-4 py-1.5 text-center text-xs font-black tracking-widest text-[var(--accent-text)] uppercase">
                       Más Popular
                     </div>
                   )}
@@ -356,7 +351,9 @@ export default function SaaSLanding() {
                     <h3 className="font-heading text-xl font-bold text-[var(--text-primary)]">
                       {p.name}
                     </h3>
-                    <p className={`mt-2 mb-6 text-sm ${p.featured ? 'text-white/60' : 'text-[var(--text-secondary)]'}`}>
+                    <p
+                      className={`mt-2 mb-6 text-sm ${p.featured ? 'text-white/60' : 'text-[var(--text-secondary)]'}`}
+                    >
                       {p.desc}
                     </p>
 
@@ -364,7 +361,9 @@ export default function SaaSLanding() {
                       <span className="font-heading text-5xl font-black text-[var(--text-primary)]">
                         ${price.toLocaleString('es-MX')}
                       </span>
-                      <span className={`text-sm font-medium ${p.featured ? 'text-white/50' : 'text-[var(--text-muted)]'}`}>
+                      <span
+                        className={`text-sm font-medium ${p.featured ? 'text-white/50' : 'text-[var(--text-muted)]'}`}
+                      >
                         MXN/año
                       </span>
                     </div>
@@ -381,7 +380,11 @@ export default function SaaSLanding() {
                           >
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
-                          <span className={p.featured ? 'text-white/80' : 'text-[var(--text-secondary)]'}>
+                          <span
+                            className={
+                              p.featured ? 'text-white/80' : 'text-[var(--text-secondary)]'
+                            }
+                          >
                             {feat}
                           </span>
                         </li>
@@ -390,9 +393,9 @@ export default function SaaSLanding() {
 
                     <Button
                       onClick={() => openRegistration(p.id)}
-                      className={`w-full rounded-xl py-3 text-sm font-bold uppercase tracking-wider ${
+                      className={`w-full rounded-xl py-3 text-sm font-bold tracking-wider uppercase ${
                         p.featured
-                          ? 'bg-[var(--accent)] text-[var(--accent-text)] hover:brightness-110 shadow-lg shadow-[var(--accent)]/20'
+                          ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-[var(--accent)]/20 shadow-lg hover:brightness-110'
                           : 'border-2 border-[var(--border)] text-[var(--text-primary)] hover:border-[var(--text-primary)]'
                       }`}
                     >
@@ -409,7 +412,7 @@ export default function SaaSLanding() {
       {/* ─── CTA ──────────────────────────────────────────────── */}
       <section className="bg-[var(--text-primary)]">
         <div className="mx-auto max-w-4xl px-6 py-24 text-center sm:py-32">
-          <h2 className="font-heading text-4xl sm:text-6xl font-black uppercase text-white leading-tight">
+          <h2 className="font-heading text-4xl leading-tight font-black text-white uppercase sm:text-6xl">
             LLEVA TU NEGOCIO AL
             <br />
             <span className="text-[var(--accent)]">FUTURO</span>
@@ -421,7 +424,7 @@ export default function SaaSLanding() {
           <div className="mt-10">
             <Button
               onClick={() => openRegistration('PRO')}
-              className="bg-[var(--accent)] text-[var(--accent-text)] px-10 py-4 rounded-xl font-bold text-base uppercase tracking-wider hover:brightness-110 shadow-xl shadow-[var(--accent)]/20"
+              className="rounded-xl bg-[var(--accent)] px-10 py-4 text-base font-bold tracking-wider text-[var(--accent-text)] uppercase shadow-[var(--accent)]/20 shadow-xl hover:brightness-110"
             >
               Contactar al Administrador
               <ChevronRight size={20} strokeWidth={3} />
@@ -434,7 +437,7 @@ export default function SaaSLanding() {
       <footer className="border-t border-[var(--border)] bg-[var(--surface)]">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 py-10 sm:flex-row">
           <div className="flex items-center gap-3">
-            <div className="bg-[var(--accent)] text-[var(--accent-text)] flex h-9 w-9 items-center justify-center rounded-lg text-xs font-black">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent)] text-xs font-black text-[var(--accent-text)]">
               MG
             </div>
             <span className="font-heading text-sm font-bold tracking-tight text-[var(--text-primary)]">

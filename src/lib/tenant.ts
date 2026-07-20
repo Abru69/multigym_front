@@ -117,3 +117,15 @@ export function getTenantUrl(tenantId: string): string {
   const port = window.location.port ? `:${window.location.port}` : ''
   return `${protocol}//${tenantId}.${getBaseDomain()}${port}`
 }
+
+export function getTenantHomeUrl(tenantId?: string | null): string {
+  const url = new URL('/', window.location.origin)
+  const currentSubdomain = getTenantFromSubdomain()
+
+  // Keep localhost on the same origin and carry the tenant in the query.
+  if (tenantId && !currentSubdomain) {
+    url.searchParams.set('tenant', tenantId)
+  }
+
+  return url.toString()
+}

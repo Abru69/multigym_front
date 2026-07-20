@@ -44,7 +44,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
             <button
               onClick={() => window.location.reload()}
-              className="bg-accent hover:bg-accent/90 w-full rounded-xl px-4 py-3 font-semibold text-white transition-colors"
+              className="w-full rounded-xl bg-[var(--accent)] px-4 py-3 font-semibold text-[var(--accent-text)] transition-colors hover:bg-[var(--accent-hover)]"
             >
               Recargar la página
             </button>
