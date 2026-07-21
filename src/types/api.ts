@@ -86,6 +86,42 @@ export interface TenantRenewalPaymentRequest {
   payerEmail: string
 }
 
+export interface MercadoPagoTenantConfigDTO {
+  enabled: boolean
+  connectionStatus: string
+  mpUserId?: string | null
+  publicKey?: string | null
+  accessTokenConfigured: boolean
+  refreshTokenConfigured: boolean
+  webhookSecretConfigured: boolean
+  accessTokenExpiresAt?: string | null
+  notificationUrl?: string | null
+  siteId?: string | null
+  currency?: string | null
+  processingMode?: string | null
+  connectedAt?: string | null
+  disconnectedAt?: string | null
+  lastRefreshAt?: string | null
+}
+
+export interface MercadoPagoTenantConfigRequest {
+  enabled: boolean
+  publicKey?: string | null
+  accessToken?: string | null
+  refreshToken?: string | null
+  webhookSecret?: string | null
+  mpUserId?: string | null
+  notificationUrl?: string | null
+  siteId?: string | null
+  currency?: string | null
+  processingMode?: string | null
+}
+
+export interface MercadoPagoOAuthConnectDTO {
+  authorizationUrl: string
+  state: string
+}
+
 export interface TenantSummaryDTO {
   tenantCount: number
   activeTenantCount: number

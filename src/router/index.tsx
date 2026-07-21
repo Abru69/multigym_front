@@ -38,6 +38,7 @@ import {
   Branches,
   BrandingSettings,
   Billing,
+  MercadoPagoSettings,
   Catalog,
   ProductDetail,
   Cart,
@@ -166,6 +167,10 @@ export const router = createBrowserRouter([
       {
         path: 'branding',
         element: <RoleGuard page="branding">{withSuspense(BrandingSettings)}</RoleGuard>,
+      },
+      {
+        path: 'mercadopago',
+        element: <RoleGuard page="mercadopago">{withSuspense(MercadoPagoSettings)}</RoleGuard>,
       },
       { path: 'billing', element: <RoleGuard page="billing">{withSuspense(Billing)}</RoleGuard> },
     ],

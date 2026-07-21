@@ -15,15 +15,31 @@ export type AdminPage =
   | 'reports'
   | 'branches'
   | 'branding'
+  | 'mercadopago'
   | 'billing'
 
 export type UserRole = 'admin' | 'client' | 'nutricionist' | 'staff' | 'receptionist' | 'seller'
 
 const ROLE_PAGES: Record<UserRole, AdminPage[]> = {
   admin: [
-    'dashboard', 'users', 'plans', 'subscriptions', 'payments',
-    'nutrition', 'inventory', 'exercises', 'pickups', 'shipments', 'delivery',
-    'checkins', 'announcements', 'reports', 'branches', 'branding', 'billing',
+    'dashboard',
+    'users',
+    'plans',
+    'subscriptions',
+    'payments',
+    'nutrition',
+    'inventory',
+    'exercises',
+    'pickups',
+    'shipments',
+    'delivery',
+    'checkins',
+    'announcements',
+    'reports',
+    'branches',
+    'branding',
+    'mercadopago',
+    'billing',
   ],
   nutricionist: ['nutrition'],
   staff: ['dashboard', 'users', 'inventory', 'exercises', 'checkins'],
@@ -77,6 +93,7 @@ const PAGE_ROUTE_MAP: Record<string, AdminPage> = {
   '/admin/reportes': 'reports',
   '/admin/sucursales': 'branches',
   '/admin/branding': 'branding',
+  '/admin/mercadopago': 'mercadopago',
   '/admin/billing': 'billing',
 }
 

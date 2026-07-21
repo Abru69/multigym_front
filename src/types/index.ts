@@ -1,12 +1,6 @@
 export type { User, AuthState } from './user'
 export type { Product, ProductCategory, NutritionFact, CartItem, Order } from './product'
-export type {
-  Exercise,
-  MuscleGroup,
-  Routine,
-  RoutineDay,
-  DayOfWeek,
-} from './exercise'
+export type { Exercise, MuscleGroup, Routine, RoutineDay, DayOfWeek } from './exercise'
 export type {
   ResponseDTO,
   LoginResponse,
@@ -17,6 +11,9 @@ export type {
   TenantRenewalInfoDTO,
   TenantRenewalPaymentRequest,
   TenantRenewalResultDTO,
+  MercadoPagoTenantConfigDTO,
+  MercadoPagoTenantConfigRequest,
+  MercadoPagoOAuthConnectDTO,
   TenantSummaryDTO,
   SaasPlanDTO,
   SaasPlanRequest,

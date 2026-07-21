@@ -11,16 +11,22 @@ import {
   PauseCircle,
   AlertTriangle,
   Loader2,
+  CreditCard,
+  ShieldOff,
 } from 'lucide-react'
 import { usePlatformTenantsStore } from '@/features/platform/store/platformTenantsStore'
+import { disableTenantMercadoPago, getTenantMercadoPagoConfig } from '@/lib/api'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { ConfirmDialog } from '@/features/admin/components/ConfirmDialog'
 import { LoadingState } from '@/features/admin/components/LoadingState'
-import type { TenantRequestDTO, TenantStatus } from '@/types'
+import type { MercadoPagoTenantConfigDTO, TenantDTO, TenantRequestDTO, TenantStatus } from '@/types'
 
-const statusConfig: Record<TenantStatus, { label: string; color: string; icon: typeof CheckCircle }> = {
+const statusConfig: Record<
+  TenantStatus,
+  { label: string; color: string; icon: typeof CheckCircle }
+> = {
   ACTIVE: { label: 'Activo', color: 'var(--success)', icon: CheckCircle },
   TRIAL: { label: 'Trial', color: 'var(--info)', icon: Clock },
   PAST_DUE: { label: 'Pago vencido', color: 'var(--warning)', icon: AlertTriangle },
@@ -65,6 +71,10 @@ export default function PlatformTenants() {
   const [toast, setToast] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [mpTenant, setMpTenant] = useState<TenantDTO | null>(null)
+  const [mpConfig, setMpConfig] = useState<MercadoPagoTenantConfigDTO | null>(null)
+  const [isMpLoading, setIsMpLoading] = useState(false)
+  const [isMpDisabling, setIsMpDisabling] = useState(false)
   const [form, setForm] = useState<TenantRequestDTO>({
     tenantId: '',
     name: '',
@@ -131,6 +141,35 @@ export default function PlatformTenants() {
       showToast('Gimnasio eliminado')
     } else {
       showToast('Error al eliminar gimnasio')
+    }
+  }
+
+  const openMercadoPago = async (tenant: TenantDTO) => {
+    setOpenMenu(null)
+    setMpTenant(tenant)
+    setMpConfig(null)
+    setIsMpLoading(true)
+    try {
+      const response = await getTenantMercadoPagoConfig(tenant.tenantId)
+      setMpConfig(response.dto || null)
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Error al cargar Mercado Pago')
+    } finally {
+      setIsMpLoading(false)
+    }
+  }
+
+  const handleDisableMercadoPago = async () => {
+    if (!mpTenant) return
+    setIsMpDisabling(true)
+    try {
+      const response = await disableTenantMercadoPago(mpTenant.tenantId)
+      setMpConfig(response.dto || null)
+      showToast('Mercado Pago deshabilitado')
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Error al deshabilitar Mercado Pago')
+    } finally {
+      setIsMpDisabling(false)
     }
   }
 
@@ -261,7 +300,13 @@ export default function PlatformTenants() {
                 border: filter === f ? '1px solid var(--accent)' : '1px solid var(--border)',
               }}
             >
-              {f === 'ALL' ? 'Todos' : f === 'ACTIVE' ? 'Activos' : f === 'INACTIVE' ? 'Inactivos' : 'Trial expirado'}
+              {f === 'ALL'
+                ? 'Todos'
+                : f === 'ACTIVE'
+                  ? 'Activos'
+                  : f === 'INACTIVE'
+                    ? 'Inactivos'
+                    : 'Trial expirado'}
             </button>
           ))}
         </div>
@@ -427,6 +472,10 @@ export default function PlatformTenants() {
                               fn: () => handleToggleStatus(t.tenantId),
                             },
                             {
+                              label: '💳 Mercado Pago',
+                              fn: () => openMercadoPago(t),
+                            },
+                            {
                               label: '🗑 Eliminar',
                               fn: () => {
                                 setDeleteTarget(t.tenantId)
@@ -490,6 +539,121 @@ export default function PlatformTenants() {
       />
 
       {/* Create Modal */}
+      <AnimatePresence>
+        {mpTenant && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'var(--overlay)', backdropFilter: 'blur(6px)' }}
+            onClick={() => setMpTenant(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-xl rounded-2xl p-6"
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-lg)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-6 flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)]">
+                    <CreditCard size={22} />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                      Mercado Pago
+                    </h2>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                      {mpTenant.name} · {mpTenant.tenantId}
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setMpTenant(null)} style={{ color: 'var(--text-muted)' }}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              {isMpLoading ? (
+                <div
+                  className="flex h-32 items-center justify-center gap-2 text-sm"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  <Loader2 size={18} className="animate-spin" /> Cargando configuración...
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  <div
+                    className="rounded-2xl border p-4"
+                    style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+                  >
+                    <p
+                      className="text-xs font-black tracking-wide uppercase"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      Estado
+                    </p>
+                    <p
+                      className="mt-1 text-xl font-black"
+                      style={{ color: mpConfig?.enabled ? 'var(--success)' : 'var(--warning)' }}
+                    >
+                      {mpConfig?.enabled && mpConfig.connectionStatus === 'CONNECTED'
+                        ? 'Conectado y activo'
+                        : 'No activo'}
+                    </p>
+                    <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      Platform puede deshabilitar la integración, pero el tenant debe conectar o
+                      reconectar su cuenta desde su panel de admin.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <MpInfo
+                      label="Public key"
+                      value={mpConfig?.publicKey ? 'Configurada' : 'No configurada'}
+                    />
+                    <MpInfo label="Cuenta MP" value={mpConfig?.mpUserId || 'No conectada'} />
+                    <MpInfo
+                      label="Access token"
+                      value={mpConfig?.accessTokenConfigured ? 'Guardado' : 'No guardado'}
+                    />
+                    <MpInfo
+                      label="Webhook secret"
+                      value={mpConfig?.webhookSecretConfigured ? 'Guardado' : 'No guardado'}
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3">
+                    <Button variant="secondary" onClick={() => setMpTenant(null)}>
+                      Cerrar
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDisableMercadoPago}
+                      disabled={!mpConfig?.enabled || isMpDisabling}
+                      className="gap-2"
+                    >
+                      {isMpDisabling ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <ShieldOff size={14} />
+                      )}
+                      Deshabilitar
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -632,6 +796,22 @@ export default function PlatformTenants() {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  )
+}
+
+function MpInfo({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      className="rounded-xl border px-3 py-2.5"
+      style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+    >
+      <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-bold break-all" style={{ color: 'var(--text-primary)' }}>
+        {value}
+      </p>
     </div>
   )
 }

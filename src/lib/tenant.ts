@@ -10,6 +10,8 @@
 export function getTenantFromSubdomain(): string | null {
   const hostname = window.location.hostname
 
+  const reservedSubdomains = new Set(['app', 'api', 'staging', 'api-staging', 'www'])
+
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return null
   }
@@ -31,9 +33,9 @@ export function getTenantFromSubdomain(): string | null {
   }
 
   const parts = hostname.split('.')
-  if (parts.length >= 2) {
+  if (parts.length >= 3) {
     const subdomain = parts[0]
-    if (subdomain === 'www') return null
+    if (reservedSubdomains.has(subdomain.toLowerCase())) return null
     return subdomain
   }
 

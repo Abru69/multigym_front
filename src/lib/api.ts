@@ -9,6 +9,9 @@ import type {
   TenantRenewalInfoDTO,
   TenantRenewalPaymentRequest,
   TenantRenewalResultDTO,
+  MercadoPagoTenantConfigDTO,
+  MercadoPagoTenantConfigRequest,
+  MercadoPagoOAuthConnectDTO,
   TenantSummaryDTO,
   SaasPlanDTO,
   TenantRequestDTO,
@@ -727,6 +730,40 @@ export const processTenantBillingRenewalMercadoPagoPayment = (data: TenantRenewa
     method: 'POST',
     body: JSON.stringify(data),
   })
+
+// --- Mercado Pago tenant config ---
+export const getMercadoPagoConfig = () =>
+  fetchApi<ResponseDTO<MercadoPagoTenantConfigDTO>>('/api/mercadopago/config')
+
+export const saveMercadoPagoConfig = (data: MercadoPagoTenantConfigRequest) =>
+  fetchApi<ResponseDTO<MercadoPagoTenantConfigDTO>>('/api/mercadopago/config', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+
+export const startMercadoPagoOAuthConnect = () =>
+  fetchApi<ResponseDTO<MercadoPagoOAuthConnectDTO>>('/api/mercadopago/oauth/connect', {
+    method: 'POST',
+  })
+
+export const refreshMercadoPagoOAuth = () =>
+  fetchApi<ResponseDTO<MercadoPagoTenantConfigDTO>>('/api/mercadopago/oauth/refresh', {
+    method: 'POST',
+  })
+
+export const disconnectMercadoPagoOAuth = () =>
+  fetchApi<ResponseDTO<MercadoPagoTenantConfigDTO>>('/api/mercadopago/oauth/disconnect', {
+    method: 'POST',
+  })
+
+export const getTenantMercadoPagoConfig = (tenantId: string) =>
+  fetchApi<ResponseDTO<MercadoPagoTenantConfigDTO>>(`/api/tenants/${tenantId}/mercadopago/config`)
+
+export const disableTenantMercadoPago = (tenantId: string) =>
+  fetchApi<ResponseDTO<MercadoPagoTenantConfigDTO>>(
+    `/api/tenants/${tenantId}/mercadopago/disable`,
+    { method: 'POST' }
+  )
 
 // --- Branches (detail) ---
 export const getBranchById = (id: string) => fetchApi<ResponseDTO<BranchDTO>>(`/api/branches/${id}`)

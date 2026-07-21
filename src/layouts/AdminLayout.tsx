@@ -45,6 +45,7 @@ const ALL_NAV_ITEMS: (NavItem & { page: AdminPage })[] = [
   { to: '/admin/anuncios', icon: Megaphone, label: 'Anuncios', page: 'announcements' },
   { to: '/admin/reportes', icon: BarChart3, label: 'Reportes', page: 'reports' },
   { to: '/admin/branding', icon: Palette, label: 'Colores de Marca', page: 'branding' },
+  { to: '/admin/mercadopago', icon: CreditCard, label: 'Mercado Pago', page: 'mercadopago' },
   { to: '/admin/billing', icon: ReceiptText, label: 'Facturación SaaS', page: 'billing' },
 ]
 
@@ -57,7 +58,7 @@ const ADMIN_NAV_SECTIONS: { label: string; pages: AdminPage[] }[] = [
   { label: 'Entrenamiento y Bienestar', pages: ['exercises', 'nutrition'] },
   { label: 'Tienda y Operación', pages: ['inventory', 'pickups', 'shipments', 'delivery'] },
   { label: 'Organización', pages: ['branches', 'announcements'] },
-  { label: 'Reportes y Configuración', pages: ['reports', 'branding', 'billing'] },
+  { label: 'Reportes y Configuración', pages: ['reports', 'branding', 'mercadopago', 'billing'] },
 ]
 
 export function AdminLayout() {

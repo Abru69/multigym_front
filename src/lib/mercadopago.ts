@@ -5,18 +5,20 @@ declare global {
   }
 }
 
-let mpInstance: unknown = null
+const mpInstances = new Map<string, unknown>()
 
-export function getMercadoPago() {
-  if (mpInstance) return mpInstance
-
-  const publicKey = import.meta.env.VITE_MP_PUBLIC_KEY
+export function getMercadoPago(publicKeyOverride?: string | null) {
+  const publicKey = publicKeyOverride || import.meta.env.VITE_MP_PUBLIC_KEY
   if (!publicKey) {
     throw new Error('VITE_MP_PUBLIC_KEY no está configurada en .env.local')
   }
 
-  mpInstance = new window.MercadoPago(publicKey, {
+  const cached = mpInstances.get(publicKey)
+  if (cached) return cached
+
+  const mpInstance = new window.MercadoPago(publicKey, {
     locale: 'es-MX',
   })
+  mpInstances.set(publicKey, mpInstance)
   return mpInstance
 }

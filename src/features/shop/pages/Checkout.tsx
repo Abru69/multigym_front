@@ -6,7 +6,14 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 import { useToastStore } from '@/components/ui/Toast'
 import { fetchApi } from '@/lib/api'
 import { getMercadoPago } from '@/lib/mercadopago'
-import type { OrderDTO, ResponseDTO, BranchDTO, TenantSettingDTO, OrderRequest } from '@/types'
+import type {
+  OrderDTO,
+  ResponseDTO,
+  BranchDTO,
+  TenantSettingDTO,
+  OrderRequest,
+  MercadoPagoTenantConfigDTO,
+} from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
   CheckCircle2,
@@ -27,8 +34,6 @@ const STEPS = [
   { key: 'payment', label: 'Pago', icon: CreditCard },
   { key: 'success', label: 'Confirmación', icon: CheckCircle2 },
 ] as const
-
-const isMercadoPagoTestMode = import.meta.env.VITE_MP_PUBLIC_KEY?.startsWith('TEST-')
 
 function StepIndicator({ currentStep }: { currentStep: string }) {
   const getStepIndex = (s: string) => {
@@ -125,6 +130,7 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false)
   const [orderNumber, setOrderNumber] = useState('')
   const [mpReady, setMpReady] = useState(false)
+  const [mpPublicKey, setMpPublicKey] = useState<string | null>(null)
 
   const [confettiOffsets] = useState(() =>
     Array.from({ length: 6 }, () => ({
@@ -140,15 +146,16 @@ export default function Checkout() {
   const [shippingAddress, setShippingAddress] = useState('')
   const [shippingCity, setShippingCity] = useState('')
   const [shippingPostalCode, setShippingPostalCode] = useState('')
-  const [cardholderName, setCardholderName] = useState(isMercadoPagoTestMode ? 'APRO' : '')
-  const [cardNumber, setCardNumber] = useState(isMercadoPagoTestMode ? '4075 5957 1648 3764' : '')
-  const [cardExpiry, setCardExpiry] = useState(isMercadoPagoTestMode ? '11/30' : '')
-  const [cardCvc, setCardCvc] = useState(isMercadoPagoTestMode ? '123' : '')
+  const [cardholderName, setCardholderName] = useState('')
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardExpiry, setCardExpiry] = useState('')
+  const [cardCvc, setCardCvc] = useState('')
   const [cardholderEmail, setCardholderEmail] = useState(user?.email || '')
 
   const subtotal = total()
   const shipping = deliveryMethod === 'SHIPPING' ? (subtotal > 1500 ? 0 : 150) : 0
   const finalTotal = subtotal + shipping
+  const isMercadoPagoTestMode = mpPublicKey?.startsWith('TEST-') ?? false
 
   useEffect(() => {
     if (items.length === 0 && step !== 'success') {
@@ -159,11 +166,18 @@ export default function Checkout() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [branchesRes, settingsRes] = await Promise.all([
+        const [branchesRes, settingsRes, mercadoPagoRes] = await Promise.all([
           fetchApi<ResponseDTO<BranchDTO[]>>('/api/branches'),
           fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings'),
+          fetchApi<ResponseDTO<MercadoPagoTenantConfigDTO>>('/api/mercadopago/config'),
         ])
         setBranches(branchesRes.dto || branchesRes.lista || [])
+        const mercadoPagoConfig = mercadoPagoRes.dto
+        setMpPublicKey(
+          mercadoPagoConfig?.enabled && mercadoPagoConfig.connectionStatus === 'CONNECTED'
+            ? mercadoPagoConfig.publicKey || null
+            : null
+        )
 
         const settings = settingsRes.dto || settingsRes.lista || []
         const pickupEnabled = settings.find((s) => s.key === 'delivery_pickup_enabled')
@@ -194,15 +208,27 @@ export default function Checkout() {
 
   useEffect(() => {
     let timer = 0
+    if (!mpPublicKey) {
+      setMpReady(false)
+      return () => window.clearTimeout(timer)
+    }
     try {
-      getMercadoPago()
+      getMercadoPago(mpPublicKey)
       timer = window.setTimeout(() => setMpReady(true), 0)
     } catch (err) {
       console.error('Failed to init MercadoPago:', err)
       addToast('Error al inicializar MercadoPago', 'error')
     }
     return () => window.clearTimeout(timer)
-  }, [addToast])
+  }, [addToast, mpPublicKey])
+
+  useEffect(() => {
+    if (!isMercadoPagoTestMode) return
+    if (!cardholderName) setCardholderName('APRO')
+    if (!cardNumber) setCardNumber('4075 5957 1648 3764')
+    if (!cardExpiry) setCardExpiry('11/30')
+    if (!cardCvc) setCardCvc('123')
+  }, [cardCvc, cardExpiry, cardNumber, cardholderName, isMercadoPagoTestMode])
 
   useEffect(() => {
     if (user?.email && !cardholderEmail) {
@@ -237,6 +263,9 @@ export default function Checkout() {
       if (!user?.id) {
         throw new Error('Debes iniciar sesión para completar la compra')
       }
+      if (!mpPublicKey || !mpReady) {
+        throw new Error('Este gimnasio aún no tiene Mercado Pago conectado')
+      }
       if (deliveryMethod === 'PICKUP' && !selectedBranch) {
         throw new Error('Selecciona una sucursal para recoger tu pedido')
       }
@@ -249,14 +278,16 @@ export default function Checkout() {
       const cardDigits = cardNumber.replace(/\D/g, '')
       const [expirationMonth, expirationYearShort] = cardExpiry.split('/')
       if (cardDigits.length < 13) throw new Error('Ingresa un número de tarjeta válido')
-      if (!expirationMonth || !expirationYearShort) throw new Error('Ingresa el vencimiento en formato MM/YY')
+      if (!expirationMonth || !expirationYearShort)
+        throw new Error('Ingresa el vencimiento en formato MM/YY')
       if (!cardCvc.trim()) throw new Error('Ingresa el CVC')
       if (!cardholderName.trim()) throw new Error('Ingresa el nombre del titular')
       if (!cardholderEmail.trim()) throw new Error('Ingresa el email del titular')
 
-      const expirationYear = expirationYearShort.length === 2 ? `20${expirationYearShort}` : expirationYearShort
+      const expirationYear =
+        expirationYearShort.length === 2 ? `20${expirationYearShort}` : expirationYearShort
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mp: any = getMercadoPago()
+      const mp: any = getMercadoPago(mpPublicKey)
       const tokenResponse = await mp.createCardToken({
         cardNumber: cardDigits,
         cardholderName: cardholderName.trim(),
@@ -298,7 +329,10 @@ export default function Checkout() {
       clearCart()
     } catch (err) {
       console.error('Checkout error:', err)
-      addToast(err instanceof Error ? err.message : 'Error al procesar el pago. Intenta de nuevo.', 'error')
+      addToast(
+        err instanceof Error ? err.message : 'Error al procesar el pago. Intenta de nuevo.',
+        'error'
+      )
     } finally {
       setLoading(false)
     }
@@ -348,7 +382,9 @@ export default function Checkout() {
                     <Store size={24} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-[var(--text-primary)]">Recoger en Sucursal</p>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">
+                      Recoger en Sucursal
+                    </p>
                     <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
                       Elige la sucursal más cercana y recoge tu pedido
                     </p>
@@ -381,7 +417,9 @@ export default function Checkout() {
                     <Truck size={24} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold text-[var(--text-primary)]">Envío a Domicilio</p>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">
+                      Envío a Domicilio
+                    </p>
                     <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
                       Recibe tu pedido en la puerta de tu casa
                     </p>
@@ -404,7 +442,7 @@ export default function Checkout() {
 
             <button
               onClick={() => setStep('details')}
-              className="mt-6 h-12 w-full rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg"
+              className="mt-6 h-12 w-full rounded-full bg-[var(--accent)] text-sm font-bold tracking-wide text-[var(--accent-text)] uppercase shadow-md transition-all hover:shadow-lg"
             >
               Continuar
             </button>
@@ -455,10 +493,16 @@ export default function Checkout() {
                           <Store size={20} />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-bold text-[var(--text-primary)]">{branch.name}</p>
-                          <p className="mt-0.5 text-xs text-[var(--text-secondary)]">{branch.address}</p>
+                          <p className="text-sm font-bold text-[var(--text-primary)]">
+                            {branch.name}
+                          </p>
+                          <p className="mt-0.5 text-xs text-[var(--text-secondary)]">
+                            {branch.address}
+                          </p>
                           {branch.phone && (
-                            <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">{branch.phone}</p>
+                            <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">
+                              {branch.phone}
+                            </p>
                           )}
                         </div>
                         {selectedBranch === branch.id && (
@@ -477,7 +521,12 @@ export default function Checkout() {
                   </h2>
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label htmlFor="shipping-address" className="text-xs font-semibold text-[var(--text-primary)]">Calle y Número</label>
+                      <label
+                        htmlFor="shipping-address"
+                        className="text-xs font-semibold text-[var(--text-primary)]"
+                      >
+                        Calle y Número
+                      </label>
                       <input
                         id="shipping-address"
                         required
@@ -485,12 +534,17 @@ export default function Checkout() {
                         placeholder="Av. Principal 123"
                         value={shippingAddress}
                         onChange={(e) => setShippingAddress(e.target.value)}
-                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                       />
                     </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
-                        <label htmlFor="shipping-postal" className="text-xs font-semibold text-[var(--text-primary)]">Código Postal</label>
+                        <label
+                          htmlFor="shipping-postal"
+                          className="text-xs font-semibold text-[var(--text-primary)]"
+                        >
+                          Código Postal
+                        </label>
                         <input
                           id="shipping-postal"
                           required
@@ -498,11 +552,16 @@ export default function Checkout() {
                           placeholder="31000"
                           value={shippingPostalCode}
                           onChange={(e) => setShippingPostalCode(e.target.value)}
-                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label htmlFor="shipping-city" className="text-xs font-semibold text-[var(--text-primary)]">Ciudad</label>
+                        <label
+                          htmlFor="shipping-city"
+                          className="text-xs font-semibold text-[var(--text-primary)]"
+                        >
+                          Ciudad
+                        </label>
                         <input
                           id="shipping-city"
                           required
@@ -510,7 +569,7 @@ export default function Checkout() {
                           placeholder="Chihuahua"
                           value={shippingCity}
                           onChange={(e) => setShippingCity(e.target.value)}
-                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                         />
                       </div>
                     </div>
@@ -521,7 +580,7 @@ export default function Checkout() {
               <button
                 onClick={() => setStep('payment')}
                 disabled={!canProceedToDetails()}
-                className="mt-6 h-12 w-full rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-6 h-12 w-full rounded-full bg-[var(--accent)] text-sm font-bold tracking-wide text-[var(--accent-text)] uppercase shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Continuar al Pago
               </button>
@@ -529,7 +588,9 @@ export default function Checkout() {
 
             {/* Order Summary */}
             <div className="h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
-              <h3 className="mb-4 font-heading text-lg font-black text-[var(--text-primary)]">Resumen</h3>
+              <h3 className="font-heading mb-4 text-lg font-black text-[var(--text-primary)]">
+                Resumen
+              </h3>
               <div className="scrollbar-hide mb-6 max-h-60 space-y-3 overflow-y-auto pr-2">
                 {items.map((item) => (
                   <div key={item.product.id} className="flex gap-3">
@@ -561,7 +622,7 @@ export default function Checkout() {
                   <span>{deliveryMethod === 'PICKUP' ? 'Recogida' : 'Envío'}</span>
                   <span>{shipping === 0 ? 'Gratis' : formatCurrency(shipping)}</span>
                 </div>
-                <div className="flex justify-between pt-2 font-heading text-lg font-black text-[var(--text-primary)]">
+                <div className="font-heading flex justify-between pt-2 text-lg font-black text-[var(--text-primary)]">
                   <span>Total</span>
                   <span>{formatCurrency(finalTotal)}</span>
                 </div>
@@ -587,7 +648,7 @@ export default function Checkout() {
               <ArrowLeft size={16} /> Volver a Detalles
             </button>
 
-            <h2 className="mb-6 font-heading text-xl font-black text-[var(--text-primary)]">
+            <h2 className="font-heading mb-6 text-xl font-black text-[var(--text-primary)]">
               Información de Pago
             </h2>
 
@@ -599,8 +660,12 @@ export default function Checkout() {
                       <CreditCard size={18} className="text-[var(--accent)]" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-[var(--text-primary)]">Tarjeta de Crédito / Débito</p>
-                      <p className="text-xs text-[var(--text-muted)]">Pago procesado por MercadoPago</p>
+                      <p className="text-sm font-bold text-[var(--text-primary)]">
+                        Tarjeta de Crédito / Débito
+                      </p>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        Pago procesado por MercadoPago
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -608,14 +673,39 @@ export default function Checkout() {
                 <div className="p-6">
                   {isMercadoPagoTestMode && (
                     <div className="mb-4 rounded-xl border border-[var(--accent)]/30 bg-[var(--accent)]/10 p-4 text-xs text-[var(--text-secondary)]">
-                      <p className="font-bold text-[var(--text-primary)]">Modo prueba Mercado Pago México</p>
-                      <p>Usa titular <span className="font-mono font-bold">APRO</span> para aprobar el pago.</p>
-                      <p>Visa: <span className="font-mono">4075 5957 1648 3764</span>, CVV <span className="font-mono">123</span>, vencimiento <span className="font-mono">11/30</span>.</p>
+                      <p className="font-bold text-[var(--text-primary)]">
+                        Modo prueba Mercado Pago México
+                      </p>
+                      <p>
+                        Usa titular <span className="font-mono font-bold">APRO</span> para aprobar
+                        el pago.
+                      </p>
+                      <p>
+                        Visa: <span className="font-mono">4075 5957 1648 3764</span>, CVV{' '}
+                        <span className="font-mono">123</span>, vencimiento{' '}
+                        <span className="font-mono">11/30</span>.
+                      </p>
                     </div>
                   )}
                   <div className="space-y-4">
+                    {!mpPublicKey && (
+                      <div className="rounded-xl border border-[var(--warning)]/30 bg-[var(--warning)]/10 p-4 text-xs text-[var(--text-secondary)]">
+                        <p className="font-bold text-[var(--text-primary)]">
+                          Mercado Pago no conectado
+                        </p>
+                        <p>
+                          El gimnasio debe conectar su cuenta de Mercado Pago para recibir pagos en
+                          línea.
+                        </p>
+                      </div>
+                    )}
                     <div className="space-y-1.5">
-                      <label htmlFor="cardholder-name" className="text-xs font-semibold text-[var(--text-primary)]">Nombre en la Tarjeta</label>
+                      <label
+                        htmlFor="cardholder-name"
+                        className="text-xs font-semibold text-[var(--text-primary)]"
+                      >
+                        Nombre en la Tarjeta
+                      </label>
                       <input
                         id="cardholder-name"
                         required
@@ -623,11 +713,16 @@ export default function Checkout() {
                         placeholder="Como aparece en la tarjeta"
                         value={cardholderName}
                         onChange={(e) => setCardholderName(e.target.value.toUpperCase())}
-                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm uppercase text-[var(--text-primary)] transition-all placeholder:normal-case placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] uppercase transition-all placeholder:text-[var(--text-muted)] placeholder:normal-case focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label htmlFor="card-number" className="text-xs font-semibold text-[var(--text-primary)]">Número de Tarjeta</label>
+                      <label
+                        htmlFor="card-number"
+                        className="text-xs font-semibold text-[var(--text-primary)]"
+                      >
+                        Número de Tarjeta
+                      </label>
                       <input
                         id="card-number"
                         required
@@ -638,12 +733,17 @@ export default function Checkout() {
                         placeholder="0000 0000 0000 0000"
                         value={cardNumber}
                         onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                       />
                     </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
-                        <label htmlFor="card-expiry" className="text-xs font-semibold text-[var(--text-primary)]">Vencimiento</label>
+                        <label
+                          htmlFor="card-expiry"
+                          className="text-xs font-semibold text-[var(--text-primary)]"
+                        >
+                          Vencimiento
+                        </label>
                         <input
                           id="card-expiry"
                           required
@@ -654,11 +754,16 @@ export default function Checkout() {
                           placeholder="MM/YY"
                           value={cardExpiry}
                           onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label htmlFor="card-cvc" className="text-xs font-semibold text-[var(--text-primary)]">CVC</label>
+                        <label
+                          htmlFor="card-cvc"
+                          className="text-xs font-semibold text-[var(--text-primary)]"
+                        >
+                          CVC
+                        </label>
                         <input
                           id="card-cvc"
                           required
@@ -668,13 +773,20 @@ export default function Checkout() {
                           maxLength={4}
                           placeholder="123"
                           value={cardCvc}
-                          onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                          onChange={(e) =>
+                            setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))
+                          }
+                          className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                         />
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <label htmlFor="cardholder-email" className="text-xs font-semibold text-[var(--text-primary)]">Email</label>
+                      <label
+                        htmlFor="cardholder-email"
+                        className="text-xs font-semibold text-[var(--text-primary)]"
+                      >
+                        Email
+                      </label>
                       <input
                         id="cardholder-email"
                         required
@@ -682,7 +794,7 @@ export default function Checkout() {
                         placeholder="tu@email.com"
                         value={cardholderEmail}
                         onChange={(e) => setCardholderEmail(e.target.value)}
-                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
+                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -696,8 +808,13 @@ export default function Checkout() {
 
               <button
                 type="submit"
-                disabled={loading || !mpReady || (deliveryMethod === 'PICKUP' && !selectedBranch) || (deliveryMethod === 'SHIPPING' && !canProceedToDetails())}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold uppercase tracking-wide text-[var(--accent-text)] shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={
+                  loading ||
+                  !mpReady ||
+                  (deliveryMethod === 'PICKUP' && !selectedBranch) ||
+                  (deliveryMethod === 'SHIPPING' && !canProceedToDetails())
+                }
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] text-sm font-bold tracking-wide text-[var(--accent-text)] uppercase shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
                   <Loader2 size={18} className="animate-spin" />
@@ -739,20 +856,16 @@ export default function Checkout() {
                     y: confettiOffsets[i].y,
                   }}
                   transition={{ delay: 0.3 + i * 0.1, duration: 0.8 }}
-                  className="absolute left-1/2 top-1/2 h-2 w-2 rounded-full"
+                  className="absolute top-1/2 left-1/2 h-2 w-2 rounded-full"
                   style={{
                     backgroundColor:
-                      i % 3 === 0
-                        ? 'var(--accent)'
-                        : i % 3 === 1
-                          ? 'var(--success)'
-                          : '#fbbf24',
+                      i % 3 === 0 ? 'var(--accent)' : i % 3 === 1 ? 'var(--success)' : '#fbbf24',
                   }}
                 />
               ))}
             </div>
 
-            <h2 className="mb-3 font-heading text-2xl font-black text-[var(--text-primary)]">
+            <h2 className="font-heading mb-3 text-2xl font-black text-[var(--text-primary)]">
               ¡Pago Exitoso!
             </h2>
             <p className="mb-10 text-sm text-[var(--text-secondary)]">

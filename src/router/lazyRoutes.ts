@@ -31,6 +31,7 @@ export const Reports = lazy(() => import('@/features/admin/pages/Reports'))
 export const Branches = lazy(() => import('@/features/admin/pages/Branches'))
 export const BrandingSettings = lazy(() => import('@/features/admin/pages/BrandingSettings'))
 export const Billing = lazy(() => import('@/features/admin/pages/Billing'))
+export const MercadoPagoSettings = lazy(() => import('@/features/admin/pages/MercadoPagoSettings'))
 
 // Shop Pages
 export const Catalog = lazy(() => import('@/features/shop/pages/Catalog'))
@@ -48,7 +49,9 @@ export const PlatformBilling = lazy(() => import('@/features/platform/pages/Plat
 export const PlatformLogs = lazy(() => import('@/features/platform/pages/PlatformLogs'))
 export const PlatformSettings = lazy(() => import('@/features/platform/pages/PlatformSettings'))
 export const PlatformReports = lazy(() => import('@/features/platform/pages/PlatformReports'))
-export const PlatformAnalytics = lazy(() => import('@/features/platform/pages/PlatformAnalyticsPage'))
+export const PlatformAnalytics = lazy(
+  () => import('@/features/platform/pages/PlatformAnalyticsPage')
+)
 
 // 404 Page
 export const NotFound = lazy(() => import('@/pages/NotFound'))
