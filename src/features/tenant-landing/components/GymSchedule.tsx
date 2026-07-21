@@ -7,16 +7,16 @@ export function GymSchedule() {
   const { schedule, address, phone } = branding
 
   return (
-    <section className="bg-[var(--bg-secondary)] py-24">
+    <section className="bg-[var(--bg-secondary)] py-12 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mb-16 text-center"
+          className="mb-10 text-center sm:mb-16"
         >
-          <h2 className="mb-4 text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
+          <h2 className="mb-3 text-2xl font-bold text-[var(--text-primary)] sm:mb-4 sm:text-3xl lg:text-4xl">
             Horarios y <span className="text-[var(--accent)]">Ubicación</span>
           </h2>
           <p className="mx-auto max-w-2xl text-[var(--text-secondary)]">
@@ -30,7 +30,7 @@ export function GymSchedule() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8"
+            className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-8"
           >
             <div className="mb-6 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent)]/10 text-[var(--accent)]">
@@ -60,7 +60,7 @@ export function GymSchedule() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8"
+            className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-8"
           >
             <div className="mb-6 flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent)]/10 text-[var(--accent)]">

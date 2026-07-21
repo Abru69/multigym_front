@@ -49,15 +49,15 @@ export function Hero() {
             </div>
 
             {/* Stats */}
-            <div className="mt-12 grid grid-cols-3 gap-8 border-t border-[var(--border)] pt-8">
+            <div className="mt-8 grid grid-cols-3 gap-4 border-t border-[var(--border)] pt-6 sm:mt-12 sm:gap-8 sm:pt-8">
               {[
                 { value: '500+', label: 'Gimnasios Activos' },
                 { value: '50K+', label: 'Miembros' },
                 { value: '99.9%', label: 'Uptime' },
               ].map((stat) => (
                 <div key={stat.label}>
-                  <div className="text-2xl font-bold text-[var(--accent)]">{stat.value}</div>
-                  <div className="text-sm text-[var(--text-muted)]">{stat.label}</div>
+                  <div className="text-base font-bold text-[var(--accent)] sm:text-2xl">{stat.value}</div>
+                  <div className="text-[10px] text-[var(--text-muted)] sm:text-sm">{stat.label}</div>
                 </div>
               ))}
             </div>

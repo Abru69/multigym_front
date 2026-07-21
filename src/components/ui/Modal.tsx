@@ -31,7 +31,7 @@ export function Modal({
   showClose = true,
   size = 'md',
 }: ModalProps) {
-  const overlayRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -50,9 +50,8 @@ export function Modal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
           <motion.div
-            ref={overlayRef}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -66,14 +65,14 @@ export function Modal({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
             className={cn(
-              'relative w-full overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-xl)]',
+              'relative flex max-h-[calc(100dvh-2rem)] w-full flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-xl)] sm:max-h-[calc(100dvh-3rem)]',
               sizeClasses[size],
               className
             )}
           >
             {(title || showClose) && (
-              <div className="flex items-start justify-between p-6 pb-0">
-                <div>
+              <div className="flex shrink-0 items-start justify-between p-6 pb-0">
+                <div className="min-w-0 flex-1">
                   {title && (
                     <h2 className="font-heading text-lg font-black tracking-tight text-[var(--text-primary)]">
                       {title}
@@ -86,7 +85,7 @@ export function Modal({
                 {showClose && (
                   <button
                     onClick={onClose}
-                    className="rounded-xl p-2 text-[var(--text-muted)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    className="shrink-0 rounded-xl p-2 text-[var(--text-muted)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                     aria-label="Cerrar"
                   >
                     <X size={18} />
@@ -94,7 +93,9 @@ export function Modal({
                 )}
               </div>
             )}
-            <div className="p-6">{children}</div>
+            <div ref={contentRef} className="min-h-0 flex-1 overflow-y-auto p-6">
+              {children}
+            </div>
           </motion.div>
         </div>
       )}

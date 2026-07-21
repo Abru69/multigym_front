@@ -361,7 +361,7 @@ export default function PlansPage() {
               placeholder="Opcional"
             />
           </FormField>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Precio" required htmlFor="plan-price" error={formErrors.price}>
               <Input
                 id="plan-price"
@@ -388,7 +388,7 @@ export default function PlansPage() {
               />
             </FormField>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Entrenamientos/semana" htmlFor="plan-workouts">
               <Input
                 id="plan-workouts"

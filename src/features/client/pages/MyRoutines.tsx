@@ -922,7 +922,7 @@ export default function MyRoutines() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             transition={{ delay: 0.3, type: 'spring', damping: 22, stiffness: 260 }}
-            className="fixed right-0 bottom-[68px] left-0 z-40 border-t border-[var(--border)] bg-[var(--card)] shadow-lg lg:bottom-0"
+            className="fixed right-0 bottom-[60px] left-0 z-40 border-t border-[var(--border)] bg-[var(--card)] pb-[env(safe-area-inset-bottom)] shadow-lg sm:bottom-[68px] lg:bottom-0"
           >
             <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
               <button

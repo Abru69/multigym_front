@@ -8,16 +8,16 @@ export function Trainers() {
   if (trainers.length === 0) return null
 
   return (
-    <section className="bg-[var(--bg-primary)] py-24">
+    <section className="bg-[var(--bg-primary)] py-12 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mb-16 text-center"
+          className="mb-10 text-center sm:mb-16"
         >
-          <h2 className="mb-4 text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
+          <h2 className="mb-3 text-2xl font-bold text-[var(--text-primary)] sm:mb-4 sm:text-3xl lg:text-4xl">
             Nuestros <span className="text-[var(--accent)]">Entrenadores</span>
           </h2>
           <p className="mx-auto max-w-2xl text-[var(--text-secondary)]">
@@ -25,7 +25,7 @@ export function Trainers() {
           </p>
         </motion.div>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
           {trainers.map((trainer, index) => (
             <motion.div
               key={trainer.name}

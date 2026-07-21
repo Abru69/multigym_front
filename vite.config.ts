@@ -94,22 +94,6 @@ export default defineConfig({
               },
             },
           },
-          {
-            urlPattern: /\/api\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 10,
-            },
-          },
-          {
-            urlPattern: /\/platform-api\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'platform-api-cache',
-              networkTimeoutSeconds: 10,
-            },
-          },
         ],
       },
     }),

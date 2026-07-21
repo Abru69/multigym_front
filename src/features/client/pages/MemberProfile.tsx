@@ -197,7 +197,7 @@ export default function MemberProfile() {
       <motion.div
         {...fadeUp}
         transition={{ ...fadeUp.transition, delay: 0.05 }}
-        className="grid grid-cols-3 gap-3"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-3"
       >
         {[
           { label: 'Órdenes', value: orders.length, icon: Package },
@@ -206,10 +206,10 @@ export default function MemberProfile() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="flex flex-col items-center rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3 py-4"
+            className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 sm:flex-col sm:items-center sm:px-3 sm:py-4"
           >
-            <stat.icon size={18} className="mb-2 text-[var(--accent)]" />
-            <span className="text-lg font-black text-[var(--text-primary)]">{stat.value}</span>
+            <stat.icon size={18} className="text-[var(--accent)] sm:mb-2" />
+            <span className="text-base font-black text-[var(--text-primary)] sm:text-lg">{stat.value}</span>
             <span className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
               {stat.label}
             </span>

@@ -86,10 +86,10 @@ export default function Landing() {
   }
 
   return (
-    <div className="bg-[var(--card)] min-h-screen font-sans">
+    <div className="bg-[var(--card)] min-h-dvh font-sans">
       {/* ─── NAV ────────────────────────────────────────────── */}
       <nav className="fixed top-0 right-0 left-0 z-50 mx-auto w-full border-b border-[var(--border)] bg-[var(--card)]/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex items-center gap-3">
             <TenantLogo className="h-11 w-11 shadow-md shadow-[var(--accent)]/20" />
             <span className="font-heading text-xl font-black tracking-tight text-[var(--text-primary)]">
@@ -184,7 +184,7 @@ export default function Landing() {
       </nav>
 
       {/* ─── HERO ────────────────────────────────────────────── */}
-      <section className="relative flex min-h-screen items-center overflow-hidden bg-black">
+      <section className="relative flex min-h-dvh items-center overflow-hidden bg-black">
         {/* Background image */}
         <div className="absolute inset-0 z-0">
           <img
@@ -195,7 +195,7 @@ export default function Landing() {
           <div className="absolute inset-0 bg-black/60" />
         </div>
 
-        <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-start px-6 pt-28 pb-20 lg:flex-row lg:items-center lg:justify-between lg:pt-0">
+        <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-start px-4 pt-24 pb-16 sm:px-6 sm:pt-28 sm:pb-20 lg:flex-row lg:items-center lg:justify-between lg:pt-0">
           {/* Left — Text */}
           <div className="flex max-w-xl flex-col items-start">
             <motion.span
@@ -211,7 +211,7 @@ export default function Landing() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.1 }}
-              className="font-heading text-5xl sm:text-7xl lg:text-8xl font-black uppercase text-white leading-[0.95] tracking-tight"
+              className="font-heading text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black uppercase text-white leading-[0.95] tracking-tight"
             >
               {branding.hero.title}
               <br />
@@ -288,8 +288,8 @@ export default function Landing() {
 
       {/* ─── STATS MARQUEE ────────────────────────────────────── */}
       <section className="bg-[var(--accent)]">
-        <div className="mx-auto max-w-7xl px-6 py-8">
-          <div className="flex items-center justify-between gap-8 overflow-x-auto snap-x sm:snap-none sm:flex-row sm:gap-0">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+          <div className="flex items-center justify-between gap-6 overflow-x-auto snap-x sm:gap-0 sm:flex-row">
             {branding.stats.map(([val, label]) => (
               <div key={label} className="flex flex-col items-center text-center snap-center min-w-[160px] sm:min-w-0">
                 <p className="font-heading text-3xl font-black text-[var(--accent-text)]">{val}</p>
@@ -400,9 +400,9 @@ export default function Landing() {
             ].map((p) => (
               <div
                 key={p.name}
-                className={`relative flex flex-col overflow-hidden rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 ${
+                className={`relative flex flex-col overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 sm:p-8 ${
                   p.featured
-                    ? 'bg-[var(--text-primary)] text-white shadow-2xl scale-[1.04]'
+                    ? 'bg-[var(--text-primary)] text-white shadow-2xl sm:scale-[1.04]'
                     : 'bg-[var(--card)] border border-[var(--border)] shadow-[var(--shadow-md)]'
                 }`}
               >
@@ -488,7 +488,7 @@ export default function Landing() {
 
       {/* ─── FOOTER ────────────────────────────────────────────── */}
       <footer className="border-t border-[var(--border)] bg-[var(--surface)]">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 py-10 sm:flex-row">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:gap-6 sm:px-6 sm:py-10 sm:flex-row">
           <div className="flex items-center gap-3">
             <TenantLogo className="rounded-lg" />
             <span className="font-heading text-sm font-bold tracking-tight text-[var(--text-primary)]">

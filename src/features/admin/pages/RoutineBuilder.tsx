@@ -185,6 +185,7 @@ export default function RoutineBuilder({
   const [exerciseSearch, setExerciseSearch] = useState('')
   const debouncedExerciseSearch = useDebounce(exerciseSearch)
   const [selectedGroupForModal, setSelectedGroupForModal] = useState<string | null>(null)
+  const [showLibrary, setShowLibrary] = useState(false)
 
   const [isCreatingExercise, setIsCreatingExercise] = useState(false)
   const [newExerciseForm, setNewExerciseForm] = useState({ name: '', muscleGroup: '' })
@@ -383,12 +384,12 @@ export default function RoutineBuilder({
   }, [dbExercises, selectedGroupForModal, debouncedExerciseSearch])
 
   return (
-    <div className="flex h-screen flex-col bg-[var(--surface)]/50">
-      <div className="flex items-center gap-4 border-b border-[var(--border)] bg-[var(--card)] px-6 py-3">
+    <div className="flex h-dvh flex-col bg-[var(--surface)]/50">
+      <div className="flex shrink-0 items-center gap-2 border-b border-[var(--border)] bg-[var(--card)] px-3 py-2.5 sm:gap-4 sm:px-6 sm:py-3">
         {personalizedUser ? (
           <button
             onClick={() => navigate('/admin/usuarios')}
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)]"
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2.5 py-2 text-sm font-medium text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] sm:px-3"
           >
             <ArrowLeft size={16} />
           </button>
@@ -396,23 +397,23 @@ export default function RoutineBuilder({
           onBack && (
             <button
               onClick={onBack}
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)]"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2.5 py-2 text-sm font-medium text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] sm:px-3"
             >
               <ArrowLeft size={16} />
             </button>
           )
         )}
 
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <input
             type="text"
             value={routineName}
             onChange={(e) => setRoutineName(e.target.value)}
-            className="w-full border-none bg-transparent text-lg font-bold text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
+            className="w-full border-none bg-transparent text-base font-bold text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] sm:text-lg"
             style={{ fontFamily: 'var(--font-heading)' }}
             placeholder="Nombre de la rutina..."
           />
-          <p className="mt-0.5 text-xs text-[var(--text-muted)]">
+          <p className="mt-0.5 truncate text-[10px] text-[var(--text-muted)] sm:text-xs">
             {totalExercises} ejercicios en {activeDaysCount} dia{activeDaysCount !== 1 ? 's' : ''}
             {personalizedUser && (
               <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-[var(--accent)]/10 px-2 py-0.5 text-[10px] font-bold text-[var(--accent-text)]">
@@ -423,34 +424,63 @@ export default function RoutineBuilder({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={handleSaveTemplate}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] disabled:opacity-50"
+            className="hidden items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] disabled:opacity-50 sm:inline-flex sm:px-4"
           >
             {isSaving ? 'Guardando...' : 'Guardar'}
           </button>
           <button
             onClick={() => setShowAssignModal(true)}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-3 py-2 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 disabled:opacity-50 sm:px-4"
           >
             <Users size={16} />
-            Asignar
+            <span className="hidden sm:inline">Asignar</span>
           </button>
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex w-[70%] flex-col border-r border-[var(--border)] bg-[var(--card)]">
-          <div className="flex items-center gap-2 border-b border-[var(--border)] px-6 py-3">
-            <div className="flex flex-1 items-center gap-2 overflow-x-auto">
+      {/* Mobile Tab Switcher */}
+      <div className="flex shrink-0 border-b border-[var(--border)] bg-[var(--card)] lg:hidden">
+        <button
+          onClick={() => setShowLibrary(false)}
+          className={`flex-1 py-2.5 text-center text-xs font-bold transition-all ${
+            !showLibrary
+              ? 'border-b-2 border-[var(--accent)] text-[var(--accent)]'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+          }`}
+        >
+          Editor
+        </button>
+        <button
+          onClick={() => setShowLibrary(true)}
+          className={`flex-1 py-2.5 text-center text-xs font-bold transition-all ${
+            showLibrary
+              ? 'border-b-2 border-[var(--accent)] text-[var(--accent)]'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+          }`}
+        >
+          Biblioteca
+        </button>
+      </div>
+
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        {/* Editor Panel */}
+        <div
+          className={`flex flex-1 flex-col border-r border-[var(--border)] bg-[var(--card)] ${
+            showLibrary ? 'hidden lg:flex' : 'flex'
+          }`}
+        >
+          <div className="flex shrink-0 items-center gap-2 border-b border-[var(--border)] px-3 py-2 sm:px-6 sm:py-3">
+            <div className="flex flex-1 items-center gap-1.5 overflow-x-auto sm:gap-2">
               {DAYS.map((d, i) => (
                 <button
                   key={d.key}
                   onClick={() => setSelectedDay(d.key)}
-                  className={`relative flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                  className={`relative flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition-all sm:gap-2 sm:px-4 sm:py-2 sm:text-sm ${
                     selectedDay === d.key
                       ? 'bg-[var(--accent)] text-[var(--accent-text)]'
                       : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
@@ -459,7 +489,7 @@ export default function RoutineBuilder({
                   <span>Dia {i + 1}</span>
                   {dayExercises[d.key].length > 0 && (
                     <span
-                      className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px] font-bold ${
+                      className={`inline-flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold sm:h-5 sm:min-w-[20px] sm:text-[10px] ${
                         selectedDay === d.key
                           ? 'bg-[var(--accent-text)]/15 text-[var(--accent-text)]'
                           : 'bg-[var(--card)] text-[var(--text-muted)]'
@@ -470,24 +500,24 @@ export default function RoutineBuilder({
                   )}
                 </button>
               ))}
-              <button className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-[var(--border)] border-[var(--border)] text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:text-[var(--accent-text)]">
-                <Plus size={14} />
+              <button className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-[var(--border)] text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:text-[var(--accent-text)] sm:h-8 sm:w-8">
+                <Plus size={12} />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 py-4">
-            <div className="mb-4">
+          <div className="flex-1 overflow-y-auto px-3 py-3 sm:px-6 sm:py-4">
+            <div className="mb-3">
               <input
                 type="text"
                 value={DAYS.find((d) => d.key === selectedDay)?.label || ''}
                 readOnly
-                className="text-sm font-bold text-[var(--text-secondary)] bg-transparent border-none outline-none"
+                className="bg-transparent text-xs font-bold text-[var(--text-secondary)] outline-none sm:text-sm"
                 style={{ fontFamily: 'var(--font-heading)' }}
               />
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <AnimatePresence>
                 {currentExercises.map((exercise, index) => (
                   <motion.div
@@ -496,24 +526,24 @@ export default function RoutineBuilder({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ delay: index * 0.03 }}
-                    className="group flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 transition-all hover:border-[var(--border)] hover:shadow-sm"
+                    className="group flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] p-2.5 transition-all hover:border-[var(--border)] hover:shadow-sm sm:gap-3 sm:p-4"
                   >
-                    <div className="flex shrink-0 cursor-grab items-center text-[var(--text-muted)] hover:text-[var(--text-secondary)]">
+                    <div className="hidden shrink-0 cursor-grab items-center text-[var(--text-muted)] hover:text-[var(--text-secondary)] sm:flex">
                       <GripVertical size={16} />
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-sm font-bold text-[var(--text-primary)]">
+                      <h4 className="text-xs font-bold text-[var(--text-primary)] sm:text-sm">
                         {exercise.name}
                       </h4>
-                      <span className="mt-1 inline-block rounded-md bg-[var(--accent)]/10 px-2 py-0.5 text-[10px] font-bold tracking-wide text-[var(--accent-text)] uppercase">
+                      <span className="mt-0.5 inline-block rounded-md bg-[var(--accent)]/10 px-1.5 py-0.5 text-[8px] font-bold tracking-wide text-[var(--accent-text)] uppercase sm:mt-1 sm:px-2 sm:text-[10px]">
                         {exercise.muscleGroup || 'General'}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <div className="flex flex-col items-center rounded-lg bg-[var(--surface)] px-2 py-1">
-                        <span className="text-[9px] font-bold uppercase text-[var(--text-muted)]">Sets</span>
+                    <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                      <div className="flex flex-col items-center rounded-lg bg-[var(--surface)] px-1.5 py-1 sm:px-2">
+                        <span className="text-[8px] font-bold uppercase text-[var(--text-muted)] sm:text-[9px]">Sets</span>
                         <input
                           type="number"
                           min="1"
@@ -521,22 +551,22 @@ export default function RoutineBuilder({
                           onChange={(e) =>
                             updateExerciseDetail(exercise.uniqueId, 'sets', parseInt(e.target.value) || 1)
                           }
-                          className="w-8 border-none bg-transparent text-center text-xs font-bold text-[var(--text-primary)] outline-none"
+                          className="w-6 border-none bg-transparent text-center text-[10px] font-bold text-[var(--text-primary)] outline-none sm:w-8 sm:text-xs"
                         />
                       </div>
-                      <div className="flex flex-col items-center rounded-lg bg-[var(--surface)] px-2 py-1">
-                        <span className="text-[9px] font-bold uppercase text-[var(--text-muted)]">Reps</span>
+                      <div className="flex flex-col items-center rounded-lg bg-[var(--surface)] px-1.5 py-1 sm:px-2">
+                        <span className="text-[8px] font-bold uppercase text-[var(--text-muted)] sm:text-[9px]">Reps</span>
                         <input
                           type="text"
                           value={exercise.reps}
                           onChange={(e) =>
                             updateExerciseDetail(exercise.uniqueId, 'reps', e.target.value)
                           }
-                          className="w-10 border-none bg-transparent text-center text-xs font-bold text-[var(--text-primary)] outline-none"
+                          className="w-8 border-none bg-transparent text-center text-[10px] font-bold text-[var(--text-primary)] outline-none sm:w-10 sm:text-xs"
                         />
                       </div>
-                      <div className="flex flex-col items-center rounded-lg bg-[var(--surface)] px-2 py-1">
-                        <span className="text-[9px] font-bold uppercase text-[var(--text-muted)]">Desc.</span>
+                      <div className="flex flex-col items-center rounded-lg bg-[var(--surface)] px-1.5 py-1 sm:px-2">
+                        <span className="text-[8px] font-bold uppercase text-[var(--text-muted)] sm:text-[9px]">Desc.</span>
                         <input
                           type="number"
                           min="0"
@@ -545,17 +575,18 @@ export default function RoutineBuilder({
                           onChange={(e) =>
                             updateExerciseDetail(exercise.uniqueId, 'restSeconds', parseInt(e.target.value) || 0)
                           }
-                          className="w-10 border-none bg-transparent text-center text-xs font-bold text-[var(--text-primary)] outline-none"
+                          className="w-8 border-none bg-transparent text-center text-[10px] font-bold text-[var(--text-primary)] outline-none sm:w-10 sm:text-xs"
                         />
                       </div>
                     </div>
 
                     <button
                       onClick={() => removeExercise(exercise.uniqueId)}
-                      className="shrink-0 rounded-lg p-2 text-[var(--text-muted)] opacity-0 transition-all hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100"
+                      className="shrink-0 rounded-lg p-1.5 text-[var(--text-muted)] transition-all hover:bg-red-500/10 hover:text-red-400 sm:p-2"
                       aria-label={`Eliminar ${exercise.name}`}
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={12} className="sm:hidden" />
+                      <Trash2 size={14} className="hidden sm:block" />
                     </button>
                   </motion.div>
                 ))}
@@ -564,7 +595,7 @@ export default function RoutineBuilder({
 
             {currentExercises.length === 0 ? (
               <div
-                className="mt-4 cursor-pointer rounded-xl border-2 border-dashed border-[var(--border)] p-8 text-center transition-all hover:border-[var(--accent)] hover:bg-[var(--accent)]/5"
+                className="mt-4 cursor-pointer rounded-xl border-2 border-dashed border-[var(--border)] p-6 text-center transition-all hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 sm:p-8"
                 onClick={openExerciseModal}
                 role="button"
                 tabIndex={0}
@@ -575,32 +606,37 @@ export default function RoutineBuilder({
                   }
                 }}
               >
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--surface)]">
-                  <Plus size={20} className="text-[var(--text-muted)]" />
+                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface)] sm:mb-3 sm:h-12 sm:w-12">
+                  <Plus size={16} className="text-[var(--text-muted)] sm:sm:size-20" />
                 </div>
-                <p className="text-sm font-semibold text-[var(--text-secondary)]">
+                <p className="text-xs font-semibold text-[var(--text-secondary)] sm:text-sm">
                   Agregar ejercicios al {DAYS.find((d) => d.key === selectedDay)?.label}
                 </p>
-                <p className="mt-1 text-xs text-[var(--text-muted)]">
+                <p className="mt-0.5 text-[10px] text-[var(--text-muted)] sm:mt-1 sm:text-xs">
                   Haz clic aqui o arrastra desde la biblioteca
                 </p>
               </div>
             ) : (
               <button
                 onClick={openExerciseModal}
-                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--border)] p-4 text-sm font-medium text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:text-[var(--accent-text)]"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--border)] p-3 text-xs font-medium text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:text-[var(--accent-text)] sm:p-4 sm:text-sm"
               >
-                <Plus size={16} />
+                <Plus size={14} />
                 Agregar Ejercicio
               </button>
             )}
           </div>
         </div>
 
-        <div className="flex w-[30%] flex-col bg-[var(--surface)]/80">
-          <div className="border-b border-[var(--border)] bg-[var(--card)] p-4">
+        {/* Library Panel */}
+        <div
+          className={`flex w-full flex-col bg-[var(--surface)]/80 lg:w-[340px] ${
+            showLibrary ? 'flex' : 'hidden lg:flex'
+          }`}
+        >
+          <div className="shrink-0 border-b border-[var(--border)] bg-[var(--card)] p-3 sm:p-4">
             <h3
-              className="mb-3 text-sm font-bold text-[var(--text-primary)]"
+              className="mb-2.5 text-xs font-bold text-[var(--text-primary)] sm:mb-3 sm:text-sm"
               style={{ fontFamily: 'var(--font-heading)' }}
             >
               Biblioteca de Ejercicios
@@ -612,13 +648,13 @@ export default function RoutineBuilder({
                 value={exerciseSearch}
                 onChange={(e) => setExerciseSearch(e.target.value)}
                 placeholder="Buscar ejercicio..."
-                className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-3 text-sm text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:bg-[var(--card)] focus:ring-1 focus:ring-[var(--accent)]/20"
+                className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-3 text-xs text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:bg-[var(--card)] focus:ring-1 focus:ring-[var(--accent)]/20 sm:text-sm"
               />
             </div>
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-2.5 flex flex-wrap gap-1 sm:mt-3">
               <button
                 onClick={() => setSelectedGroupForModal(null)}
-                className={`rounded-full px-3 py-1 text-[10px] font-bold transition-all ${
+                className={`rounded-full px-2 py-0.5 text-[9px] font-bold transition-all sm:px-3 sm:text-[10px] ${
                   !selectedGroupForModal
                     ? 'bg-[var(--accent)] text-[var(--accent-text)]'
                     : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
@@ -632,7 +668,7 @@ export default function RoutineBuilder({
                   onClick={() =>
                     setSelectedGroupForModal(selectedGroupForModal === group ? null : group)
                   }
-                  className={`rounded-full px-3 py-1 text-[10px] font-bold transition-all ${
+                  className={`rounded-full px-2 py-0.5 text-[9px] font-bold transition-all sm:px-3 sm:text-[10px] ${
                     selectedGroupForModal === group
                       ? 'bg-[var(--accent)] text-[var(--accent-text)]'
                       : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
@@ -644,50 +680,50 @@ export default function RoutineBuilder({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3">
+          <div className="min-h-0 flex-1 overflow-y-auto p-2.5 sm:p-3">
             {Object.entries(sidebarExercises).map(([group, exercises]) => (
-              <div key={group} className="mb-4">
-                <h4 className="mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+              <div key={group} className="mb-3 sm:mb-4">
+                <h4 className="mb-1.5 px-1 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] sm:mb-2 sm:text-[10px]">
                   {group}
                 </h4>
-                <div className="space-y-1.5">
+                <div className="space-y-1 sm:space-y-1.5">
                   {exercises.map((exercise) => (
                     <button
                       key={exercise.id}
                       onClick={() => handleAddExercise(exercise)}
-                      className="flex w-full items-center gap-2.5 rounded-lg bg-[var(--card)] p-2.5 text-left transition-all hover:shadow-sm border border-[var(--border)]"
+                      className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-left transition-all hover:shadow-sm sm:gap-2.5 sm:p-2.5"
                     >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)]/10">
-                        <Dumbbell size={14} className="text-[var(--accent-text)]" />
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)]/10 sm:h-8 sm:w-8">
+                        <Dumbbell size={12} className="text-[var(--accent-text)] sm:size-[14]" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-semibold text-[var(--text-primary)]">
+                        <p className="truncate text-[11px] font-semibold text-[var(--text-primary)] sm:text-xs">
                           {exercise.name}
                         </p>
                       </div>
-                      <Plus size={14} className="shrink-0 text-[var(--text-muted)]" />
+                      <Plus size={12} className="shrink-0 text-[var(--text-muted)] sm:size-[14]" />
                     </button>
                   ))}
                 </div>
               </div>
             ))}
             {Object.keys(sidebarExercises).length === 0 && (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Dumbbell size={32} className="mb-3 text-[var(--text-muted)]" />
-                <p className="text-sm font-medium text-[var(--text-muted)]">No se encontraron ejercicios</p>
+              <div className="flex flex-col items-center justify-center py-8 text-center sm:py-12">
+                <Dumbbell size={28} className="mb-2 text-[var(--text-muted)] sm:mb-3 sm:size-8" />
+                <p className="text-xs font-medium text-[var(--text-muted)] sm:text-sm">No se encontraron ejercicios</p>
               </div>
             )}
           </div>
 
-          <div className="border-t border-[var(--border)] bg-[var(--card)] p-3">
+          <div className="shrink-0 border-t border-[var(--border)] bg-[var(--card)] p-2.5 sm:p-3">
             <button
               onClick={() => {
                 setIsCreatingExercise(true)
                 setShowExerciseModal(true)
               }}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)]"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] py-2 text-xs font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] sm:py-2.5 sm:text-sm"
             >
-              <Plus size={14} />
+              <Plus size={12} />
               Crear Nuevo Ejercicio
             </button>
           </div>

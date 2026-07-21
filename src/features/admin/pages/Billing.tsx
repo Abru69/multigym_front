@@ -178,7 +178,7 @@ export default function Billing() {
       </div>
 
       {renewalInfo && (
-        <div className="grid gap-4 lg:grid-cols-[1fr_420px]">
+        <div className="grid gap-4 lg:grid-cols-[1fr_minmax(0,420px)]">
           <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
             <div className="mb-6 flex items-start gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent)]/15 text-[var(--accent)]">
@@ -277,7 +277,7 @@ export default function Billing() {
                   disabled={!renewalInfo.canRenew || isPaying}
                 />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Field label="Vencimiento">
                   <Input
                     placeholder="MM/YY"

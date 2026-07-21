@@ -8,7 +8,7 @@ const Landing = lazy(() => import('@/features/landing/pages/LandingPage'))
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
   <Suspense
     fallback={
-      <div className="flex h-screen items-center justify-center bg-[var(--bg-primary)]">
+      <div className="flex min-h-dvh items-center justify-center bg-[var(--bg-primary)]">
         <Spinner size={32} />
       </div>
     }

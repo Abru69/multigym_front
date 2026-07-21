@@ -102,18 +102,18 @@ export default function AdminDashboard() {
     },
   ]
 
-  const salesData = revenue
+  const salesData = revenue?.month && revenue?.year
     ? [{ month: `${revenue.month}/${revenue.year}`, ventas: revenue.totalRevenue }]
     : []
 
   return (
     <div style={{ fontFamily: 'var(--font-body)' }} className="space-y-6">
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
         {kpiCards.map((card) => (
           <div
             key={card.label}
-            className="rounded-2xl bg-[var(--card)] p-6 transition-shadow duration-200"
+            className="rounded-2xl bg-[var(--card)] p-4 transition-shadow duration-200 sm:p-6"
             style={{ border: '1px solid var(--border)' }}
             onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.06)')}
             onMouseLeave={(e) => (e.currentTarget.style.boxShadow = 'none')}
@@ -121,19 +121,19 @@ export default function AdminDashboard() {
             <div className="flex items-start justify-between">
               <div
                 className="flex items-center justify-center rounded-full"
-                style={{ width: 40, height: 40, backgroundColor: card.iconBg }}
+                style={{ width: 36, height: 36, backgroundColor: card.iconBg }}
               >
-                <card.icon size={20} style={{ color: card.iconColor }} />
+                <card.icon size={18} style={{ color: card.iconColor }} />
               </div>
             </div>
-            <div className="mt-4">
-              <p style={{ fontFamily: 'var(--font-heading)' }} className="text-3xl font-black">
+            <div className="mt-3 sm:mt-4">
+              <p style={{ fontFamily: 'var(--font-heading)' }} className="text-2xl font-black sm:text-3xl">
                 {card.value}
               </p>
-              <p className="mt-1 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+              <p className="mt-1 text-xs font-medium sm:text-sm" style={{ color: 'var(--text-secondary)' }}>
                 {card.label}
               </p>
-              <p className="mt-0.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+              <p className="mt-0.5 text-[10px] sm:text-xs" style={{ color: 'var(--text-muted)' }}>
                 {card.sub}
               </p>
             </div>
@@ -142,29 +142,29 @@ export default function AdminDashboard() {
       </div>
 
       {/* Chart + Quick Actions */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_340px]">
         {/* Revenue Chart */}
         <div
-          className="rounded-2xl bg-[var(--card)] p-6"
+          className="rounded-2xl bg-[var(--card)] p-4 sm:p-6"
           style={{ border: '1px solid var(--border)' }}
         >
-          <div className="mb-6 flex items-center justify-between">
-            <h3 style={{ fontFamily: 'var(--font-heading)' }} className="text-lg font-bold">
+          <div className="mb-4 flex flex-col gap-2 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+            <h3 style={{ fontFamily: 'var(--font-heading)' }} className="text-base font-bold sm:text-lg">
               Ingresos Mensuales
             </h3>
             <div
-              className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium"
+              className="flex w-fit items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-medium sm:px-4 sm:py-2 sm:text-sm"
               style={{ border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
             >
               <Calendar size={14} />
-              <span>{revenue ? `${revenue.month}/${revenue.year}` : 'Sin datos'}</span>
+              <span>{revenue?.month && revenue?.year ? `${revenue.month}/${revenue.year}` : 'Sin datos'}</span>
             </div>
           </div>
-          <div className="h-[300px]">
+          <div className="h-[200px] sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={salesData.length > 0 ? salesData : [{ month: 'Sin datos', ventas: 0 }]}
-                margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+                margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
               >
                 <defs>
                   <linearGradient id="gradientAccent" x1="0" y1="0" x2="0" y2="1">
@@ -214,10 +214,10 @@ export default function AdminDashboard() {
 
         {/* Quick Actions */}
         <div
-          className="rounded-2xl bg-[var(--card)] p-6"
+          className="rounded-2xl bg-[var(--card)] p-4 sm:p-6"
           style={{ border: '1px solid var(--border)' }}
         >
-          <h3 style={{ fontFamily: 'var(--font-heading)' }} className="mb-4 text-lg font-bold">
+          <h3 style={{ fontFamily: 'var(--font-heading)' }} className="mb-3 text-base font-bold sm:mb-4 sm:text-lg">
             Acciones Rápidas
           </h3>
           <div className="space-y-3">
@@ -258,7 +258,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         <div
           className="rounded-2xl bg-[var(--card)] p-5"
           style={{ border: '1px solid var(--border)' }}

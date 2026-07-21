@@ -344,7 +344,7 @@ export default function AnnouncementsPage() {
             />
           </FormField>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Tipo de medio" htmlFor="ann-media">
               <select
                 id="ann-media"
@@ -409,7 +409,7 @@ export default function AnnouncementsPage() {
             />
           </FormField>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Fecha inicio" htmlFor="ann-start">
               <Input
                 id="ann-start"
@@ -428,7 +428,7 @@ export default function AnnouncementsPage() {
             </FormField>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Prioridad" htmlFor="ann-priority">
               <Input
                 id="ann-priority"

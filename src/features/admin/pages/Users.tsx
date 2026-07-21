@@ -330,19 +330,19 @@ export default function UsersPage() {
       )}
 
       {/* Filters */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <SearchBar
           value={search}
           onChange={setSearch}
           placeholder="Buscar por nombre o email..."
-          className="flex-1"
+          className="w-full sm:flex-1"
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:gap-2">
           {roleFilters.map((rf) => (
             <button
               key={rf.key}
               onClick={() => setRoleFilter(rf.key)}
-              className="rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200"
+              className="shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all duration-200 sm:px-4 sm:py-2 sm:text-sm"
               style={{
                 backgroundColor: roleFilter === rf.key ? 'var(--accent)' : 'var(--card)',
                 color: roleFilter === rf.key ? 'var(--accent-text)' : 'var(--text-secondary)',
@@ -354,7 +354,7 @@ export default function UsersPage() {
             </button>
           ))}
           <span
-            className="ml-2 inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-bold"
+            className="ml-1 inline-flex shrink-0 items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-bold sm:ml-2 sm:px-2.5 sm:text-xs"
             style={{
               backgroundColor: 'var(--accent)',
               color: 'var(--accent-text)',

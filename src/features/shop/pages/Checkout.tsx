@@ -38,39 +38,78 @@ function StepIndicator({ currentStep }: { currentStep: string }) {
   const idx = getStepIndex(currentStep)
 
   return (
-    <div className="mb-12 flex items-center justify-center">
-      <div className="flex items-center gap-0">
-        {STEPS.map((s, i) => (
-          <div key={s.key} className="flex items-center">
-            <div className="flex flex-col items-center gap-2">
-              <div
-                className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 ${
-                  i < idx
-                    ? 'bg-[var(--success)] text-white shadow-sm'
-                    : i === idx
-                      ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-md'
-                      : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
-                }`}
-              >
-                {i < idx ? <Check size={20} /> : i + 1}
+    <div className="mb-8 sm:mb-12">
+      {/* Desktop */}
+      <div className="hidden items-center justify-center sm:flex">
+        <div className="flex items-center gap-0">
+          {STEPS.map((s, i) => (
+            <div key={s.key} className="flex items-center">
+              <div className="flex flex-col items-center gap-2">
+                <div
+                  className={`flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 ${
+                    i < idx
+                      ? 'bg-[var(--success)] text-white shadow-sm'
+                      : i === idx
+                        ? 'bg-[var(--accent)] text-[var(--accent-text)] shadow-md'
+                        : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
+                  }`}
+                >
+                  {i < idx ? <Check size={20} /> : i + 1}
+                </div>
+                <span
+                  className={`text-xs font-semibold ${
+                    i <= idx ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'
+                  }`}
+                >
+                  {s.label}
+                </span>
               </div>
-              <span
-                className={`text-xs font-semibold ${
-                  i <= idx ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'
-                }`}
-              >
-                {s.label}
-              </span>
+              {i < STEPS.length - 1 && (
+                <div
+                  className={`mx-3 mb-6 h-0.5 w-16 transition-colors duration-300 lg:w-24 ${
+                    i < idx ? 'bg-[var(--success)]' : 'bg-[var(--border)]'
+                  }`}
+                />
+              )}
             </div>
-            {i < STEPS.length - 1 && (
-              <div
-                className={`mx-3 mb-6 h-0.5 w-16 transition-colors duration-300 sm:w-24 ${
-                  i < idx ? 'bg-[var(--success)]' : 'bg-[var(--border)]'
-                }`}
-              />
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
+      </div>
+      {/* Mobile - compact */}
+      <div className="flex items-center justify-center sm:hidden">
+        <div className="flex w-full max-w-sm items-center gap-1 px-4">
+          {STEPS.map((s, i) => (
+            <div key={s.key} className="flex flex-1 items-center">
+              <div className="flex flex-1 flex-col items-center gap-1">
+                <div
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
+                    i < idx
+                      ? 'bg-[var(--success)] text-white'
+                      : i === idx
+                        ? 'bg-[var(--accent)] text-[var(--accent-text)]'
+                        : 'bg-[var(--surface-hover)] text-[var(--text-muted)]'
+                  }`}
+                >
+                  {i < idx ? <Check size={14} /> : i + 1}
+                </div>
+                <span
+                  className={`text-[9px] font-semibold ${
+                    i <= idx ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'
+                  }`}
+                >
+                  {s.label}
+                </span>
+              </div>
+              {i < STEPS.length - 1 && (
+                <div
+                  className={`mb-5 h-0.5 flex-1 transition-colors duration-300 ${
+                    i < idx ? 'bg-[var(--success)]' : 'bg-[var(--border)]'
+                  }`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -449,7 +488,7 @@ export default function Checkout() {
                         className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
                         <label htmlFor="shipping-postal" className="text-xs font-semibold text-[var(--text-primary)]">Código Postal</label>
                         <input
@@ -602,7 +641,7 @@ export default function Checkout() {
                         className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 font-mono text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
                         <label htmlFor="card-expiry" className="text-xs font-semibold text-[var(--text-primary)]">Vencimiento</label>
                         <input

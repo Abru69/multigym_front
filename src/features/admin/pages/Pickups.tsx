@@ -288,7 +288,7 @@ export default function Pickups() {
       </div>
 
       {/* Summary Cards */}
-      <div className="mb-6 grid grid-cols-3 gap-3">
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-[var(--warning)]/30 bg-[var(--warning-muted)] p-3 text-center">
           <p className="text-[10px] font-medium tracking-wider text-[var(--warning)] uppercase">
             Nuevas

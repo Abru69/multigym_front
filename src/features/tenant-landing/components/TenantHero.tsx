@@ -25,7 +25,7 @@ export function TenantHero() {
     : `/login?tenant=${tenantId}`
 
   return (
-    <section className="relative overflow-hidden bg-[var(--bg-primary)] py-20 lg:py-32">
+    <section className="relative overflow-hidden bg-[var(--bg-primary)] py-12 sm:py-20 lg:py-32">
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 via-transparent to-[var(--detail)]/5" />
 
       {heroVideo ? (
@@ -48,7 +48,7 @@ export function TenantHero() {
       ) : null}
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -59,7 +59,7 @@ export function TenantHero() {
               {hero.badge}
             </div>
 
-            <h1 className="mb-6 text-4xl leading-tight font-bold text-[var(--text-primary)] sm:text-5xl lg:text-6xl">
+            <h1 className="mb-4 text-3xl leading-tight font-bold text-[var(--text-primary)] sm:mb-6 sm:text-4xl lg:text-6xl">
               {hero.title} <span className="text-[var(--accent)]">{hero.titleAccent}</span>
             </h1>
 
@@ -68,7 +68,7 @@ export function TenantHero() {
             <div className="flex flex-col gap-4 sm:flex-row">
               <Link
                 to={primaryLink}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-8 py-4 text-base font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 active:scale-[0.98]"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-[var(--accent-text)] shadow-[var(--accent)]/25 shadow-lg transition-all hover:brightness-110 active:scale-[0.98] sm:px-8 sm:py-4 sm:text-base"
               >
                 {primaryCta}
                 <ArrowRight size={18} />
@@ -76,7 +76,7 @@ export function TenantHero() {
               {!isAuthenticated && (
                 <Link
                   to={`/registro?tenant=${tenantId}`}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-8 py-4 text-base font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)]"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-6 py-3 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--surface-hover)] sm:px-8 sm:py-4 sm:text-base"
                 >
                   <Play size={18} />
                   {hero.secondaryCta}
@@ -84,11 +84,11 @@ export function TenantHero() {
               )}
             </div>
 
-            <div className="mt-12 grid grid-cols-3 gap-8 border-t border-[var(--border)] pt-8">
+            <div className="mt-6 grid grid-cols-3 gap-3 border-t border-[var(--border)] pt-4 sm:mt-12 sm:gap-8 sm:pt-8">
               {stats.map(([value, label]) => (
                 <div key={label}>
-                  <div className="text-2xl font-bold text-[var(--accent)]">{value}</div>
-                  <div className="text-sm text-[var(--text-muted)]">{label}</div>
+                  <div className="text-base font-bold text-[var(--accent)] sm:text-2xl">{value}</div>
+                  <div className="text-[10px] text-[var(--text-muted)] sm:text-sm">{label}</div>
                 </div>
               ))}
             </div>
@@ -100,8 +100,8 @@ export function TenantHero() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative"
           >
-            <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-2 shadow-2xl">
-              <div className="flex h-80 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[var(--accent)]/10 to-[var(--detail)]/10">
+              <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-2xl sm:p-2">
+              <div className="flex h-60 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[var(--accent)]/10 to-[var(--detail)]/10 sm:h-80">
                 {branding.heroImage && (
                   <img
                     src={branding.heroImage}

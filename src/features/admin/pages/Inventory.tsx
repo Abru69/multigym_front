@@ -521,7 +521,7 @@ export default function Inventory() {
               />
             </FormField>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 label="Precio (MXN)"
                 required
@@ -549,7 +549,7 @@ export default function Inventory() {
               </FormField>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField label="Categoría" htmlFor="prod-category">
                 <select
                   id="prod-category"

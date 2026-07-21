@@ -48,15 +48,15 @@ export function ClientLayout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--bg-secondary)]">
+    <div className="flex min-h-dvh flex-col bg-[var(--bg-secondary)]">
       <InstallBanner />
       {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--card)]">
-        <div className="flex items-center justify-between px-4 py-3 lg:px-8">
+      <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--card)]/95 backdrop-xl supports-[backdrop-filter]:bg-[var(--card)]/80">
+        <div className="flex items-center justify-between px-3 py-2.5 sm:px-4 sm:py-3 lg:px-8">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
             <TenantLogo />
-            <span className="text-sm font-bold tracking-tight text-[var(--text-primary)]">
+            <span className="hidden text-sm font-bold tracking-tight text-[var(--text-primary)] sm:inline">
               {branding?.name || 'MULTIGYM'}
             </span>
           </Link>
@@ -84,15 +84,15 @@ export function ClientLayout() {
           )}
 
           {/* Right Side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {isAuthenticated && (
               <Link
                 to="/tienda/carrito"
-                className="relative rounded-xl border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-secondary)] transition-all hover:border-[var(--border)] hover:bg-[var(--surface-hover)]"
+                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)] text-[var(--text-secondary)] transition-all hover:bg-[var(--surface-hover)] active:scale-95"
               >
                 <ShoppingCart size={20} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[9px] font-bold text-[var(--accent-text)]">
+                  <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-bold text-[var(--accent-text)]">
                     {cartCount}
                   </span>
                 )}
@@ -103,9 +103,9 @@ export function ClientLayout() {
               <div className="relative">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] py-1.5 pr-3.5 pl-2.5 text-xs font-bold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)]"
+                  className="flex h-10 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] pl-1.5 pr-3 text-xs font-bold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] active:scale-95"
                 >
-                  <div className="flex h-6 w-6 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-[var(--accent-text)]">
+                  <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-[var(--accent)] text-[var(--accent-text)]">
                     {user?.avatar ? (
                       <img
                         src={user.avatar}
@@ -113,7 +113,7 @@ export function ClientLayout() {
                         alt={user.name ?? ''}
                       />
                     ) : (
-                      <User size={12} />
+                      <User size={14} />
                     )}
                   </div>
                   <span className="hidden truncate sm:block">
@@ -167,7 +167,7 @@ export function ClientLayout() {
             ) : (
               <Link
                 to="/login"
-                className="rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-bold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
+                className="rounded-xl bg-[var(--accent)] px-3 py-2 text-sm font-bold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97] sm:px-4"
               >
                 ENTRAR
               </Link>
@@ -193,21 +193,43 @@ export function ClientLayout() {
 
       {/* Mobile Bottom Nav */}
       {isAuthenticated && (
-        <nav className="fixed right-0 bottom-0 left-0 z-30 flex items-center justify-around border-t border-[var(--border)] bg-[var(--card)] px-2 py-2 lg:hidden">
-          {clientNav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex flex-col items-center gap-1 rounded-xl px-3 py-1.5 transition-all ${
-                  isActive ? 'text-[var(--accent-text)]' : 'text-[var(--text-muted)]'
-                }`
-              }
-            >
-              <item.icon size={20} />
-              <span className="text-[10px] font-medium">{item.label}</span>
-            </NavLink>
-          ))}
+        <nav className="fixed right-0 bottom-0 left-0 z-30 border-t border-[var(--border)] bg-[var(--card)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl supports-[backdrop-filter]:bg-[var(--card)]/80 lg:hidden">
+          <div className="mx-auto flex max-w-lg items-center justify-around px-2 pt-1.5 pb-1">
+            {clientNav.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex flex-1 flex-col items-center gap-1 rounded-2xl py-2 transition-all ${
+                    isActive
+                      ? 'text-[var(--accent)]'
+                      : 'text-[var(--text-muted)] active:scale-95'
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
+                        isActive
+                          ? 'bg-[var(--accent)]/15 text-[var(--accent)]'
+                          : 'text-[var(--text-muted)]'
+                      }`}
+                    >
+                      <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                    </div>
+                    <span
+                      className={`text-[10px] font-semibold leading-none ${
+                        isActive ? 'text-[var(--accent)]' : ''
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
         </nav>
       )}
     </div>

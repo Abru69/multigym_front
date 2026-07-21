@@ -291,12 +291,12 @@ export default function Nutrition() {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
               {Array.from({ length: 8 }).map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setWaterGlasses(i + 1)}
-                  className={`flex h-10 items-center justify-center rounded-lg border transition-all active:scale-95 ${
+                  className={`flex h-9 items-center justify-center rounded-lg border transition-all active:scale-95 sm:h-10 ${
                     i < waterGlasses
                       ? 'border-[var(--info, #3b82f6)]/30 bg-[var(--info, #3b82f6)]/10 text-[var(--info, #3b82f6)]'
                       : 'hover:border-[var(--info, #3b82f6)]/20 border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)]'

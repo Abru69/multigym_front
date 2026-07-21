@@ -380,7 +380,7 @@ export default function NutritionPlansPage() {
             />
           </FormField>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Calorías Diarias" required error={formErrors.targetCalories}>
               <Input
                 type="number"
@@ -562,7 +562,7 @@ export default function NutritionPlansPage() {
                         Quitar
                       </button>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       <input
                         value={food.name}
                         onChange={(e) => updateFood(fi, 'name', e.target.value)}

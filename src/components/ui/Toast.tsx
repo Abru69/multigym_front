@@ -44,7 +44,7 @@ function ToastContainer() {
   const { toasts, removeToast } = useToastStore()
 
   return (
-    <div className="fixed right-4 bottom-4 z-[100] flex flex-col gap-2">
+    <div className="fixed right-2 bottom-4 z-[100] flex flex-col gap-2 sm:right-4">
       <AnimatePresence>
         {toasts.map((toast) => {
           const Icon = icons[toast.type]
@@ -54,7 +54,7 @@ function ToastContainer() {
               initial={{ opacity: 0, x: 50, scale: 0.95 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 50, scale: 0.95 }}
-              className="flex min-w-[280px] items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 shadow-[var(--shadow-lg)]"
+              className="flex min-w-[240px] max-w-[calc(100vw-2rem)] items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 shadow-[var(--shadow-lg)] sm:min-w-[280px] sm:px-4 sm:py-3"
             >
               <Icon size={18} className={iconClasses[toast.type]} />
               <span className="flex-1 text-sm text-[var(--text-primary)]">{toast.message}</span>

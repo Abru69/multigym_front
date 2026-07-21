@@ -104,10 +104,10 @@ export default function SaaSLanding() {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[var(--card)] font-sans">
+    <div className="min-h-dvh overflow-x-hidden bg-[var(--card)] font-sans">
       {/* ─── NAV ────────────────────────────────────────────── */}
       <nav className="fixed top-0 right-0 left-0 z-50 w-full border-b border-[var(--border)] bg-[var(--card)]/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)] text-sm font-black text-[var(--accent-text)] shadow-[var(--accent)]/20 shadow-md">
               MG
@@ -150,7 +150,7 @@ export default function SaaSLanding() {
       </nav>
 
       {/* ─── HERO ────────────────────────────────────────────── */}
-      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[var(--bg-primary)] pt-20">
+      <section className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-[var(--bg-primary)] pt-20">
         <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="pointer-events-none absolute top-1/4 left-1/4 h-[500px] w-[500px] rounded-full bg-[var(--accent)]/5 blur-[120px]" />
           <div className="pointer-events-none absolute right-1/4 bottom-1/4 h-[400px] w-[400px] rounded-full bg-[var(--accent)]/3 blur-[100px]" />
@@ -171,7 +171,7 @@ export default function SaaSLanding() {
 
             <motion.h1
               variants={heroItem}
-              className="font-heading text-6xl leading-[0.95] font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-7xl lg:text-8xl"
+              className="font-heading text-4xl leading-[0.95] font-black tracking-tight text-[var(--text-primary)] uppercase sm:text-6xl lg:text-8xl"
             >
               ESCALE SU
               <br />
@@ -230,8 +230,8 @@ export default function SaaSLanding() {
                 </div>
               </div>
               <div className="relative flex flex-1 items-center justify-center bg-[var(--bg-secondary)]">
-                <div className="grid w-full max-w-4xl grid-cols-3 gap-6 p-8">
-                  <div className="col-span-2 space-y-6">
+                <div className="grid w-full max-w-4xl grid-cols-1 gap-4 p-4 sm:grid-cols-3 sm:gap-6 sm:p-8">
+                  <div className="col-span-1 space-y-4 sm:col-span-2 sm:space-y-6">
                     <div className="flex h-32 flex-col gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
                       <div className="h-4 w-32 rounded bg-gray-200" />
                       <div className="flex flex-1 items-end gap-2">
@@ -335,9 +335,9 @@ export default function SaaSLanding() {
               return (
                 <div
                   key={p.name}
-                  className={`relative flex flex-col overflow-hidden rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 ${
+                  className={`relative flex flex-col overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 sm:p-8 ${
                     p.featured
-                      ? 'scale-[1.04] bg-[var(--text-primary)] text-white shadow-2xl'
+                      ? 'bg-[var(--text-primary)] text-white shadow-2xl sm:scale-[1.04]'
                       : 'border border-[var(--border)] bg-[var(--card)] shadow-[var(--shadow-md)]'
                   }`}
                 >
@@ -435,7 +435,7 @@ export default function SaaSLanding() {
 
       {/* ─── FOOTER ────────────────────────────────────────────── */}
       <footer className="border-t border-[var(--border)] bg-[var(--surface)]">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 py-10 sm:flex-row">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:gap-6 sm:px-6 sm:py-10 sm:flex-row">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent)] text-xs font-black text-[var(--accent-text)]">
               MG

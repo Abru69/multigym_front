@@ -6,7 +6,7 @@ export function AuthLayout() {
   const { branding } = useTenantBranding()
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-dvh">
       {/* Left Side - Image (hidden on mobile, visible lg+) */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-gray-900">
         <div

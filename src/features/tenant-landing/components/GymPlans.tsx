@@ -12,16 +12,16 @@ export function GymPlans() {
   if (plans.length === 0) return null
 
   return (
-    <section className="bg-[var(--bg-secondary)] py-24">
+    <section className="bg-[var(--bg-secondary)] py-12 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mb-16 text-center"
+          className="mb-10 text-center sm:mb-16"
         >
-          <h2 className="mb-4 text-3xl font-bold text-[var(--text-primary)] sm:text-4xl">
+          <h2 className="mb-3 text-2xl font-bold text-[var(--text-primary)] sm:mb-4 sm:text-3xl lg:text-4xl">
             Planes que <span className="text-[var(--accent)]">se adaptan a ti</span>
           </h2>
           <p className="mx-auto max-w-2xl text-[var(--text-secondary)]">
@@ -29,7 +29,7 @@ export function GymPlans() {
           </p>
         </motion.div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-8 lg:grid-cols-3">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -37,9 +37,9 @@ export function GymPlans() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`relative rounded-2xl border p-8 transition-all ${
+              className={`relative rounded-2xl border p-6 transition-all sm:p-8 ${
                 plan.featured
-                  ? 'scale-[1.02] border-[var(--accent)] bg-[var(--surface)] shadow-[var(--accent)]/10 shadow-2xl'
+                  ? 'border-[var(--accent)] bg-[var(--surface)] shadow-[var(--accent)]/10 shadow-2xl sm:scale-[1.02]'
                   : 'border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)]/30'
               }`}
             >

@@ -155,11 +155,11 @@ function DataTable<T>({
       </div>
 
       {page != null && totalPages != null && totalPages > 1 && onPageChange && (
-        <div className="flex items-center justify-between border-t border-[var(--border)] px-4 py-3">
-          <p className="text-xs text-[var(--text-muted)]">
+        <div className="flex flex-col gap-3 border-t border-[var(--border)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="shrink-0 text-xs text-[var(--text-muted)]">
             Página {page} de {totalPages}
           </p>
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <Button
               variant="outline"
               size="sm"
@@ -168,16 +168,16 @@ function DataTable<T>({
             >
               Anterior
             </Button>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            {Array.from({ length: Math.min(totalPages <= 5 ? totalPages : 3, totalPages) }, (_, i) => {
               let pageNum: number
               if (totalPages <= 5) {
                 pageNum = i + 1
-              } else if (page <= 3) {
+              } else if (page <= 2) {
                 pageNum = i + 1
-              } else if (page >= totalPages - 2) {
-                pageNum = totalPages - 4 + i
+              } else if (page >= totalPages - 1) {
+                pageNum = totalPages - 2 + i
               } else {
-                pageNum = page - 2 + i
+                pageNum = page - 1 + i
               }
               return (
                 <Button

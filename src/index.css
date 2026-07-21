@@ -38,6 +38,7 @@
 
   --font-sans: "Inter", sans-serif;
   --font-heading: "Montserrat", sans-serif;
+  --font-body: "Inter", sans-serif;
 }
 
 /* ===== DARK THEME — NEAR-PURE BLACK ===== */
@@ -219,13 +220,12 @@ html {
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  min-height: 100vh;
+  min-height: 100dvh;
   line-height: 1.6;
-  overflow-x: hidden;
 }
 
 #root {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }

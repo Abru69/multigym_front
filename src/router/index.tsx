@@ -58,7 +58,7 @@ import {
 const withSuspense = (Component: React.LazyExoticComponent<React.ComponentType>) => (
   <Suspense
     fallback={
-      <div className="flex h-screen items-center justify-center bg-[var(--bg-primary)]">
+      <div className="flex min-h-dvh items-center justify-center bg-[var(--bg-primary)]">
         <Spinner size={32} />
       </div>
     }
