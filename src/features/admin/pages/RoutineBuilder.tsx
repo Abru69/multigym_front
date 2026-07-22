@@ -61,6 +61,7 @@ interface UserData {
 }
 
 type DayExercises = Record<DayOfWeek, DayExercise[]>
+type ExerciseSourceFilter = 'ALL' | 'CATALOG' | 'CUSTOM'
 
 const DAYS: { key: DayOfWeek; label: string }[] = [
   { key: 'lunes', label: 'Lunes' },
@@ -85,6 +86,26 @@ const ALL_GROUPS_LIST = [
   'Cuerpo Completo',
 ]
 
+const GROUP_LABELS: Record<string, string> = {
+  back: 'Espalda',
+  biceps: 'Biceps',
+  calves: 'Pantorrillas',
+  cardio: 'Cardio',
+  chest: 'Pecho',
+  deltoids: 'Hombros',
+  forearms: 'Antebrazos',
+  glutes: 'Gluteos',
+  hamstrings: 'Isquiotibiales',
+  quadriceps: 'Cuadriceps',
+  shoulders: 'Hombros',
+  trapezius: 'Trapecio',
+  traps: 'Trapecio',
+  triceps: 'Triceps',
+  waist: 'Core',
+}
+
+const formatGroupLabel = (group: string) => GROUP_LABELS[group.toLowerCase()] || group
+
 export default function RoutineBuilder({
   onBack,
   editingRoutine,
@@ -98,6 +119,8 @@ export default function RoutineBuilder({
 
   const [dbExercises, setDbExercises] = useState<ExerciseData[]>([])
   const [dbUsers, setDbUsers] = useState<UserData[]>([])
+  const [isLibraryLoading, setIsLibraryLoading] = useState(true)
+  const [libraryError, setLibraryError] = useState<string | null>(null)
 
   const customGroups = useMemo(() => {
     try {
@@ -112,6 +135,8 @@ export default function RoutineBuilder({
 
   const loadExercises = useCallback(async () => {
     try {
+      setIsLibraryLoading(true)
+      setLibraryError(null)
       const res = await getExerciseLibrary({ size: 500 })
       const apiExercises = res.dto || res.lista || []
       const mapped: ExerciseData[] = apiExercises.map((e: ExerciseLibraryItemDTO) => ({
@@ -122,8 +147,11 @@ export default function RoutineBuilder({
         imageUrl: e.imageUrl || '',
       }))
       setDbExercises(mapped)
-    } catch (e) {
+    } catch (e: unknown) {
       console.error(e)
+      setLibraryError(e instanceof Error ? e.message : 'No se pudo cargar la biblioteca')
+    } finally {
+      setIsLibraryLoading(false)
     }
   }, [])
 
@@ -195,6 +223,7 @@ export default function RoutineBuilder({
   const [exerciseSearch, setExerciseSearch] = useState('')
   const debouncedExerciseSearch = useDebounce(exerciseSearch)
   const [selectedGroupForModal, setSelectedGroupForModal] = useState<string | null>(null)
+  const [exerciseSourceFilter, setExerciseSourceFilter] = useState<ExerciseSourceFilter>('ALL')
   const [showLibrary, setShowLibrary] = useState(false)
 
   const [isCreatingExercise, setIsCreatingExercise] = useState(false)
@@ -227,11 +256,9 @@ export default function RoutineBuilder({
     [dayExercises]
   )
 
-  const openExerciseModal = () => {
+  const openExerciseLibrary = () => {
     setIsCreatingExercise(false)
-    setSelectedGroupForModal(null)
-    setExerciseSearch('')
-    setShowExerciseModal(true)
+    setShowLibrary(true)
   }
 
   const validateNewExerciseForm = (): boolean => {
@@ -382,11 +409,12 @@ export default function RoutineBuilder({
 
   const sidebarExercises = useMemo(() => {
     const filtered = dbExercises.filter((e) => {
+      const matchesSource = exerciseSourceFilter === 'ALL' || e.source === exerciseSourceFilter
       const matchesGroup = !selectedGroupForModal || e.muscleGroup === selectedGroupForModal
       const matchesSearch = e.name
         .toLowerCase()
         .includes(debouncedExerciseSearch.toLowerCase())
-      return matchesGroup && matchesSearch
+      return matchesSource && matchesGroup && matchesSearch
     })
     const grouped: Record<string, ExerciseData[]> = {}
     filtered.forEach((e) => {
@@ -395,7 +423,23 @@ export default function RoutineBuilder({
       grouped[group].push(e)
     })
     return grouped
-  }, [dbExercises, selectedGroupForModal, debouncedExerciseSearch])
+  }, [dbExercises, exerciseSourceFilter, selectedGroupForModal, debouncedExerciseSearch])
+
+  const libraryGroups = useMemo(() => {
+    const groups = new Set<string>()
+    dbExercises.forEach((exercise) => {
+      if (exerciseSourceFilter === 'ALL' || exercise.source === exerciseSourceFilter) {
+        groups.add(exercise.muscleGroup || 'General')
+      }
+    })
+    return Array.from(groups).sort((a, b) => formatGroupLabel(a).localeCompare(formatGroupLabel(b)))
+  }, [dbExercises, exerciseSourceFilter])
+
+  const clearLibraryFilters = () => {
+    setSelectedGroupForModal(null)
+    setExerciseSourceFilter('ALL')
+    setExerciseSearch('')
+  }
 
   return (
     <div className="flex h-dvh flex-col bg-[var(--surface)]/50">
@@ -514,7 +558,11 @@ export default function RoutineBuilder({
                   )}
                 </button>
               ))}
-              <button className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-[var(--border)] text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:text-[var(--accent-text)] sm:h-8 sm:w-8">
+              <button
+                onClick={openExerciseLibrary}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-[var(--border)] text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:text-[var(--accent-text)] sm:h-8 sm:w-8"
+                aria-label="Abrir biblioteca de ejercicios"
+              >
                 <Plus size={12} />
               </button>
             </div>
@@ -613,13 +661,13 @@ export default function RoutineBuilder({
             {currentExercises.length === 0 ? (
               <div
                 className="mt-4 cursor-pointer rounded-xl border-2 border-dashed border-[var(--border)] p-6 text-center transition-all hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 sm:p-8"
-                onClick={openExerciseModal}
+                onClick={openExerciseLibrary}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
-                    openExerciseModal()
+                    openExerciseLibrary()
                   }
                 }}
               >
@@ -630,16 +678,16 @@ export default function RoutineBuilder({
                   Agregar ejercicios al {DAYS.find((d) => d.key === selectedDay)?.label}
                 </p>
                 <p className="mt-0.5 text-[10px] text-[var(--text-muted)] sm:mt-1 sm:text-xs">
-                  Haz clic aqui o arrastra desde la biblioteca
+                  Haz clic aqui para abrir la biblioteca
                 </p>
               </div>
             ) : (
               <button
-                onClick={openExerciseModal}
+                onClick={openExerciseLibrary}
                 className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--border)] p-3 text-xs font-medium text-[var(--text-muted)] transition-all hover:border-[var(--accent)] hover:text-[var(--accent-text)] sm:p-4 sm:text-sm"
               >
                 <Plus size={14} />
-                Agregar Ejercicio
+                Abrir Biblioteca
               </button>
             )}
           </div>
@@ -669,6 +717,28 @@ export default function RoutineBuilder({
               />
             </div>
             <div className="mt-2.5 flex flex-wrap gap-1 sm:mt-3">
+              {([
+                ['ALL', 'Todos'],
+                ['CATALOG', 'Catalogo Global'],
+                ['CUSTOM', 'Personalizados'],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => {
+                    setExerciseSourceFilter(value)
+                    setSelectedGroupForModal(null)
+                  }}
+                  className={`rounded-full px-2 py-0.5 text-[9px] font-bold transition-all sm:px-3 sm:text-[10px] ${
+                    exerciseSourceFilter === value
+                      ? 'bg-[var(--accent)] text-[var(--accent-text)]'
+                      : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="mt-2.5 flex max-h-24 flex-wrap gap-1 overflow-y-auto sm:mt-3">
               <button
                 onClick={() => setSelectedGroupForModal(null)}
                 className={`rounded-full px-2 py-0.5 text-[9px] font-bold transition-all sm:px-3 sm:text-[10px] ${
@@ -677,9 +747,9 @@ export default function RoutineBuilder({
                     : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
                 }`}
               >
-                Todos
+                Todos los grupos
               </button>
-              {ALL_GROUPS.map((group) => (
+              {libraryGroups.map((group) => (
                 <button
                   key={group}
                   onClick={() =>
@@ -691,17 +761,34 @@ export default function RoutineBuilder({
                       : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
                   }`}
                 >
-                  {group}
+                  {formatGroupLabel(group)}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto p-2.5 sm:p-3">
-            {Object.entries(sidebarExercises).map(([group, exercises]) => (
+            {isLibraryLoading ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center sm:py-12">
+                <span className="mb-3 h-6 w-6 animate-spin rounded-full border-2 border-[var(--accent)]/30 border-t-[var(--accent)]" />
+                <p className="text-xs font-medium text-[var(--text-muted)] sm:text-sm">Cargando biblioteca...</p>
+              </div>
+            ) : libraryError ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center sm:py-12">
+                <Dumbbell size={28} className="mb-2 text-[var(--text-muted)] sm:mb-3 sm:size-8" />
+                <p className="text-xs font-semibold text-[var(--text-primary)] sm:text-sm">No se pudo cargar la biblioteca</p>
+                <p className="mt-1 text-[10px] text-[var(--text-muted)] sm:text-xs">{libraryError}</p>
+                <button
+                  onClick={loadExercises}
+                  className="mt-3 rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--accent-text)]"
+                >
+                  Reintentar
+                </button>
+              </div>
+            ) : Object.entries(sidebarExercises).map(([group, exercises]) => (
               <div key={group} className="mb-3 sm:mb-4">
                 <h4 className="mb-1.5 px-1 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] sm:mb-2 sm:text-[10px]">
-                  {group}
+                  {formatGroupLabel(group)}
                 </h4>
                 <div className="space-y-1 sm:space-y-1.5">
                   {exercises.map((exercise) => (
@@ -727,10 +814,16 @@ export default function RoutineBuilder({
                 </div>
               </div>
             ))}
-            {Object.keys(sidebarExercises).length === 0 && (
+            {!isLibraryLoading && !libraryError && Object.keys(sidebarExercises).length === 0 && (
               <div className="flex flex-col items-center justify-center py-8 text-center sm:py-12">
                 <Dumbbell size={28} className="mb-2 text-[var(--text-muted)] sm:mb-3 sm:size-8" />
-                <p className="text-xs font-medium text-[var(--text-muted)] sm:text-sm">No se encontraron ejercicios</p>
+                <p className="text-xs font-medium text-[var(--text-muted)] sm:text-sm">No hay ejercicios con estos filtros</p>
+                <button
+                  onClick={clearLibraryFilters}
+                  className="mt-3 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+                >
+                  Limpiar filtros
+                </button>
               </div>
             )}
           </div>
