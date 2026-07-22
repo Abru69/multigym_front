@@ -23,6 +23,7 @@ interface ExerciseData {
   id: string
   source: 'CATALOG' | 'CUSTOM'
   name: string
+  displayName: string
   muscleGroup: string
   muscleGroupLabel: string
   bodyPart?: string
@@ -128,6 +129,7 @@ export default function RoutineBuilder({
         id: e.id,
         source: e.source,
         name: e.name,
+        displayName: e.displayName || e.name,
         muscleGroup: e.muscleGroup || e.bodyPart || 'General',
         muscleGroupLabel: e.muscleGroupLabel || e.bodyPartLabel || e.muscleGroup || e.bodyPart || 'General',
         bodyPart: e.bodyPart,
@@ -198,6 +200,7 @@ export default function RoutineBuilder({
             ...we.exercise!,
             id: exerciseId || we.exercise?.id || '',
             source,
+            displayName: we.exercise?.displayName || we.exercise?.name || '',
             muscleGroupLabel: we.exercise?.muscleGroupLabel || we.exercise?.muscleGroup || 'General',
             uniqueId: `init-${uniqueIdCounter++}`,
             sets: we.sets || 4,
@@ -404,6 +407,8 @@ export default function RoutineBuilder({
       const matchesGroup = !selectedGroupForModal || e.muscleGroup === selectedGroupForModal
       const matchesSearch = e.name
         .toLowerCase()
+        .includes(debouncedExerciseSearch.toLowerCase()) || e.displayName
+        .toLowerCase()
         .includes(debouncedExerciseSearch.toLowerCase())
       return matchesSource && matchesGroup && matchesSearch
     })
@@ -596,8 +601,13 @@ export default function RoutineBuilder({
 
                     <div className="min-w-0 flex-1">
                       <h4 className="text-xs font-bold text-[var(--text-primary)] sm:text-sm">
-                        {exercise.name}
+                        {exercise.displayName || exercise.name}
                       </h4>
+                      {exercise.displayName && exercise.displayName !== exercise.name && (
+                        <p className="text-[9px] text-[var(--text-muted)] sm:text-[10px]">
+                          {exercise.name}
+                        </p>
+                      )}
                       <span className="mt-0.5 inline-block rounded-md bg-[var(--accent)]/10 px-1.5 py-0.5 text-[8px] font-bold tracking-wide text-[var(--accent-text)] uppercase sm:mt-1 sm:px-2 sm:text-[10px]">
                         {exercise.muscleGroupLabel || exercise.muscleGroup || 'General'}
                       </span>
@@ -802,8 +812,13 @@ export default function RoutineBuilder({
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[11px] font-semibold text-[var(--text-primary)] sm:text-xs">
-                          {exercise.name}
+                          {exercise.displayName || exercise.name}
                         </p>
+                        {exercise.displayName && exercise.displayName !== exercise.name && (
+                          <p className="truncate text-[9px] text-[var(--text-muted)] sm:text-[10px]">
+                            {exercise.name}
+                          </p>
+                        )}
                         <p className="truncate text-[9px] font-medium uppercase tracking-wide text-[var(--text-muted)] sm:text-[10px]">
                           {exercise.source === 'CATALOG' ? 'Catalogo global' : exercise.muscleGroupLabel || 'Personalizado'}
                         </p>

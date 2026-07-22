@@ -9,9 +9,11 @@ import {
   fetchApi,
   getExerciseCatalog,
   getExerciseCatalogFacets,
+  updateExerciseCatalogTranslation,
 } from '@/lib/api'
 import { MUSCLE_GROUPS } from '@/data/constants'
 import type { ExerciseCatalogDTO, ExerciseCatalogFacetsDTO } from '@/types'
+import { usePlatformAuthStore } from '@/features/platform/store/platformAuthStore'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
@@ -34,6 +36,8 @@ interface CustomGroup {
 
 export default function Exercises() {
   const addToast = useToastStore((s) => s.addToast)
+  const platformAdmin = usePlatformAuthStore((s) => s.admin)
+  const canEditCatalogTranslations = platformAdmin?.role === 'SUPER_ADMIN'
   const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
   const [activeTab, setActiveTab] = useState<'exercises' | 'catalog' | 'routines'>(
@@ -51,6 +55,9 @@ export default function Exercises() {
   const [catalogSearch, setCatalogSearch] = useState('')
   const [catalogBodyPart, setCatalogBodyPart] = useState('')
   const [catalogEquipment, setCatalogEquipment] = useState('')
+  const [editingCatalogTranslation, setEditingCatalogTranslation] = useState<ExerciseCatalogDTO | null>(null)
+  const [catalogTranslationForm, setCatalogTranslationForm] = useState({ nameEs: '', nameEn: '' })
+  const [isSavingCatalogTranslation, setIsSavingCatalogTranslation] = useState(false)
   const debouncedCatalogSearch = useDebounce(catalogSearch)
   const [customGroups, setCustomGroups] = useState<CustomGroup[]>(() => {
     try {
@@ -223,6 +230,32 @@ export default function Exercises() {
       addToast(e instanceof Error ? e.message : 'Error al eliminar', 'error')
     } finally {
       setDeleteTarget(null)
+    }
+  }
+
+  const openCatalogTranslationModal = (exercise: ExerciseCatalogDTO) => {
+    setEditingCatalogTranslation(exercise)
+    setCatalogTranslationForm({ nameEs: exercise.nameEs || '', nameEn: exercise.nameEn || '' })
+  }
+
+  const handleSaveCatalogTranslation = async () => {
+    if (!editingCatalogTranslation) return
+    setIsSavingCatalogTranslation(true)
+    try {
+      const res = await updateExerciseCatalogTranslation(editingCatalogTranslation.id, {
+        nameEs: catalogTranslationForm.nameEs.trim() || null,
+        nameEn: catalogTranslationForm.nameEn.trim() || null,
+      })
+      const updated = res.dto
+      if (updated) {
+        setCatalogList((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
+      }
+      addToast('Traduccion actualizada', 'success')
+      setEditingCatalogTranslation(null)
+    } catch (e: unknown) {
+      addToast(e instanceof Error ? e.message : 'Error actualizando traduccion', 'error')
+    } finally {
+      setIsSavingCatalogTranslation(false)
     }
   }
 
@@ -664,8 +697,11 @@ export default function Exercises() {
                         {exercise.bodyPartLabel || exercise.bodyPart || 'Zona'}
                       </p>
                       <h3 className="mt-1 text-base font-black text-[var(--text-primary)]">
-                        {exercise.name}
+                        {exercise.displayName || exercise.name}
                       </h3>
+                      {exercise.displayName && exercise.displayName !== exercise.name && (
+                        <p className="mt-1 text-xs text-[var(--text-muted)]">{exercise.name}</p>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-2 text-xs">
                       {exercise.equipment && (
@@ -691,6 +727,14 @@ export default function Exercises() {
                         ))}
                       </ol>
                     )}
+                    {canEditCatalogTranslations && (
+                      <button
+                        onClick={() => openCatalogTranslationModal(exercise)}
+                        className="w-full rounded-xl border border-[var(--border)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)]"
+                      >
+                        Editar traduccion
+                      </button>
+                    )}
                   </div>
                 </article>
               ))}
@@ -700,6 +744,58 @@ export default function Exercises() {
       ) : (
         <RoutineLibrary />
       )}
+
+      <Modal
+        isOpen={!!editingCatalogTranslation}
+        onClose={() => setEditingCatalogTranslation(null)}
+        title="Editar traduccion"
+        size="md"
+      >
+        <div className="space-y-4">
+          <FormField label="Nombre original" htmlFor="catalog-original-name">
+            <input
+              id="catalog-original-name"
+              value={editingCatalogTranslation?.name || ''}
+              readOnly
+              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-muted)] outline-none"
+            />
+          </FormField>
+          <FormField label="Nombre en espanol" htmlFor="catalog-name-es">
+            <input
+              id="catalog-name-es"
+              value={catalogTranslationForm.nameEs}
+              onChange={(e) => setCatalogTranslationForm((prev) => ({ ...prev, nameEs: e.target.value }))}
+              placeholder="Ej. Abdominal 3/4"
+              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+            />
+          </FormField>
+          <FormField label="Nombre en ingles alternativo" htmlFor="catalog-name-en">
+            <input
+              id="catalog-name-en"
+              value={catalogTranslationForm.nameEn}
+              onChange={(e) => setCatalogTranslationForm((prev) => ({ ...prev, nameEn: e.target.value }))}
+              placeholder="Opcional"
+              className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+            />
+          </FormField>
+          <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
+            <button
+              onClick={() => setEditingCatalogTranslation(null)}
+              disabled={isSavingCatalogTranslation}
+              className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSaveCatalogTranslation}
+              disabled={isSavingCatalogTranslation}
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 disabled:opacity-50"
+            >
+              {isSavingCatalogTranslation ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

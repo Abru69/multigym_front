@@ -287,6 +287,15 @@ export const getExerciseLibrary = (params?: { name?: string; muscleGroup?: strin
   return fetchApi<ResponseDTO<ExerciseLibraryItemDTO[]>>(`/api/exercise-library${qs ? '?' + qs : ''}`)
 }
 
+export const updateExerciseCatalogTranslation = (
+  id: string,
+  data: { nameEs?: string | null; nameEn?: string | null }
+) =>
+  fetchApi<ResponseDTO<ExerciseCatalogDTO>>(`/api/platform/exercise-catalog/${id}/translation?lang=es`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+
 export const getWorkouts = (params?: {
   title?: string
   memberId?: string

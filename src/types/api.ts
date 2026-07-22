@@ -232,6 +232,9 @@ export interface ExerciseCatalogDTO {
   externalSource: string
   externalId: string
   name: string
+  nameEs?: string
+  nameEn?: string
+  displayName: string
   bodyPart?: string
   bodyPartLabel?: string
   muscleGroup?: string
@@ -271,6 +274,9 @@ export interface ExerciseLibraryItemDTO {
   id: string
   source: 'CATALOG' | 'CUSTOM'
   name: string
+  nameEs?: string
+  nameEn?: string
+  displayName: string
   muscleGroup?: string
   muscleGroupLabel?: string
   bodyPart?: string
