@@ -29,6 +29,7 @@ export type {
   ProductRequest,
   ExerciseDTO,
   ExerciseMediaStatus,
+  LocalizedFacetDTO,
   ExerciseCatalogDTO,
   ExerciseCatalogFacetsDTO,
   ExerciseLibraryItemDTO,

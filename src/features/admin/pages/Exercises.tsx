@@ -605,8 +605,8 @@ export default function Exercises() {
               >
                 <option value="">Todas las zonas</option>
                 {(catalogFacets?.bodyParts || []).map((item) => (
-                  <option key={item} value={item}>
-                    {item}
+                  <option key={item.value} value={item.value}>
+                    {item.label}
                   </option>
                 ))}
               </select>
@@ -617,8 +617,8 @@ export default function Exercises() {
               >
                 <option value="">Todo el equipo</option>
                 {(catalogFacets?.equipment || []).map((item) => (
-                  <option key={item} value={item}>
-                    {item}
+                  <option key={item.value} value={item.value}>
+                    {item.label}
                   </option>
                 ))}
               </select>
@@ -661,7 +661,7 @@ export default function Exercises() {
                   <div className="space-y-3 p-4">
                     <div>
                       <p className="text-xs font-bold tracking-[0.16em] text-[var(--text-muted)] uppercase">
-                        {exercise.bodyPart || 'body part'}
+                        {exercise.bodyPartLabel || exercise.bodyPart || 'Zona'}
                       </p>
                       <h3 className="mt-1 text-base font-black text-[var(--text-primary)]">
                         {exercise.name}
@@ -670,21 +670,21 @@ export default function Exercises() {
                     <div className="flex flex-wrap gap-2 text-xs">
                       {exercise.equipment && (
                         <span className="rounded-full bg-[var(--accent)]/10 px-2.5 py-1 font-semibold text-[var(--accent)]">
-                          {exercise.equipment}
+                          {exercise.equipmentLabel || exercise.equipment}
                         </span>
                       )}
                       {exercise.target && (
                         <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 font-semibold text-[var(--text-secondary)]">
-                          {exercise.target}
+                          {exercise.targetLabel || exercise.target}
                         </span>
                       )}
                       <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 font-semibold text-[var(--text-secondary)]">
                         {exercise.mediaStatus === 'NONE' ? 'Sin media externa' : exercise.mediaStatus}
                       </span>
                     </div>
-                    {(exercise.instructionStepsEs?.length || 0) > 0 && (
+                    {(exercise.instructionSteps?.length || 0) > 0 && (
                       <ol className="space-y-1 text-xs text-[var(--text-secondary)]">
-                        {exercise.instructionStepsEs.slice(0, 2).map((step, index) => (
+                        {exercise.instructionSteps.slice(0, 2).map((step, index) => (
                           <li key={`${exercise.id}-${index}`}>
                             {index + 1}. {step}
                           </li>

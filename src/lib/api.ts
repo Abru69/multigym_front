@@ -252,10 +252,12 @@ export const getExerciseCatalog = (params?: {
   muscleGroup?: string
   equipment?: string
   target?: string
+  lang?: string
   page?: number
   size?: number
 }) => {
   const q = new URLSearchParams()
+  q.set('lang', params?.lang || 'es')
   if (params?.name) q.set('name', params.name)
   if (params?.bodyPart) q.set('bodyPart', params.bodyPart)
   if (params?.muscleGroup) q.set('muscleGroup', params.muscleGroup)
@@ -269,11 +271,15 @@ export const getExerciseCatalog = (params?: {
   )
 }
 
-export const getExerciseCatalogFacets = () =>
-  fetchApi<ResponseDTO<ExerciseCatalogFacetsDTO>>('/api/exercise-catalog/facets')
-
-export const getExerciseLibrary = (params?: { name?: string; muscleGroup?: string; size?: number }) => {
+export const getExerciseCatalogFacets = (params?: { lang?: string }) => {
   const q = new URLSearchParams()
+  q.set('lang', params?.lang || 'es')
+  return fetchApi<ResponseDTO<ExerciseCatalogFacetsDTO>>(`/api/exercise-catalog/facets?${q.toString()}`)
+}
+
+export const getExerciseLibrary = (params?: { name?: string; muscleGroup?: string; size?: number; lang?: string }) => {
+  const q = new URLSearchParams()
+  q.set('lang', params?.lang || 'es')
   if (params?.name) q.set('name', params.name)
   if (params?.muscleGroup) q.set('muscleGroup', params.muscleGroup)
   if (params?.size !== undefined) q.set('size', String(params.size))

@@ -233,14 +233,20 @@ export interface ExerciseCatalogDTO {
   externalId: string
   name: string
   bodyPart?: string
+  bodyPartLabel?: string
   muscleGroup?: string
+  muscleGroupLabel?: string
   equipment?: string
+  equipmentLabel?: string
   target?: string
+  targetLabel?: string
   secondaryMuscles: string[]
   instructionsEs?: string
   instructionsEn?: string
   instructionStepsEs: string[]
   instructionStepsEn: string[]
+  instructions?: string
+  instructionSteps: string[]
   imageUrl?: string
   videoUrl?: string
   mediaSource?: string
@@ -249,11 +255,16 @@ export interface ExerciseCatalogDTO {
   active: boolean
 }
 
+export interface LocalizedFacetDTO {
+  value: string
+  label: string
+}
+
 export interface ExerciseCatalogFacetsDTO {
-  bodyParts: string[]
-  muscleGroups: string[]
-  equipment: string[]
-  targets: string[]
+  bodyParts: LocalizedFacetDTO[]
+  muscleGroups: LocalizedFacetDTO[]
+  equipment: LocalizedFacetDTO[]
+  targets: LocalizedFacetDTO[]
 }
 
 export interface ExerciseLibraryItemDTO {
@@ -261,9 +272,13 @@ export interface ExerciseLibraryItemDTO {
   source: 'CATALOG' | 'CUSTOM'
   name: string
   muscleGroup?: string
+  muscleGroupLabel?: string
   bodyPart?: string
+  bodyPartLabel?: string
   equipment?: string
+  equipmentLabel?: string
   target?: string
+  targetLabel?: string
   imageUrl?: string
   videoUrl?: string
 }

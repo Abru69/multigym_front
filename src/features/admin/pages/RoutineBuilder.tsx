@@ -24,6 +24,11 @@ interface ExerciseData {
   source: 'CATALOG' | 'CUSTOM'
   name: string
   muscleGroup: string
+  muscleGroupLabel: string
+  bodyPart?: string
+  bodyPartLabel?: string
+  equipmentLabel?: string
+  targetLabel?: string
   imageUrl?: string
 }
 
@@ -86,26 +91,6 @@ const ALL_GROUPS_LIST = [
   'Cuerpo Completo',
 ]
 
-const GROUP_LABELS: Record<string, string> = {
-  back: 'Espalda',
-  biceps: 'Biceps',
-  calves: 'Pantorrillas',
-  cardio: 'Cardio',
-  chest: 'Pecho',
-  deltoids: 'Hombros',
-  forearms: 'Antebrazos',
-  glutes: 'Gluteos',
-  hamstrings: 'Isquiotibiales',
-  quadriceps: 'Cuadriceps',
-  shoulders: 'Hombros',
-  trapezius: 'Trapecio',
-  traps: 'Trapecio',
-  triceps: 'Triceps',
-  waist: 'Core',
-}
-
-const formatGroupLabel = (group: string) => GROUP_LABELS[group.toLowerCase()] || group
-
 export default function RoutineBuilder({
   onBack,
   editingRoutine,
@@ -144,6 +129,11 @@ export default function RoutineBuilder({
         source: e.source,
         name: e.name,
         muscleGroup: e.muscleGroup || e.bodyPart || 'General',
+        muscleGroupLabel: e.muscleGroupLabel || e.bodyPartLabel || e.muscleGroup || e.bodyPart || 'General',
+        bodyPart: e.bodyPart,
+        bodyPartLabel: e.bodyPartLabel,
+        equipmentLabel: e.equipmentLabel,
+        targetLabel: e.targetLabel,
         imageUrl: e.imageUrl || '',
       }))
       setDbExercises(mapped)
@@ -208,6 +198,7 @@ export default function RoutineBuilder({
             ...we.exercise!,
             id: exerciseId || we.exercise?.id || '',
             source,
+            muscleGroupLabel: we.exercise?.muscleGroupLabel || we.exercise?.muscleGroup || 'General',
             uniqueId: `init-${uniqueIdCounter++}`,
             sets: we.sets || 4,
             reps: we.reps || '10-12',
@@ -425,6 +416,15 @@ export default function RoutineBuilder({
     return grouped
   }, [dbExercises, exerciseSourceFilter, selectedGroupForModal, debouncedExerciseSearch])
 
+  const groupLabels = useMemo(() => {
+    const labels: Record<string, string> = {}
+    dbExercises.forEach((exercise) => {
+      const group = exercise.muscleGroup || 'General'
+      if (!labels[group]) labels[group] = exercise.muscleGroupLabel || group
+    })
+    return labels
+  }, [dbExercises])
+
   const libraryGroups = useMemo(() => {
     const groups = new Set<string>()
     dbExercises.forEach((exercise) => {
@@ -432,8 +432,8 @@ export default function RoutineBuilder({
         groups.add(exercise.muscleGroup || 'General')
       }
     })
-    return Array.from(groups).sort((a, b) => formatGroupLabel(a).localeCompare(formatGroupLabel(b)))
-  }, [dbExercises, exerciseSourceFilter])
+    return Array.from(groups).sort((a, b) => (groupLabels[a] || a).localeCompare(groupLabels[b] || b))
+  }, [dbExercises, exerciseSourceFilter, groupLabels])
 
   const clearLibraryFilters = () => {
     setSelectedGroupForModal(null)
@@ -599,7 +599,7 @@ export default function RoutineBuilder({
                         {exercise.name}
                       </h4>
                       <span className="mt-0.5 inline-block rounded-md bg-[var(--accent)]/10 px-1.5 py-0.5 text-[8px] font-bold tracking-wide text-[var(--accent-text)] uppercase sm:mt-1 sm:px-2 sm:text-[10px]">
-                        {exercise.muscleGroup || 'General'}
+                        {exercise.muscleGroupLabel || exercise.muscleGroup || 'General'}
                       </span>
                       <span className="ml-1.5 mt-0.5 inline-block rounded-md bg-[var(--surface)] px-1.5 py-0.5 text-[8px] font-bold tracking-wide text-[var(--text-muted)] uppercase sm:mt-1 sm:px-2 sm:text-[10px]">
                         {exercise.source === 'CATALOG' ? 'Catalogo' : 'Personalizado'}
@@ -761,7 +761,7 @@ export default function RoutineBuilder({
                       : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
                   }`}
                 >
-                  {formatGroupLabel(group)}
+                  {groupLabels[group] || group}
                 </button>
               ))}
             </div>
@@ -788,7 +788,7 @@ export default function RoutineBuilder({
             ) : Object.entries(sidebarExercises).map(([group, exercises]) => (
               <div key={group} className="mb-3 sm:mb-4">
                 <h4 className="mb-1.5 px-1 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] sm:mb-2 sm:text-[10px]">
-                  {formatGroupLabel(group)}
+                  {groupLabels[group] || group}
                 </h4>
                 <div className="space-y-1 sm:space-y-1.5">
                   {exercises.map((exercise) => (
@@ -805,7 +805,7 @@ export default function RoutineBuilder({
                           {exercise.name}
                         </p>
                         <p className="truncate text-[9px] font-medium uppercase tracking-wide text-[var(--text-muted)] sm:text-[10px]">
-                          {exercise.source === 'CATALOG' ? 'Catalogo global' : exercise.muscleGroup || 'Personalizado'}
+                          {exercise.source === 'CATALOG' ? 'Catalogo global' : exercise.muscleGroupLabel || 'Personalizado'}
                         </p>
                       </div>
                       <Plus size={12} className="shrink-0 text-[var(--text-muted)] sm:size-[14]" />
