@@ -86,7 +86,7 @@ const ALL_GROUPS_LIST = [
   'Piernas',
   'Brazos',
   'Hombros',
-  'Core',
+  'Zona media',
   'Cardio',
   'Cuerpo Completo',
 ]
