@@ -3,8 +3,15 @@ import { useSearchParams } from 'react-router-dom'
 import { Dumbbell, Plus, Edit2, Trash2, Layers } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { useToastStore } from '@/components/ui/Toast'
-import { getExercises, createExercise, fetchApi } from '@/lib/api'
+import {
+  getExercises,
+  createExercise,
+  fetchApi,
+  getExerciseCatalog,
+  getExerciseCatalogFacets,
+} from '@/lib/api'
 import { MUSCLE_GROUPS } from '@/data/constants'
+import type { ExerciseCatalogDTO, ExerciseCatalogFacetsDTO } from '@/types'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
@@ -29,16 +36,22 @@ export default function Exercises() {
   const addToast = useToastStore((s) => s.addToast)
   const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
-  const [activeTab, setActiveTab] = useState<'exercises' | 'routines'>(
-    tabParam === 'routines' ? 'routines' : 'exercises'
+  const [activeTab, setActiveTab] = useState<'exercises' | 'catalog' | 'routines'>(
+    tabParam === 'routines' ? 'routines' : tabParam === 'catalog' ? 'catalog' : 'exercises'
   )
 
-  const handleTabChange = (tab: 'exercises' | 'routines') => {
+  const handleTabChange = (tab: 'exercises' | 'catalog' | 'routines') => {
     setActiveTab(tab)
     setSearchParams(tab === 'exercises' ? {} : { tab })
   }
 
   const [exercisesList, setExercisesList] = useState<Exercise[]>([])
+  const [catalogList, setCatalogList] = useState<ExerciseCatalogDTO[]>([])
+  const [catalogFacets, setCatalogFacets] = useState<ExerciseCatalogFacetsDTO | null>(null)
+  const [catalogSearch, setCatalogSearch] = useState('')
+  const [catalogBodyPart, setCatalogBodyPart] = useState('')
+  const [catalogEquipment, setCatalogEquipment] = useState('')
+  const debouncedCatalogSearch = useDebounce(catalogSearch)
   const [customGroups, setCustomGroups] = useState<CustomGroup[]>(() => {
     try {
       const stored = JSON.parse(localStorage.getItem('customMuscleGroups') || '[]')
@@ -81,6 +94,33 @@ export default function Exercises() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadExercises()
   }, [loadExercises])
+
+  const loadCatalog = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const [catalogRes, facetsRes] = await Promise.all([
+        getExerciseCatalog({
+          name: debouncedCatalogSearch,
+          bodyPart: catalogBodyPart,
+          equipment: catalogEquipment,
+          size: 60,
+        }),
+        catalogFacets ? Promise.resolve({ dto: catalogFacets }) : getExerciseCatalogFacets(),
+      ])
+      setCatalogList(catalogRes.dto?.data || [])
+      setCatalogFacets(facetsRes.dto || null)
+    } catch (e) {
+      addToast(e instanceof Error ? e.message : 'Error al cargar catálogo global', 'error')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [addToast, catalogBodyPart, catalogEquipment, catalogFacets, debouncedCatalogSearch])
+
+  useEffect(() => {
+    if (activeTab === 'catalog') {
+      loadCatalog()
+    }
+  }, [activeTab, loadCatalog])
 
   const ALL_GROUPS = useMemo(() => [...MUSCLE_GROUPS, ...customGroups], [customGroups])
 
@@ -198,6 +238,16 @@ export default function Exercises() {
           }`}
         >
           Grupos Musculares
+        </button>
+        <button
+          onClick={() => handleTabChange('catalog')}
+          className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all sm:px-6 ${
+            activeTab === 'catalog'
+              ? 'bg-[var(--card)] shadow-sm text-[var(--text-primary)]'
+              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          }`}
+        >
+          Catálogo Global
         </button>
         <button
           onClick={() => handleTabChange('routines')}
@@ -533,6 +583,120 @@ export default function Exercises() {
             confirmLabel="Eliminar"
           />
         </>
+      ) : activeTab === 'catalog' ? (
+        <section className="space-y-6">
+          <AdminHeader
+            title="Catálogo Global"
+            subtitle="Biblioteca base compartida por todos los gimnasios. La media externa no se usa en producción."
+            icon={Dumbbell}
+          />
+
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+            <div className="grid gap-3 lg:grid-cols-[1fr_220px_220px]">
+              <SearchBar
+                value={catalogSearch}
+                onChange={setCatalogSearch}
+                placeholder="Buscar ejercicio global..."
+              />
+              <select
+                value={catalogBodyPart}
+                onChange={(e) => setCatalogBodyPart(e.target.value)}
+                className="h-11 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+              >
+                <option value="">Todas las zonas</option>
+                {(catalogFacets?.bodyParts || []).map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={catalogEquipment}
+                onChange={(e) => setCatalogEquipment(e.target.value)}
+                className="h-11 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-sm text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
+              >
+                <option value="">Todo el equipo</option>
+                {(catalogFacets?.equipment || []).map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <LoadingState text="Cargando catálogo global..." />
+          ) : catalogList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)]/50 py-20">
+              <Dumbbell size={48} className="mb-4 text-[var(--text-muted)]" />
+              <h3 className="text-lg font-bold text-[var(--text-primary)]">Catálogo sin ejercicios</h3>
+              <p className="mt-1 max-w-lg text-center text-sm text-[var(--text-muted)]">
+                Importa el dataset desde el panel/platform backend para llenar esta biblioteca con
+                datos e instrucciones en español e inglés.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {catalogList.map((exercise) => (
+                <article
+                  key={exercise.id}
+                  className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm"
+                >
+                  <div className="flex h-36 items-center justify-center bg-[var(--surface)]">
+                    {exercise.imageUrl ? (
+                      <img
+                        src={exercise.imageUrl}
+                        alt={exercise.name}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-[var(--text-muted)]">
+                        <Dumbbell size={34} />
+                        <span className="text-xs font-semibold">Media propia pendiente</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-3 p-4">
+                    <div>
+                      <p className="text-xs font-bold tracking-[0.16em] text-[var(--text-muted)] uppercase">
+                        {exercise.bodyPart || 'body part'}
+                      </p>
+                      <h3 className="mt-1 text-base font-black text-[var(--text-primary)]">
+                        {exercise.name}
+                      </h3>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {exercise.equipment && (
+                        <span className="rounded-full bg-[var(--accent)]/10 px-2.5 py-1 font-semibold text-[var(--accent)]">
+                          {exercise.equipment}
+                        </span>
+                      )}
+                      {exercise.target && (
+                        <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 font-semibold text-[var(--text-secondary)]">
+                          {exercise.target}
+                        </span>
+                      )}
+                      <span className="rounded-full bg-[var(--surface)] px-2.5 py-1 font-semibold text-[var(--text-secondary)]">
+                        {exercise.mediaStatus === 'NONE' ? 'Sin media externa' : exercise.mediaStatus}
+                      </span>
+                    </div>
+                    {(exercise.instructionStepsEs?.length || 0) > 0 && (
+                      <ol className="space-y-1 text-xs text-[var(--text-secondary)]">
+                        {exercise.instructionStepsEs.slice(0, 2).map((step, index) => (
+                          <li key={`${exercise.id}-${index}`}>
+                            {index + 1}. {step}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
       ) : (
         <RoutineLibrary />
       )}

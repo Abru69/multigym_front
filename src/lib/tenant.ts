@@ -4,8 +4,11 @@
  * Tenant resolution via subdomain:
  *   gym1.localhost:5173 → tenantId = "gym1"
  *   gym1.multigym.com   → tenantId = "gym1"
+ *   gym1-staging.multigym.mx → tenantId = "gym1"
  *   localhost:5173       → tenantId = null (platform context)
  */
+
+const STAGING_SUFFIX = '-staging'
 
 export function getTenantFromSubdomain(): string | null {
   const hostname = window.location.hostname
@@ -34,8 +37,11 @@ export function getTenantFromSubdomain(): string | null {
 
   const parts = hostname.split('.')
   if (parts.length >= 3) {
-    const subdomain = parts[0]
-    if (reservedSubdomains.has(subdomain.toLowerCase())) return null
+    const subdomain = parts[0].toLowerCase()
+    if (reservedSubdomains.has(subdomain)) return null
+    if (subdomain.endsWith(STAGING_SUFFIX) && subdomain.length > STAGING_SUFFIX.length) {
+      return subdomain.slice(0, -STAGING_SUFFIX.length)
+    }
     return subdomain
   }
 
@@ -108,6 +114,11 @@ function getBaseDomain(): string {
   return hostname
 }
 
+function isStagingHost(): boolean {
+  const hostname = window.location.hostname.toLowerCase()
+  return hostname === 'staging.multigym.mx' || hostname.endsWith(`${STAGING_SUFFIX}.multigym.mx`)
+}
+
 export function getPlatformUrl(): string {
   const protocol = window.location.protocol
   const port = window.location.port ? `:${window.location.port}` : ''
@@ -117,7 +128,8 @@ export function getPlatformUrl(): string {
 export function getTenantUrl(tenantId: string): string {
   const protocol = window.location.protocol
   const port = window.location.port ? `:${window.location.port}` : ''
-  return `${protocol}//${tenantId}.${getBaseDomain()}${port}`
+  const subdomain = isStagingHost() ? `${tenantId}${STAGING_SUFFIX}` : tenantId
+  return `${protocol}//${subdomain}.${getBaseDomain()}${port}`
 }
 
 export function getTenantHomeUrl(tenantId?: string | null): string {

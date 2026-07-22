@@ -220,6 +220,54 @@ export interface ExerciseDTO {
   videoUrl?: string
 }
 
+export type ExerciseMediaStatus =
+  | 'NONE'
+  | 'PLACEHOLDER'
+  | 'OWNED'
+  | 'LICENSED'
+  | 'EXTERNAL_STAGING_ONLY'
+
+export interface ExerciseCatalogDTO {
+  id: string
+  externalSource: string
+  externalId: string
+  name: string
+  bodyPart?: string
+  muscleGroup?: string
+  equipment?: string
+  target?: string
+  secondaryMuscles: string[]
+  instructionsEs?: string
+  instructionsEn?: string
+  instructionStepsEs: string[]
+  instructionStepsEn: string[]
+  imageUrl?: string
+  videoUrl?: string
+  mediaSource?: string
+  mediaStatus: ExerciseMediaStatus
+  mediaAttribution?: string
+  active: boolean
+}
+
+export interface ExerciseCatalogFacetsDTO {
+  bodyParts: string[]
+  muscleGroups: string[]
+  equipment: string[]
+  targets: string[]
+}
+
+export interface ExerciseLibraryItemDTO {
+  id: string
+  source: 'CATALOG' | 'CUSTOM'
+  name: string
+  muscleGroup?: string
+  bodyPart?: string
+  equipment?: string
+  target?: string
+  imageUrl?: string
+  videoUrl?: string
+}
+
 export interface PlatformUserDTO {
   id: string
   email: string
@@ -246,10 +294,14 @@ export interface WorkoutDTO {
   endsAt: string
   member?: { id: string }
   exercises?: Array<{
-    exercise: { id: string }
+    exercise?: ExerciseDTO
+    exerciseId?: string
+    catalogExerciseId?: string
+    exerciseSource?: 'CATALOG' | 'CUSTOM'
     dayOfWeek: string
     sets: number
     reps: string
+    restTimeSeconds?: number
     restSeconds: number
     orderIndex: number
   }>
@@ -372,6 +424,9 @@ export interface WorkoutExerciseListItemDTO {
   id: string
   workoutId: string
   exercise: ExerciseDTO
+  exerciseId?: string
+  catalogExerciseId?: string
+  exerciseSource?: 'CATALOG' | 'CUSTOM'
   dayOfWeek: string
   sets: number
   reps: string
@@ -420,7 +475,8 @@ export interface PaymentRequest {
 
 export interface WorkoutExerciseRequest {
   workoutId: string
-  exerciseId: string
+  exerciseId?: string
+  catalogExerciseId?: string
   dayOfWeek?: string
   sets: number
   reps: string

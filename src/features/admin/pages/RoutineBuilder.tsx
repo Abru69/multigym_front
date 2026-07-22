@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { DayOfWeek } from '@/types'
+import type { DayOfWeek, ExerciseLibraryItemDTO } from '@/types'
 import {
   Plus,
   Trash2,
@@ -14,13 +14,14 @@ import {
 import { Modal } from '@/components/ui/Modal'
 import { useToastStore } from '@/components/ui/Toast'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { getExercises, createExercise, createWorkout, createWorkoutExercise, updateWorkout, fetchApi } from '@/lib/api'
+import { getExerciseLibrary, createExercise, createWorkout, createWorkoutExercise, updateWorkout, fetchApi } from '@/lib/api'
 import { SearchBar } from '../components/SearchBar'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
 
 interface ExerciseData {
   id: string
+  source: 'CATALOG' | 'CUSTOM'
   name: string
   muscleGroup: string
   imageUrl?: string
@@ -36,9 +37,13 @@ interface DayExercise extends ExerciseData {
 interface WorkoutExercise {
   dayOfWeek?: string
   exercise?: ExerciseData
+  exerciseId?: string
+  catalogExerciseId?: string
+  exerciseSource?: 'CATALOG' | 'CUSTOM'
   sets?: number
   reps?: string
   restTimeSeconds?: number
+  restSeconds?: number
 }
 
 interface EditingRoutine {
@@ -107,13 +112,14 @@ export default function RoutineBuilder({
 
   const loadExercises = useCallback(async () => {
     try {
-      const res = await getExercises()
-      const apiExercises = res.dto?.data || []
-      const mapped: ExerciseData[] = apiExercises.map((e) => ({
+      const res = await getExerciseLibrary({ size: 500 })
+      const apiExercises = res.dto || res.lista || []
+      const mapped: ExerciseData[] = apiExercises.map((e: ExerciseLibraryItemDTO) => ({
         id: e.id,
+        source: e.source,
         name: e.name,
-        muscleGroup: e.muscleGroup,
-        imageUrl: '',
+        muscleGroup: e.muscleGroup || e.bodyPart || 'General',
+        imageUrl: e.imageUrl || '',
       }))
       setDbExercises(mapped)
     } catch (e) {
@@ -168,12 +174,16 @@ export default function RoutineBuilder({
       editingRoutine.exercises.forEach((we: WorkoutExercise) => {
         const day = we.dayOfWeek?.toLowerCase() as DayOfWeek
         if (day && initialDays[day]) {
+          const source = we.exerciseSource || (we.catalogExerciseId ? 'CATALOG' : 'CUSTOM')
+          const exerciseId = source === 'CATALOG' ? we.catalogExerciseId : we.exerciseId
           initialDays[day].push({
             ...we.exercise!,
+            id: exerciseId || we.exercise?.id || '',
+            source,
             uniqueId: `init-${uniqueIdCounter++}`,
             sets: we.sets || 4,
             reps: we.reps || '10-12',
-            restSeconds: we.restTimeSeconds || 60,
+            restSeconds: we.restSeconds || we.restTimeSeconds || 60,
           })
         }
       })
@@ -297,14 +307,18 @@ export default function RoutineBuilder({
     setIsSaving(true)
     try {
       const exercisesPayload = Object.entries(dayExercises).flatMap(([dayOfWeek, exercises]) =>
-        exercises.map((ex, index) => ({
-          exerciseId: ex.id,
-          dayOfWeek,
-          sets: parseInt(String(ex.sets)) || 4,
-          reps: ex.reps || '12',
-          restSeconds: ex.restSeconds || 60,
-          orderIndex: index,
-        }))
+        exercises.map((ex, index) => {
+          const basePayload = {
+            dayOfWeek,
+            sets: parseInt(String(ex.sets)) || 4,
+            reps: ex.reps || '12',
+            restSeconds: ex.restSeconds || 60,
+            orderIndex: index,
+          }
+          return ex.source === 'CATALOG'
+            ? { ...basePayload, catalogExerciseId: ex.id }
+            : { ...basePayload, exerciseId: ex.id }
+        })
       )
 
       const workoutPayload = {
@@ -539,6 +553,9 @@ export default function RoutineBuilder({
                       <span className="mt-0.5 inline-block rounded-md bg-[var(--accent)]/10 px-1.5 py-0.5 text-[8px] font-bold tracking-wide text-[var(--accent-text)] uppercase sm:mt-1 sm:px-2 sm:text-[10px]">
                         {exercise.muscleGroup || 'General'}
                       </span>
+                      <span className="ml-1.5 mt-0.5 inline-block rounded-md bg-[var(--surface)] px-1.5 py-0.5 text-[8px] font-bold tracking-wide text-[var(--text-muted)] uppercase sm:mt-1 sm:px-2 sm:text-[10px]">
+                        {exercise.source === 'CATALOG' ? 'Catalogo' : 'Personalizado'}
+                      </span>
                     </div>
 
                     <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
@@ -699,6 +716,9 @@ export default function RoutineBuilder({
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[11px] font-semibold text-[var(--text-primary)] sm:text-xs">
                           {exercise.name}
+                        </p>
+                        <p className="truncate text-[9px] font-medium uppercase tracking-wide text-[var(--text-muted)] sm:text-[10px]">
+                          {exercise.source === 'CATALOG' ? 'Catalogo global' : exercise.muscleGroup || 'Personalizado'}
                         </p>
                       </div>
                       <Plus size={12} className="shrink-0 text-[var(--text-muted)] sm:size-[14]" />

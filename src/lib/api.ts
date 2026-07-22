@@ -12,6 +12,9 @@ import type {
   MercadoPagoTenantConfigDTO,
   MercadoPagoTenantConfigRequest,
   MercadoPagoOAuthConnectDTO,
+  ExerciseCatalogDTO,
+  ExerciseCatalogFacetsDTO,
+  ExerciseLibraryItemDTO,
   TenantSummaryDTO,
   SaasPlanDTO,
   TenantRequestDTO,
@@ -38,6 +41,7 @@ import type {
   OrderStatusRequest,
   ManualRefundRequest,
   WorkoutRequest,
+  WorkoutExerciseRequest,
   HealthDTO,
   ReadinessDTO,
   UserDTO,
@@ -242,6 +246,41 @@ export const createExercise = (data: Partial<ExerciseDTO>) =>
     body: JSON.stringify(data),
   })
 
+export const getExerciseCatalog = (params?: {
+  name?: string
+  bodyPart?: string
+  muscleGroup?: string
+  equipment?: string
+  target?: string
+  page?: number
+  size?: number
+}) => {
+  const q = new URLSearchParams()
+  if (params?.name) q.set('name', params.name)
+  if (params?.bodyPart) q.set('bodyPart', params.bodyPart)
+  if (params?.muscleGroup) q.set('muscleGroup', params.muscleGroup)
+  if (params?.equipment) q.set('equipment', params.equipment)
+  if (params?.target) q.set('target', params.target)
+  if (params?.page !== undefined) q.set('page', String(params.page))
+  if (params?.size !== undefined) q.set('size', String(params.size))
+  const qs = q.toString()
+  return fetchApi<ResponseDTO<PaginatedResult<ExerciseCatalogDTO>>>(
+    `/api/exercise-catalog${qs ? '?' + qs : ''}`
+  )
+}
+
+export const getExerciseCatalogFacets = () =>
+  fetchApi<ResponseDTO<ExerciseCatalogFacetsDTO>>('/api/exercise-catalog/facets')
+
+export const getExerciseLibrary = (params?: { name?: string; muscleGroup?: string; size?: number }) => {
+  const q = new URLSearchParams()
+  if (params?.name) q.set('name', params.name)
+  if (params?.muscleGroup) q.set('muscleGroup', params.muscleGroup)
+  if (params?.size !== undefined) q.set('size', String(params.size))
+  const qs = q.toString()
+  return fetchApi<ResponseDTO<ExerciseLibraryItemDTO[]>>(`/api/exercise-library${qs ? '?' + qs : ''}`)
+}
+
 export const getWorkouts = (params?: {
   title?: string
   memberId?: string
@@ -420,7 +459,8 @@ export const getWorkoutExercises = (workoutId: string) =>
   )
 export const createWorkoutExercise = (data: {
   workoutId: string
-  exerciseId: string
+  exerciseId?: string
+  catalogExerciseId?: string
   dayOfWeek?: string
   sets: number
   reps: string
@@ -433,15 +473,7 @@ export const createWorkoutExercise = (data: {
   })
 export const updateWorkoutExercise = (
   id: string,
-  data: {
-    workoutId: string
-    exerciseId: string
-    dayOfWeek?: string
-    sets?: number
-    reps?: string
-    restSeconds?: number
-    orderIndex?: number
-  }
+  data: Partial<WorkoutExerciseRequest> & { workoutId: string }
 ) =>
   fetchApi<ResponseDTO<WorkoutExerciseListItemDTO>>(`/api/workout-exercises/${id}`, {
     method: 'PUT',
