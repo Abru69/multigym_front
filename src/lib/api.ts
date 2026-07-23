@@ -12,6 +12,9 @@ import type {
   MercadoPagoTenantConfigDTO,
   MercadoPagoTenantConfigRequest,
   MercadoPagoOAuthConnectDTO,
+  PlatformMercadoPagoStatusDTO,
+  PlatformMercadoPagoConfigDTO,
+  PlatformMercadoPagoConfigRequest,
   ExerciseCatalogDTO,
   ExerciseCatalogFacetsDTO,
   ExerciseLibraryItemDTO,
@@ -803,8 +806,29 @@ export const disconnectMercadoPagoOAuth = () =>
     method: 'POST',
   })
 
+export const getPlatformMercadoPagoStatus = () =>
+  fetchApi<ResponseDTO<PlatformMercadoPagoStatusDTO>>('/api/platform/mercadopago/status')
+
+export const getPlatformMercadoPagoConfig = () =>
+  fetchApi<ResponseDTO<PlatformMercadoPagoConfigDTO>>('/api/platform/mercadopago/config')
+
+export const savePlatformMercadoPagoConfig = (data: PlatformMercadoPagoConfigRequest) =>
+  fetchApi<ResponseDTO<PlatformMercadoPagoConfigDTO>>('/api/platform/mercadopago/config', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+
 export const getTenantMercadoPagoConfig = (tenantId: string) =>
   fetchApi<ResponseDTO<MercadoPagoTenantConfigDTO>>(`/api/tenants/${tenantId}/mercadopago/config`)
+
+export const saveTenantMercadoPagoConfig = (
+  tenantId: string,
+  data: MercadoPagoTenantConfigRequest
+) =>
+  fetchApi<ResponseDTO<MercadoPagoTenantConfigDTO>>(`/api/tenants/${tenantId}/mercadopago/config`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
 
 export const disableTenantMercadoPago = (tenantId: string) =>
   fetchApi<ResponseDTO<MercadoPagoTenantConfigDTO>>(

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -18,6 +18,7 @@ export default function Login() {
   const [tenantId, setTenantId] = useState(autoTenant || '')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const formRef = useRef<HTMLFormElement>(null)
   const { login, isLoading, isAuthenticated } = useAuthStore()
   const navigate = useNavigate()
 
@@ -51,6 +52,12 @@ export default function Login() {
     }
   }
 
+  const handlePasswordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter' || isLoading || e.nativeEvent.isComposing) return
+    e.preventDefault()
+    formRef.current?.requestSubmit()
+  }
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
       <h2 className="font-heading mb-1 text-2xl font-black text-[var(--text-primary)]">
@@ -73,7 +80,7 @@ export default function Login() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
         {!autoTenant && (
           <div>
             <Label>Código de Gimnasio</Label>
@@ -115,6 +122,7 @@ export default function Login() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={handlePasswordKeyDown}
               placeholder="••••••••"
               className="pr-11"
               required

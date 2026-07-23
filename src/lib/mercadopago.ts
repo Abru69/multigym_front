@@ -10,7 +10,7 @@ const mpInstances = new Map<string, unknown>()
 export function getMercadoPago(publicKeyOverride?: string | null) {
   const publicKey = publicKeyOverride || import.meta.env.VITE_MP_PUBLIC_KEY
   if (!publicKey) {
-    throw new Error('VITE_MP_PUBLIC_KEY no está configurada en .env.local')
+    throw new Error('Mercado Pago public key no está configurada')
   }
 
   const cached = mpInstances.get(publicKey)

@@ -22,8 +22,6 @@ import type { TenantPaymentDTO, TenantRenewalInfoDTO } from '@/types'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { LoadingState } from '../components/LoadingState'
 
-const isMercadoPagoTestMode = import.meta.env.VITE_MP_PUBLIC_KEY?.startsWith('TEST-')
-
 export default function Billing() {
   const addToast = useToastStore((s) => s.addToast)
   const { user } = useAuthStore()
@@ -32,10 +30,10 @@ export default function Billing() {
   const [isLoading, setIsLoading] = useState(true)
   const [isPaying, setIsPaying] = useState(false)
   const [mpReady, setMpReady] = useState(false)
-  const [cardholderName, setCardholderName] = useState(isMercadoPagoTestMode ? 'APRO' : '')
-  const [cardNumber, setCardNumber] = useState(isMercadoPagoTestMode ? '4075 5957 1648 3764' : '')
-  const [cardExpiry, setCardExpiry] = useState(isMercadoPagoTestMode ? '11/30' : '')
-  const [cardCvc, setCardCvc] = useState(isMercadoPagoTestMode ? '123' : '')
+  const [cardholderName, setCardholderName] = useState('')
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardExpiry, setCardExpiry] = useState('')
+  const [cardCvc, setCardCvc] = useState('')
   const [payerEmail, setPayerEmail] = useState(user?.email || '')
 
   const loadBilling = useCallback(async () => {
@@ -45,7 +43,14 @@ export default function Billing() {
         getTenantBillingRenewalInfo(),
         getTenantBillingPayments(),
       ])
-      setRenewalInfo(infoRes.dto || null)
+      const nextInfo = infoRes.dto || null
+      setRenewalInfo(nextInfo)
+      if (nextInfo?.mercadoPagoPublicKey?.startsWith('TEST-')) {
+        setCardholderName((value) => value || 'APRO')
+        setCardNumber((value) => value || '4075 5957 1648 3764')
+        setCardExpiry((value) => value || '11/30')
+        setCardCvc((value) => value || '123')
+      }
       setPayments(paymentsRes.lista || paymentsRes.dto || [])
     } catch (err) {
       addToast(err instanceof Error ? err.message : 'Error al cargar facturación', 'error')
@@ -61,8 +66,14 @@ export default function Billing() {
   }, [loadBilling])
 
   useEffect(() => {
+    if (isLoading) return
     const initMp = (retries = 0) => {
       try {
+        if (!renewalInfo?.mercadoPagoPublicKey) {
+          setMpReady(false)
+          addToast('Mercado Pago SaaS no tiene public key configurada', 'warning')
+          return
+        }
         if (typeof window.MercadoPago === 'undefined') {
           if (retries < 5) {
             setTimeout(() => initMp(retries + 1), 1000)
@@ -75,7 +86,7 @@ export default function Billing() {
           )
           return
         }
-        getMercadoPago()
+        getMercadoPago(renewalInfo?.mercadoPagoPublicKey)
         setMpReady(true)
       } catch (err) {
         setMpReady(false)
@@ -83,7 +94,7 @@ export default function Billing() {
       }
     }
     initMp()
-  }, [addToast])
+  }, [addToast, isLoading, renewalInfo?.mercadoPagoPublicKey])
 
   const formatCardNumber = (value: string) =>
     value
@@ -122,7 +133,7 @@ export default function Billing() {
       const expirationYear =
         expirationYearShort.length === 2 ? `20${expirationYearShort}` : expirationYearShort
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mp: any = getMercadoPago()
+      const mp: any = getMercadoPago(renewalInfo?.mercadoPagoPublicKey)
       const tokenResponse = await mp.createCardToken({
         cardNumber: cardDigits,
         cardholderName: cardholderName.trim(),
@@ -162,6 +173,12 @@ export default function Billing() {
   if (isLoading) return <LoadingState text="Cargando facturación..." />
 
   const canPay = Boolean(renewalInfo?.canRenew && mpReady && !isPaying)
+  const isMercadoPagoTestMode = renewalInfo?.mercadoPagoPublicKey?.startsWith('TEST-')
+  const isStagingHost = window.location.hostname.includes('staging')
+  const liveCredentialsOnStaging = Boolean(
+    isStagingHost && renewalInfo?.mercadoPagoAccessTokenMode === 'LIVE'
+  )
+  const canSubmitPayment = canPay && !liveCredentialsOnStaging
 
   return (
     <div className="space-y-6">
@@ -235,6 +252,13 @@ export default function Billing() {
               </div>
             )}
 
+            {liveCredentialsOnStaging && (
+              <div className="mt-5 rounded-2xl border border-[var(--danger)]/40 bg-[var(--danger)]/10 p-4 text-sm text-[var(--text-secondary)]">
+                Staging está usando un access token productivo de Mercado Pago. Para probar pagos aquí,
+                configura un access token sandbox que empiece con TEST en Mercado Pago SaaS de platform.
+              </div>
+            )}
+
             {isMercadoPagoTestMode && mpReady && (
               <div className="mt-5 rounded-2xl border border-[var(--info)]/40 bg-[var(--info)]/10 p-4 text-sm text-[var(--text-secondary)]">
                 Modo sandbox: usa APRO, Visa 4075 5957 1648 3764, CVV 123, vencimiento 11/30.
@@ -296,7 +320,7 @@ export default function Billing() {
                 </Field>
               </div>
 
-              <Button type="submit" disabled={!canPay} className="w-full gap-2">
+              <Button type="submit" disabled={!canSubmitPayment} className="w-full gap-2">
                 {isPaying ? (
                   <Loader2 className="animate-spin" size={18} />
                 ) : (

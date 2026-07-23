@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { usePlatformAuthStore } from '@/features/platform/store/platformAuthStore'
@@ -8,6 +8,7 @@ export default function PlatformLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const formRef = useRef<HTMLFormElement>(null)
   const { login, isLoading, isAuthenticated } = usePlatformAuthStore()
   const navigate = useNavigate()
 
@@ -25,6 +26,12 @@ export default function PlatformLogin() {
     } catch {
       setError('Error al conectar con el servidor. Intenta de nuevo.')
     }
+  }
+
+  const handlePasswordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter' || isLoading || e.nativeEvent.isComposing) return
+    e.preventDefault()
+    formRef.current?.requestSubmit()
   }
 
   return (
@@ -112,7 +119,7 @@ export default function PlatformLogin() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
               <label
@@ -167,6 +174,7 @@ export default function PlatformLogin() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={handlePasswordKeyDown}
                   placeholder="••••••••"
                   required
                   className="w-full rounded-xl py-3 pr-4 pl-10 text-sm transition-all outline-none"

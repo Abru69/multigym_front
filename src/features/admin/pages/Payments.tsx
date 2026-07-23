@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import {
   getPayments,
   createPayment,
@@ -6,7 +7,7 @@ import {
   deletePayment,
   getSubscriptions,
 } from '@/lib/api'
-import { Plus, DollarSign, Edit2, Trash2 } from 'lucide-react'
+import { Plus, DollarSign, Edit2, Trash2, ReceiptText } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -218,15 +219,32 @@ export default function PaymentsPage() {
         subtitle={`${payments.length} pagos registrados — Total: ${formatCurrency(totalAmount)}`}
         icon={DollarSign}
         action={
-          <button
-            onClick={() => openCreateModal()}
-            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
-            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
-          >
-            <Plus size={16} /> Registrar Pago
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to="/admin/billing"
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+              style={{ backgroundColor: 'var(--surface)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
+            >
+              <ReceiptText size={16} /> Pagar SaaS
+            </Link>
+            <button
+              onClick={() => openCreateModal()}
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
+              style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+            >
+              <Plus size={16} /> Registrar Pago
+            </button>
+          </div>
         }
       />
+
+      <div
+        className="rounded-2xl px-4 py-3 text-sm"
+        style={{ border: '1px solid var(--border)', backgroundColor: 'var(--surface)', color: 'var(--text-secondary)' }}
+      >
+        Esta pantalla registra pagos de membresías de clientes. Para pagar la suscripción SaaS del gimnasio,
+        usa <Link to="/admin/billing" className="font-bold" style={{ color: 'var(--accent)' }}>Facturación SaaS</Link>.
+      </div>
 
       {error && (
         <div

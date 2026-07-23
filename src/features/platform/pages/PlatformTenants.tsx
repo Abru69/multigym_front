@@ -15,7 +15,11 @@ import {
   ShieldOff,
 } from 'lucide-react'
 import { usePlatformTenantsStore } from '@/features/platform/store/platformTenantsStore'
-import { disableTenantMercadoPago, getTenantMercadoPagoConfig } from '@/lib/api'
+import {
+  disableTenantMercadoPago,
+  getTenantMercadoPagoConfig,
+  saveTenantMercadoPagoConfig,
+} from '@/lib/api'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -73,14 +77,24 @@ export default function PlatformTenants() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [mpTenant, setMpTenant] = useState<TenantDTO | null>(null)
   const [mpConfig, setMpConfig] = useState<MercadoPagoTenantConfigDTO | null>(null)
+  const [mpForm, setMpForm] = useState({
+    enabled: false,
+    mpUserId: '',
+    publicKey: '',
+    webhookSecret: '',
+    notificationUrl: '',
+    siteId: 'MLM',
+    currency: 'MXN',
+    processingMode: 'automatic',
+  })
   const [isMpLoading, setIsMpLoading] = useState(false)
+  const [isMpSaving, setIsMpSaving] = useState(false)
   const [isMpDisabling, setIsMpDisabling] = useState(false)
   const [form, setForm] = useState<TenantRequestDTO>({
     tenantId: '',
     name: '',
     subdomain: '',
     adminEmail: '',
-    adminPassword: '',
     adminName: '',
     adminPhone: '',
     planId: '',
@@ -113,7 +127,6 @@ export default function PlatformTenants() {
       name: '',
       subdomain: '',
       adminEmail: '',
-      adminPassword: '',
       adminName: '',
       adminPhone: '',
       planId: plans[0]?.id || '',
@@ -151,11 +164,57 @@ export default function PlatformTenants() {
     setIsMpLoading(true)
     try {
       const response = await getTenantMercadoPagoConfig(tenant.tenantId)
-      setMpConfig(response.dto || null)
+      const config = response.dto || null
+      setMpConfig(config)
+      setMpForm({
+        enabled: !!config?.enabled,
+        mpUserId: config?.mpUserId || '',
+        publicKey: config?.publicKey || '',
+        webhookSecret: '',
+        notificationUrl: config?.notificationUrl || '',
+        siteId: config?.siteId || 'MLM',
+        currency: config?.currency || 'MXN',
+        processingMode: config?.processingMode || 'automatic',
+      })
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Error al cargar Mercado Pago')
     } finally {
       setIsMpLoading(false)
+    }
+  }
+
+  const handleSaveMercadoPago = async () => {
+    if (!mpTenant) return
+    setIsMpSaving(true)
+    try {
+      const response = await saveTenantMercadoPagoConfig(mpTenant.tenantId, {
+        enabled: mpForm.enabled,
+        mpUserId: mpForm.mpUserId.trim() || null,
+        publicKey: mpForm.publicKey.trim() || null,
+        webhookSecret: mpForm.webhookSecret.trim() || null,
+        notificationUrl: mpForm.notificationUrl.trim() || null,
+        siteId: mpForm.siteId.trim() || 'MLM',
+        currency: mpForm.currency.trim() || 'MXN',
+        processingMode: mpForm.processingMode.trim() || 'automatic',
+      })
+      const config = response.dto || null
+      setMpConfig(config)
+      setMpForm((current) => ({
+        ...current,
+        enabled: !!config?.enabled,
+        mpUserId: config?.mpUserId || '',
+        publicKey: config?.publicKey || '',
+        webhookSecret: '',
+        notificationUrl: config?.notificationUrl || '',
+        siteId: config?.siteId || 'MLM',
+        currency: config?.currency || 'MXN',
+        processingMode: config?.processingMode || 'automatic',
+      }))
+      showToast('Mercado Pago actualizado')
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Error al guardar Mercado Pago')
+    } finally {
+      setIsMpSaving(false)
     }
   }
 
@@ -320,7 +379,16 @@ export default function PlatformTenants() {
         <table className="w-full">
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
-              {['Gimnasio', 'Subdominio', 'Plan', 'Miembros', 'Estado', 'Creado', 'Acciones'].map(
+              {[
+                'Gimnasio',
+                'Subdominio',
+                'Plan',
+                'Miembros',
+                'Estado',
+                'Mercado Pago',
+                'Creado',
+                'Acciones',
+              ].map(
                 (h) => (
                   <th
                     key={h}
@@ -428,6 +496,19 @@ export default function PlatformTenants() {
                     >
                       <sc.icon size={12} />
                       {sc.label}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openMercadoPago(t)
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold transition-all hover:opacity-80"
+                      style={{ background: 'var(--accent-muted)', color: 'var(--accent)' }}
+                    >
+                      <CreditCard size={12} /> Ver / Configurar
                     </button>
                   </td>
                   <td className="px-4 py-3 text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -553,7 +634,7 @@ export default function PlatformTenants() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-xl rounded-2xl p-6"
+              className="flex max-h-[calc(100vh-2rem)] w-full max-w-xl flex-col overflow-hidden rounded-2xl"
               style={{
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
@@ -561,7 +642,7 @@ export default function PlatformTenants() {
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="mb-6 flex items-start justify-between gap-4">
+              <div className="flex shrink-0 items-start justify-between gap-4 p-6 pb-4">
                 <div className="flex items-start gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent)]/15 text-[var(--accent)]">
                     <CreditCard size={22} />
@@ -580,6 +661,7 @@ export default function PlatformTenants() {
                 </button>
               </div>
 
+              <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
               {isMpLoading ? (
                 <div
                   className="flex h-32 items-center justify-center gap-2 text-sm"
@@ -629,9 +711,105 @@ export default function PlatformTenants() {
                     />
                   </div>
 
-                  <div className="flex justify-end gap-3">
+                  <div
+                    className="space-y-4 rounded-2xl border p-4"
+                    style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p
+                          className="text-xs font-black tracking-wide uppercase"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          Configuración platform
+                        </p>
+                        <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                          Los tokens OAuth existentes se preservan. Deja webhook secret vacío si no
+                          quieres cambiarlo.
+                        </p>
+                      </div>
+                      <label className="flex items-center gap-2 text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                        <input
+                          type="checkbox"
+                          checked={mpForm.enabled}
+                          onChange={(e) => setMpForm({ ...mpForm, enabled: e.target.checked })}
+                        />
+                        Habilitado
+                      </label>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <Label>MP User ID</Label>
+                        <Input
+                          value={mpForm.mpUserId}
+                          onChange={(e) => setMpForm({ ...mpForm, mpUserId: e.target.value })}
+                          placeholder="140269762"
+                        />
+                      </div>
+                      <div>
+                        <Label>Public key</Label>
+                        <Input
+                          value={mpForm.publicKey}
+                          onChange={(e) => setMpForm({ ...mpForm, publicKey: e.target.value })}
+                          placeholder="TEST-..."
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <Label>Webhook secret</Label>
+                        <Input
+                          type="password"
+                          value={mpForm.webhookSecret}
+                          onChange={(e) => setMpForm({ ...mpForm, webhookSecret: e.target.value })}
+                          placeholder={
+                            mpConfig?.webhookSecretConfigured
+                              ? 'Ya configurado, escribe sólo para reemplazar'
+                              : 'Secret del webhook Mercado Pago'
+                          }
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <Label>Notification URL</Label>
+                        <Input
+                          value={mpForm.notificationUrl}
+                          onChange={(e) => setMpForm({ ...mpForm, notificationUrl: e.target.value })}
+                          placeholder="https://api-staging.multigym.mx/api/webhooks/mercadopago/gymx"
+                        />
+                      </div>
+                      <div>
+                        <Label>Site ID</Label>
+                        <Input
+                          value={mpForm.siteId}
+                          onChange={(e) => setMpForm({ ...mpForm, siteId: e.target.value })}
+                          placeholder="MLM"
+                        />
+                      </div>
+                      <div>
+                        <Label>Moneda</Label>
+                        <Input
+                          value={mpForm.currency}
+                          onChange={(e) => setMpForm({ ...mpForm, currency: e.target.value })}
+                          placeholder="MXN"
+                        />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <Label>Processing mode</Label>
+                        <Input
+                          value={mpForm.processingMode}
+                          onChange={(e) => setMpForm({ ...mpForm, processingMode: e.target.value })}
+                          placeholder="automatic"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap justify-end gap-3 border-t pt-4" style={{ borderColor: 'var(--border)' }}>
                     <Button variant="secondary" onClick={() => setMpTenant(null)}>
                       Cerrar
+                    </Button>
+                    <Button onClick={handleSaveMercadoPago} disabled={isMpSaving} className="gap-2">
+                      {isMpSaving && <Loader2 size={14} className="animate-spin" />}
+                      Guardar
                     </Button>
                     <Button
                       variant="destructive"
@@ -649,6 +827,7 @@ export default function PlatformTenants() {
                   </div>
                 </div>
               )}
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -700,7 +879,7 @@ export default function PlatformTenants() {
                   <div key={f.key} className={f.colSpan ? 'col-span-2' : ''}>
                     <Label>{f.label}</Label>
                     <Input
-                      type={f.type ?? 'text'}
+                      type="text"
                       value={form[f.key]}
                       onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                       placeholder={f.placeholder}
@@ -719,12 +898,6 @@ export default function PlatformTenants() {
                 {[
                   { label: 'Nombre Admin', key: 'adminName' as const, placeholder: 'Juan Pérez' },
                   {
-                    label: 'Contraseña',
-                    key: 'adminPassword' as const,
-                    placeholder: 'Mínimo 8 caracteres',
-                    type: 'password',
-                  },
-                  {
                     label: 'Teléfono',
                     key: 'adminPhone' as const,
                     placeholder: '+52 614 555 0000',
@@ -733,7 +906,7 @@ export default function PlatformTenants() {
                   <div key={f.key}>
                     <Label>{f.label}</Label>
                     <Input
-                      type={f.type ?? 'text'}
+                      type="text"
                       value={form[f.key]}
                       onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
                       placeholder={f.placeholder}

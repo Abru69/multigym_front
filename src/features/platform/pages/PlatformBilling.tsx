@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import {
   Download,
   CreditCard,
@@ -32,7 +33,7 @@ function formatDate(dateStr: string | null): string {
 }
 
 export default function PlatformBilling() {
-  const { metrics, plans, billingSummaries, isLoading, error, loadBillingData } =
+  const { metrics, plans, billingSummaries, mercadoPagoStatus, isLoading, error, loadBillingData } =
     usePlatformBillingStore()
 
   useEffect(() => {
@@ -100,6 +101,15 @@ export default function PlatformBilling() {
       ]
     : []
 
+  const missingMercadoPagoConfig = mercadoPagoStatus
+    ? [
+        !mercadoPagoStatus.accessTokenConfigured ? 'Access token' : null,
+        !mercadoPagoStatus.publicKeyConfigured ? 'Public key' : null,
+        !mercadoPagoStatus.webhookSecretConfigured ? 'Webhook secret' : null,
+        !mercadoPagoStatus.notificationUrlConfigured ? 'Notification URL' : null,
+      ].filter(Boolean)
+    : []
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -127,6 +137,70 @@ export default function PlatformBilling() {
         >
           <Download size={16} /> Exportar
         </button>
+      </div>
+
+      {/* Platform Mercado Pago */}
+      <div
+        className="rounded-2xl p-5"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+      >
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex gap-4">
+            <div
+              className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl"
+              style={{
+                background: mercadoPagoStatus?.enabled ? 'var(--success-muted)' : 'var(--warning-muted)',
+                color: mercadoPagoStatus?.enabled ? 'var(--success)' : 'var(--warning)',
+              }}
+            >
+              {mercadoPagoStatus?.enabled ? <CheckCircle size={22} /> : <AlertCircle size={22} />}
+            </div>
+            <div>
+              <p
+                className="text-xs font-bold tracking-wider uppercase"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Mercado Pago plataforma
+              </p>
+              <h3 className="mt-1 text-lg font-black" style={{ color: 'var(--text-primary)' }}>
+                {mercadoPagoStatus?.enabled
+                  ? 'Cuenta configurada para cobrar SaaS'
+                  : 'Cuenta global no configurada'}
+              </h3>
+              <p className="mt-1 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
+                Esta es la cuenta usada para pagos de gimnasios a MultiGym: renovaciones,
+                mensualidades SaaS y cobros platform. No es la configuración Mercado Pago de cada tenant.
+              </p>
+              {missingMercadoPagoConfig.length > 0 && (
+                <p className="mt-2 text-xs font-semibold" style={{ color: 'var(--warning)' }}>
+                  Faltante: {missingMercadoPagoConfig.join(', ')}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <Link
+            to="/platform/mercadopago"
+            className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold transition"
+            style={{ background: 'var(--accent)', color: 'var(--text-on-primary)' }}
+          >
+            Configurar SaaS
+          </Link>
+
+          <div className="grid min-w-full gap-2 text-xs sm:grid-cols-2 lg:min-w-[360px]">
+            <MpStatusPill label="Access token" ok={!!mercadoPagoStatus?.accessTokenConfigured} />
+            <MpStatusPill label="Public key" ok={!!mercadoPagoStatus?.publicKeyConfigured} />
+            <MpStatusPill label="Webhook secret" ok={!!mercadoPagoStatus?.webhookSecretConfigured} />
+            <MpStatusPill label="OAuth app" ok={!!mercadoPagoStatus?.oauthConfigured} />
+            <MpMeta label="País" value={mercadoPagoStatus?.siteId || 'MLM'} />
+            <MpMeta label="Moneda" value={mercadoPagoStatus?.currency || 'MXN'} />
+            <MpMeta label="Modo" value={mercadoPagoStatus?.processingMode || 'automatic'} />
+            <MpMeta
+              label="Webhook URL"
+              value={mercadoPagoStatus?.notificationUrl || 'No configurada'}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Metrics */}
@@ -347,6 +421,40 @@ export default function PlatformBilling() {
           </table>
         </div>
       </div>
+    </div>
+  )
+}
+
+function MpStatusPill({ label, ok }: { label: string; ok: boolean }) {
+  return (
+    <div
+      className="flex items-center justify-between gap-2 rounded-xl px-3 py-2"
+      style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+    >
+      <span style={{ color: 'var(--text-muted)' }}>{label}</span>
+      <span
+        className="rounded-full px-2 py-0.5 font-bold"
+        style={{
+          background: ok ? 'var(--success-muted)' : 'var(--warning-muted)',
+          color: ok ? 'var(--success)' : 'var(--warning)',
+        }}
+      >
+        {ok ? 'OK' : 'Falta'}
+      </span>
+    </div>
+  )
+}
+
+function MpMeta({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      className="rounded-xl px-3 py-2"
+      style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+    >
+      <p style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="mt-0.5 truncate font-bold" style={{ color: 'var(--text-primary)' }} title={value}>
+        {value}
+      </p>
     </div>
   )
 }

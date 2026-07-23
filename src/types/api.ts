@@ -65,6 +65,8 @@ export interface TenantRenewalInfoDTO {
   planName: string
   price: number
   currency: string
+  mercadoPagoPublicKey?: string | null
+  mercadoPagoAccessTokenMode?: 'TEST' | 'LIVE' | 'MISSING' | 'UNKNOWN' | string | null
   trialEndsAt?: string | null
   subscriptionEndsAt?: string | null
   canRenew: boolean
@@ -122,6 +124,61 @@ export interface MercadoPagoOAuthConnectDTO {
   state: string
 }
 
+export interface PlatformMercadoPagoStatusDTO {
+  enabled: boolean
+  accessTokenConfigured: boolean
+  publicKeyConfigured: boolean
+  webhookSecretConfigured: boolean
+  notificationUrlConfigured: boolean
+  oauthConfigured: boolean
+  siteId: string
+  currency: string
+  processingMode: string
+  notificationUrl?: string | null
+  oauthRedirectUrl?: string | null
+}
+
+export interface PlatformMercadoPagoConfigDTO {
+  enabled: boolean
+  effectiveEnabled: boolean
+  accessTokenConfigured: boolean
+  publicKeyConfigured: boolean
+  webhookSecretConfigured: boolean
+  notificationUrlConfigured: boolean
+  oauthConfigured: boolean
+  oauthClientSecretConfigured: boolean
+  usingEnvFallback: boolean
+  publicKeyMode: 'TEST' | 'LIVE' | 'MISSING' | 'UNKNOWN' | string
+  accessTokenMode: 'TEST' | 'LIVE' | 'MISSING' | 'UNKNOWN' | string
+  publicKey?: string | null
+  siteId: string
+  currency: string
+  processingMode: string
+  notificationUrl?: string | null
+  oauthClientId?: string | null
+  oauthRedirectUrl?: string | null
+}
+
+export interface PlatformMercadoPagoConfigRequest {
+  enabled?: boolean
+  publicKey?: string | null
+  accessToken?: string | null
+  webhookSecret?: string | null
+  notificationUrl?: string | null
+  siteId?: string | null
+  currency?: string | null
+  processingMode?: string | null
+  oauthClientId?: string | null
+  oauthClientSecret?: string | null
+  oauthRedirectUrl?: string | null
+  clearPublicKey?: boolean
+  clearAccessToken?: boolean
+  clearWebhookSecret?: boolean
+  clearOauthClientId?: boolean
+  clearOauthClientSecret?: boolean
+  clearOauthRedirectUrl?: boolean
+}
+
 export interface TenantSummaryDTO {
   tenantCount: number
   activeTenantCount: number
@@ -147,7 +204,6 @@ export interface TenantRequestDTO {
   name: string
   subdomain: string
   adminEmail: string
-  adminPassword: string
   adminName: string
   adminPhone: string
   planId: string

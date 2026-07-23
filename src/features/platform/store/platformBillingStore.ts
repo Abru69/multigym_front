@@ -4,11 +4,13 @@ import {
   getTenantsSummary,
   getSaasPlans,
   getTenantBillingSummaries,
+  getPlatformMercadoPagoStatus,
 } from '@/lib/api'
 import type {
   TenantDTO,
   SaasPlanDTO,
   TenantBillingSummaryDTO,
+  PlatformMercadoPagoStatusDTO,
 } from '@/types'
 
 interface BillingMetrics {
@@ -30,6 +32,7 @@ interface PlatformBillingStore {
   plans: PlanWithTenants[]
   billingSummaries: TenantBillingSummaryDTO[]
   tenants: TenantDTO[]
+  mercadoPagoStatus: PlatformMercadoPagoStatusDTO | null
   isLoading: boolean
   error: string | null
   loadBillingData: () => Promise<void>
@@ -40,17 +43,19 @@ export const usePlatformBillingStore = create<PlatformBillingStore>()((set) => (
   plans: [],
   billingSummaries: [],
   tenants: [],
+  mercadoPagoStatus: null,
   isLoading: false,
   error: null,
 
   loadBillingData: async () => {
     set({ isLoading: true, error: null })
     try {
-      const [tenantsRes, summaryRes, plansRes, billingRes] = await Promise.all([
+      const [tenantsRes, summaryRes, plansRes, billingRes, mercadoPagoRes] = await Promise.all([
         getTenants(),
         getTenantsSummary(),
         getSaasPlans(),
         getTenantBillingSummaries(),
+        getPlatformMercadoPagoStatus(),
       ])
 
       const tenants = tenantsRes?.dto?.data || []
@@ -92,6 +97,7 @@ export const usePlatformBillingStore = create<PlatformBillingStore>()((set) => (
         plans: plansWithTenants,
         billingSummaries,
         tenants,
+        mercadoPagoStatus: mercadoPagoRes.dto || null,
         isLoading: false,
       })
     } catch (err) {
