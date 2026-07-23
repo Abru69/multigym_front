@@ -104,10 +104,13 @@ function getBaseDomain(): string {
   }
 
   const parts = hostname.split('.')
-  if (parts.length >= 2) {
-    // gym1.multigym.com -> multigym.com
-    // Note: This is naive and won't work perfectly for .co.uk, but fine for .localhost and .com
+  if (parts.length === 2) {
+    // multigym.mx → multigym.mx (root domain, not a subdomain)
     if (parts[1] === 'localhost') return 'localhost'
+    return hostname
+  }
+  if (parts.length >= 3) {
+    // gym1.multigym.mx → multigym.mx
     return parts.slice(1).join('.')
   }
 
@@ -122,6 +125,7 @@ function isStagingHost(): boolean {
 export function getPlatformUrl(): string {
   const protocol = window.location.protocol
   const port = window.location.port ? `:${window.location.port}` : ''
+  if (isStagingHost()) return `${protocol}//staging.multigym.mx${port}`
   return `${protocol}//${getBaseDomain()}${port}`
 }
 
