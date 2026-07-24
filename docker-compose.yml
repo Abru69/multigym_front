@@ -2,10 +2,13 @@ services:
   multigym-dev-front:
     build:
       context: .
-      dockerfile: Dockerfile.vps
+      dockerfile: Dockerfile
     container_name: multigym-dev-front
     restart: unless-stopped
     profiles: ["dev"]
+    ports:
+      - 80:80
+      - 443:443
     env_file:
       - ./.env
     volumes:

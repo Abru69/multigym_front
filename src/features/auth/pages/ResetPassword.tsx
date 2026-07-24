@@ -13,7 +13,12 @@ export default function ResetPassword() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') || ''
   const tenant = searchParams.get('tenant') || ''
-  const loginPath = tenant ? `/login?tenant=${encodeURIComponent(tenant)}` : '/login'
+  const isPlatform = searchParams.get('platform') === 'true'
+  const loginPath = isPlatform
+    ? '/platform/login'
+    : tenant
+      ? `/login?tenant=${encodeURIComponent(tenant)}`
+      : '/login'
 
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -44,10 +49,13 @@ export default function ResetPassword() {
     setIsLoading(true)
 
     try {
-      await fetchApi<ResponseDTO<unknown>>('/api/auth/reset-password/confirm', {
+      await fetchApi<ResponseDTO<unknown>>(
+        isPlatform ? '/platform/auth/reset-password/confirm' : '/api/auth/reset-password/confirm',
+        {
         method: 'POST',
         body: JSON.stringify({ token, newPassword }),
-      })
+        }
+      )
       setSuccess(true)
     } catch (err: unknown) {
       setError(

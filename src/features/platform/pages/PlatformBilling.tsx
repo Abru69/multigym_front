@@ -1,22 +1,14 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
 import {
   Download,
   CreditCard,
   AlertCircle,
-  CheckCircle,
   TrendingUp,
   DollarSign,
   Building2,
 } from 'lucide-react'
 import { usePlatformBillingStore } from '../store/platformBillingStore'
-
-const planColorMap: Record<string, string> = {
-  Basic: 'var(--info)',
-  Pro: 'var(--accent)',
-  Enterprise: 'var(--warning)',
-}
 
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }
 const fadeUp = { hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }
@@ -33,7 +25,7 @@ function formatDate(dateStr: string | null): string {
 }
 
 export default function PlatformBilling() {
-  const { metrics, plans, billingSummaries, mercadoPagoStatus, isLoading, error, loadBillingData } =
+  const { metrics, billingSummaries, isLoading, error, loadBillingData } =
     usePlatformBillingStore()
 
   useEffect(() => {
@@ -101,15 +93,6 @@ export default function PlatformBilling() {
       ]
     : []
 
-  const missingMercadoPagoConfig = mercadoPagoStatus
-    ? [
-        !mercadoPagoStatus.accessTokenConfigured ? 'Access token' : null,
-        !mercadoPagoStatus.publicKeyConfigured ? 'Public key' : null,
-        !mercadoPagoStatus.webhookSecretConfigured ? 'Webhook secret' : null,
-        !mercadoPagoStatus.notificationUrlConfigured ? 'Notification URL' : null,
-      ].filter(Boolean)
-    : []
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -137,70 +120,6 @@ export default function PlatformBilling() {
         >
           <Download size={16} /> Exportar
         </button>
-      </div>
-
-      {/* Platform Mercado Pago */}
-      <div
-        className="rounded-2xl p-5"
-        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-      >
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex gap-4">
-            <div
-              className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl"
-              style={{
-                background: mercadoPagoStatus?.enabled ? 'var(--success-muted)' : 'var(--warning-muted)',
-                color: mercadoPagoStatus?.enabled ? 'var(--success)' : 'var(--warning)',
-              }}
-            >
-              {mercadoPagoStatus?.enabled ? <CheckCircle size={22} /> : <AlertCircle size={22} />}
-            </div>
-            <div>
-              <p
-                className="text-xs font-bold tracking-wider uppercase"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                Mercado Pago plataforma
-              </p>
-              <h3 className="mt-1 text-lg font-black" style={{ color: 'var(--text-primary)' }}>
-                {mercadoPagoStatus?.enabled
-                  ? 'Cuenta configurada para cobrar SaaS'
-                  : 'Cuenta global no configurada'}
-              </h3>
-              <p className="mt-1 max-w-2xl text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Esta es la cuenta usada para pagos de gimnasios a MultiGym: renovaciones,
-                mensualidades SaaS y cobros platform. No es la configuración Mercado Pago de cada tenant.
-              </p>
-              {missingMercadoPagoConfig.length > 0 && (
-                <p className="mt-2 text-xs font-semibold" style={{ color: 'var(--warning)' }}>
-                  Faltante: {missingMercadoPagoConfig.join(', ')}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <Link
-            to="/platform/mercadopago"
-            className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-bold transition"
-            style={{ background: 'var(--accent)', color: 'var(--text-on-primary)' }}
-          >
-            Configurar SaaS
-          </Link>
-
-          <div className="grid min-w-full gap-2 text-xs sm:grid-cols-2 lg:min-w-[360px]">
-            <MpStatusPill label="Access token" ok={!!mercadoPagoStatus?.accessTokenConfigured} />
-            <MpStatusPill label="Public key" ok={!!mercadoPagoStatus?.publicKeyConfigured} />
-            <MpStatusPill label="Webhook secret" ok={!!mercadoPagoStatus?.webhookSecretConfigured} />
-            <MpStatusPill label="OAuth app" ok={!!mercadoPagoStatus?.oauthConfigured} />
-            <MpMeta label="País" value={mercadoPagoStatus?.siteId || 'MLM'} />
-            <MpMeta label="Moneda" value={mercadoPagoStatus?.currency || 'MXN'} />
-            <MpMeta label="Modo" value={mercadoPagoStatus?.processingMode || 'automatic'} />
-            <MpMeta
-              label="Webhook URL"
-              value={mercadoPagoStatus?.notificationUrl || 'No configurada'}
-            />
-          </div>
-        </div>
       </div>
 
       {/* Metrics */}
@@ -248,92 +167,6 @@ export default function PlatformBilling() {
           </motion.div>
         ))}
       </motion.div>
-
-      {/* Plans */}
-      <div>
-        <h3
-          className="mb-4 text-sm font-bold tracking-wider uppercase"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          Planes SaaS Disponibles
-        </h3>
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={stagger}
-          className="grid grid-cols-1 gap-6 md:grid-cols-3"
-        >
-          {plans.map((pw) => {
-            const planColor = planColorMap[pw.plan.name] || 'var(--info)'
-            return (
-              <motion.div
-                key={pw.plan.id}
-                variants={fadeUp}
-                className="relative rounded-2xl p-6 transition-transform hover:-translate-y-1"
-                style={{
-                  background: 'var(--surface)',
-                  border: `1px solid var(--border)`,
-                }}
-              >
-                <h4
-                  className="text-sm font-bold tracking-wider uppercase"
-                  style={{ color: 'var(--text-secondary)' }}
-                >
-                  {pw.plan.name}
-                </h4>
-                <div className="mt-2 mb-1">
-                  <span
-                    className="text-3xl font-black"
-                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}
-                  >
-                    ${pw.plan.price}
-                  </span>
-                  <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                    /mes
-                  </span>
-                </div>
-                <p className="mb-5 text-xs" style={{ color: 'var(--text-muted)' }}>
-                  {pw.tenantCount} {pw.tenantCount === 1 ? 'gimnasio' : 'gimnasios'} activos
-                </p>
-                <ul className="space-y-2.5">
-                  <li
-                    className="flex items-center gap-2 text-xs"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    <CheckCircle size={14} style={{ color: 'var(--success)' }} />
-                    {pw.plan.memberLimit === -1
-                      ? 'Miembros ilimitados'
-                      : `Hasta ${pw.plan.memberLimit} miembros`}
-                  </li>
-                  <li
-                    className="flex items-center gap-2 text-xs"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
-                    <CheckCircle size={14} style={{ color: 'var(--success)' }} />
-                    {pw.plan.trialDays} días de prueba
-                  </li>
-                  {pw.plan.description && (
-                    <li className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                      {pw.plan.description}
-                    </li>
-                  )}
-                </ul>
-                <div className="mt-4">
-                  <span
-                    className="inline-block rounded-full px-2 py-0.5 text-[10px] font-bold"
-                    style={{
-                      background: pw.plan.isActive ? `${planColor}18` : 'var(--danger)18',
-                      color: pw.plan.isActive ? planColor : 'var(--danger)',
-                    }}
-                  >
-                    {pw.plan.isActive ? 'Activo' : 'Inactivo'}
-                  </span>
-                </div>
-              </motion.div>
-            )
-          })}
-        </motion.div>
-      </div>
 
       {/* Tenant Billing Summaries */}
       <div>
@@ -421,40 +254,6 @@ export default function PlatformBilling() {
           </table>
         </div>
       </div>
-    </div>
-  )
-}
-
-function MpStatusPill({ label, ok }: { label: string; ok: boolean }) {
-  return (
-    <div
-      className="flex items-center justify-between gap-2 rounded-xl px-3 py-2"
-      style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
-    >
-      <span style={{ color: 'var(--text-muted)' }}>{label}</span>
-      <span
-        className="rounded-full px-2 py-0.5 font-bold"
-        style={{
-          background: ok ? 'var(--success-muted)' : 'var(--warning-muted)',
-          color: ok ? 'var(--success)' : 'var(--warning)',
-        }}
-      >
-        {ok ? 'OK' : 'Falta'}
-      </span>
-    </div>
-  )
-}
-
-function MpMeta({ label, value }: { label: string; value: string }) {
-  return (
-    <div
-      className="rounded-xl px-3 py-2"
-      style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
-    >
-      <p style={{ color: 'var(--text-muted)' }}>{label}</p>
-      <p className="mt-0.5 truncate font-bold" style={{ color: 'var(--text-primary)' }} title={value}>
-        {value}
-      </p>
     </div>
   )
 }

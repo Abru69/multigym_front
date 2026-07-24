@@ -19,6 +19,7 @@ export interface LoginResponse {
 export interface PlatformLoginResponse {
   accessToken: string
   role: string
+  mustChangePassword: boolean
 }
 
 export type TenantStatus = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'SUSPENDED' | 'CANCELLED'

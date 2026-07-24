@@ -1,22 +1,42 @@
 import { useState, useEffect, useRef } from 'react'
+import type { CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { usePlatformAuthStore } from '@/features/platform/store/platformAuthStore'
-import { Zap, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react'
+import { Mail, Lock, AlertCircle, Loader2 } from 'lucide-react'
+
+const platformBrandStyle = {
+  '--accent': '#1769e8',
+  '--accent-hover': '#1256c7',
+  '--accent-light': '#6ea4ff',
+  '--accent-muted': 'rgba(23, 105, 232, 0.14)',
+  '--accent-text': '#ffffff',
+  '--detail': '#22ad55',
+  '--bg-primary': '#07142f',
+  '--bg-secondary': '#0b1c3e',
+  '--surface': '#0d2146',
+  '--glass-bg': 'rgba(10, 25, 55, 0.88)',
+  '--input-bg': '#0d2146',
+  '--text-primary': '#f4f8ff',
+  '--text-secondary': '#b7c7df',
+  '--text-muted': '#7f96b8',
+  '--border': '#19345d',
+  '--shadow-glow': '0 0 24px rgba(23, 105, 232, 0.22)',
+} as CSSProperties
 
 export default function PlatformLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const formRef = useRef<HTMLFormElement>(null)
-  const { login, isLoading, isAuthenticated } = usePlatformAuthStore()
+  const { login, isLoading, isAuthenticated, mustChangePassword } = usePlatformAuthStore()
   const navigate = useNavigate()
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/platform', { replace: true })
+      navigate(mustChangePassword ? '/platform/change-password' : '/platform', { replace: true })
     }
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, mustChangePassword, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,8 +56,9 @@ export default function PlatformLogin() {
 
   return (
     <div
-      className="flex min-h-screen items-center justify-center p-4"
+      className="flex min-h-screen items-center justify-center bg-[var(--bg-primary)] p-4"
       style={{
+        ...platformBrandStyle,
         background:
           'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-primary) 100%)',
       }}
@@ -90,13 +111,13 @@ export default function PlatformLogin() {
           {/* Logo */}
           <div className="mb-8 text-center">
             <div
-              className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl"
-              style={{
-                background: 'linear-gradient(135deg, var(--accent), var(--detail))',
-                boxShadow: 'var(--shadow-glow)',
-              }}
+              className="mx-auto mb-4 flex h-14 w-14 items-center justify-center"
             >
-              <Zap size={28} style={{ color: 'var(--text-on-primary)' }} />
+              <img
+                src="/branding/multigym-isotipo-transparent.png"
+                alt="MultiGym"
+                className="h-14 w-14 object-contain"
+              />
             </div>
             <h1
               className="mb-1 text-2xl font-black"
@@ -140,7 +161,7 @@ export default function PlatformLogin() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@saas.com"
+                  placeholder="correo@empresa.com"
                   required
                   className="w-full rounded-xl py-3 pr-4 pl-10 text-sm transition-all outline-none"
                   style={{
@@ -231,20 +252,6 @@ export default function PlatformLogin() {
             </button>
           </form>
 
-          {/* Hint (dev only) */}
-          {import.meta.env.DEV && (
-            <div
-              className="mt-6 rounded-xl p-3 text-center text-xs"
-              style={{
-                background: 'var(--input-bg)',
-                border: '1px solid var(--border)',
-                color: 'var(--text-muted)',
-              }}
-            >
-              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Demo: </span>
-              admin@saas.com / admin123
-            </div>
-          )}
         </div>
       </motion.div>
     </div>

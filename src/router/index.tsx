@@ -44,6 +44,7 @@ import {
   Cart,
   Checkout,
   PlatformLogin,
+  PlatformChangePassword,
   PlatformDashboard,
   PlatformTenants,
   PlatformUsers,
@@ -74,6 +75,10 @@ export const router = createBrowserRouter([
   {
     path: '/platform/login',
     element: withSuspense(PlatformLogin),
+  },
+  {
+    path: '/platform/change-password',
+    element: withSuspense(PlatformChangePassword),
   },
   {
     path: '/platform',

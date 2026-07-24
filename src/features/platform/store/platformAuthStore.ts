@@ -13,6 +13,7 @@ interface PlatformAuthStore {
   admin: PlatformAdmin | null
   token: string | null
   isAuthenticated: boolean
+  mustChangePassword: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<boolean>
   logout: () => Promise<void>
@@ -24,6 +25,7 @@ export const usePlatformAuthStore = create<PlatformAuthStore>()(
       admin: null,
       token: null,
       isAuthenticated: false,
+      mustChangePassword: false,
       isLoading: false,
 
       login: async (email: string, password: string) => {
@@ -43,6 +45,7 @@ export const usePlatformAuthStore = create<PlatformAuthStore>()(
               admin: { email, name: 'Super Admin', role: response.dto.role },
               token: response.dto.accessToken,
               isAuthenticated: true,
+              mustChangePassword: response.dto.mustChangePassword,
               isLoading: false,
             })
             return true
@@ -59,7 +62,7 @@ export const usePlatformAuthStore = create<PlatformAuthStore>()(
       logout: async () => {
         // Do not send the tenant token to /api/auth/logout. The backend does
         // not currently document a platform logout endpoint.
-        set({ admin: null, token: null, isAuthenticated: false })
+       set({ admin: null, token: null, isAuthenticated: false, mustChangePassword: false })
       },
     }),
     { name: 'platform-auth' }

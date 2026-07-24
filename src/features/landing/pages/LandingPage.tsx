@@ -4,18 +4,42 @@ import { Features } from '../components/Features'
 import { Pricing } from '../components/Pricing'
 import { Footer } from '../components/Footer'
 import { Link } from 'react-router-dom'
-import { Zap } from 'lucide-react'
+import type { CSSProperties } from 'react'
+
+const platformBrandStyle = {
+  '--accent': '#1769e8',
+  '--accent-hover': '#1256c7',
+  '--accent-light': '#6ea4ff',
+  '--accent-muted': 'rgba(23, 105, 232, 0.14)',
+  '--accent-text': '#ffffff',
+  '--detail': '#22ad55',
+  '--primary': '#1769e8',
+  '--primary-hover': '#1256c7',
+  '--bg-primary': '#07142f',
+  '--bg-secondary': '#0b1c3e',
+  '--surface': '#0d2146',
+  '--card': '#0a1937',
+  '--header-bg': '#07142f',
+  '--text-primary': '#f4f8ff',
+  '--text-secondary': '#b7c7df',
+  '--text-muted': '#7f96b8',
+  '--text-on-primary': '#ffffff',
+  '--border': '#19345d',
+  '--shadow-glow': '0 0 24px rgba(23, 105, 232, 0.22)',
+} as CSSProperties
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)]">
+    <div style={platformBrandStyle} className="min-h-screen bg-[var(--bg-primary)]">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--header-bg)] backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent)] to-[var(--detail)] text-[var(--text-on-primary)]">
-              <Zap size={18} />
-            </div>
+            <img
+              src="/branding/multigym-isotipo-transparent.png"
+              alt="MultiGym"
+              className="h-9 w-9 rounded-xl object-contain"
+            />
             <span className="text-lg font-bold text-[var(--text-primary)]">MultiGym</span>
           </Link>
 

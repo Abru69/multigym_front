@@ -1,4 +1,3 @@
-import { Zap } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { usePlatformAuthStore } from '@/features/platform/store/platformAuthStore'
 import { DashboardLayout, type NavItem } from '@/components/layout/DashboardLayout'
@@ -30,9 +29,11 @@ export function PlatformLayout() {
     <DashboardLayout
       navItems={navItems}
       logo={
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--accent)] to-[var(--detail)] text-[var(--text-on-primary)] shadow-sm">
-          <Zap size={18} />
-        </div>
+        <img
+          src="/branding/multigym-isotipo-transparent.png"
+          alt="MultiGym"
+          className="h-9 w-9 rounded-xl object-contain"
+        />
       }
       title="MultiGym"
       subtitle="Platform"

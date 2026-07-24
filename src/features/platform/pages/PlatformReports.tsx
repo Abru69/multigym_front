@@ -1,27 +1,15 @@
 import { useState, useEffect } from 'react'
-import { getTenantsHealth, getPlatformDashboardReport } from '@/lib/api'
+import { getTenantsHealth } from '@/lib/api'
 import {
   HeartPulse,
   Building2,
-  Users,
-  DollarSign,
   CheckCircle,
   AlertTriangle,
 } from 'lucide-react'
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts'
-import type { TenantHealthDTO, PlatformDashboardDTO } from '@/types'
-import { formatCurrency } from '@/lib/utils'
+import type { TenantHealthDTO } from '@/types'
 import { LoadingState } from '@/features/admin/components/LoadingState'
 
 export default function PlatformReportsPage() {
-  const [dashboard, setDashboard] = useState<PlatformDashboardDTO | null>(null)
   const [health, setHealth] = useState<TenantHealthDTO[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -29,11 +17,7 @@ export default function PlatformReportsPage() {
     const load = async () => {
       try {
         setIsLoading(true)
-        const [dashRes, healthRes] = await Promise.all([
-          getPlatformDashboardReport(),
-          getTenantsHealth(),
-        ])
-        setDashboard(dashRes.dto || null)
+        const healthRes = await getTenantsHealth()
         setHealth(healthRes.dto || [])
       } catch {
         // Will show empty state
@@ -57,73 +41,6 @@ export default function PlatformReportsPage() {
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Salud y métricas globales de la plataforma</p>
         </div>
       </div>
-
-      {dashboard && (
-        <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[var(--card)] rounded-2xl p-5" style={{ border: '1px solid var(--border)' }}>
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: 'rgba(59,130,246,0.1)' }}>
-                  <Building2 size={20} style={{ color: '#3b82f6' }} />
-                </div>
-                <div>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Total Tenants</p>
-                  <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>{dashboard.totalTenants}</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-[var(--card)] rounded-2xl p-5" style={{ border: '1px solid var(--border)' }}>
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: 'rgba(34,197,94,0.1)' }}>
-                  <CheckCircle size={20} style={{ color: '#22c55e' }} />
-                </div>
-                <div>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Activos</p>
-                  <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>{dashboard.activeTenants}</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-[var(--card)] rounded-2xl p-5" style={{ border: '1px solid var(--border)' }}>
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: 'rgba(168,85,247,0.1)' }}>
-                  <Users size={20} style={{ color: '#a855f7' }} />
-                </div>
-                <div>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Total Miembros</p>
-                  <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>{dashboard.totalMembers}</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-[var(--card)] rounded-2xl p-5" style={{ border: '1px solid var(--border)' }}>
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: 'rgba(34,197,94,0.1)' }}>
-                  <DollarSign size={20} style={{ color: '#22c55e' }} />
-                </div>
-                <div>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>MRR Total</p>
-                  <p className="text-xl font-black" style={{ fontFamily: 'var(--font-heading)' }}>{formatCurrency(dashboard.totalMRR)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {dashboard.monthlyTrend.length > 0 && (
-            <div className="bg-[var(--card)] rounded-2xl p-6" style={{ border: '1px solid var(--border)' }}>
-              <h3 className="text-lg font-bold mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Tendencia Mensual</h3>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={dashboard.monthlyTrend}>
-                    <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v / 1000}k`} />
-                    <Tooltip contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 13 }} formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Ingresos']} />
-                    <Area type="monotone" dataKey="revenue" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.15} strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-        </>
-      )}
 
       {/* Tenant Health */}
       <div className="bg-[var(--card)] rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>

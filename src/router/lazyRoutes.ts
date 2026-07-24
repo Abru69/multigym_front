@@ -41,6 +41,7 @@ export const Checkout = lazy(() => import('@/features/shop/pages/Checkout'))
 
 // Platform Pages
 export const PlatformLogin = lazy(() => import('@/features/platform/pages/PlatformLogin'))
+export const PlatformChangePassword = lazy(() => import('@/features/platform/pages/PlatformChangePassword'))
 export const PlatformDashboard = lazy(() => import('@/features/platform/pages/PlatformDashboard'))
 export const PlatformTenants = lazy(() => import('@/features/platform/pages/PlatformTenants'))
 export const PlatformUsers = lazy(() => import('@/features/platform/pages/PlatformUsers'))

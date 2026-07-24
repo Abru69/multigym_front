@@ -1,12 +1,32 @@
 import { Outlet } from 'react-router-dom'
+import type { CSSProperties } from 'react'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { TenantLogo } from '@/components/tenant/TenantLogo'
 
 export function AuthLayout() {
-  const { branding } = useTenantBranding()
+  const { branding, isTenantContext } = useTenantBranding()
+  const platformBrandStyle = !isTenantContext
+    ? ({
+        '--accent': '#1769e8',
+        '--accent-hover': '#1256c7',
+        '--accent-light': '#6ea4ff',
+        '--accent-muted': 'rgba(23, 105, 232, 0.14)',
+        '--accent-text': '#ffffff',
+        '--detail': '#22ad55',
+        '--bg-primary': '#07142f',
+        '--bg-secondary': '#0b1c3e',
+        '--surface': '#0d2146',
+        '--card': '#0a1937',
+        '--header-bg': '#07142f',
+        '--text-primary': '#f4f8ff',
+        '--text-secondary': '#b7c7df',
+        '--text-muted': '#7f96b8',
+        '--border': '#19345d',
+      } as CSSProperties)
+    : undefined
 
   return (
-    <div className="flex min-h-dvh">
+    <div style={platformBrandStyle} className="flex min-h-dvh">
       {/* Left Side - Image (hidden on mobile, visible lg+) */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-gray-900">
         <div
@@ -30,7 +50,15 @@ export function AuthLayout() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="mb-8 flex items-center justify-center gap-3">
-            <TenantLogo size="lg" />
+            {isTenantContext ? (
+              <TenantLogo size="lg" />
+            ) : (
+              <img
+                src="/branding/multigym-isotipo-transparent.png"
+                alt="MultiGym"
+                className="h-16 w-16 rounded-2xl object-contain"
+              />
+            )}
             <span className="text-xl font-black tracking-tight text-[var(--text-primary)]">
               {branding.name || 'MULTIGYM'}
             </span>
