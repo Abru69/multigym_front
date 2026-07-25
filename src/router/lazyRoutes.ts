@@ -44,6 +44,7 @@ export const PlatformLogin = lazy(() => import('@/features/platform/pages/Platfo
 export const PlatformChangePassword = lazy(() => import('@/features/platform/pages/PlatformChangePassword'))
 export const PlatformDashboard = lazy(() => import('@/features/platform/pages/PlatformDashboard'))
 export const PlatformTenants = lazy(() => import('@/features/platform/pages/PlatformTenants'))
+export const PlatformExerciseCatalog = lazy(() => import('@/features/platform/pages/PlatformExerciseCatalog'))
 export const PlatformUsers = lazy(() => import('@/features/platform/pages/PlatformUsers'))
 export const PlatformSaaSPlans = lazy(() => import('@/features/platform/pages/PlatformSaaSPlans'))
 export const PlatformBilling = lazy(() => import('@/features/platform/pages/PlatformBilling'))

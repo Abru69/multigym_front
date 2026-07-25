@@ -315,6 +315,13 @@ export interface ExerciseCatalogDTO {
   active: boolean
 }
 
+export interface ExerciseCatalogImportResultDTO {
+  processed: number
+  created: number
+  updated: number
+  mediaImported?: boolean
+}
+
 export interface LocalizedFacetDTO {
   value: string
   label: string

@@ -1,66 +1,118 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Building2, ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Building2, CheckCircle2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { getTenantFromLocation } from '@/lib/tenant'
 
 export default function Register() {
-  const tenantId = getTenantFromLocation()
-  const loginPath = tenantId ? `/login?tenant=${tenantId}` : '/login'
+  const [form, setForm] = useState({ gymName: '', subdomain: '', adminName: '', adminEmail: '', adminPhone: '', planId: '' })
+  const [plans, setPlans] = useState<{ id: string; name: string; price: number; trialDays: number }[]>([])
+  const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetch('/api/public/saas-plans')
+      .then((response) => response.json())
+      .then((response) => {
+        const activePlans = response.lista ?? []
+        setPlans(activePlans)
+        if (activePlans[0]) setForm((current) => ({ ...current, planId: activePlans[0].id }))
+      })
+      .catch(() => setError('No se pudieron cargar los planes disponibles'))
+  }, [])
+
+  const update = (field: keyof typeof form, value: string) => setForm((current) => ({ ...current, [field]: value }))
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setLoading(true)
+    setError('')
+    try {
+      const response = await fetch('/api/public/tenant-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!response.ok) {
+        const body = await response.json().catch(() => null)
+        throw new Error(body?.mensaje || 'No se pudo enviar la solicitud')
+      }
+      setSubmitted(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo enviar la solicitud')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div className="text-center">
+        <CheckCircle2 className="mx-auto mb-5 text-[var(--accent)]" size={52} />
+        <h2 className="mb-2 font-heading text-2xl font-black text-[var(--text-primary)]">Solicitud recibida</h2>
+        <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">
+          Revisaremos los datos de tu gimnasio. Te contactaremos cuando tu cuenta sea aprobada por nuestro equipo.
+        </p>
+        <Link to="/login"><Button className="w-full rounded-2xl py-3 text-sm font-bold">Volver al inicio de sesión</Button></Link>
+      </div>
+    )
+  }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-      <Link
-        to={loginPath}
-        className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--accent)] hover:underline"
-      >
-        <ArrowLeft size={14} />
-        Volver al login
+    <div>
+      <Link to="/" className="mb-5 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--accent)]">
+        <ArrowLeft size={14} /> Volver a MultiGym
       </Link>
-
-      <div className="text-center">
-        <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent)]/10">
-          <Building2 size={32} className="text-[var(--accent)]" />
+      <div className="mb-6 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent)]/10">
+          <Building2 size={28} className="text-[var(--accent)]" />
         </div>
-
-        <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">
-          Registro de Usuarios
-        </h2>
-
-        <p className="mb-6 text-sm leading-relaxed text-[var(--text-secondary)]">
-          En nuestra plataforma, las cuentas de usuario son creadas por el{' '}
-          <strong className="text-[var(--text-primary)]">administrador de tu gimnasio</strong>.
-        </p>
-
-        <div className="relative mb-6 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-left shadow-sm">
-          <div className="relative z-10 space-y-3">
-            <p className="text-xs font-bold tracking-wider text-[var(--text-muted)] uppercase">
-              ¿Cómo obtener acceso?
-            </p>
-            <div className="space-y-2">
-              {[
-                'Contacta a la recepción de tu gimnasio',
-                'Solicita que te creen una cuenta con tu email',
-                'Recibirás tus credenciales de acceso',
-                'Inicia sesión con tu código de gimnasio',
-              ].map((step, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 text-[10px] font-black text-[var(--accent)]">
-                    {i + 1}
-                  </span>
-                  <span className="text-sm text-[var(--text-secondary)]">{step}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <Link to={loginPath}>
-          <Button className="w-full gap-2 rounded-2xl py-3 text-sm font-bold">
-            Ya tengo cuenta — Iniciar Sesión
-          </Button>
-        </Link>
+        <h2 className="mb-1 font-heading text-2xl font-black text-[var(--text-primary)]">Registra tu gimnasio</h2>
+        <p className="text-sm text-[var(--text-secondary)]">Envía tu solicitud y nuestro equipo la revisará.</p>
       </div>
-    </motion.div>
+      <form onSubmit={submit} className="space-y-3">
+        {[
+          ['gymName', 'Nombre del gimnasio', 'Ej. FitZone Elite', 'text'],
+          ['subdomain', 'Subdominio deseado', 'fitzone', 'text'],
+          ['adminName', 'Nombre del administrador', 'Juan Pérez', 'text'],
+          ['adminEmail', 'Correo del administrador', 'juan@ejemplo.com', 'email'],
+          ['adminPhone', 'Teléfono', '+52 614 555 0000', 'tel'],
+        ].map(([field, label, placeholder, type]) => (
+          <label key={field} className="block text-xs font-semibold text-[var(--text-secondary)]">
+            {label}
+            <input
+              required
+              type={type}
+              value={form[field as keyof typeof form]}
+              onChange={(event) => update(field as keyof typeof form, event.target.value)}
+              placeholder={placeholder}
+              className="mt-1 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none placeholder:text-slate-400 focus:border-[var(--accent)]"
+              style={{ color: '#07142f', WebkitTextFillColor: '#07142f' }}
+            />
+          </label>
+        ))}
+        <label className="block text-xs font-semibold text-[var(--text-secondary)]">
+          Plan solicitado
+          <select
+            required
+            value={form.planId}
+            onChange={(event) => update('planId', event.target.value)}
+            className="mt-1 w-full rounded-xl border border-[var(--border)] bg-white px-3 py-3 text-sm outline-none focus:border-[var(--accent)]"
+            style={{ color: '#07142f' }}
+          >
+            <option value="" disabled>Selecciona un plan</option>
+            {plans.map((plan) => (
+              <option key={plan.id} value={plan.id}>
+                {plan.name} · ${plan.price.toLocaleString('es-MX')} · {plan.trialDays} días de prueba
+              </option>
+            ))}
+          </select>
+        </label>
+        {error && <p className="rounded-xl bg-red-500/10 p-3 text-xs text-red-400">{error}</p>}
+        <Button type="submit" disabled={loading} className="w-full rounded-xl py-3 text-sm font-bold">
+          {loading ? <Loader2 size={16} className="mx-auto animate-spin" /> : 'Enviar solicitud'}
+        </Button>
+      </form>
+    </div>
   )
 }

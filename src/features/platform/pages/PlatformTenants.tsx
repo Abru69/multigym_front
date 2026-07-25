@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { usePlatformTenantsStore } from '@/features/platform/store/platformTenantsStore'
 import {
+  fetchApi,
   disableTenantMercadoPago,
   getTenantMercadoPagoConfig,
   saveTenantMercadoPagoConfig,
@@ -25,7 +26,18 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
 import { ConfirmDialog } from '@/features/admin/components/ConfirmDialog'
 import { LoadingState } from '@/features/admin/components/LoadingState'
-import type { MercadoPagoTenantConfigDTO, TenantDTO, TenantRequestDTO, TenantStatus } from '@/types'
+import type { MercadoPagoTenantConfigDTO, ResponseDTO, TenantDTO, TenantRequestDTO, TenantStatus } from '@/types'
+
+type SignupRequest = {
+  id: string
+  gymName: string
+  subdomain: string
+  adminName: string
+  adminEmail: string
+  adminPhone: string
+  createdAt: string
+  planId?: string | null
+}
 
 const statusConfig: Record<
   TenantStatus,
@@ -100,10 +112,14 @@ export default function PlatformTenants() {
     planId: '',
   })
   const [isSaving, setIsSaving] = useState(false)
+  const [signupRequests, setSignupRequests] = useState<SignupRequest[]>([])
 
   useEffect(() => {
     loadTenants()
     loadPlans()
+    fetchApi<ResponseDTO<SignupRequest[]>>('/api/tenant-requests')
+      .then((response) => setSignupRequests(response.lista ?? []))
+      .catch(() => setSignupRequests([]))
   }, [loadTenants, loadPlans])
 
   const filtered = tenants
@@ -119,6 +135,17 @@ export default function PlatformTenants() {
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(''), 3000)
+  }
+
+  const reviewSignup = async (id: string, action: 'approve' | 'reject') => {
+    try {
+      await fetchApi(`/api/tenant-requests/${id}/${action}`, { method: 'POST' })
+      setSignupRequests((requests) => requests.filter((request) => request.id !== id))
+      if (action === 'approve') await loadTenants()
+      showToast(action === 'approve' ? 'Solicitud aprobada' : 'Solicitud rechazada')
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'No se pudo procesar la solicitud')
+    }
   }
 
   const openCreate = () => {
@@ -332,6 +359,37 @@ export default function PlatformTenants() {
         ))}
       </div>
 
+      {signupRequests.length > 0 && (
+        <section className="rounded-2xl p-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-bold" style={{ color: 'var(--text-primary)' }}>Solicitudes pendientes</h2>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Revisa y aprueba nuevos gimnasios</p>
+            </div>
+            <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: 'var(--warning-muted)', color: 'var(--warning)' }}>
+              {signupRequests.length}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {signupRequests.map((request) => (
+              <div key={request.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl p-3" style={{ background: 'var(--card)' }}>
+                <div>
+                  <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{request.gymName}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {request.subdomain}.multigym.mx · {request.adminName} · {request.adminEmail}
+                    {request.planId && ` · ${getPlanName(request.planId)}`}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => reviewSignup(request.id, 'reject')} variant="secondary" className="text-xs">Rechazar</Button>
+                  <Button onClick={() => reviewSignup(request.id, 'approve')} className="text-xs">Aprobar</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Toolbar */}
       <div className="flex flex-wrap gap-3">
         <div
@@ -348,7 +406,7 @@ export default function PlatformTenants() {
           />
         </div>
         <div className="flex gap-1">
-          {['ALL', 'ACTIVE', 'INACTIVE', 'TRIAL_EXPIRED'].map((f) => (
+            {['ALL', 'TRIAL', 'ACTIVE', 'PAST_DUE', 'SUSPENDED', 'CANCELLED'].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -361,11 +419,15 @@ export default function PlatformTenants() {
             >
               {f === 'ALL'
                 ? 'Todos'
-                : f === 'ACTIVE'
-                  ? 'Activos'
-                  : f === 'INACTIVE'
-                    ? 'Inactivos'
-                    : 'Trial expirado'}
+                   : f === 'TRIAL'
+                   ? 'Trial'
+                   : f === 'ACTIVE'
+                     ? 'Activos'
+                     : f === 'PAST_DUE'
+                       ? 'Pago vencido'
+                       : f === 'SUSPENDED'
+                         ? 'Suspendidos'
+                         : 'Cancelados'}
             </button>
           ))}
         </div>
@@ -373,7 +435,7 @@ export default function PlatformTenants() {
 
       {/* Table */}
       <div
-        className="rounded-2xl"
+        className="overflow-x-auto rounded-2xl"
         style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
       >
         <table className="w-full">
@@ -403,7 +465,7 @@ export default function PlatformTenants() {
           </thead>
           <tbody>
             {filtered.map((t, i) => {
-              const sc = statusConfig[t.status]
+              const sc = statusConfig[t.status] || statusConfig.SUSPENDED
               const planName = getPlanName(t.planId)
               const planColor = planColors[planName] || 'var(--text-muted)'
               const memberCount = t.memberCount ?? 0
@@ -438,7 +500,7 @@ export default function PlatformTenants() {
                   </td>
                   <td className="px-4 py-3">
                     <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
-                      {t.subdomain}.multigym.com
+                       {t.subdomain}.multigym.mx
                     </span>
                   </td>
                   <td className="px-4 py-3">

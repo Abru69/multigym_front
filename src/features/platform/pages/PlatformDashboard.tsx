@@ -45,7 +45,7 @@ const auditDotColor: Record<string, string> = {
   TENANT_DELETED: 'var(--danger)',
   USER_LOGIN: 'var(--accent)',
   PLATFORM_USER_CREATED: 'var(--success)',
-  PLAN_UPDATED: 'var(--warning)',
+  PLAN_UPDATED: 'var(--text-primary)',
 }
 
 function formatAuditText(log: AuditLogDTO): string {
@@ -137,7 +137,7 @@ export default function PlatformDashboard() {
       change: metrics.mrrChange,
       up: true,
       icon: DollarSign,
-      color: 'var(--warning)',
+      color: 'var(--text-primary)',
     },
     {
       label: 'Tasa Retención',

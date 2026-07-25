@@ -34,6 +34,7 @@ export type {
   ExerciseMediaStatus,
   LocalizedFacetDTO,
   ExerciseCatalogDTO,
+  ExerciseCatalogImportResultDTO,
   ExerciseCatalogFacetsDTO,
   ExerciseLibraryItemDTO,
   WorkoutDTO,

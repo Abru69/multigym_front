@@ -89,7 +89,8 @@ export async function fetchApi<T>(
     url.startsWith('/api/saas-plans') ||
     url.startsWith('/api/platform-settings') ||
     url.startsWith('/api/audits') ||
-    url.startsWith('/api/platform/')
+    url.startsWith('/api/platform/') ||
+    url.startsWith('/api/tenant-requests')
   // Las llamadas de auth (login, reset) y de branding no deben disparar el
   // redirect destructivo de 401: el llamador maneja el error.
   const isAuthOrBrandingCall =

@@ -298,6 +298,31 @@ textarea {
   padding-bottom: 5rem;
 }
 
+/* Platform keeps its blue identity while following the global theme toggle. */
+.platform-theme {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f8fc;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --header-bg: #ffffff;
+  --text-primary: #07142f;
+  --text-secondary: #40516b;
+  --text-muted: #71809a;
+  --border: #d9e2ef;
+}
+
+[data-theme='dark'] .platform-theme {
+  --bg-primary: #07142f;
+  --bg-secondary: #0b1c3e;
+  --surface: #0d2146;
+  --card: #0a1937;
+  --header-bg: #07142f;
+  --text-primary: #f4f8ff;
+  --text-secondary: #b7c7df;
+  --text-muted: #7f96b8;
+  --border: #19345d;
+}
+
 @utility section-padding-lg {
   padding-top: 8rem;
   padding-bottom: 8rem;

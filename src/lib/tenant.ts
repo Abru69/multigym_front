@@ -36,6 +36,15 @@ export function getTenantFromSubdomain(): string | null {
   }
 
   const parts = hostname.split('.')
+  // Local HTTPS development supports tenant.localhost without a real DNS domain.
+  if (parts.length === 2 && parts[1] === 'localhost') {
+    const subdomain = parts[0].toLowerCase()
+    if (reservedSubdomains.has(subdomain)) return null
+    if (subdomain.endsWith(STAGING_SUFFIX) && subdomain.length > STAGING_SUFFIX.length) {
+      return subdomain.slice(0, -STAGING_SUFFIX.length)
+    }
+    return subdomain
+  }
   if (parts.length >= 3) {
     const subdomain = parts[0].toLowerCase()
     if (reservedSubdomains.has(subdomain)) return null

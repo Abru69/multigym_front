@@ -47,6 +47,7 @@ import {
   PlatformChangePassword,
   PlatformDashboard,
   PlatformTenants,
+  PlatformExerciseCatalog,
   PlatformUsers,
   PlatformSaaSPlans,
   PlatformBilling,
@@ -90,6 +91,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: withSuspense(PlatformDashboard) },
       { path: 'tenants', element: withSuspense(PlatformTenants) },
+      { path: 'exercise-catalog', element: withSuspense(PlatformExerciseCatalog) },
       { path: 'users', element: withSuspense(PlatformUsers) },
       { path: 'saas-plans', element: withSuspense(PlatformSaaSPlans) },
       { path: 'billing', element: withSuspense(PlatformBilling) },
