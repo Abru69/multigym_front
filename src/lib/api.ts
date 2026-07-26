@@ -84,7 +84,6 @@ export async function fetchApi<T>(
   const { skipAuthRedirect, skipAuthHeader, retryAuth, ...fetchOptions } = options
   const isPlatformRequest =
     url.startsWith('/platform/') ||
-    url.startsWith('/platform-api/') ||
     url.startsWith('/api/tenants') ||
     url.startsWith('/api/saas-plans') ||
     url.startsWith('/api/platform-settings') ||
@@ -195,6 +194,19 @@ export async function fetchApi<T>(
   return null as T
 }
 
+/** Reads collection responses regardless of whether the backend uses lista or dto.data. */
+export function getResponseItems<T>(response: ResponseDTO<unknown> | null | undefined): T[] {
+  if (Array.isArray(response?.lista)) return response.lista as T[]
+
+  const dto = response?.dto as { data?: unknown } | unknown
+  if (Array.isArray(dto)) return dto as T[]
+  if (dto && typeof dto === 'object' && Array.isArray((dto as { data?: unknown }).data)) {
+    return (dto as { data: T[] }).data
+  }
+
+  return []
+}
+
 async function tryRefreshToken(token: string): Promise<string | null> {
   try {
     const headers = new Headers({ Authorization: `Bearer ${token}` })
@@ -249,6 +261,15 @@ export const createExercise = (data: Partial<ExerciseDTO>) =>
     method: 'POST',
     body: JSON.stringify(data),
   })
+
+export const uploadExerciseImage = (file: File) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return fetchApi<ResponseDTO<{ url: string }>>('/api/files?subfolder=exercises', {
+    method: 'POST',
+    body: formData,
+  })
+}
 
 export const getExerciseCatalog = (params?: {
   name?: string
@@ -375,25 +396,25 @@ export const getSaasPlans = () =>
   fetchApi<ResponseDTO<PaginatedResult<SaasPlanDTO>>>('/api/saas-plans')
 
 export const getPlatformUsers = () =>
-  fetchApi<ResponseDTO<PaginatedResult<PlatformUserDTO>>>('/platform-api/users')
+  fetchApi<ResponseDTO<PaginatedResult<PlatformUserDTO>>>('/platform/users')
 
 export const createPlatformUser = (data: PlatformUserRequestDTO) =>
-  fetchApi<ResponseDTO<PlatformUserDTO>>('/platform-api/users', {
+  fetchApi<ResponseDTO<PlatformUserDTO>>('/platform/users', {
     method: 'POST',
     body: JSON.stringify(data),
   })
 
 export const updatePlatformUser = (id: string, data: PlatformUserRequestDTO) =>
-  fetchApi<ResponseDTO<PlatformUserDTO>>(`/platform-api/users/${id}`, {
+  fetchApi<ResponseDTO<PlatformUserDTO>>(`/platform/users/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   })
 
 export const togglePlatformUserStatus = (id: string) =>
-  fetchApi<ResponseDTO<PlatformUserDTO>>(`/platform-api/users/${id}/status`, { method: 'PATCH' })
+  fetchApi<ResponseDTO<PlatformUserDTO>>(`/platform/users/${id}/status`, { method: 'PATCH' })
 
 export const deletePlatformUser = (id: string) =>
-  fetchApi<ResponseDTO<unknown>>(`/platform-api/users/${id}`, { method: 'DELETE' })
+  fetchApi<ResponseDTO<unknown>>(`/platform/users/${id}`, { method: 'DELETE' })
 
 // --- Plans ---
 export const getPlans = () => fetchApi<ResponseDTO<PaginatedResult<PlanListItemDTO>>>('/api/plans')
@@ -1011,22 +1032,6 @@ export const getAnnouncementReport = () =>
 export const getWorkoutReport = () =>
   fetchApi<ResponseDTO<WorkoutReportDTO>>('/api/reports/workouts')
 
-// --- Branches (CRUD) ---
-export const createBranch = (data: { name: string; address?: string; phone?: string }) =>
-  fetchApi<ResponseDTO<BranchDTO>>('/api/branches', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  })
-export const updateBranch = (
-  id: string,
-  data: { name: string; address?: string; phone?: string; isActive?: boolean }
-) =>
-  fetchApi<ResponseDTO<BranchDTO>>(`/api/branches/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  })
-export const deleteBranch = (id: string) =>
-  fetchApi<ResponseDTO<unknown>>(`/api/branches/${id}`, { method: 'DELETE' })
 
 // --- Platform Reports ---
 export const getPlatformDashboardReport = () =>

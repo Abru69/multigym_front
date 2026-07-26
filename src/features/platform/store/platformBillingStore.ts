@@ -5,6 +5,7 @@ import {
   getSaasPlans,
   getTenantBillingSummaries,
   getPlatformMercadoPagoStatus,
+  getResponseItems,
 } from '@/lib/api'
 import type {
   TenantDTO,
@@ -58,10 +59,10 @@ export const usePlatformBillingStore = create<PlatformBillingStore>()((set) => (
         getPlatformMercadoPagoStatus(),
       ])
 
-      const tenants = tenantsRes?.dto?.data || []
+      const tenants = getResponseItems<TenantDTO>(tenantsRes)
       const summary = summaryRes?.dto
-      const saasPlans = plansRes?.dto?.data || []
-      const billingSummaries = billingRes?.lista || []
+      const saasPlans = getResponseItems<SaasPlanDTO>(plansRes)
+      const billingSummaries = getResponseItems<TenantBillingSummaryDTO>(billingRes)
 
       const tenantCounts = tenants.reduce<Record<string, number>>((acc, t) => {
         if (t.planId) acc[t.planId] = (acc[t.planId] || 0) + 1

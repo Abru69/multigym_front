@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { getPlatformSettings, getSaasPlans, updatePlatformSettings } from '@/lib/api'
+import { getPlatformSettings, getSaasPlans, updatePlatformSettings, getResponseItems } from '@/lib/api'
 import type { PlatformSettingDTO, SaasPlanDTO } from '@/types'
 
 interface PlatformSettingsStore {
@@ -29,8 +29,8 @@ export const usePlatformSettingsStore = create<PlatformSettingsStore>()((set, ge
         getPlatformSettings(),
         getSaasPlans(),
       ])
-      const settings = settingsResponse?.lista || []
-      const plans = plansResponse?.dto?.data || []
+      const settings = getResponseItems<PlatformSettingDTO>(settingsResponse)
+      const plans = getResponseItems<SaasPlanDTO>(plansResponse)
       set({ settings, plans, isLoading: false })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al cargar configuración'
@@ -42,7 +42,7 @@ export const usePlatformSettingsStore = create<PlatformSettingsStore>()((set, ge
     set({ isSaving: true, error: null })
     try {
       const response = await updatePlatformSettings(entries)
-      const settings = response?.lista || []
+      const settings = getResponseItems<PlatformSettingDTO>(response)
       set({ settings, isSaving: false })
       return true
     } catch (err) {

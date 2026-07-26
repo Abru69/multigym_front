@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { productCategories } from '@/data/products'
-import { getProducts, createProduct, fetchApi, uploadProductImage } from '@/lib/api'
+import { getProducts, createProduct, fetchApi, uploadProductImage, getResponseItems } from '@/lib/api'
 import type { ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
@@ -91,7 +91,7 @@ export default function Inventory() {
     try {
       setIsLoading(true)
       const response = await getProducts()
-      const apiProducts = response.dto?.data || []
+      const apiProducts = getResponseItems<ProductItem>(response)
       setProductsList(
         apiProducts.map((p) => ({
           id: p.id,

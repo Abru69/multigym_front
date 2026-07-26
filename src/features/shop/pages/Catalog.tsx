@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { productCategories } from '@/data/products'
-import { getProducts } from '@/lib/api'
+import { getProducts, getResponseItems } from '@/lib/api'
+import type { ProductDTO } from '@/types'
 import type { Product } from '@/types'
 import { ProductCard } from '@/components/molecules/ProductCard'
 import { Search, PackageX, X } from 'lucide-react'
@@ -16,7 +17,7 @@ export default function Catalog() {
     setLoading(true)
     getProducts()
       .then((response) => {
-        const apiProducts = response.dto?.data || []
+        const apiProducts = getResponseItems<ProductDTO>(response)
         const mapped: Product[] = apiProducts.map((p) => ({
           id: p.id,
           name: p.name,

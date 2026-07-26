@@ -214,6 +214,8 @@ export interface MemberDTO {
   id: string
   name: string
   phone: string
+  userId?: string | null
+  createdAt?: string | null
 }
 
 export interface UserDTO {
@@ -223,6 +225,7 @@ export interface UserDTO {
   isActive: boolean
   memberDTO: MemberDTO | null
   avatarUrl?: string | null
+  createdAt?: string | null
 }
 
 export interface DashboardDTO {

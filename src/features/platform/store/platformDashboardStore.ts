@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { getSaasPlans, getTenants, getTenantsSummary } from '@/lib/api'
+import { getSaasPlans, getTenants, getTenantsSummary, getResponseItems } from '@/lib/api'
 import type { SaasPlanDTO, TenantDTO, TenantSummaryDTO } from '@/types'
 
 interface GrowthData {
@@ -143,9 +143,9 @@ export const usePlatformDashboardStore = create<PlatformDashboardStore>()((set) 
         getTenantsSummary(),
         getSaasPlans(),
       ])
-      const tenants = tenantsResponse?.dto?.data || []
+      const tenants = getResponseItems<TenantDTO>(tenantsResponse)
       const summary = summaryResponse?.dto
-      const plans = plansResponse?.dto?.data || []
+      const plans = getResponseItems<SaasPlanDTO>(plansResponse)
 
       if (!summary) {
         throw new Error('No se recibió el resumen de tenants')

@@ -9,8 +9,6 @@ services:
     ports:
       - 80:80
       - 443:443
-    env_file:
-      - ./.env
     volumes:
       - ./certs:/etc/nginx/certs:ro
     networks:
@@ -26,3 +24,4 @@ services:
 networks:
   multigym-network:
     name: multigym-network
+    external: true

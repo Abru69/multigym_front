@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Dumbbell, Plus, Edit2, Trash2, Layers } from 'lucide-react'
+import { Dumbbell, Plus, Edit2, Trash2, Layers, Image as ImageIcon } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { useToastStore } from '@/components/ui/Toast'
 import {
   getExercises,
   createExercise,
+  uploadExerciseImage,
   fetchApi,
   getExerciseCatalog,
   getExerciseCatalogFacets,
   updateExerciseCatalogTranslation,
+  getResponseItems,
 } from '@/lib/api'
 import { MUSCLE_GROUPS } from '@/data/constants'
 import type { ExerciseCatalogDTO, ExerciseCatalogFacetsDTO } from '@/types'
@@ -26,6 +28,7 @@ interface Exercise {
   id: string
   name: string
   muscleGroup: string
+  imageUrl?: string
 }
 
 interface CustomGroup {
@@ -77,6 +80,8 @@ export default function Exercises() {
   const [isSaving, setIsSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [formName, setFormName] = useState('')
+  const [formImage, setFormImage] = useState<File | null>(null)
+  const [formImagePreview, setFormImagePreview] = useState<string | null>(null)
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   const [isCreatingGroup, setIsCreatingGroup] = useState(false)
@@ -89,7 +94,7 @@ export default function Exercises() {
     try {
       setIsLoading(true)
       const response = await getExercises()
-      setExercisesList(response.dto?.data || [])
+      setExercisesList(getResponseItems(response))
     } catch (e) {
       console.error(e)
     } finally {
@@ -114,7 +119,7 @@ export default function Exercises() {
         }),
         catalogFacets ? Promise.resolve({ dto: catalogFacets }) : getExerciseCatalogFacets(),
       ])
-      setCatalogList(catalogRes.dto?.data || [])
+      setCatalogList(getResponseItems(catalogRes))
       setCatalogFacets(facetsRes.dto || null)
     } catch (e) {
       addToast(e instanceof Error ? e.message : 'Error al cargar catálogo global', 'error')
@@ -156,11 +161,19 @@ export default function Exercises() {
     }
     setIsSaving(true)
     try {
-      await createExercise({ name: formName, muscleGroup: selectedGroup! })
+      let imageUrl = editingExercise?.imageUrl
+      if (formImage) {
+        const uploadResponse = await uploadExerciseImage(formImage)
+        imageUrl = uploadResponse.dto?.url
+        if (!imageUrl) throw new Error('No se recibió la URL de la imagen')
+      }
+      await createExercise({ name: formName, muscleGroup: selectedGroup!, imageUrl })
       addToast('Ejercicio creado correctamente', 'success')
       loadExercises()
       setIsCreating(false)
       setFormName('')
+      setFormImage(null)
+      setFormImagePreview(null)
     } catch (e: unknown) {
       addToast(e instanceof Error ? e.message : 'Error al guardar', 'error')
     } finally {
@@ -205,14 +218,26 @@ export default function Exercises() {
     if (!editingExercise || !formName.trim()) return
     setIsSaving(true)
     try {
+      let imageUrl = editingExercise.imageUrl
+      if (formImage) {
+        const uploadResponse = await uploadExerciseImage(formImage)
+        imageUrl = uploadResponse.dto?.url
+        if (!imageUrl) throw new Error('No se recibió la URL de la imagen')
+      }
       await fetchApi(`/api/exercises/${editingExercise.id}`, {
         method: 'PUT',
-        body: JSON.stringify({ name: formName.trim(), muscleGroup: selectedGroup! }),
+        body: JSON.stringify({
+          name: formName.trim(),
+          muscleGroup: selectedGroup!,
+           imageUrl,
+        }),
       })
       addToast('Ejercicio actualizado', 'success')
       loadExercises()
       setEditingExercise(null)
       setFormName('')
+      setFormImage(null)
+      setFormImagePreview(null)
     } catch (e: unknown) {
       addToast(e instanceof Error ? e.message : 'Error al actualizar', 'error')
     } finally {
@@ -431,12 +456,39 @@ export default function Exercises() {
                     className="h-10 w-full cursor-not-allowed rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm text-[var(--text-muted)] opacity-60"
                   />
                 </FormField>
+                <FormField label="Imagen del ejercicio" htmlFor="ex-image">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+                      {formImagePreview ? (
+                        <img src={formImagePreview} alt="Vista previa" className="h-full w-full object-cover" />
+                      ) : (
+                        <ImageIcon size={24} className="text-[var(--text-muted)]" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <input
+                        id="ex-image"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null
+                          setFormImage(file)
+                          setFormImagePreview(file ? URL.createObjectURL(file) : editingExercise?.imageUrl || null)
+                        }}
+                        className="block w-full text-sm text-[var(--text-secondary)] file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--accent)] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-[var(--accent-text)]"
+                      />
+                      <p className="mt-1 text-xs text-[var(--text-muted)]">JPG, PNG, WEBP o GIF. Máximo 10 MB.</p>
+                    </div>
+                  </div>
+                </FormField>
                 <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
                   <button
                     onClick={() => {
                       setIsCreating(false)
                       setEditingExercise(null)
-                      setFormName('')
+    setFormName('')
+    setFormImage(null)
+    setFormImagePreview(null)
                     }}
                     disabled={isSaving}
                     className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] active:scale-[0.97] disabled:opacity-50"
@@ -469,7 +521,13 @@ export default function Exercises() {
                     className="flex-1"
                   />
                   <button
-                    onClick={() => setIsCreating(true)}
+                    onClick={() => {
+                      setEditingExercise(null)
+                      setFormName('')
+                      setFormImage(null)
+                      setFormImagePreview(null)
+                      setIsCreating(true)
+                    }}
                     className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
                   >
                     <Plus size={16} /> Nuevo
@@ -487,7 +545,13 @@ export default function Exercises() {
                     </p>
                     {!search && (
                       <button
-                        onClick={() => setIsCreating(true)}
+                        onClick={() => {
+                          setEditingExercise(null)
+                          setFormName('')
+                          setFormImage(null)
+                          setFormImagePreview(null)
+                          setIsCreating(true)
+                        }}
                         className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-text)] transition-all hover:opacity-90 active:scale-[0.97]"
                       >
                         <Plus size={16} /> Crear Ejercicio
@@ -516,9 +580,11 @@ export default function Exercises() {
                         <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                           <button
                             onClick={() => {
-                              setEditingExercise(exercise)
-                              setFormName(exercise.name)
-                              setIsCreating(true)
+                               setEditingExercise(exercise)
+                               setFormName(exercise.name)
+                               setFormImage(null)
+                               setFormImagePreview(exercise.imageUrl || null)
+                               setIsCreating(true)
                             }}
                             className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-[var(--text-muted)] transition-all hover:bg-[var(--surface-hover)] hover:text-[var(--accent)]"
                             aria-label={`Editar ${exercise.name}`}

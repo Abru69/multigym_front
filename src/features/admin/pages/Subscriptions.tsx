@@ -8,13 +8,14 @@ import {
   deleteSubscription,
   getClientUsers,
   getPlans,
+  getResponseItems,
 } from '@/lib/api'
 import { Plus, XCircle, Calendar, Edit2, Trash2, RefreshCw } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useToastStore } from '@/components/ui/Toast'
-import type { SubscriptionListItemDTO, MemberListItemDTO, PlanListItemDTO } from '@/types'
+import type { SubscriptionListItemDTO, MemberListItemDTO, PlanListItemDTO, UserDTO } from '@/types'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
@@ -47,9 +48,7 @@ export default function SubscriptionsPage() {
       setIsLoading(true)
       setError('')
       const response = await getSubscriptions()
-      if (response?.dto?.data) {
-        setSubscriptions(response.dto.data)
-      }
+      setSubscriptions(getResponseItems<SubscriptionListItemDTO>(response))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al cargar suscripciones')
     } finally {
@@ -62,9 +61,8 @@ export default function SubscriptionsPage() {
     loadData()
     getClientUsers()
       .then((res) => {
-        if (res?.dto?.data) {
-          setMembers(
-            res.dto.data
+        setMembers(
+            getResponseItems<UserDTO>(res)
               .filter((u) => u.memberDTO)
               .map((u) => ({
                 id: u.memberDTO!.id,
@@ -74,12 +72,11 @@ export default function SubscriptionsPage() {
                 isActive: u.isActive,
               }))
           )
-        }
       })
       .catch(() => {})
     getPlans()
       .then((res) => {
-        if (res?.dto?.data) setPlans(res.dto.data)
+        setPlans(getResponseItems<PlanListItemDTO>(res))
       })
       .catch(() => {})
   }, [loadData])

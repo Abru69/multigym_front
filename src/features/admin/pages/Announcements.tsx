@@ -4,6 +4,7 @@ import {
   createAnnouncement,
   updateAnnouncement,
   deleteAnnouncement,
+  getResponseItems,
 } from '@/lib/api'
 import {
   Plus,
@@ -70,7 +71,7 @@ export default function AnnouncementsPage() {
     try {
       setIsLoading(true)
       const res = await getAnnouncements({ size: 100 })
-      setAnnouncements(res.dto?.data || [])
+      setAnnouncements(getResponseItems(res))
     } catch {
       addToast('Error al cargar anuncios', 'error')
     } finally {

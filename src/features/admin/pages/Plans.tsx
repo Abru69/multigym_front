@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { getPlans, createPlan, updatePlan, deletePlan, togglePlanStatus } from '@/lib/api'
+import { getPlans, createPlan, updatePlan, deletePlan, togglePlanStatus, getResponseItems } from '@/lib/api'
 import {
   Plus,
   Trash2,
@@ -51,9 +51,7 @@ export default function PlansPage() {
       setIsLoading(true)
       setError('')
       const response = await getPlans()
-      if (response?.dto?.data) {
-        setPlans(response.dto.data)
-      }
+      setPlans(getResponseItems<PlanListItemDTO>(response))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al cargar planes')
     } finally {

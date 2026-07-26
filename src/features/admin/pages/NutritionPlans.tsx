@@ -5,12 +5,13 @@ import {
   updateNutritionPlan,
   deleteNutritionPlan,
   getClientUsers,
+  getResponseItems,
 } from '@/lib/api'
 import { Plus, Utensils, Edit2, Trash2, Clock, Flame, User } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { useToastStore } from '@/components/ui/Toast'
-import type { NutritionPlanDTO, NutritionPlanRequest, MemberListItemDTO } from '@/types'
+import type { NutritionPlanDTO, NutritionPlanRequest, MemberListItemDTO, UserDTO } from '@/types'
 import { AdminHeader } from '../components/AdminHeader'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
@@ -61,9 +62,7 @@ export default function NutritionPlansPage() {
       setIsLoading(true)
       setError('')
       const response = await getNutritionPlans()
-      if (response?.dto?.data) {
-        setPlans(response.dto.data)
-      }
+      setPlans(getResponseItems<NutritionPlanDTO>(response))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al cargar planes nutricionales')
     } finally {
@@ -76,9 +75,8 @@ export default function NutritionPlansPage() {
     loadData()
     getClientUsers()
       .then((res) => {
-        if (res?.dto?.data) {
-          setMembers(
-            res.dto.data
+        setMembers(
+            getResponseItems<UserDTO>(res)
               .filter((u) => u.memberDTO)
               .map((u) => ({
                 id: u.memberDTO!.id,
@@ -88,7 +86,6 @@ export default function NutritionPlansPage() {
                 isActive: u.isActive,
               }))
           )
-        }
       })
       .catch(() => {})
   }, [loadData])

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Routine, DayOfWeek, Exercise, MuscleGroup } from '@/types'
-import { fetchApi } from '@/lib/api'
+import { fetchApi, getResponseItems } from '@/lib/api'
 import type { ResponseDTO, WorkoutDTO, WorkoutExerciseListItemDTO, PaginatedResult } from '@/types'
 import { useAuthStore } from '@/features/auth/store/authStore'
 
@@ -117,13 +117,13 @@ export const useRoutineStore = create<RoutineStore>()(
 
           const url = `/api/workouts?memberId=${encodeURIComponent(memberId)}`
           const workoutsRes = await fetchApi<ResponseDTO<PaginatedResult<WorkoutDTO>>>(url)
-          const workouts = workoutsRes.dto?.data || []
+          const workouts = getResponseItems<WorkoutDTO>(workoutsRes)
 
           const exerciseResults = await Promise.allSettled(
             workouts.map((w) =>
               fetchApi<ResponseDTO<PaginatedResult<WorkoutExerciseListItemDTO>>>(
                 `/api/workout-exercises/${w.id}`
-              ).then((res) => ({ workoutId: w.id, exercises: res.dto?.data || [] }))
+              ).then((res) => ({ workoutId: w.id, exercises: getResponseItems<WorkoutExerciseListItemDTO>(res) }))
             )
           )
 

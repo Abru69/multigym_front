@@ -5,6 +5,7 @@ import {
   updatePlatformUser as apiUpdatePlatformUser,
   togglePlatformUserStatus as apiTogglePlatformUserStatus,
   deletePlatformUser as apiDeletePlatformUser,
+  getResponseItems,
 } from '@/lib/api'
 import type { PlatformUserDTO, PlatformUserRequestDTO } from '@/types'
 
@@ -28,7 +29,7 @@ export const usePlatformUsersStore = create<PlatformUsersStore>()((set, get) => 
     set({ isLoading: true, error: null })
     try {
       const response = await getPlatformUsers()
-      set({ users: response?.dto?.data || [], isLoading: false })
+       set({ users: getResponseItems<PlatformUserDTO>(response), isLoading: false })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al cargar usuarios'
       set({ error: message, isLoading: false })

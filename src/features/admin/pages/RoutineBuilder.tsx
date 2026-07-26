@@ -10,11 +10,20 @@ import {
   ArrowLeft,
   Dumbbell,
   Search,
+  Image as ImageIcon,
 } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { useToastStore } from '@/components/ui/Toast'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { getExerciseLibrary, createExercise, createWorkout, createWorkoutExercise, updateWorkout, fetchApi } from '@/lib/api'
+import {
+  getExerciseLibrary,
+  createExercise,
+  uploadExerciseImage,
+  createWorkout,
+  createWorkoutExercise,
+  updateWorkout,
+  fetchApi,
+} from '@/lib/api'
 import { SearchBar } from '../components/SearchBar'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -222,6 +231,8 @@ export default function RoutineBuilder({
 
   const [isCreatingExercise, setIsCreatingExercise] = useState(false)
   const [newExerciseForm, setNewExerciseForm] = useState({ name: '', muscleGroup: '' })
+  const [newExerciseImage, setNewExerciseImage] = useState<File | null>(null)
+  const [newExerciseImagePreview, setNewExerciseImagePreview] = useState<string | null>(null)
   const [newExerciseErrors, setNewExerciseErrors] = useState<Record<string, string>>({})
   const [isSavingExercise, setIsSavingExercise] = useState(false)
 
@@ -270,10 +281,18 @@ export default function RoutineBuilder({
     }
     setIsSavingExercise(true)
     try {
-      await createExercise({ name: newExerciseForm.name, muscleGroup: newExerciseForm.muscleGroup })
+      let imageUrl: string | undefined
+      if (newExerciseImage) {
+        const uploadResponse = await uploadExerciseImage(newExerciseImage)
+        imageUrl = uploadResponse.dto?.url
+        if (!imageUrl) throw new Error('No se recibió la URL de la imagen')
+      }
+      await createExercise({ name: newExerciseForm.name, muscleGroup: newExerciseForm.muscleGroup, imageUrl })
       addToast('Ejercicio creado correctamente', 'success')
       loadExercises()
       setNewExerciseForm({ name: '', muscleGroup: '' })
+      setNewExerciseImage(null)
+      setNewExerciseImagePreview(null)
       setIsCreatingExercise(false)
     } catch (e: unknown) {
       addToast(e instanceof Error ? e.message : 'Error creando ejercicio', 'error')
@@ -848,6 +867,8 @@ export default function RoutineBuilder({
               onClick={() => {
                 setIsCreatingExercise(true)
                 setShowExerciseModal(true)
+                setNewExerciseImage(null)
+                setNewExerciseImagePreview(null)
               }}
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] py-2 text-xs font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] sm:py-2.5 sm:text-sm"
             >
@@ -863,6 +884,8 @@ export default function RoutineBuilder({
         onClose={() => {
           setShowExerciseModal(false)
           setIsCreatingExercise(false)
+          setNewExerciseImage(null)
+          setNewExerciseImagePreview(null)
         }}
         title="Nuevo Ejercicio"
         size="md"
@@ -910,11 +933,38 @@ export default function RoutineBuilder({
               ))}
             </select>
           </FormField>
+          <FormField label="Imagen del ejercicio" htmlFor="new-ex-image">
+            <div className="flex items-center gap-4">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+                {newExerciseImagePreview ? (
+                  <img src={newExerciseImagePreview} alt="Vista previa" className="h-full w-full object-cover" />
+                ) : (
+                  <ImageIcon size={24} className="text-[var(--text-muted)]" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <input
+                  id="new-ex-image"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null
+                    setNewExerciseImage(file)
+                    setNewExerciseImagePreview(file ? URL.createObjectURL(file) : null)
+                  }}
+                  className="block w-full text-sm text-[var(--text-secondary)] file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--accent)] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-[var(--accent-text)]"
+                />
+                <p className="mt-1 text-xs text-[var(--text-muted)]">JPG, PNG, WEBP o GIF. Máximo 10 MB.</p>
+              </div>
+            </div>
+          </FormField>
           <div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
             <button
               onClick={() => {
                 setShowExerciseModal(false)
                 setIsCreatingExercise(false)
+                setNewExerciseImage(null)
+                setNewExerciseImagePreview(null)
               }}
               disabled={isSavingExercise}
               className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] disabled:opacity-50"

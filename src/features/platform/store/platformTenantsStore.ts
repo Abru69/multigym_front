@@ -5,6 +5,7 @@ import {
   createTenant as apiCreateTenant,
   deleteTenant as apiDeleteTenant,
   toggleTenantStatus as apiToggleTenantStatus,
+  getResponseItems,
 } from '@/lib/api'
 import type { TenantDTO, SaasPlanDTO, TenantRequestDTO } from '@/types'
 
@@ -32,7 +33,7 @@ export const usePlatformTenantsStore = create<PlatformTenantsStore>()((set, get)
     set({ isLoading: true, error: null })
     try {
       const response = await getTenants()
-      set({ tenants: response?.dto?.data || [], isLoading: false })
+       set({ tenants: getResponseItems<TenantDTO>(response), isLoading: false })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al cargar gimnasios'
       set({ error: message, isLoading: false })
@@ -42,7 +43,7 @@ export const usePlatformTenantsStore = create<PlatformTenantsStore>()((set, get)
   loadPlans: async () => {
     try {
       const response = await getSaasPlans()
-      set({ plans: response?.dto?.data || [] })
+       set({ plans: getResponseItems<SaasPlanDTO>(response) })
     } catch (err) {
       console.error('Error loading SaaS plans:', err)
     }

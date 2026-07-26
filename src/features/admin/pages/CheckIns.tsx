@@ -6,6 +6,7 @@ import {
   getActiveCheckIns,
   getCheckInStats,
   getClientUsers,
+  getResponseItems,
 } from '@/lib/api'
 import { LogIn, LogOut, Clock, Users, TrendingUp, QrCode, User, Search } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
@@ -50,10 +51,10 @@ export default function CheckInsPage() {
         getCheckInStats(),
         getClientUsers(),
       ])
-      setCheckins(checkinsRes.dto?.data || [])
-      setActiveCheckins(activeRes.dto || [])
-      setStats(statsRes.dto || null)
-      setUsers(usersRes.dto?.data || [])
+       setCheckins(getResponseItems<CheckInDTO>(checkinsRes))
+       setActiveCheckins(getResponseItems<CheckInDTO>(activeRes))
+       setStats(statsRes.dto || null)
+       setUsers(getResponseItems<UserDTO>(usersRes))
     } catch {
       addToast('Error al cargar datos de asistencia', 'error')
     } finally {

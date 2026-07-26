@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { fetchApi } from '@/lib/api'
+import { fetchApi, getResponseItems } from '@/lib/api'
 import { UserPlus, Dumbbell, Trash2, MoreVertical, Edit2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/ui/Modal'
@@ -46,9 +46,7 @@ export default function UsersPage() {
       setIsLoading(true)
       setError('')
       const response = await fetchApi<ResponseDTO<{ data: UserDTO[] }>>('/api/tenant/users')
-      if (response?.dto?.data) {
-        setClients(response.dto.data)
-      }
+      setClients(getResponseItems<UserDTO>(response))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al cargar usuarios')
     } finally {

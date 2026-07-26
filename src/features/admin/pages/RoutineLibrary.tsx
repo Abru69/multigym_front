@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion'
 import { Plus, Dumbbell, Calendar, Trash2, Eye } from 'lucide-react'
 import { useToastStore } from '@/components/ui/Toast'
-import { getWorkouts, deleteWorkout } from '@/lib/api'
+import { getWorkouts, deleteWorkout, getResponseItems } from '@/lib/api'
 import { SearchBar } from '../components/SearchBar'
 import { LoadingState } from '../components/LoadingState'
 import { EmptyState } from '../components/EmptyState'
@@ -32,7 +32,7 @@ export default function RoutineLibrary() {
     try {
       setIsLoading(true)
       const res = await getWorkouts()
-      setTemplates(res.dto?.data || [])
+      setTemplates(getResponseItems(res))
     } catch (e) {
       console.error('Error fetching templates', e)
     } finally {
