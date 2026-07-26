@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Lock, ArrowLeft, Loader2, CheckCircle, Eye, EyeOff, UserCheck } from 'lucide-react'
 
 import { activateAccount } from '@/lib/api'
+import { getTenantFromLocation, getTenantHomeUrl } from '@/lib/tenant'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/Label'
@@ -11,7 +12,7 @@ import { Label } from '@/components/ui/Label'
 export default function ActivateAccount() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') || ''
-  const tenant = searchParams.get('tenant') || ''
+  const tenant = searchParams.get('tenant') || getTenantFromLocation() || ''
   const loginPath = tenant ? `/login?tenant=${encodeURIComponent(tenant)}` : '/login'
 
   const [newPassword, setNewPassword] = useState('')
@@ -48,7 +49,7 @@ export default function ActivateAccount() {
         ...(newPassword ? { newPassword } : {}),
       }
       await activateAccount(payload)
-      setSuccess(true)
+      window.location.assign(getTenantHomeUrl(tenant || undefined))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'El enlace ha expirado o no es válido.')
     } finally {

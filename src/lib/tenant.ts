@@ -19,6 +19,11 @@ export function getTenantFromSubdomain(): string | null {
     return null
   }
 
+  // Local Docker HTTPS uses tenant.localhost subdomains.
+  if (hostname.endsWith('.localhost')) {
+    return hostname.slice(0, -'.localhost'.length).split('.')[0] || null
+  }
+
   // Check if it's an IP address
   const isIpAddress = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname)
   if (isIpAddress) {

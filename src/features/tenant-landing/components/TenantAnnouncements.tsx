@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, X } from 'lucide-react'
 import {
   getActiveAnnouncementsByPosition,
   trackAnnouncementClick,
@@ -15,6 +15,7 @@ interface TenantAnnouncementsProps {
 export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
   const [announcements, setAnnouncements] = useState<AnnouncementDTO[]>([])
   const [popupOpen, setPopupOpen] = useState(false)
+  const [popupIndex, setPopupIndex] = useState(0)
   const viewedIds = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
         if (!mounted) return
 
         setAnnouncements(items)
+        setPopupIndex(0)
 
         if (position === 'POPUP' && items.length > 0) {
           const popupKey = `tenant-announcement-popup-${items[0].id}`
@@ -55,7 +57,7 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
   if (announcements.length === 0) return null
 
   if (position === 'POPUP') {
-    const announcement = announcements[0]
+    const announcement = announcements[popupIndex] ?? announcements[0]
 
     return (
       <AnimatePresence>
@@ -93,6 +95,48 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
                   announcement={announcement}
                   className="mt-5 w-full justify-center"
                 />
+                {announcements.length > 1 && (
+                  <div className="mt-5 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPopupIndex((current) =>
+                          current === 0 ? announcements.length - 1 : current - 1
+                        )
+                      }
+                      className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                      aria-label="Anuncio anterior"
+                    >
+                      <ArrowLeft size={14} /> Anterior
+                    </button>
+                    <div className="flex items-center gap-1.5" aria-label="Navegación de anuncios">
+                      {announcements.map((item, index) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setPopupIndex(index)}
+                          className={`h-1.5 rounded-full transition-all ${
+                            index === popupIndex
+                              ? 'w-5 bg-[var(--accent)]'
+                              : 'w-1.5 bg-[var(--border)] hover:bg-[var(--text-muted)]'
+                          }`}
+                          aria-label={`Ver anuncio ${index + 1}`}
+                          aria-current={index === popupIndex ? 'true' : undefined}
+                        />
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPopupIndex((current) => (current + 1) % announcements.length)
+                      }
+                      className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                      aria-label="Siguiente anuncio"
+                    >
+                      Siguiente <ArrowRight size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -110,7 +154,15 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
       }
     >
       <div className={position === 'HERO' ? 'mx-auto max-w-7xl' : undefined}>
-        <div className={position === 'FOOTER' ? 'grid gap-4 md:grid-cols-2' : 'space-y-4'}>
+        <div
+          className={
+            position === 'HERO'
+              ? 'grid gap-5 lg:grid-cols-2'
+              : position === 'FOOTER'
+                ? 'grid gap-4 md:grid-cols-2'
+                : 'space-y-4'
+          }
+        >
           {announcements.map((announcement) => (
             <motion.article
               key={announcement.id}
@@ -130,8 +182,8 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
                   announcement={announcement}
                   className={
                     position === 'BANNER'
-                      ? 'h-44 w-full rounded-2xl sm:w-72'
-                      : 'mb-5 h-56 w-full rounded-2xl'
+                      ? 'aspect-[16/7] w-full rounded-2xl sm:aspect-auto sm:h-36 sm:w-72'
+                      : 'mb-5 aspect-[16/7] w-full rounded-2xl'
                   }
                 />
                 <div className="flex-1">
@@ -201,7 +253,11 @@ function AnnouncementMedia({
 
   if (announcement.mediaType === 'VIDEO') {
     return (
-      <video controls className={`${className} bg-black object-cover`} src={announcement.mediaUrl}>
+      <video
+        controls
+        className={`${className} bg-black object-contain`}
+        src={announcement.mediaUrl}
+      >
         <track kind="captions" srcLang="es" label="Español" src="/captions/announcements.vtt" />
       </video>
     )
@@ -211,7 +267,7 @@ function AnnouncementMedia({
     <img
       src={announcement.mediaUrl}
       alt={announcement.title}
-      className={`${className} object-cover`}
+      className={`${className} bg-[var(--surface)] object-contain`}
     />
   )
 }

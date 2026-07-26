@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { productCategories } from '@/data/products'
-import { getProducts, createProduct, fetchApi } from '@/lib/api'
+import { getProducts, createProduct, fetchApi, uploadProductImage } from '@/lib/api'
 import type { ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
@@ -32,6 +32,7 @@ interface ProductItem {
   brand: string
   category: string
   image: string
+  imageUrl?: string
 }
 
 const categoryBadgeClass: Record<string, string> = {
@@ -83,6 +84,7 @@ export default function Inventory() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [dragActive, setDragActive] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const loadProducts = useCallback(async () => {
@@ -100,6 +102,7 @@ export default function Inventory() {
           slug: p.name.toLowerCase().replace(/ /g, '-'),
           brand: 'MultiGym',
           category: p.category || 'general',
+          imageUrl: p.imageUrl || p.image || '',
           image:
             p.imageUrl || p.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=400&h=400&fit=crop',
         }))
@@ -140,6 +143,7 @@ export default function Inventory() {
     setFormErrors({})
     setEditingProduct(null)
     setImagePreview(null)
+    setSelectedImage(null)
     setShowModal(true)
   }
 
@@ -155,6 +159,7 @@ export default function Inventory() {
     setFormErrors({})
     setEditingProduct(product)
     setImagePreview(product.image)
+    setSelectedImage(null)
     setShowModal(true)
   }
 
@@ -163,6 +168,17 @@ export default function Inventory() {
 
     setIsSaving(true)
     try {
+      let imageUrl = editingProduct?.imageUrl || undefined
+
+      if (selectedImage) {
+        const uploadResponse = await uploadProductImage(selectedImage)
+        imageUrl = uploadResponse.dto?.url
+
+        if (!imageUrl) {
+          throw new Error('No se recibió la URL de la imagen')
+        }
+      }
+
       if (editingProduct) {
         await fetchApi<ResponseDTO<unknown>>(`/api/products/${editingProduct.id}`, {
           method: 'PUT',
@@ -170,6 +186,7 @@ export default function Inventory() {
             name: form.name,
             price: parseFloat(form.price) || 0,
             stock: parseInt(form.stock) || 0,
+            imageUrl,
           }),
         })
         addToast('Producto actualizado correctamente', 'success')
@@ -178,6 +195,7 @@ export default function Inventory() {
           name: form.name,
           price: parseFloat(form.price) || 0,
           stock: parseInt(form.stock) || 0,
+          imageUrl,
         })
         addToast('Producto creado correctamente', 'success')
       }
@@ -192,9 +210,11 @@ export default function Inventory() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setSelectedImage(file)
       const reader = new FileReader()
       reader.onload = (ev) => setImagePreview(ev.target?.result as string)
-      reader.readAsDataURL(e.target.files[0])
+      reader.readAsDataURL(file)
     }
   }
 

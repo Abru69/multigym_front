@@ -581,6 +581,15 @@ export const uploadTenantLogo = (file: File) => {
   })
 }
 
+export const uploadProductImage = (file: File) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return fetchApi<ResponseDTO<{ url: string }>>('/api/files?subfolder=products', {
+    method: 'POST',
+    body: formData,
+  })
+}
+
 export const uploadMyAvatar = (file: File) => {
   const formData = new FormData()
   formData.append('file', file)

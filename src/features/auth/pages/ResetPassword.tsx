@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Lock, ArrowLeft, Loader2, CheckCircle, Eye, EyeOff } from 'lucide-react'
 
 import { fetchApi } from '@/lib/api'
+import { getTenantFromLocation, getTenantHomeUrl } from '@/lib/tenant'
 import type { ResponseDTO } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
