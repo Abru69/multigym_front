@@ -57,6 +57,31 @@ export function MemberPlanSummary() {
             title="Mis rutinas"
             status={routineStatus}
             available={!routinesError && routines.length > 0}
+            details={
+              routines.length > 0 ? (
+                <div className="mt-2 space-y-1.5">
+                  {routines.slice(0, 3).map((routine) => (
+                    <div
+                      key={routine.id}
+                      className="flex items-center justify-between gap-3 text-xs"
+                    >
+                      <span className="truncate font-medium text-[var(--text-primary)]">
+                        {routine.name}
+                      </span>
+                      <span className="shrink-0 text-[var(--text-muted)]">
+                        {routine.days.reduce((total, day) => total + day.exercises.length, 0)}{' '}
+                        ejercicios
+                      </span>
+                    </div>
+                  ))}
+                  {routines.length > 3 && (
+                    <span className="block pt-0.5 text-xs font-semibold text-[var(--accent)]">
+                      +{routines.length - 3} más
+                    </span>
+                  )}
+                </div>
+              ) : undefined
+            }
           />
           <SummaryCard
             href="/app/nutricion"
@@ -77,12 +102,14 @@ function SummaryCard({
   title,
   status,
   available,
+  details,
 }: {
   href: string
   icon: ReactNode
   title: string
   status: string
   available: boolean
+  details?: ReactNode
 }) {
   return (
     <Link
@@ -95,6 +122,7 @@ function SummaryCard({
       <div className="min-w-0 flex-1">
         <h3 className="font-bold text-[var(--text-primary)]">{title}</h3>
         <p className="mt-0.5 text-xs text-[var(--text-secondary)] sm:text-sm">{status}</p>
+        {details}
       </div>
       <div className="flex shrink-0 items-center gap-1 text-[var(--accent)]">
         {available && <CheckCircle2 size={16} />}

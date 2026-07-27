@@ -9,7 +9,6 @@ import { GymSchedule } from '../components/GymSchedule'
 import { Trainers } from '../components/Trainers'
 import { GymPlans } from '../components/GymPlans'
 import { TenantFooter } from '../components/TenantFooter'
-import { MemberPlanSummary } from '../components/MemberPlanSummary'
 import { getTenantHomeUrl } from '@/lib/tenant'
 import { TenantLogo } from '@/components/tenant/TenantLogo'
 
@@ -38,16 +37,28 @@ export default function TenantLandingPage() {
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
-            <a href="#horarios" className="text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]">
+            <a
+              href="#horarios"
+              className="text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            >
               Horarios
             </a>
-            <a href="#entrenadores" className="text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]">
+            <a
+              href="#entrenadores"
+              className="text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            >
               Entrenadores
             </a>
-            <a href="#planes" className="text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]">
+            <a
+              href="#planes"
+              className="text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            >
               Planes
             </a>
-            <Link to="/tienda" className="text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]">
+            <Link
+              to="/tienda"
+              className="text-sm font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            >
               Tienda
             </Link>
           </nav>
@@ -57,15 +68,24 @@ export default function TenantLandingPage() {
               <>
                 {isClient && (
                   <nav className="hidden items-center gap-1 sm:flex">
-                    <Link to="/app/rutinas" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]">
+                    <Link
+                      to="/app/rutinas"
+                      className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    >
                       <Dumbbell size={14} />
                       Rutinas
                     </Link>
-                    <Link to="/tienda" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]">
+                    <Link
+                      to="/tienda"
+                      className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    >
                       <ShoppingBag size={14} />
                       Tienda
                     </Link>
-                    <Link to="/app/mis-ordenes" className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]">
+                    <Link
+                      to="/app/mis-ordenes"
+                      className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    >
                       <Package size={14} />
                       Mis Órdenes
                     </Link>
@@ -106,8 +126,6 @@ export default function TenantLandingPage() {
 
       <main className={isAuthenticated && isClient ? 'pb-20 lg:pb-0' : undefined}>
         <TenantHero />
-
-        {isAuthenticated && isClient && <MemberPlanSummary />}
 
         <TenantAnnouncements position="HERO" />
         <TenantAnnouncements position="POPUP" />

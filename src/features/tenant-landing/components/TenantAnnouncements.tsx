@@ -58,6 +58,7 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
 
   if (position === 'POPUP') {
     const announcement = announcements[popupIndex] ?? announcements[0]
+    const imageOnly = announcement.mediaType === 'IMAGE' && Boolean(announcement.mediaUrl)
 
     return (
       <AnimatePresence>
@@ -88,56 +89,59 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
               >
                 <X size={18} />
               </button>
-              <AnnouncementMedia announcement={announcement} className="h-56 w-full" />
-              <div className="p-6">
-                <AnnouncementText announcement={announcement} titleClassName="text-2xl" />
-                <AnnouncementLink
-                  announcement={announcement}
-                  className="mt-5 w-full justify-center"
-                />
-                {announcements.length > 1 && (
-                  <div className="mt-5 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setPopupIndex((current) =>
-                          current === 0 ? announcements.length - 1 : current - 1
-                        )
-                      }
-                      className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                      aria-label="Anuncio anterior"
-                    >
-                      <ArrowLeft size={14} /> Anterior
-                    </button>
-                    <div className="flex items-center gap-1.5" aria-label="Navegación de anuncios">
-                      {announcements.map((item, index) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => setPopupIndex(index)}
-                          className={`h-1.5 rounded-full transition-all ${
-                            index === popupIndex
-                              ? 'w-5 bg-[var(--accent)]'
-                              : 'w-1.5 bg-[var(--border)] hover:bg-[var(--text-muted)]'
-                          }`}
-                          aria-label={`Ver anuncio ${index + 1}`}
-                          aria-current={index === popupIndex ? 'true' : undefined}
-                        />
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setPopupIndex((current) => (current + 1) % announcements.length)
-                      }
-                      className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
-                      aria-label="Siguiente anuncio"
-                    >
-                      Siguiente <ArrowRight size={14} />
-                    </button>
+              <AnnouncementMedia
+                announcement={announcement}
+                className={imageOnly ? 'h-auto max-h-[80vh] w-full object-contain' : 'h-56 w-full'}
+              />
+              {!imageOnly && (
+                <div className="p-6">
+                  <AnnouncementText announcement={announcement} titleClassName="text-2xl" />
+                  <AnnouncementLink
+                    announcement={announcement}
+                    className="mt-5 w-full justify-center"
+                  />
+                </div>
+              )}
+              {announcements.length > 1 && (
+                <div className="mx-6 mb-6 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPopupIndex((current) =>
+                        current === 0 ? announcements.length - 1 : current - 1
+                      )
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    aria-label="Anuncio anterior"
+                  >
+                    <ArrowLeft size={14} /> Anterior
+                  </button>
+                  <div className="flex items-center gap-1.5" aria-label="Navegación de anuncios">
+                    {announcements.map((item, index) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setPopupIndex(index)}
+                        className={`h-1.5 rounded-full transition-all ${
+                          index === popupIndex
+                            ? 'w-5 bg-[var(--accent)]'
+                            : 'w-1.5 bg-[var(--border)] hover:bg-[var(--text-muted)]'
+                        }`}
+                        aria-label={`Ver anuncio ${index + 1}`}
+                        aria-current={index === popupIndex ? 'true' : undefined}
+                      />
+                    ))}
                   </div>
-                )}
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => setPopupIndex((current) => (current + 1) % announcements.length)}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
+                    aria-label="Siguiente anuncio"
+                  >
+                    Siguiente <ArrowRight size={14} />
+                  </button>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -163,49 +167,59 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
                 : 'space-y-4'
           }
         >
-          {announcements.map((announcement) => (
-            <motion.article
-              key={announcement.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35 }}
-              className={getCardClassName(position)}
-            >
-              <div
-                className={
-                  position === 'BANNER'
-                    ? 'flex flex-col gap-5 sm:flex-row sm:items-center'
-                    : undefined
-                }
+          {announcements.map((announcement) => {
+            const imageOnly = announcement.mediaType === 'IMAGE' && Boolean(announcement.mediaUrl)
+
+            return (
+              <motion.article
+                key={announcement.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+                className={getCardClassName(position, imageOnly)}
               >
-                <AnnouncementMedia
-                  announcement={announcement}
+                <div
                   className={
                     position === 'BANNER'
-                      ? 'aspect-[16/7] w-full rounded-2xl sm:aspect-auto sm:h-36 sm:w-72'
-                      : 'mb-5 aspect-[16/7] w-full rounded-2xl'
+                      ? 'flex flex-col gap-5 sm:flex-row sm:items-center'
+                      : undefined
                   }
-                />
-                <div className="flex-1">
-                  <AnnouncementText
+                >
+                  <AnnouncementMedia
                     announcement={announcement}
-                    titleClassName={
-                      position === 'HERO' ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'
+                    className={
+                      imageOnly
+                        ? 'h-auto max-h-[70vh] w-full rounded-none object-contain'
+                        : position === 'BANNER'
+                          ? 'aspect-[16/7] w-full rounded-2xl sm:aspect-auto sm:h-36 sm:w-72'
+                          : 'mb-5 aspect-[16/7] w-full rounded-2xl'
                     }
                   />
-                  <AnnouncementLink announcement={announcement} className="mt-5" />
+                  {!imageOnly && (
+                    <div className="flex-1">
+                      <AnnouncementText
+                        announcement={announcement}
+                        titleClassName={
+                          position === 'HERO' ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'
+                        }
+                      />
+                      <AnnouncementLink announcement={announcement} className="mt-5" />
+                    </div>
+                  )}
                 </div>
-              </div>
-            </motion.article>
-          ))}
+              </motion.article>
+            )
+          })}
         </div>
       </div>
     </section>
   )
 }
 
-function getCardClassName(position: AnnouncementDTO['position']) {
+function getCardClassName(position: AnnouncementDTO['position'], imageOnly = false) {
   const base = 'overflow-hidden border border-[var(--border)] bg-[var(--card)] shadow-sm'
+
+  if (imageOnly) return `${base} rounded-3xl p-0`
 
   if (position === 'HERO') {
     return `${base} rounded-3xl p-5 sm:p-7`
