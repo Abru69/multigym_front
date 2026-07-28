@@ -1,24 +1,17 @@
 import { motion } from 'framer-motion'
-import { Dumbbell, Flame, TrendingUp, Clock } from 'lucide-react'
+import { ArrowRight, Dumbbell, Utensils } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import type { ReactNode } from 'react'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
-
-const stats = [
-  { label: 'Rutinas Activas', value: '2', icon: Dumbbell, color: 'var(--accent)' },
-  { label: 'Calorías esta Semana', value: '1,850', icon: Flame, color: 'var(--warning)' },
-  { label: 'Progreso Mensual', value: '+12%', icon: TrendingUp, color: 'var(--success)' },
-  { label: 'Horas Entrenadas', value: '8.5', icon: Clock, color: 'var(--detail)' },
-]
-
-const recentActivity = [
-  { text: 'Completaste Push Day A', time: 'Hace 2 horas', type: 'workout' },
-  { text: 'Rutina Semanal asignada', time: 'Ayer', type: 'routine' },
-  { text: 'Nuevo record en Bench Press: 80kg', time: 'Hace 3 días', type: 'record' },
-]
+import { useRoutineStore } from '@/features/client/store/routineStore'
+import { useNutritionStore } from '@/features/client/store/nutritionStore'
 
 export function MemberSummary() {
   const { user } = useAuthStore()
   const { branding } = useTenantBranding()
+  const { routines, isLoading: routinesLoading, error: routinesError } = useRoutineStore()
+  const { plan, isLoading: nutritionLoading, error: nutritionError } = useNutritionStore()
 
   const greeting = () => {
     const hour = new Date().getHours()
@@ -42,46 +35,144 @@ export function MemberSummary() {
           Aquí está tu resumen de hoy.
         </p>
 
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5"
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <div
-                  className="flex h-10 w-10 items-center justify-center rounded-lg"
-                  style={{ background: `${stat.color}15`, color: stat.color }}
-                >
-                  <stat.icon size={20} />
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-[var(--text-primary)]">{stat.value}</div>
-              <div className="text-sm text-[var(--text-muted)]">{stat.label}</div>
-            </motion.div>
-          ))}
-        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <SummaryCard
+            href="/app/rutinas"
+            icon={<Dumbbell size={20} />}
+            title="Mis rutinas"
+            loading={routinesLoading}
+            error={routinesError}
+          >
+            {routines.length > 0 ? (
+              <>
+                <p className="mb-3 text-sm text-[var(--text-secondary)]">
+                  {routines.length}{' '}
+                  {routines.length === 1 ? 'rutina asignada' : 'rutinas asignadas'}
+                </p>
+                <div className="space-y-2">
+                  {routines.slice(0, 3).map((routine) => {
+                    const exerciseCount = routine.days.reduce(
+                      (total, day) => total + day.exercises.length,
+                      0
+                    )
+                    const activeDays = routine.days.filter((day) => !day.isRestDay).length
 
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-          <h3 className="mb-4 text-lg font-semibold text-[var(--text-primary)]">
-            Actividad Reciente
-          </h3>
-          <div className="space-y-3">
-            {recentActivity.map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between border-b border-[var(--border)] pb-3 last:border-0 last:pb-0"
-              >
-                <span className="text-sm text-[var(--text-secondary)]">{activity.text}</span>
-                <span className="text-xs text-[var(--text-muted)]">{activity.time}</span>
-              </div>
-            ))}
-          </div>
+                    return (
+                      <div
+                        key={routine.id}
+                        className="flex items-center justify-between gap-3 rounded-lg bg-[var(--surface)] px-3 py-2"
+                      >
+                        <span className="truncate text-sm font-semibold text-[var(--text-primary)]">
+                          {routine.name}
+                        </span>
+                        <span className="shrink-0 text-xs text-[var(--text-muted)]">
+                          {activeDays} días · {exerciseCount} ejercicios
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+                {routines.length > 3 && (
+                  <p className="mt-3 text-xs font-semibold text-[var(--accent)]">
+                    +{routines.length - 3} rutinas más
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-[var(--text-secondary)]">
+                Aún no tienes rutinas asignadas.
+              </p>
+            )}
+          </SummaryCard>
+
+          <SummaryCard
+            href="/app/nutricion"
+            icon={<Utensils size={20} />}
+            title="Plan nutricional"
+            loading={nutritionLoading}
+            error={nutritionError}
+          >
+            {plan ? (
+              <>
+                <p className="mb-3 truncate text-sm font-semibold text-[var(--text-primary)]">
+                  {plan.name}
+                </p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <Macro label="Kcal" value={plan.targetCalories} color="var(--accent)" />
+                  <Macro label="Proteína" value={`${plan.targetProtein}g`} color="var(--success)" />
+                  <Macro label="Carbos" value={`${plan.targetCarbs}g`} color="var(--info)" />
+                  <Macro label="Grasas" value={`${plan.targetFats}g`} color="var(--warning)" />
+                </div>
+                <p className="mt-3 text-xs text-[var(--text-muted)]">
+                  {plan.meals.length}{' '}
+                  {plan.meals.length === 1 ? 'comida planificada' : 'comidas planificadas'}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-[var(--text-secondary)]">
+                Aún no tienes un plan nutricional asignado.
+              </p>
+            )}
+          </SummaryCard>
         </div>
       </motion.div>
     </section>
+  )
+}
+
+function SummaryCard({
+  href,
+  icon,
+  title,
+  loading,
+  error,
+  children,
+}: {
+  href: string
+  icon: ReactNode
+  title: string
+  loading: boolean
+  error: string | null
+  children: ReactNode
+}) {
+  return (
+    <Link
+      to={href}
+      className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]/50 hover:shadow-[var(--shadow-md)]"
+    >
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--accent)]/10 text-[var(--accent)]">
+            {icon}
+          </div>
+          <h2 className="font-bold text-[var(--text-primary)]">{title}</h2>
+        </div>
+        <ArrowRight
+          size={18}
+          className="shrink-0 text-[var(--accent)] transition-transform group-hover:translate-x-1"
+        />
+      </div>
+
+      {loading ? (
+        <div className="h-20 animate-pulse rounded-xl bg-[var(--surface)]" />
+      ) : error ? (
+        <p className="text-sm text-[var(--text-secondary)]">No se pudo cargar esta información.</p>
+      ) : (
+        children
+      )}
+    </Link>
+  )
+}
+
+function Macro({ label, value, color }: { label: string; value: string | number; color: string }) {
+  return (
+    <div className="rounded-lg bg-[var(--surface)] px-2 py-2 text-center">
+      <p className="text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
+        {label}
+      </p>
+      <p className="text-sm font-black" style={{ color }}>
+        {value}
+      </p>
+    </div>
   )
 }

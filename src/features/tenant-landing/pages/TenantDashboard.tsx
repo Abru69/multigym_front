@@ -4,6 +4,7 @@ import { LogOut } from 'lucide-react'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useRoutineStore } from '@/features/client/store/routineStore'
+import { useNutritionStore } from '@/features/client/store/nutritionStore'
 import { getTenantHomeUrl } from '@/lib/tenant'
 import { TenantLogo } from '@/components/tenant/TenantLogo'
 import { MemberSummary } from '../components/MemberSummary'
@@ -15,10 +16,12 @@ export default function TenantDashboard() {
   const { user, logout, tenantId } = useAuthStore()
   const { branding } = useTenantBranding()
   const { loadRoutines } = useRoutineStore()
+  const { loadPlan } = useNutritionStore()
 
   useEffect(() => {
-    loadRoutines()
-  }, [loadRoutines])
+    void loadRoutines()
+    void loadPlan()
+  }, [loadPlan, loadRoutines])
 
   const handleLogout = async () => {
     const currentTenantId = tenantId || user?.tenantId
