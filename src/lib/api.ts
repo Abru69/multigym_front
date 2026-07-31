@@ -582,6 +582,10 @@ export const updatePlatformSettings = (entries: Record<string, string>) =>
 
 // --- Branches ---
 export const getBranches = () => fetchApi<ResponseDTO<BranchDTO[]>>('/api/branches')
+export const createBranch = (data: { name: string; address?: string; phone?: string; isMain?: boolean }) => fetchApi<ResponseDTO<BranchDTO>>('/api/branches', { method: 'POST', body: JSON.stringify(data) })
+export const updateBranch = (id: string, data: { name: string; address?: string; phone?: string; isMain?: boolean }) => fetchApi<ResponseDTO<BranchDTO>>(`/api/branches/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+export const toggleBranchStatus = (id: string) => fetchApi<ResponseDTO<BranchDTO>>(`/api/branches/${id}/status`, { method: 'PATCH' })
+export const deleteBranch = (id: string) => fetchApi<ResponseDTO<unknown>>(`/api/branches/${id}`, { method: 'DELETE' })
 
 // --- Tenant Settings ---
 export const getTenantSettings = () =>
