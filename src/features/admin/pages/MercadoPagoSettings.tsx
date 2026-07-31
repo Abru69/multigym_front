@@ -8,6 +8,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Unplug,
+  Save,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useToastStore } from '@/components/ui/Toast'
@@ -31,6 +32,8 @@ export default function MercadoPagoSettings() {
   const [isSavingWebhookSecret, setIsSavingWebhookSecret] = useState(false)
   const [webhookSecret, setWebhookSecret] = useState('')
   const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null)
+  const [sandboxPublicKey, setSandboxPublicKey] = useState('')
+  const [sandboxAccessToken, setSandboxAccessToken] = useState('')
 
   const loadConfig = useCallback(async () => {
     setIsLoading(true)
@@ -110,6 +113,29 @@ export default function MercadoPagoSettings() {
       addToast(err instanceof Error ? err.message : 'Error al guardar webhook secret', 'error')
     } finally {
       setIsSavingWebhookSecret(false)
+    }
+  }
+
+  const saveSandboxCredentials = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!sandboxPublicKey.startsWith('TEST-') || !sandboxAccessToken.startsWith('TEST-')) {
+      addToast('Usa una public key y access token TEST de Mercado Pago', 'error')
+      return
+    }
+    try {
+      const response = await saveMercadoPagoConfig({
+        enabled: true,
+        publicKey: sandboxPublicKey.trim(),
+        accessToken: sandboxAccessToken.trim(),
+        siteId: 'MLM',
+        currency: 'MXN',
+        processingMode: 'automatic',
+      })
+      setConfig(response.dto || null)
+      setSandboxAccessToken('')
+      addToast('Credenciales TEST guardadas', 'success')
+    } catch (err) {
+      addToast(err instanceof Error ? err.message : 'Error al guardar credenciales TEST', 'error')
     }
   }
 
@@ -262,6 +288,20 @@ export default function MercadoPagoSettings() {
           firma de las notificaciones entrantes.
         </p>
       </section>
+
+      {window.location.hostname.includes('staging') && (
+        <section className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6">
+          <h2 className="text-lg font-black text-[var(--text-primary)]">Credenciales de prueba (staging)</h2>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
+            OAuth conecta una cuenta real. Para pruebas usa credenciales TEST de un usuario vendedor de prueba.
+          </p>
+          <form onSubmit={saveSandboxCredentials} className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_auto]">
+            <input value={sandboxPublicKey} onChange={(event) => setSandboxPublicKey(event.target.value)} placeholder="TEST-... public key" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
+            <input value={sandboxAccessToken} onChange={(event) => setSandboxAccessToken(event.target.value)} placeholder="TEST-... access token" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" type="password" />
+            <Button type="submit" className="gap-2"><Save size={16} /> Guardar TEST</Button>
+          </form>
+        </section>
+      )}
     </div>
   )
 }
