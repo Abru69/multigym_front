@@ -433,6 +433,7 @@ export interface BranchDTO {
   address: string
   phone: string
   isActive: boolean
+  isMain: boolean
 }
 
 export interface TenantSettingDTO {
