@@ -2,7 +2,25 @@ declare global {
   interface Window {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     MercadoPago: any
+    MP_DEVICE_SESSION_ID?: string
   }
+}
+
+export function getMercadoPagoDeviceSessionId(): string | undefined {
+  return window.MP_DEVICE_SESSION_ID
+}
+
+export function loadMercadoPagoDeviceFingerprint(): Promise<void> {
+  if (window.MP_DEVICE_SESSION_ID || document.querySelector('script[data-mp-device]')) return Promise.resolve()
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = 'https://www.mercadopago.com/v2/security.js'
+    script.async = true
+    script.dataset.mpDevice = 'true'
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('No se pudo cargar la protección antifraude de Mercado Pago'))
+    document.head.appendChild(script)
+  })
 }
 
 const mpInstances = new Map<string, unknown>()

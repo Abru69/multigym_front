@@ -664,6 +664,8 @@ export interface OrderRequest {
   paymentMethodId?: string
   issuerId?: string
   installments?: number
+  payerLastName?: string
+  deviceSessionId?: string
 }
 
 export interface OrderStatusRequest {

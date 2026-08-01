@@ -37,3 +37,5 @@ The production build passed after the implementation.
 ## Mercado Pago Descriptor
 
 Tenant admins can configure the order payment name from the Mercado Pago settings page. The value is limited to 13 characters; an empty value falls back to the registered gym name. SaaS renewal descriptor configuration remains a Platform setting.
+
+Checkout now requests the buyer surname and loads Mercado Pago's device fingerprint script before submitting a card payment.

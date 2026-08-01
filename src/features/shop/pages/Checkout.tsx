@@ -5,7 +5,7 @@ import { useCartStore } from '@/features/shop/store/cartStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useToastStore } from '@/components/ui/Toast'
 import { fetchApi } from '@/lib/api'
-import { getMercadoPago } from '@/lib/mercadopago'
+import { getMercadoPago, getMercadoPagoDeviceSessionId, loadMercadoPagoDeviceFingerprint } from '@/lib/mercadopago'
 import type {
   OrderDTO,
   ResponseDTO,
@@ -151,6 +151,7 @@ export default function Checkout() {
   const [cardExpiry, setCardExpiry] = useState('')
   const [cardCvc, setCardCvc] = useState('')
   const [cardholderEmail, setCardholderEmail] = useState(user?.email || '')
+  const [payerLastName, setPayerLastName] = useState('')
 
   const subtotal = total()
   const shipping = deliveryMethod === 'SHIPPING' ? (subtotal > 1500 ? 0 : 150) : 0
@@ -283,6 +284,7 @@ export default function Checkout() {
       if (!cardCvc.trim()) throw new Error('Ingresa el CVC')
       if (!cardholderName.trim()) throw new Error('Ingresa el nombre del titular')
       if (!cardholderEmail.trim()) throw new Error('Ingresa el email del titular')
+      if (!payerLastName.trim()) throw new Error('Ingresa el apellido del titular')
 
       const expirationYear =
         expirationYearShort.length === 2 ? `20${expirationYearShort}` : expirationYearShort
@@ -300,6 +302,7 @@ export default function Checkout() {
         console.error('MercadoPago token response:', tokenResponse)
         throw new Error('No se pudo tokenizar la tarjeta. Verifica los datos e intenta de nuevo.')
       }
+      await loadMercadoPagoDeviceFingerprint()
 
       const orderBody: OrderRequest = {
         userId: user.id,
@@ -313,6 +316,8 @@ export default function Checkout() {
         cardToken,
         paymentMethodId: getPaymentMethodId(cardDigits),
         installments: 1,
+        payerLastName: payerLastName.trim(),
+        deviceSessionId: getMercadoPagoDeviceSessionId(),
         ...(deliveryMethod === 'PICKUP'
           ? { branchId: selectedBranch }
           : { shippingAddress, shippingCity, shippingPostalCode }),
@@ -520,6 +525,10 @@ export default function Checkout() {
                     Dirección de Envío
                   </h2>
                   <div className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label htmlFor="payer-last-name" className="text-xs font-semibold text-[var(--text-primary)]">Apellido</label>
+                      <input id="payer-last-name" required value={payerLastName} onChange={(e) => setPayerLastName(e.target.value)} placeholder="Apellido" className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)]" />
+                    </div>
                     <div className="space-y-1.5">
                       <label
                         htmlFor="shipping-address"
