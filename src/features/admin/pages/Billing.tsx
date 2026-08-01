@@ -16,7 +16,7 @@ import {
   getTenantBillingRenewalInfo,
   processTenantBillingRenewalMercadoPagoPayment,
 } from '@/lib/api'
-import { getMercadoPago } from '@/lib/mercadopago'
+import { getMercadoPago, getMercadoPagoDeviceSessionId, loadMercadoPagoDeviceFingerprint } from '@/lib/mercadopago'
 import { formatCurrency } from '@/lib/utils'
 import type { TenantPaymentDTO, TenantRenewalInfoDTO } from '@/types'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -35,6 +35,7 @@ export default function Billing() {
   const [cardExpiry, setCardExpiry] = useState('')
   const [cardCvc, setCardCvc] = useState('')
   const [payerEmail, setPayerEmail] = useState(user?.email || '')
+  const [payerLastName, setPayerLastName] = useState('')
 
   const loadBilling = useCallback(async () => {
     setIsLoading(true)
@@ -129,6 +130,7 @@ export default function Billing() {
       if (!cardCvc.trim()) throw new Error('Ingresa el CVC')
       if (!cardholderName.trim()) throw new Error('Ingresa el nombre del titular')
       if (!payerEmail.trim()) throw new Error('Ingresa el email del pagador')
+      if (!payerLastName.trim()) throw new Error('Ingresa el apellido del pagador')
 
       const expirationYear =
         expirationYearShort.length === 2 ? `20${expirationYearShort}` : expirationYearShort
@@ -145,6 +147,7 @@ export default function Billing() {
       if (!cardToken) {
         throw new Error('No se pudo tokenizar la tarjeta. Verifica los datos e intenta de nuevo.')
       }
+      await loadMercadoPagoDeviceFingerprint()
 
       const response = await processTenantBillingRenewalMercadoPagoPayment({
         cardToken,
@@ -152,6 +155,8 @@ export default function Billing() {
         issuerId: null,
         installments: 1,
         payerEmail: payerEmail.trim(),
+        payerLastName: payerLastName.trim(),
+        deviceSessionId: getMercadoPagoDeviceSessionId(),
       })
 
       if (response.dto?.payment.status === 'COMPLETED') {
@@ -292,6 +297,9 @@ export default function Billing() {
                   onChange={(e) => setCardholderName(e.target.value)}
                   disabled={!renewalInfo.canRenew || isPaying}
                 />
+              </Field>
+              <Field label="Apellido del titular">
+                <Input value={payerLastName} onChange={(e) => setPayerLastName(e.target.value)} disabled={!renewalInfo.canRenew || isPaying} />
               </Field>
               <Field label="Número de tarjeta">
                 <Input
