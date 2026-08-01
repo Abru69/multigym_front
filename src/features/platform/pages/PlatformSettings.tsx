@@ -275,6 +275,12 @@ export default function PlatformSettings() {
             local={local}
             updateLocal={updateLocal}
           />
+          <SettingsInput
+            label="Nombre en pagos SaaS"
+            settingKey="saas_payment_statement_descriptor"
+            local={local}
+            updateLocal={(key, value) => updateLocal(key, value.toUpperCase().slice(0, 13))}
+          />
           <SettingsSelect
             label="Zona horaria"
             settingKey="timezone"
