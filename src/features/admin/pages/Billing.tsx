@@ -144,6 +144,8 @@ export default function Billing() {
         securityCode: cardCvc.trim(),
       })
       const cardToken = tokenResponse?.id || tokenResponse?.token
+      const paymentMethodId = tokenResponse?.payment_method_id || tokenResponse?.paymentMethodId || getPaymentMethodId(cardDigits)
+      const issuerId = tokenResponse?.issuer_id || tokenResponse?.issuerId || null
       if (!cardToken) {
         throw new Error('No se pudo tokenizar la tarjeta. Verifica los datos e intenta de nuevo.')
       }
@@ -151,8 +153,8 @@ export default function Billing() {
 
       const response = await processTenantBillingRenewalMercadoPagoPayment({
         cardToken,
-        paymentMethodId: getPaymentMethodId(cardDigits),
-        issuerId: null,
+        paymentMethodId,
+        issuerId,
         installments: 1,
         payerEmail: payerEmail.trim(),
         payerLastName: payerLastName.trim(),
