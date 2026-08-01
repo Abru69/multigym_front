@@ -1,6 +1,12 @@
 # Estado del Proyecto
 
-**Última actualización:** 2026-07-19
+**Última actualización:** 2026-07-31
+
+## Deploy Actual
+
+- Frontend staging desplegado con commit `d224b7e`.
+- Backend compatible desplegado con commit `ea4cd5d`.
+- Frontend y backend están `healthy`; web y API responden HTTP 200.
 
 ## Sesión Actual — Navbar Y Temas
 
@@ -13,6 +19,12 @@
 - ✅ Colores fijos corregidos en tarjetas, tablas, badges, overlays, modales, envíos, recogidas, pagos y suscripciones.
 - ✅ TypeScript, ESLint, build de producción y `git diff --check` pasan correctamente.
 - ℹ️ No se realizaron cambios en el backend.
+
+## Sucursales
+
+- ✅ Administración tenant: alta, edición, activar/desactivar y eliminación.
+- ✅ Protección de la sucursal principal `Matriz`.
+- ✅ Integración con `GET/POST /api/branches`, `PUT/PATCH/DELETE /api/branches/{id}`.
 
 ## Auditoría Frontend 2026-07-18
 

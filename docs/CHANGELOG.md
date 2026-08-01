@@ -1,5 +1,16 @@
 # Changelog
 
+## [2026-07-31]
+
+### Completado
+
+- **Administración de sucursales**
+  - Añadida pantalla tenant para crear y editar sucursales.
+  - Añadidas acciones para activar/desactivar y eliminar con confirmación.
+  - La sucursal principal `Matriz` no muestra acciones destructivas.
+  - Conectadas las operaciones a los endpoints backend de sucursales.
+- Build de producción validado y desplegado en staging con commit `d224b7e`.
+
 ## [2026-07-16]
 
 ### Completado

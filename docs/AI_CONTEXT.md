@@ -1,5 +1,7 @@
 # Contexto del Proyecto — Multigym Front
 
+**Última actualización:** 2026-07-31. El estado completo está en `docs/PROGRESS.md`.
+
 ## Descripción
 
 Plataforma SaaS multi-tenant para gestión integral de gimnasios. Cada tenant opera con su propio branding, usuarios, rutinas, inventario y tienda.
@@ -42,7 +44,7 @@ src/
 │   │   └── store/       # platformAuthStore.ts
 │   ├── admin/
 │   │   ├── components/  # AdminHeader, SearchBar, ConfirmDialog, FormField, etc.
-│   │   └── pages/       # Dashboard, Users, Inventory, Exercises, RoutineBuilder, RoutineLibrary
+│   │   └── pages/       # Dashboard, Users, Branches, Inventory, Exercises, RoutineBuilder, RoutineLibrary
 │   ├── client/
 │   │   ├── pages/       # Landing, MyRoutines, Progress, Nutrition, SaaSLanding
 │   │   └── store/       # routineStore.ts
@@ -79,6 +81,7 @@ src/
 - Dashboard KPIs, CRUD usuarios, inventario
 - Biblioteca de ejercicios + constructor de rutinas
 - Estilos: Tailwind (CSS files eliminados)
+- Sucursales: CRUD conectado a `/api/branches`; `Matriz` no puede eliminarse ni desactivarse.
 
 ### 4. Portal Cliente (`features/client/`)
 
