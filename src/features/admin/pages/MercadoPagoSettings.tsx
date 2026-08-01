@@ -14,10 +14,12 @@ import { Button } from '@/components/ui/Button'
 import { useToastStore } from '@/components/ui/Toast'
 import {
   disconnectMercadoPagoOAuth,
+  getTenantSettings,
   getMercadoPagoConfig,
   refreshMercadoPagoOAuth,
   saveMercadoPagoConfig,
   startMercadoPagoOAuthConnect,
+  updateTenantSettings,
 } from '@/lib/api'
 import type { MercadoPagoTenantConfigDTO } from '@/types'
 import { LoadingState } from '../components/LoadingState'
@@ -34,18 +36,33 @@ export default function MercadoPagoSettings() {
   const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null)
   const [sandboxPublicKey, setSandboxPublicKey] = useState('')
   const [sandboxAccessToken, setSandboxAccessToken] = useState('')
+  const [statementDescriptor, setStatementDescriptor] = useState('')
+  const [isSavingDescriptor, setIsSavingDescriptor] = useState(false)
 
   const loadConfig = useCallback(async () => {
     setIsLoading(true)
     try {
       const response = await getMercadoPagoConfig()
       setConfig(response.dto || null)
+      const settings = await getTenantSettings()
+      setStatementDescriptor(settings.lista?.find((setting) => setting.key === 'payment_statement_descriptor')?.value || '')
     } catch (err) {
       addToast(err instanceof Error ? err.message : 'Error al cargar Mercado Pago', 'error')
     } finally {
       setIsLoading(false)
     }
   }, [addToast])
+
+  const saveStatementDescriptor = async (event: FormEvent) => {
+    event.preventDefault()
+    setIsSavingDescriptor(true)
+    try {
+      await updateTenantSettings({ payment_statement_descriptor: statementDescriptor.trim() })
+      addToast('Nombre de pago guardado', 'success')
+    } catch (err) {
+      addToast(err instanceof Error ? err.message : 'Error al guardar nombre de pago', 'error')
+    } finally { setIsSavingDescriptor(false) }
+  }
 
   useEffect(() => {
     loadConfig()
@@ -158,6 +175,15 @@ export default function MercadoPagoSettings() {
           Actualizar
         </Button>
       </div>
+
+      <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-black text-[var(--text-primary)]">Nombre en el estado de cuenta</h2>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">Hasta 13 caracteres alfanuméricos. Si queda vacío se usará el nombre registrado del gimnasio.</p>
+        <form onSubmit={saveStatementDescriptor} className="mt-4 flex max-w-xl gap-3">
+          <input value={statementDescriptor} maxLength={13} onChange={(event) => setStatementDescriptor(event.target.value.toUpperCase())} placeholder="Nombre del gimnasio" className="min-w-0 flex-1 rounded-xl border border-[var(--border)] bg-[var(--input-bg)] px-3 py-3 text-sm text-[var(--text-primary)]" />
+          <Button type="submit" disabled={isSavingDescriptor}><Save size={16} /> Guardar</Button>
+        </form>
+      </section>
 
       <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
