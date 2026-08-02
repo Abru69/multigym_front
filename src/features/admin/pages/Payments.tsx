@@ -399,7 +399,7 @@ export default function PaymentsPage() {
               value={form.subscriptionId}
               onChange={(e) => setForm({ ...form, subscriptionId: e.target.value })}
               options={subscriptionsList
-                .filter((s) => s.status === 'ACTIVE')
+                .filter((s) => s.status === 'ACTIVE' || s.status === 'PENDING_PAYMENT')
                 .map((s) => ({
                   value: s.id,
                   label: `${s.member?.name || 'N/A'} — ${s.plan?.name || 'N/A'}`,

@@ -214,6 +214,8 @@ export default function SubscriptionsPage() {
         return { bg: 'var(--error-muted-bg)', color: 'var(--error)' }
       case 'CANCELLED':
         return { bg: 'var(--warning-muted)', color: 'var(--warning)' }
+      case 'PENDING_PAYMENT':
+        return { bg: 'var(--warning-muted)', color: 'var(--warning)' }
       default:
         return { bg: 'var(--surface)', color: 'var(--text-secondary)' }
     }
@@ -339,7 +341,7 @@ export default function SubscriptionsPage() {
                         className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
                         style={{ backgroundColor: sc.bg, color: sc.color }}
                       >
-                        {sub.status}
+                        {sub.status === 'PENDING_PAYMENT' ? 'Pendiente de pago' : sub.status}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
