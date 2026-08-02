@@ -75,16 +75,10 @@ export default function ProductDetail() {
             nutritionFacts: found.nutritionFacts || [],
           })
         } else {
-          const { mockProducts } = await import('@/data/products')
-          setProduct(mockProducts.find((p) => p.slug === slug) || null)
-        }
-      } catch {
-        try {
-          const { mockProducts } = await import('@/data/products')
-          setProduct(mockProducts.find((p) => p.slug === slug) || null)
-        } catch {
           setProduct(null)
         }
+      } catch {
+        setProduct(null)
       } finally {
         setProductLoading(false)
       }

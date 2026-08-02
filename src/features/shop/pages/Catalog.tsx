@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { productCategories } from '@/data/products'
+import { productCategories } from '@/data/productCategories'
 import { getProducts, getResponseItems } from '@/lib/api'
 import type { ProductDTO } from '@/types'
 import type { Product } from '@/types'

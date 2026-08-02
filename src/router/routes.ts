@@ -9,8 +9,7 @@ export const PAGE_ROUTE_INVERSE: Record<string, string> = {
   nutrition: '/admin/nutricion',
   inventory: '/admin/inventario',
   exercises: '/admin/ejercicios',
-  pickups: '/admin/recogidas',
-  shipments: '/admin/envios',
+  sales: '/admin/ventas',
   delivery: '/admin/entrega',
   billing: '/admin/billing',
 }

@@ -55,7 +55,7 @@ const statusConfig: Record<string, { label: string; color: string; bg: string; d
     dot: 'bg-[var(--info)]',
   },
   COMPLETED: {
-    label: 'Recogida',
+    label: 'Entregada',
     color: 'text-[var(--success)]',
     bg: 'bg-[var(--success-muted)] border-[var(--success)]/30',
     dot: 'bg-[var(--success)]',
@@ -270,7 +270,7 @@ export default function Pickups() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-heading text-2xl font-black text-[var(--text-primary)]">
-            Recogidas en Sucursal
+            Pedidos en Sucursal
           </h1>
           <p className="mt-0.5 text-xs text-[var(--text-muted)]">
             {pendingCount} pendiente{pendingCount !== 1 ? 's' : ''} · {readyCount} listo
@@ -351,7 +351,7 @@ export default function Pickups() {
                 ? 'No hay pedidos nuevos'
                 : filter === 'READY'
                   ? 'No hay pedidos listos'
-                  : 'No hay órdenes de recogida'}
+                   : 'No hay pedidos en sucursal'}
             </p>
           </div>
         ) : (
@@ -416,7 +416,7 @@ export default function Pickups() {
                         ) : (
                           <Check size={12} />
                         )}
-                        Marcar Listo
+                        Aceptar
                       </button>
                     )}
                     {orderStatus === 'READY' && (
@@ -499,7 +499,7 @@ export default function Pickups() {
                                   {order.branchName}
                                 </p>
                                 <p className="flex items-center gap-1 text-[11px] text-[var(--text-secondary)]">
-                                  <MapPin size={10} /> Sucursal de recogida
+                                   <MapPin size={10} /> Sucursal de entrega
                                 </p>
                               </div>
                             </div>

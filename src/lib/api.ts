@@ -457,6 +457,9 @@ export const getPlanById = (id: string) =>
   fetchApi<ResponseDTO<PlanListItemDTO>>(`/api/plans/${id}`)
 
 // --- Subscriptions ---
+const toSubscriptionDateTime = (date: string, endOfDay = false) =>
+  date.includes('T') ? date : `${date}T${endOfDay ? '23:59:59' : '00:00:00'}`
+
 export const getSubscriptions = () =>
   fetchApi<ResponseDTO<PaginatedResult<SubscriptionListItemDTO>>>('/api/subscriptions')
 export const createSubscription = (data: {
@@ -467,7 +470,11 @@ export const createSubscription = (data: {
 }) =>
   fetchApi<ResponseDTO<SubscriptionListItemDTO>>('/api/subscriptions', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...data,
+      startDate: toSubscriptionDateTime(data.startDate),
+      endDate: toSubscriptionDateTime(data.endDate, true),
+    }),
   })
 export const cancelSubscription = (id: string) =>
   fetchApi<ResponseDTO<SubscriptionListItemDTO>>(`/api/subscriptions/${id}/cancel`, {
@@ -701,7 +708,11 @@ export const updateSubscription = (
 ) =>
   fetchApi<ResponseDTO<SubscriptionListItemDTO>>(`/api/subscriptions/${id}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...data,
+      startDate: toSubscriptionDateTime(data.startDate),
+      endDate: toSubscriptionDateTime(data.endDate, true),
+    }),
   })
 export const changeSubscriptionPlan = (id: string, data: SubscriptionPlanChangeRequest) =>
   fetchApi<ResponseDTO<SubscriptionListItemDTO>>(`/api/subscriptions/${id}/plan`, {

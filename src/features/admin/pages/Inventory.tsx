@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { productCategories } from '@/data/products'
+import { productCategories } from '@/data/productCategories'
 import { getProducts, createProduct, fetchApi, uploadProductImage, getResponseItems } from '@/lib/api'
 import type { ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'

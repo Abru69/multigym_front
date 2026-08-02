@@ -37,7 +37,7 @@ export default function UsersPage() {
     phone: '',
     email: '',
     role: 'CLIENT',
-    status: true,
+    status: false,
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
@@ -106,7 +106,7 @@ export default function UsersPage() {
             phone: form.phone,
             email: form.email,
             role: form.role,
-            status: form.status,
+            status: false,
           }),
         })
         addToast('Usuario creado correctamente', 'success')
@@ -121,7 +121,7 @@ export default function UsersPage() {
   }
 
   const openCreate = () => {
-    setForm({ name: '', phone: '', email: '', role: 'CLIENT', status: true })
+    setForm({ name: '', phone: '', email: '', role: 'CLIENT', status: false })
     setFormErrors({})
     setSelectedUser(null)
     setShowModal(true)
@@ -500,20 +500,22 @@ export default function UsersPage() {
               </select>
             </FormField>
 
-            <div className="flex items-end pb-1">
-              <label className="flex cursor-pointer items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.checked })}
-                  className="h-4 w-4 rounded"
-                  style={{ accentColor: 'var(--accent)' }}
-                />
-                <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-                  Activo
-                </span>
-              </label>
-            </div>
+            {selectedUser && (
+              <div className="flex items-end pb-1">
+                <label className="flex cursor-pointer items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={form.status}
+                    onChange={(e) => setForm({ ...form, status: e.target.checked })}
+                    className="h-4 w-4 rounded"
+                    style={{ accentColor: 'var(--accent)' }}
+                  />
+                  <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    Activo
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
         </div>
 

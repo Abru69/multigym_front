@@ -98,7 +98,7 @@ export default function DeliverySettings() {
                 <Store size={22} />
               </div>
               <div>
-                <p className="text-sm font-bold text-[var(--text-primary)]">Recogida en Sucursal</p>
+                <p className="text-sm font-bold text-[var(--text-primary)]">Entrega en Sucursal</p>
                 <p className="text-xs text-[var(--text-secondary)]">
                   Los clientes eligen una sucursal y recogen su pedido
                 </p>

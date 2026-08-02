@@ -377,7 +377,7 @@ export default function Exercises() {
                         <img
                           src={group.imageUrl}
                           alt={group.name}
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="h-full w-full scale-[1.15] object-cover transition-transform duration-500 group-hover:scale-[1.2]"
                           loading="lazy"
                         />
                       ) : (

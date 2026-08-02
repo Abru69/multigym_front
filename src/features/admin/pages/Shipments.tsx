@@ -1,12 +1,20 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { cancelOrder, fetchApi, markOrderRefunded, retryOrderRefund } from '@/lib/api'
+import {
+  cancelOrder,
+  fetchApi,
+  markOrderComplete,
+  markOrderRefunded,
+  retryOrderRefund,
+  updateOrderStatus,
+} from '@/lib/api'
 import type { OrderDTO, OrderItemDTO, PaginatedResult, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import {
   Truck,
   Clock,
   Package,
+  Check,
   ChevronDown,
   ChevronUp,
   RefreshCw,
@@ -16,17 +24,23 @@ import {
 } from 'lucide-react'
 
 const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
+  PENDING: {
+    label: 'Pendiente',
+    color: 'text-[var(--warning)]',
+    bg: 'bg-[var(--warning-muted)] border-[var(--warning)]/30',
+    dot: 'bg-[var(--warning)]',
+  },
+  READY: {
+    label: 'En tránsito',
+    color: 'text-[var(--info)]',
+    bg: 'bg-[var(--info-muted)] border-[var(--info)]/30',
+    dot: 'bg-[var(--info)]',
+  },
   COMPLETED: {
     label: 'Entregado',
     color: 'text-[var(--success)]',
     bg: 'bg-[var(--success-muted)] border-[var(--success)]/30',
     dot: 'bg-[var(--success)]',
-  },
-  PENDING: {
-    label: 'Enviado',
-    color: 'text-[var(--info)]',
-    bg: 'bg-[var(--info-muted)] border-[var(--info)]/30',
-    dot: 'bg-[var(--info)]',
   },
   CANCELLED: {
     label: 'Cancelado',
@@ -152,6 +166,34 @@ export default function Shipments() {
       )
     } catch (err) {
       console.error('Failed to cancel order:', err)
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const handleAccept = async (orderId: string) => {
+    try {
+      setActionId(orderId)
+      const res = await updateOrderStatus(orderId, { status: 'READY' })
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? mergeUpdatedOrder(o, res, 'READY') : o))
+      )
+    } catch (err) {
+      console.error('Failed to accept shipment:', err)
+    } finally {
+      setActionId(null)
+    }
+  }
+
+  const handleComplete = async (orderId: string) => {
+    try {
+      setActionId(orderId)
+      const res = await markOrderComplete(orderId)
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? mergeUpdatedOrder(o, res, 'COMPLETED') : o))
+      )
+    } catch (err) {
+      console.error('Failed to complete shipment:', err)
     } finally {
       setActionId(null)
     }
@@ -315,6 +357,34 @@ export default function Shipments() {
                     </div>
                   </button>
                   <div className="flex items-center gap-3">
+                    {orderStatus === 'PENDING' && (
+                      <button
+                        onClick={() => handleAccept(order.id!)}
+                        disabled={actionId === order.id}
+                        className="flex items-center gap-1.5 rounded-xl bg-[var(--info)] px-3 py-2 text-xs font-bold text-[var(--text-on-primary)] transition hover:opacity-90 disabled:opacity-50"
+                      >
+                        {actionId === order.id ? (
+                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--text-on-primary)] border-t-transparent" />
+                        ) : (
+                          <Check size={12} />
+                        )}
+                        Aceptar
+                      </button>
+                    )}
+                    {orderStatus === 'READY' && (
+                      <button
+                        onClick={() => handleComplete(order.id!)}
+                        disabled={actionId === order.id}
+                        className="flex items-center gap-1.5 rounded-xl bg-[var(--success)] px-3 py-2 text-xs font-bold text-[var(--text-on-primary)] transition hover:opacity-90 disabled:opacity-50"
+                      >
+                        {actionId === order.id ? (
+                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--text-on-primary)] border-t-transparent" />
+                        ) : (
+                          <Check size={12} />
+                        )}
+                        Entregado
+                      </button>
+                    )}
                     {canCancelOrder(order.status) && (
                       <button
                         onClick={() => handleCancel(order.id!)}

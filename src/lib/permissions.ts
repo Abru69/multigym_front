@@ -7,8 +7,7 @@ export type AdminPage =
   | 'nutrition'
   | 'inventory'
   | 'exercises'
-  | 'pickups'
-  | 'shipments'
+  | 'sales'
   | 'delivery'
   | 'checkins'
   | 'announcements'
@@ -30,8 +29,7 @@ const ROLE_PAGES: Record<UserRole, AdminPage[]> = {
     'nutrition',
     'inventory',
     'exercises',
-    'pickups',
-    'shipments',
+    'sales',
     'delivery',
     'checkins',
     'announcements',
@@ -43,8 +41,8 @@ const ROLE_PAGES: Record<UserRole, AdminPage[]> = {
   ],
   nutricionist: ['nutrition'],
   staff: ['dashboard', 'users', 'inventory', 'exercises', 'checkins'],
-  receptionist: ['dashboard', 'users', 'subscriptions', 'payments', 'checkins'],
-  seller: ['dashboard', 'inventory', 'pickups', 'shipments', 'delivery'],
+  receptionist: ['dashboard', 'users', 'subscriptions', 'payments', 'sales', 'checkins'],
+  seller: ['dashboard', 'inventory', 'sales', 'delivery'],
   client: [],
 }
 
@@ -85,8 +83,9 @@ const PAGE_ROUTE_MAP: Record<string, AdminPage> = {
   '/admin/nutricion': 'nutrition',
   '/admin/inventario': 'inventory',
   '/admin/ejercicios': 'exercises',
-  '/admin/recogidas': 'pickups',
-  '/admin/envios': 'shipments',
+  '/admin/ventas': 'sales',
+  '/admin/recogidas': 'sales',
+  '/admin/envios': 'sales',
   '/admin/entrega': 'delivery',
   '/admin/check-ins': 'checkins',
   '/admin/anuncios': 'announcements',
