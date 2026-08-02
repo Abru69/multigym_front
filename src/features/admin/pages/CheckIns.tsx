@@ -417,11 +417,13 @@ export default function CheckInsPage() {
                 }}
               >
                 <option value="">Seleccionar miembro...</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>
+                {users
+                  .filter((u) => u.memberDTO?.id)
+                  .map((u) => (
+                  <option key={u.memberDTO!.id} value={u.memberDTO!.id}>
                     {u.memberDTO?.name || u.email} ({u.email})
                   </option>
-                ))}
+                  ))}
               </select>
             </div>
           </div>
