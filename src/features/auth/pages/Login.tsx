@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { Eye, EyeOff, Loader2, Building2 } from 'lucide-react'
@@ -21,6 +21,13 @@ export default function Login() {
   const formRef = useRef<HTMLFormElement>(null)
   const { login, isLoading, isAuthenticated } = useAuthStore()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  const getSafeReturnPath = () => {
+    const returnTo = searchParams.get('returnTo')
+    if (!returnTo || !returnTo.startsWith('/') || returnTo.startsWith('//')) return null
+    return returnTo
+  }
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -30,7 +37,7 @@ export default function Login() {
         // Clients see the tenant landing page first, not the routines portal.
         window.location.href = getTenantHomeUrl(useAuthStore.getState().tenantId || autoTenant)
       } else {
-        navigate(getDefaultRoute(user.role), { replace: true })
+        navigate(getSafeReturnPath() || getDefaultRoute(user.role), { replace: true })
       }
     }
   }, [isAuthenticated, navigate, autoTenant])

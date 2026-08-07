@@ -9,7 +9,10 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   const tenantId = getTenantFromLocation()
 
   if (!isAuthenticated) {
-    return <Navigate to={tenantId ? `/login?tenant=${tenantId}` : '/login'} state={{ from: location }} replace />
+    const params = new URLSearchParams()
+    if (tenantId) params.set('tenant', tenantId)
+    params.set('returnTo', `${location.pathname}${location.search}`)
+    return <Navigate to={`/login?${params.toString()}`} replace />
   }
 
   return <>{children}</>

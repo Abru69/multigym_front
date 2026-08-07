@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { getAllowedPages } from '@/lib/permissions'
 import { getTenantFromLocation } from '@/lib/tenant'
@@ -7,9 +7,13 @@ import type { ReactNode } from 'react'
 export function AdminGuard({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuthStore()
   const tenantId = getTenantFromLocation()
+  const location = useLocation()
 
   if (!isAuthenticated) {
-    return <Navigate to={tenantId ? `/login?tenant=${tenantId}` : '/login'} replace />
+    const params = new URLSearchParams()
+    if (tenantId) params.set('tenant', tenantId)
+    params.set('returnTo', `${location.pathname}${location.search}`)
+    return <Navigate to={`/login?${params.toString()}`} replace />
   }
 
   const allowed = getAllowedPages(user?.role)
