@@ -529,10 +529,6 @@ export default function Checkout() {
                   </h2>
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label htmlFor="payer-last-name" className="text-xs font-semibold text-[var(--text-primary)]">Apellido</label>
-                      <input id="payer-last-name" required value={payerLastName} onChange={(e) => setPayerLastName(e.target.value)} placeholder="Apellido" className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)]" />
-                    </div>
-                    <div className="space-y-1.5">
                       <label
                         htmlFor="shipping-address"
                         className="text-xs font-semibold text-[var(--text-primary)]"
@@ -727,6 +723,10 @@ export default function Checkout() {
                         onChange={(e) => setCardholderName(e.target.value.toUpperCase())}
                         className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)] uppercase transition-all placeholder:text-[var(--text-muted)] placeholder:normal-case focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 focus:outline-none"
                       />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label htmlFor="payer-last-name" className="text-xs font-semibold text-[var(--text-primary)]">Apellido del titular</label>
+                      <input id="payer-last-name" required value={payerLastName} onChange={(e) => setPayerLastName(e.target.value)} placeholder="Apellido" className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)]" />
                     </div>
                     <div className="space-y-1.5">
                       <label
