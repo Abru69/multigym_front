@@ -668,6 +668,7 @@ export interface OrderRequest {
   installments?: number
   payerLastName?: string
   deviceSessionId?: string
+  payerEmail?: string
 }
 
 export interface OrderStatusRequest {

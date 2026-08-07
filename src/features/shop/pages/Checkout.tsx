@@ -321,6 +321,7 @@ export default function Checkout() {
         installments: 1,
         payerLastName: payerLastName.trim(),
         deviceSessionId: getMercadoPagoDeviceSessionId(),
+        payerEmail: cardholderEmail.trim(),
         ...(deliveryMethod === 'PICKUP'
           ? { branchId: selectedBranch }
           : { shippingAddress, shippingCity, shippingPostalCode }),
