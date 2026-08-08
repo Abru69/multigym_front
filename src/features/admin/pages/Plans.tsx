@@ -21,30 +21,7 @@ import { LoadingState } from '../components/LoadingState'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
-
-function featuresToInput(value: string | null | undefined): string {
-  if (!value) return ''
-
-  try {
-    const parsed = JSON.parse(value) as unknown
-    if (Array.isArray(parsed)) {
-      return parsed.filter((feature): feature is string => typeof feature === 'string').join(', ')
-    }
-  } catch {
-    // Keep legacy plain-text values editable.
-  }
-
-  return value
-}
-
-function featuresToJson(value: string): string | undefined {
-  const features = value
-    .split(',')
-    .map((feature) => feature.trim())
-    .filter(Boolean)
-
-  return features.length > 0 ? JSON.stringify(features) : undefined
-}
+import { featuresToInput, featuresToJson } from '../utils/planFeatures'
 
 export default function PlansPage() {
   const addToast = useToastStore((s) => s.addToast)

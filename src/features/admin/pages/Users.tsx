@@ -16,15 +16,9 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable'
 import { Select } from '@/components/ui/Select'
 import type { PlanListItemDTO } from '@/types'
+import { getSubscriptionDateRange } from '../utils/planFeatures'
 
 type RoleFilter = 'ALL' | 'ADMIN' | 'CLIENT' | 'NUTRICIONIST' | 'STAFF' | 'RECEPTIONIST' | 'SELLER'
-
-function formatDateOnly(date: Date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
 
 export default function UsersPage() {
   const navigate = useNavigate()
@@ -144,15 +138,13 @@ export default function UsersPage() {
 
         if (form.role === 'CLIENT' && memberId && selectedPlan) {
           const startDate = new Date()
-          const endDate = new Date(startDate)
-          endDate.setMonth(endDate.getMonth() + selectedPlan.durationMonths)
+          const subscriptionDates = getSubscriptionDateRange(startDate, selectedPlan.durationMonths)
 
           try {
             await createSubscription({
               memberId,
               planId: selectedPlan.id,
-              startDate: formatDateOnly(startDate),
-              endDate: formatDateOnly(endDate),
+              ...subscriptionDates,
             })
           } catch (subscriptionError) {
             if (createdUser?.id) {
