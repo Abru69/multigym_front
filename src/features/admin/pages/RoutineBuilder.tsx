@@ -23,6 +23,7 @@ import {
   uploadExerciseImage,
   createWorkout,
   createWorkoutExercise,
+  deleteWorkoutExercise,
   updateWorkout,
   fetchApi,
 } from '@/lib/api'
@@ -30,7 +31,7 @@ import { SearchBar } from '../components/SearchBar'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
 
-interface ExerciseData {
+export interface ExerciseData {
   id: string
   source: 'CATALOG' | 'CUSTOM'
   name: string
@@ -51,7 +52,8 @@ interface DayExercise extends ExerciseData {
   restSeconds: number
 }
 
-interface WorkoutExercise {
+export interface WorkoutExercise {
+  id?: string
   dayOfWeek?: string
   exercise?: ExerciseData
   exerciseId?: string
@@ -63,7 +65,7 @@ interface WorkoutExercise {
   restSeconds?: number
 }
 
-interface EditingRoutine {
+export interface EditingRoutine {
   id?: string
   title?: string
   member?: { id: string } | null
@@ -441,6 +443,32 @@ export default function RoutineBuilder({
           startsAt: new Date().toISOString(),
           endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         })
+
+        const existingExercises = editingRoutine.exercises || []
+        for (const exercise of existingExercises) {
+          if (exercise.id) await deleteWorkoutExercise(exercise.id)
+        }
+
+        const exercisesPayload = Object.entries(dayExercises).flatMap(
+          ([dayOfWeek, exercises]) =>
+            exercises.map((ex, index) => {
+              const basePayload = {
+                workoutId: editingRoutine.id!,
+                dayOfWeek,
+                sets: parseInt(String(ex.sets)) || 4,
+                reps: ex.reps || '12',
+                restSeconds: ex.restSeconds || 60,
+                orderIndex: index,
+              }
+              return ex.source === 'CATALOG'
+                ? { ...basePayload, catalogExerciseId: ex.id }
+                : { ...basePayload, exerciseId: ex.id }
+            })
+        )
+        for (const exercise of exercisesPayload) {
+          await createWorkoutExercise(exercise)
+        }
+
         addToast(`Plantilla "${routineName}" actualizada exitosamente.`, 'success')
       } else {
         addToast(

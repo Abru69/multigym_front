@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { useRoutineStore } from '@/features/client/store/routineStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { createWorkoutLog } from '@/lib/api'
+import { Modal } from '@/components/ui/Modal'
 import type { DayOfWeek, Exercise } from '@/types'
 import {
   CheckCircle2,
@@ -19,6 +20,7 @@ import {
   RotateCcw,
   Info,
   Loader2,
+  Maximize2,
 } from 'lucide-react'
 
 const DAYS: { key: DayOfWeek; short: string; full: string }[] = [
@@ -166,6 +168,7 @@ function ExerciseCard({
   onToggleSet: (exercise: Exercise, setIndex: number) => void
   onSkipRest: () => void
 }) {
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false)
   const setsArray = Array.from({ length: exercise.sets }, (_, i) => i)
   const doneSets = setsArray.filter((i) =>
     completedSets.has(makeSetKey(dayKey, exercise.id, i))
@@ -199,7 +202,7 @@ function ExerciseCard({
             <img
               src={exercise.imageUrl}
               alt={exercise.name}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
               loading="lazy"
             />
           ) : (
@@ -305,14 +308,44 @@ function ExerciseCard({
 
               {/* Exercise image large */}
               {exercise.imageUrl && (
-                <div className="overflow-hidden rounded-xl" style={{ height: 140 }}>
+                <div className="relative flex min-h-[140px] items-center justify-center overflow-hidden rounded-xl bg-[var(--surface)] sm:min-h-[180px]">
                   <img
                     src={exercise.imageUrl}
                     alt={exercise.name}
-                    className="h-full w-full object-cover"
+                    className="max-h-[360px] w-full object-contain"
                   />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setIsImageViewerOpen(true)
+                    }}
+                    className="absolute top-2 right-2 rounded-lg bg-black/60 p-2 text-white opacity-70 shadow-sm transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white"
+                    aria-label={`Ver imagen completa de ${exercise.name}`}
+                    title="Ver imagen completa"
+                  >
+                    <Maximize2 size={16} />
+                  </button>
                 </div>
               )}
+
+              <Modal
+                isOpen={isImageViewerOpen}
+                onClose={() => setIsImageViewerOpen(false)}
+                title={exercise.name}
+                size="xl"
+                className="max-w-4xl"
+              >
+                {exercise.imageUrl && (
+                  <div className="flex min-h-[220px] items-center justify-center rounded-xl bg-[var(--surface)] p-2 sm:min-h-[420px]">
+                    <img
+                      src={exercise.imageUrl}
+                      alt={exercise.name}
+                      className="max-h-[calc(100dvh-12rem)] max-w-full object-contain"
+                    />
+                  </div>
+                )}
+              </Modal>
 
               {/* Description */}
               {exercise.description && (
