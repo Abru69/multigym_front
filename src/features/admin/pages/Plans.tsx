@@ -22,6 +22,30 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
 
+function featuresToInput(value: string | null | undefined): string {
+  if (!value) return ''
+
+  try {
+    const parsed = JSON.parse(value) as unknown
+    if (Array.isArray(parsed)) {
+      return parsed.filter((feature): feature is string => typeof feature === 'string').join(', ')
+    }
+  } catch {
+    // Keep legacy plain-text values editable.
+  }
+
+  return value
+}
+
+function featuresToJson(value: string): string | undefined {
+  const features = value
+    .split(',')
+    .map((feature) => feature.trim())
+    .filter(Boolean)
+
+  return features.length > 0 ? JSON.stringify(features) : undefined
+}
+
 export default function PlansPage() {
   const addToast = useToastStore((s) => s.addToast)
   const [plans, setPlans] = useState<PlanListItemDTO[]>([])
@@ -104,7 +128,7 @@ export default function PlansPage() {
       maxWorkoutsPerWeek: plan.maxWorkoutsPerWeek?.toString() || '',
       maxClasses: plan.maxClasses?.toString() || '',
       accessHours: plan.accessHours || '',
-      features: plan.features || '',
+       features: featuresToInput(plan.features),
     })
     setFormErrors({})
     setSelectedPlan(plan)
@@ -125,7 +149,7 @@ export default function PlansPage() {
           : undefined,
         maxClasses: form.maxClasses ? parseInt(form.maxClasses) || undefined : undefined,
         accessHours: form.accessHours || undefined,
-        features: form.features || undefined,
+        features: featuresToJson(form.features),
       }
       if (selectedPlan) {
         await updatePlan(selectedPlan.id, payload)
