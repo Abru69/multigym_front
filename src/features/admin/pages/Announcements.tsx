@@ -5,6 +5,7 @@ import {
   updateAnnouncement,
   deleteAnnouncement,
   getResponseItems,
+  uploadAnnouncementImage,
 } from '@/lib/api'
 import {
   Plus,
@@ -16,6 +17,8 @@ import {
   Image,
   Video,
   FileText,
+  Upload,
+  Loader2,
 } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -65,6 +68,9 @@ export default function AnnouncementsPage() {
   const [deleteTarget, setDeleteTarget] = useState<AnnouncementDTO | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [form, setForm] = useState<AnnouncementRequest>(EMPTY_FORM)
 
   const loadData = useCallback(async () => {
@@ -92,6 +98,8 @@ export default function AnnouncementsPage() {
   const openCreate = () => {
     setForm(EMPTY_FORM)
     setEditingItem(null)
+    setSelectedImage(null)
+    setImagePreview(null)
     setShowModal(true)
   }
 
@@ -109,7 +117,15 @@ export default function AnnouncementsPage() {
       endDate: item.endDate ? item.endDate.split('T')[0] : '',
     })
     setEditingItem(item)
+    setSelectedImage(null)
+    setImagePreview(item.mediaType === 'IMAGE' ? item.mediaUrl || null : null)
     setShowModal(true)
+  }
+
+  const handleImageChange = (file?: File) => {
+    if (!file) return
+    setSelectedImage(file)
+    setImagePreview(URL.createObjectURL(file))
   }
 
   const handleSave = async () => {
@@ -117,17 +133,36 @@ export default function AnnouncementsPage() {
       addToast('El título es requerido', 'error')
       return
     }
+    let mediaUrl = form.mediaUrl?.trim() || undefined
+    if (form.mediaType === 'IMAGE' && selectedImage) {
+      try {
+        setUploadingImage(true)
+        const response = await uploadAnnouncementImage(selectedImage)
+        mediaUrl = response.dto?.url
+        if (!mediaUrl) throw new Error('No se recibió la URL de la imagen')
+      } catch (err: unknown) {
+        addToast(err instanceof Error ? err.message : 'Error al subir la imagen', 'error')
+        return
+      } finally {
+        setUploadingImage(false)
+      }
+    }
+
     const payload: AnnouncementRequest = {
       ...form,
       title: form.title.trim(),
       description: form.description?.trim() || undefined,
-      mediaUrl: form.mediaUrl?.trim() || undefined,
+      mediaUrl,
       linkUrl: form.linkUrl?.trim() || undefined,
       startDate: form.startDate ? `${form.startDate}T00:00:00` : undefined,
       endDate: form.endDate ? `${form.endDate}T23:59:59` : undefined,
     }
-    if ((payload.mediaType === 'IMAGE' || payload.mediaType === 'VIDEO') && !payload.mediaUrl) {
-      addToast('La URL del medio es requerida para imagen o video', 'error')
+    if (payload.mediaType === 'IMAGE' && !payload.mediaUrl) {
+      addToast('Selecciona una imagen para el anuncio', 'error')
+      return
+    }
+    if (payload.mediaType === 'VIDEO' && !payload.mediaUrl) {
+      addToast('La URL del video es requerida', 'error')
       return
     }
     try {
@@ -351,10 +386,14 @@ export default function AnnouncementsPage() {
                 id="ann-media"
                 value={form.mediaType}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
-                    mediaType: e.target.value as AnnouncementRequest['mediaType'],
-                  })
+                  (() => {
+                    const mediaType = e.target.value as AnnouncementRequest['mediaType']
+                    setForm({ ...form, mediaType, mediaUrl: mediaType === 'VIDEO' ? '' : form.mediaUrl })
+                    if (mediaType !== 'IMAGE') {
+                      setSelectedImage(null)
+                      setImagePreview(null)
+                    }
+                  })()
                 }
                 className="flex h-11 w-full appearance-none rounded-xl px-4 py-2 text-sm transition-all"
                 style={{
@@ -390,15 +429,42 @@ export default function AnnouncementsPage() {
             </FormField>
           </div>
 
-          <FormField label="URL del medio" htmlFor="ann-media-url">
-            <Input
-              id="ann-media-url"
-              type="url"
-              value={form.mediaUrl}
-              onChange={(e) => setForm({ ...form, mediaUrl: e.target.value })}
-              placeholder="https://..."
-            />
-          </FormField>
+          {form.mediaType === 'IMAGE' ? (
+            <FormField label="Imagen del anuncio" htmlFor="ann-media-file">
+              <div className="space-y-3">
+                {imagePreview && (
+                  <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+                    <img src={imagePreview} alt="Vista previa del anuncio" className="h-40 w-full object-cover" />
+                  </div>
+                )}
+                <label className="flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm font-semibold text-[var(--text-primary)] transition hover:bg-[var(--surface-hover)]">
+                  <Upload size={16} />
+                  {selectedImage ? 'Cambiar imagen' : 'Seleccionar imagen'}
+                  <input
+                    id="ann-media-file"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    onChange={(e) => {
+                      handleImageChange(e.target.files?.[0])
+                      e.target.value = ''
+                    }}
+                  />
+                </label>
+                <p className="text-xs text-[var(--text-muted)]">JPEG, PNG, WebP o GIF. Máximo 10 MB.</p>
+              </div>
+            </FormField>
+          ) : form.mediaType === 'VIDEO' ? (
+            <FormField label="URL del video" htmlFor="ann-media-url">
+              <Input
+                id="ann-media-url"
+                type="url"
+                value={form.mediaUrl}
+                onChange={(e) => setForm({ ...form, mediaUrl: e.target.value })}
+                placeholder="https://..."
+              />
+            </FormField>
+          ) : null}
 
           <FormField label="URL de enlace" htmlFor="ann-link">
             <Input
@@ -462,7 +528,7 @@ export default function AnnouncementsPage() {
         >
           <button
             onClick={() => setShowModal(false)}
-            disabled={isSaving}
+            disabled={isSaving || uploadingImage}
             className="rounded-xl px-5 py-2.5 text-sm font-semibold transition-all"
             style={{
               border: '1px solid var(--border)',
@@ -478,13 +544,13 @@ export default function AnnouncementsPage() {
             className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.97]"
             style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
           >
-            {isSaving && (
+            {(isSaving || uploadingImage) && (
               <span
                 className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
                 style={{ borderColor: 'rgba(26,58,0,0.3)', borderTopColor: 'var(--accent-text)' }}
               />
             )}
-            {editingItem ? 'Actualizar' : 'Crear'}
+            {uploadingImage ? 'Subiendo imagen...' : editingItem ? 'Actualizar' : 'Crear'}
           </button>
         </div>
       </Modal>

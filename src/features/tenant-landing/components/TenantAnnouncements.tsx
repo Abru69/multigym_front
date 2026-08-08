@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight, X } from 'lucide-react'
 import {
@@ -10,9 +10,11 @@ import type { AnnouncementDTO } from '@/types'
 
 interface TenantAnnouncementsProps {
   position: AnnouncementDTO['position']
+  embedded?: boolean
+  fallback?: ReactNode
 }
 
-export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
+export function TenantAnnouncements({ position, embedded = false, fallback }: TenantAnnouncementsProps) {
   const [announcements, setAnnouncements] = useState<AnnouncementDTO[]>([])
   const [popupOpen, setPopupOpen] = useState(false)
   const [popupIndex, setPopupIndex] = useState(0)
@@ -54,7 +56,17 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
     })
   }, [announcements])
 
-  if (announcements.length === 0) return null
+  useEffect(() => {
+    if (!embedded || announcements.length < 2) return
+
+    const interval = window.setInterval(() => {
+      setPopupIndex((current) => (current + 1) % announcements.length)
+    }, 4000)
+
+    return () => window.clearInterval(interval)
+  }, [announcements.length, embedded])
+
+  if (announcements.length === 0) return embedded ? <>{fallback}</> : null
 
   if (position === 'POPUP') {
     const announcement = announcements[popupIndex] ?? announcements[0]
@@ -149,38 +161,48 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
     )
   }
 
+  const visibleAnnouncements = embedded
+    ? [announcements[popupIndex] ?? announcements[0]]
+    : announcements
+
   return (
     <section
       className={
-        position === 'HERO'
+        embedded
+          ? 'relative h-full min-h-[15rem] overflow-hidden rounded-2xl'
+          : position === 'HERO'
           ? 'bg-[var(--bg-primary)] px-4 pb-6 sm:px-6 lg:px-8'
           : 'mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8'
       }
     >
-      <div className={position === 'HERO' ? 'mx-auto max-w-7xl' : undefined}>
+      <div className={embedded ? 'h-full' : position === 'HERO' ? 'mx-auto max-w-7xl' : undefined}>
         <div
           className={
-            position === 'HERO'
+            embedded
+              ? 'h-full'
+              : position === 'HERO'
               ? 'grid gap-5 lg:grid-cols-2'
               : position === 'FOOTER'
                 ? 'grid gap-4 md:grid-cols-2'
                 : 'space-y-4'
           }
         >
-          {announcements.map((announcement) => {
+          {visibleAnnouncements.map((announcement) => {
             const imageOnly = announcement.mediaType === 'IMAGE' && Boolean(announcement.mediaUrl)
 
             return (
               <motion.article
                 key={announcement.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35 }}
-                className={getCardClassName(position, imageOnly)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.45, ease: 'easeInOut' }}
+                className={getCardClassName(position, imageOnly, embedded)}
               >
                 <div
                   className={
-                    position === 'BANNER'
+                    embedded
+                      ? 'h-full'
+                      : position === 'BANNER'
                       ? 'flex flex-col gap-5 sm:flex-row sm:items-center'
                       : undefined
                   }
@@ -188,7 +210,9 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
                   <AnnouncementMedia
                     announcement={announcement}
                     className={
-                      imageOnly
+                      embedded && imageOnly
+                        ? 'h-full min-h-[15rem] w-full rounded-2xl object-cover'
+                        : imageOnly
                         ? 'h-auto max-h-[70vh] w-full rounded-none object-contain'
                         : position === 'BANNER'
                           ? 'aspect-[16/7] w-full rounded-2xl sm:aspect-auto sm:h-36 sm:w-72'
@@ -200,7 +224,7 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
                       <AnnouncementText
                         announcement={announcement}
                         titleClassName={
-                          position === 'HERO' ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'
+                          position === 'HERO' ? 'text-xl sm:text-2xl' : 'text-xl sm:text-2xl'
                         }
                       />
                       <AnnouncementLink announcement={announcement} className="mt-5" />
@@ -211,15 +235,63 @@ export function TenantAnnouncements({ position }: TenantAnnouncementsProps) {
             )
           })}
         </div>
+        {embedded && announcements.length > 1 && (
+          <div className="absolute right-3 bottom-3 left-3 z-10 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                setPopupIndex((current) =>
+                  current === 0 ? announcements.length - 1 : current - 1
+                )
+              }
+              className="rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition hover:bg-black/70"
+              aria-label="Anuncio anterior"
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <div className="flex items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-1.5 backdrop-blur-sm">
+              {announcements.map((item, index) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    setPopupIndex(index)
+                  }}
+                  className={`h-1.5 rounded-full transition-all ${
+                    index === popupIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/50'
+                  }`}
+                  aria-label={`Ver anuncio ${index + 1}`}
+                  aria-current={index === popupIndex ? 'true' : undefined}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setPopupIndex((current) => (current + 1) % announcements.length)
+              }}
+              className="rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition hover:bg-black/70"
+              aria-label="Siguiente anuncio"
+            >
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   )
 }
 
-function getCardClassName(position: AnnouncementDTO['position'], imageOnly = false) {
+function getCardClassName(
+  position: AnnouncementDTO['position'],
+  imageOnly = false,
+  embedded = false
+) {
   const base = 'overflow-hidden border border-[var(--border)] bg-[var(--card)] shadow-sm'
 
-  if (imageOnly) return `${base} rounded-3xl p-0`
+  if (imageOnly) return `${base} h-full rounded-2xl p-0`
+
+  if (embedded) return `${base} h-full rounded-2xl p-5 sm:p-7`
 
   if (position === 'HERO') {
     return `${base} rounded-3xl p-5 sm:p-7`
