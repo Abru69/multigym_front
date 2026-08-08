@@ -194,7 +194,7 @@ function ExerciseCard({
         style={{ opacity: allDone && !isExpanded ? 0.5 : 1 }}
       >
         {/* Thumbnail */}
-        <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[var(--surface)]">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[var(--surface)]">
           {exercise.imageUrl ? (
             <img
               src={exercise.imageUrl}
