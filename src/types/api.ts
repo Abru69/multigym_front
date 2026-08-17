@@ -48,7 +48,15 @@ export interface TenantPaymentDTO {
   planName: string
   amount: number
   currency: string
-  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED' | string
+  status:
+    | 'PENDING'
+    | 'COMPLETED'
+    | 'FAILED'
+    | 'REFUNDED'
+    | 'IN_PROCESS'
+    | 'PROCESSING'
+    | 'ACTION_REQUIRED'
+    | string
   paymentMethod: string
   paymentProvider: string
   paymentReference?: string | null
@@ -283,11 +291,7 @@ export interface ExerciseDTO {
 }
 
 export type ExerciseMediaStatus =
-  | 'NONE'
-  | 'PLACEHOLDER'
-  | 'OWNED'
-  | 'LICENSED'
-  | 'EXTERNAL_STAGING_ONLY'
+  'NONE' | 'PLACEHOLDER' | 'OWNED' | 'LICENSED' | 'EXTERNAL_STAGING_ONLY'
 
 export interface ExerciseCatalogDTO {
   id: string
@@ -405,7 +409,15 @@ export interface OrderDTO {
   items?: OrderItemDTO[]
   paymentMethod?: string
   paymentReference?: string
-  paymentStatus?: string
+  paymentStatus?:
+    | 'PENDING'
+    | 'COMPLETED'
+    | 'FAILED'
+    | 'REFUNDED'
+    | 'IN_PROCESS'
+    | 'PROCESSING'
+    | 'ACTION_REQUIRED'
+    | string
   createdAt?: string
   paymentDate?: string
   deliveryMethod?: string
@@ -720,7 +732,13 @@ export interface MealDTO {
   protein: number
   carbs: number
   fats: number
+  options?: MealOptionDTO[]
 }
+
+export interface MealOptionItemDTO { id: string; foodId?: string; recipeId?: string; foodName?: string; recipeName?: string; quantity?: string; sortOrder?: number }
+export interface MealOptionDTO { id: string; name: string; sortOrder?: number; items: MealOptionItemDTO[] }
+export interface MealOptionItemRequest { foodId?: string; recipeId?: string; quantity?: string; sortOrder?: number }
+export interface MealOptionRequest { name: string; sortOrder?: number; items: MealOptionItemRequest[] }
 
 export interface NutritionPlanDTO {
   id: string
@@ -735,6 +753,48 @@ export interface NutritionPlanDTO {
   notes: string
   createdAt?: string
   updatedAt?: string
+  status?: 'DRAFT' | 'ACTIVE' | 'SCHEDULED' | 'ARCHIVED'
+  startsOn?: string
+  endsOn?: string
+}
+
+export interface NutritionPlanVersionDTO {
+  id: string
+  nutritionPlanId: string
+  versionNumber: number
+  snapshot: string
+  createdAt: string
+}
+
+export type NutritionAdherenceStatus = 'COMPLETED' | 'PARTIAL' | 'SKIPPED'
+
+export interface NutritionMealAdherenceDTO {
+  id: string
+  memberId: string
+  nutritionPlanVersionId: string
+  mealReference: string
+  date: string
+  status: NutritionAdherenceStatus
+  notes?: string
+  photoUrl?: string
+  selectedOptionId?: string
+}
+
+export interface NutritionAdherenceRequest {
+  date: string
+  nutritionPlanVersionId: string
+  mealReference: string
+  status: NutritionAdherenceStatus
+  notes?: string
+  selectedOptionId?: string
+}
+
+export interface NutritionAdherenceSummaryDTO {
+  total: number
+  completed: number
+  partial: number
+  skipped: number
+  completionRate: number
 }
 
 export interface NutritionPlanRequest {
@@ -746,12 +806,16 @@ export interface NutritionPlanRequest {
   targetFats: number
   meals: MealRequest[]
   notes: string
+  status?: 'DRAFT' | 'ACTIVE' | 'SCHEDULED' | 'ARCHIVED'
+  startsOn?: string
+  endsOn?: string
 }
 
 export interface MealRequest {
   name: string
   time: string
   foods: FoodItemRequest[]
+  options?: MealOptionDTO[]
 }
 
 export interface FoodItemRequest {
@@ -761,6 +825,111 @@ export interface FoodItemRequest {
   protein: number
   carbs: number
   fats: number
+}
+
+export interface FoodCatalogDTO {
+  id: string
+  name: string
+  servingSize: number
+  servingUnit: string
+  servingGrams?: number | null
+  calories: number
+  protein: number
+  carbs: number
+  fats: number
+  fiber?: number | null
+  category?: string | null
+  brand?: string | null
+  source?: string | null
+  country?: string | null
+  active: boolean
+  catalogSource?: 'TENANT' | 'GLOBAL'
+}
+
+export type FoodCatalogOption = FoodCatalogDTO & { catalogSource: 'TENANT' | 'GLOBAL' }
+
+export interface FoodEquivalentGroupDTO {
+  id: string
+  name: string
+  description?: string | null
+  active: boolean
+}
+
+export interface FoodEquivalenceDTO {
+  id: string
+  foodId: string
+  group: FoodEquivalentGroupDTO
+  equivalentCount: number
+  gramsPerEquivalent: number
+  calories: number
+  protein: number
+  carbs: number
+  fats: number
+}
+
+export interface FoodEquivalentGroupRequest {
+  name: string
+  description?: string
+}
+
+export interface FoodEquivalenceRequest {
+  groupId: string
+  equivalentCount: number
+  gramsPerEquivalent: number
+  calories: number
+  protein: number
+  carbs: number
+  fats: number
+}
+
+export interface FoodCatalogRequest {
+  name: string
+  servingSize: number
+  servingUnit: string
+  servingGrams?: number | null
+  calories: number
+  protein: number
+  carbs: number
+  fats: number
+  fiber?: number | null
+  category?: string | null
+  brand?: string | null
+  source?: string | null
+  country?: string | null
+  active?: boolean
+}
+
+export interface RecipeDTO {
+  id: string
+  name: string
+  description?: string | null
+  servings: number
+  active: boolean
+  ingredients?: RecipeIngredientDTO[]
+  caloriesPerServing: number
+  proteinPerServing: number
+  carbsPerServing: number
+  fatsPerServing: number
+  fiberPerServing?: number | null
+  imageUrl?: string | null; preparationMinutes?: number | null; diners?: number | null; difficulty?: string | null; category?: string | null; tags?: string | null; instructions?: string | null
+  equivalences?: Record<string, number>; equivalencesPerServing?: Record<string, number>
+}
+
+export interface RecipeIngredientDTO {
+  id?: string
+  foodId: string
+  foodName?: string
+  quantity: number
+  grams: number
+}
+
+export interface RecipeRequest {
+  name: string
+  description?: string
+  servings: number
+  active?: boolean
+  ingredients: Array<{ foodId: string; quantity: number; grams: number }>
+  imageUrl?: string; preparationMinutes?: number; diners?: number; difficulty?: string; category?: string; tags?: string; instructions?: string
 }
 
 // --- Check-In ---

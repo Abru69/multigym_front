@@ -16,7 +16,11 @@ import {
   getTenantBillingRenewalInfo,
   processTenantBillingRenewalMercadoPagoPayment,
 } from '@/lib/api'
-import { getMercadoPago, getMercadoPagoDeviceSessionId, loadMercadoPagoDeviceFingerprint } from '@/lib/mercadopago'
+import {
+  getMercadoPago,
+  getMercadoPagoDeviceSessionId,
+  loadMercadoPagoDeviceFingerprint,
+} from '@/lib/mercadopago'
 import { formatCurrency } from '@/lib/utils'
 import type { TenantPaymentDTO, TenantRenewalInfoDTO } from '@/types'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -29,6 +33,7 @@ export default function Billing() {
   const [payments, setPayments] = useState<TenantPaymentDTO[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isPaying, setIsPaying] = useState(false)
+  const [paymentActionUrl, setPaymentActionUrl] = useState<string | null>(null)
   const [mpReady, setMpReady] = useState(false)
   const [cardholderName, setCardholderName] = useState('')
   const [cardNumber, setCardNumber] = useState('')
@@ -144,7 +149,10 @@ export default function Billing() {
         securityCode: cardCvc.trim(),
       })
       const cardToken = tokenResponse?.id || tokenResponse?.token
-      const paymentMethodId = tokenResponse?.payment_method_id || tokenResponse?.paymentMethodId || getPaymentMethodId(cardDigits)
+      const paymentMethodId =
+        tokenResponse?.payment_method_id ||
+        tokenResponse?.paymentMethodId ||
+        getPaymentMethodId(cardDigits)
       const issuerId = tokenResponse?.issuer_id || tokenResponse?.issuerId || null
       if (!cardToken) {
         throw new Error('No se pudo tokenizar la tarjeta. Verifica los datos e intenta de nuevo.')
@@ -161,13 +169,13 @@ export default function Billing() {
         deviceSessionId: getMercadoPagoDeviceSessionId(),
       })
 
-      if (response.dto?.payment.status === 'COMPLETED') {
+      const payment = response.dto?.payment
+      const paymentStatus = payment?.status?.toUpperCase()
+      setPaymentActionUrl(payment?.checkoutUrl || null)
+      if (paymentStatus === 'COMPLETED') {
         addToast('Suscripción renovada correctamente', 'success')
       } else {
-        addToast(
-          `Pago registrado con estado ${response.dto?.payment.status || 'pendiente'}`,
-          'warning'
-        )
+        addToast(`Pago registrado con estado ${payment?.status || 'pendiente'}`, 'warning')
       }
       await loadBilling()
     } catch (err) {
@@ -202,145 +210,167 @@ export default function Billing() {
       </div>
 
       {renewalInfo && (
-        <div className="grid gap-4 lg:grid-cols-[1fr_minmax(0,420px)]">
-          <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
-            <div className="mb-6 flex items-start gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent)]/15 text-[var(--accent)]">
-                <ShieldCheck size={24} />
-              </div>
-              <div>
-                <p className="text-xs font-black tracking-[0.2em] text-[var(--text-muted)] uppercase">
-                  Suscripción SaaS
-                </p>
-                <h2 className="mt-1 text-xl font-black text-[var(--text-primary)]">
-                  {renewalInfo.name}
-                </h2>
-                <p className="mt-1 text-sm text-[var(--text-secondary)]">{renewalInfo.planName}</p>
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <InfoCard label="Estado" value={renewalInfo.status} />
-              <InfoCard
-                label="Precio mensual"
-                value={`${formatCurrency(renewalInfo.price)} ${renewalInfo.currency}`}
-              />
-              <InfoCard label="Fin de prueba" value={formatDateTime(renewalInfo.trialEndsAt)} />
-              <InfoCard
-                label="Fin de suscripción"
-                value={formatDateTime(renewalInfo.subscriptionEndsAt)}
-              />
-            </div>
-
-            <div
-              className={`mt-5 rounded-2xl border p-4 ${renewalInfo.canRenew ? 'border-[var(--success)]/40 bg-[var(--success)]/10' : 'border-[var(--warning)]/40 bg-[var(--warning)]/10'}`}
-            >
-              <div className="flex gap-3">
-                {renewalInfo.canRenew ? (
-                  <CheckCircle2 className="mt-0.5 text-[var(--success)]" size={20} />
-                ) : (
-                  <AlertTriangle className="mt-0.5 text-[var(--warning)]" size={20} />
-                )}
+        <>
+          <div className="grid gap-4 lg:grid-cols-[1fr_minmax(0,420px)]">
+            <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
+              <div className="mb-6 flex items-start gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent)]/15 text-[var(--accent)]">
+                  <ShieldCheck size={24} />
+                </div>
                 <div>
-                  <p className="text-sm font-bold text-[var(--text-primary)]">
-                    {renewalInfo.canRenew ? 'Renovación disponible' : 'Renovación no disponible'}
+                  <p className="text-xs font-black tracking-[0.2em] text-[var(--text-muted)] uppercase">
+                    Suscripción SaaS
                   </p>
+                  <h2 className="mt-1 text-xl font-black text-[var(--text-primary)]">
+                    {renewalInfo.name}
+                  </h2>
                   <p className="mt-1 text-sm text-[var(--text-secondary)]">
-                    {renewalInfo.renewalReason}
+                    {renewalInfo.planName}
                   </p>
                 </div>
               </div>
-            </div>
 
-            {!mpReady && (
-              <div className="mt-5 rounded-2xl border border-[var(--danger)]/40 bg-[var(--danger)]/10 p-4 text-sm text-[var(--text-secondary)]">
-                Mercado Pago no está disponible. Verifica tu conexión a internet y recarga la
-                página.
-              </div>
-            )}
-
-            {liveCredentialsOnStaging && (
-              <div className="mt-5 rounded-2xl border border-[var(--danger)]/40 bg-[var(--danger)]/10 p-4 text-sm text-[var(--text-secondary)]">
-                Staging está usando un access token productivo de Mercado Pago. Para probar pagos aquí,
-                configura un access token sandbox que empiece con TEST en Mercado Pago SaaS de platform.
-              </div>
-            )}
-
-            {isMercadoPagoTestMode && mpReady && (
-              <div className="mt-5 rounded-2xl border border-[var(--info)]/40 bg-[var(--info)]/10 p-4 text-sm text-[var(--text-secondary)]">
-                Modo sandbox: usa APRO, Visa 4075 5957 1648 3764, CVV 123, vencimiento 11/30.
-              </div>
-            )}
-          </section>
-
-          <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
-            <div className="mb-5 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-text)]">
-                <CreditCard size={20} />
-              </div>
-              <div>
-                <h3 className="font-black text-[var(--text-primary)]">Pago con Mercado Pago</h3>
-                <p className="text-xs text-[var(--text-muted)]">Cargo único para renovar 1 mes</p>
-              </div>
-            </div>
-
-            <form onSubmit={payRenewal} className="space-y-4">
-              <Field label="Email pagador">
-                <Input
-                  type="email"
-                  value={payerEmail}
-                  onChange={(e) => setPayerEmail(e.target.value)}
-                  disabled={!renewalInfo.canRenew || isPaying}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <InfoCard label="Estado" value={renewalInfo.status} />
+                <InfoCard
+                  label="Precio mensual"
+                  value={`${formatCurrency(renewalInfo.price)} ${renewalInfo.currency}`}
                 />
-              </Field>
-              <Field label="Nombre del titular">
-                <Input
-                  value={cardholderName}
-                  onChange={(e) => setCardholderName(e.target.value)}
-                  disabled={!renewalInfo.canRenew || isPaying}
+                <InfoCard label="Fin de prueba" value={formatDateTime(renewalInfo.trialEndsAt)} />
+                <InfoCard
+                  label="Fin de suscripción"
+                  value={formatDateTime(renewalInfo.subscriptionEndsAt)}
                 />
-              </Field>
-              <Field label="Apellido del titular">
-                <Input value={payerLastName} onChange={(e) => setPayerLastName(e.target.value)} disabled={!renewalInfo.canRenew || isPaying} />
-              </Field>
-              <Field label="Número de tarjeta">
-                <Input
-                  inputMode="numeric"
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                  disabled={!renewalInfo.canRenew || isPaying}
-                />
-              </Field>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Field label="Vencimiento">
+              </div>
+
+              <div
+                className={`mt-5 rounded-2xl border p-4 ${renewalInfo.canRenew ? 'border-[var(--success)]/40 bg-[var(--success)]/10' : 'border-[var(--warning)]/40 bg-[var(--warning)]/10'}`}
+              >
+                <div className="flex gap-3">
+                  {renewalInfo.canRenew ? (
+                    <CheckCircle2 className="mt-0.5 text-[var(--success)]" size={20} />
+                  ) : (
+                    <AlertTriangle className="mt-0.5 text-[var(--warning)]" size={20} />
+                  )}
+                  <div>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">
+                      {renewalInfo.canRenew ? 'Renovación disponible' : 'Renovación no disponible'}
+                    </p>
+                    <p className="mt-1 text-sm text-[var(--text-secondary)]">
+                      {renewalInfo.renewalReason}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {!mpReady && (
+                <div className="mt-5 rounded-2xl border border-[var(--danger)]/40 bg-[var(--danger)]/10 p-4 text-sm text-[var(--text-secondary)]">
+                  Mercado Pago no está disponible. Verifica tu conexión a internet y recarga la
+                  página.
+                </div>
+              )}
+
+              {liveCredentialsOnStaging && (
+                <div className="mt-5 rounded-2xl border border-[var(--danger)]/40 bg-[var(--danger)]/10 p-4 text-sm text-[var(--text-secondary)]">
+                  Staging está usando un access token productivo de Mercado Pago. Para probar pagos
+                  aquí, configura un access token sandbox que empiece con TEST en Mercado Pago SaaS
+                  de platform.
+                </div>
+              )}
+
+              {isMercadoPagoTestMode && mpReady && (
+                <div className="mt-5 rounded-2xl border border-[var(--info)]/40 bg-[var(--info)]/10 p-4 text-sm text-[var(--text-secondary)]">
+                  Modo sandbox: usa APRO, Visa 4075 5957 1648 3764, CVV 123, vencimiento 11/30.
+                </div>
+              )}
+            </section>
+
+            <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
+              <div className="mb-5 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)] text-[var(--accent-text)]">
+                  <CreditCard size={20} />
+                </div>
+                <div>
+                  <h3 className="font-black text-[var(--text-primary)]">Pago con Mercado Pago</h3>
+                  <p className="text-xs text-[var(--text-muted)]">Cargo único para renovar 1 mes</p>
+                </div>
+              </div>
+
+              <form onSubmit={payRenewal} className="space-y-4">
+                <Field label="Email pagador">
                   <Input
-                    placeholder="MM/YY"
-                    value={cardExpiry}
-                    onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                    type="email"
+                    value={payerEmail}
+                    onChange={(e) => setPayerEmail(e.target.value)}
                     disabled={!renewalInfo.canRenew || isPaying}
                   />
                 </Field>
-                <Field label="CVC">
+                <Field label="Nombre del titular">
+                  <Input
+                    value={cardholderName}
+                    onChange={(e) => setCardholderName(e.target.value)}
+                    disabled={!renewalInfo.canRenew || isPaying}
+                  />
+                </Field>
+                <Field label="Apellido del titular">
+                  <Input
+                    value={payerLastName}
+                    onChange={(e) => setPayerLastName(e.target.value)}
+                    disabled={!renewalInfo.canRenew || isPaying}
+                  />
+                </Field>
+                <Field label="Número de tarjeta">
                   <Input
                     inputMode="numeric"
-                    value={cardCvc}
-                    onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
                     disabled={!renewalInfo.canRenew || isPaying}
                   />
                 </Field>
-              </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <Field label="Vencimiento">
+                    <Input
+                      placeholder="MM/YY"
+                      value={cardExpiry}
+                      onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
+                      disabled={!renewalInfo.canRenew || isPaying}
+                    />
+                  </Field>
+                  <Field label="CVC">
+                    <Input
+                      inputMode="numeric"
+                      value={cardCvc}
+                      onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                      disabled={!renewalInfo.canRenew || isPaying}
+                    />
+                  </Field>
+                </div>
 
-              <Button type="submit" disabled={!canSubmitPayment} className="w-full gap-2">
-                {isPaying ? (
-                  <Loader2 className="animate-spin" size={18} />
-                ) : (
-                  <CreditCard size={18} />
-                )}
-                {isPaying ? 'Procesando...' : `Renovar por ${formatCurrency(renewalInfo.price)}`}
-              </Button>
-            </form>
-          </section>
-        </div>
+                <Button type="submit" disabled={!canSubmitPayment} className="w-full gap-2">
+                  {isPaying ? (
+                    <Loader2 className="animate-spin" size={18} />
+                  ) : (
+                    <CreditCard size={18} />
+                  )}
+                  {isPaying ? 'Procesando...' : `Renovar por ${formatCurrency(renewalInfo.price)}`}
+                </Button>
+              </form>
+            </section>
+          </div>
+          {paymentActionUrl && (
+            <div className="mt-4 rounded-2xl border border-[var(--warning)]/40 bg-[var(--warning)]/10 p-4 text-sm text-[var(--text-secondary)]">
+              <p>Mercado Pago requiere una acción adicional para completar el pago.</p>
+              <a
+                href={paymentActionUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block font-bold text-[var(--accent)] underline"
+              >
+                Continuar con Mercado Pago
+              </a>
+            </div>
+          )}
+        </>
       )}
 
       <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">

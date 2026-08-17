@@ -5,7 +5,11 @@ import { useCartStore } from '@/features/shop/store/cartStore'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useToastStore } from '@/components/ui/Toast'
 import { fetchApi } from '@/lib/api'
-import { getMercadoPago, getMercadoPagoDeviceSessionId, loadMercadoPagoDeviceFingerprint } from '@/lib/mercadopago'
+import {
+  getMercadoPago,
+  getMercadoPagoDeviceSessionId,
+  loadMercadoPagoDeviceFingerprint,
+} from '@/lib/mercadopago'
 import type {
   OrderDTO,
   ResponseDTO,
@@ -34,6 +38,9 @@ const STEPS = [
   { key: 'payment', label: 'Pago', icon: CreditCard },
   { key: 'success', label: 'Confirmación', icon: CheckCircle2 },
 ] as const
+
+const isPendingPaymentStatus = (status?: string) =>
+  ['PENDING', 'IN_PROCESS', 'PROCESSING', 'ACTION_REQUIRED'].includes(status?.toUpperCase() || '')
 
 function StepIndicator({ currentStep }: { currentStep: string }) {
   const getStepIndex = (s: string) => {
@@ -129,6 +136,7 @@ export default function Checkout() {
   const [step, setStep] = useState<'method' | 'details' | 'payment' | 'success'>('method')
   const [loading, setLoading] = useState(false)
   const [orderNumber, setOrderNumber] = useState('')
+  const [orderPaymentStatus, setOrderPaymentStatus] = useState('COMPLETED')
   const [mpReady, setMpReady] = useState(false)
   const [mpPublicKey, setMpPublicKey] = useState<string | null>(null)
 
@@ -298,7 +306,10 @@ export default function Checkout() {
         securityCode: cardCvc.trim(),
       })
       const cardToken = tokenResponse?.id || tokenResponse?.token
-      const paymentMethodId = tokenResponse?.payment_method_id || tokenResponse?.paymentMethodId || getPaymentMethodId(cardDigits)
+      const paymentMethodId =
+        tokenResponse?.payment_method_id ||
+        tokenResponse?.paymentMethodId ||
+        getPaymentMethodId(cardDigits)
       const issuerId = tokenResponse?.issuer_id || tokenResponse?.issuerId || null
       if (!cardToken) {
         console.error('MercadoPago token response:', tokenResponse)
@@ -333,6 +344,7 @@ export default function Checkout() {
       })
       const orderId = orderRes.dto?.id || ''
       setOrderNumber(orderId.slice(0, 8).toUpperCase())
+      setOrderPaymentStatus((orderRes.dto?.paymentStatus || 'COMPLETED').toUpperCase())
 
       setStep('success')
       clearCart()
@@ -726,8 +738,20 @@ export default function Checkout() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label htmlFor="payer-last-name" className="text-xs font-semibold text-[var(--text-primary)]">Apellido del titular</label>
-                      <input id="payer-last-name" required value={payerLastName} onChange={(e) => setPayerLastName(e.target.value)} placeholder="Apellido" className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)]" />
+                      <label
+                        htmlFor="payer-last-name"
+                        className="text-xs font-semibold text-[var(--text-primary)]"
+                      >
+                        Apellido del titular
+                      </label>
+                      <input
+                        id="payer-last-name"
+                        required
+                        value={payerLastName}
+                        onChange={(e) => setPayerLastName(e.target.value)}
+                        placeholder="Apellido"
+                        className="h-12 w-full rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-sm text-[var(--text-primary)]"
+                      />
                     </div>
                     <div className="space-y-1.5">
                       <label
@@ -855,7 +879,14 @@ export default function Checkout() {
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
                 >
-                  <CheckCircle2 size={48} className="text-[var(--success)]" />
+                  <CheckCircle2
+                    size={48}
+                    className={
+                      isPendingPaymentStatus(orderPaymentStatus)
+                        ? 'text-amber-500'
+                        : 'text-[var(--success)]'
+                    }
+                  />
                 </motion.div>
               </div>
               {[...Array(6)].map((_, i) => (
@@ -879,12 +910,14 @@ export default function Checkout() {
             </div>
 
             <h2 className="font-heading mb-3 text-2xl font-black text-[var(--text-primary)]">
-              ¡Pago Exitoso!
+              {isPendingPaymentStatus(orderPaymentStatus) ? 'Pago en proceso' : '¡Pago Exitoso!'}
             </h2>
             <p className="mb-10 text-sm text-[var(--text-secondary)]">
-              {deliveryMethod === 'PICKUP'
-                ? 'Tu orden está siendo preparada. Te notificaremos cuando esté lista para recoger.'
-                : 'Tu orden ha sido confirmada. Te enviaremos un correo con los detalles del envío.'}
+              {isPendingPaymentStatus(orderPaymentStatus)
+                ? 'Recibimos tu orden y Mercado Pago está procesando el pago. Te confirmaremos cuando cambie el estado.'
+                : deliveryMethod === 'PICKUP'
+                  ? 'Tu orden está siendo preparada. Te notificaremos cuando esté lista para recoger.'
+                  : 'Tu orden ha sido confirmada. Te enviaremos un correo con los detalles del envío.'}
             </p>
 
             <div className="mb-10 flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-left shadow-sm">

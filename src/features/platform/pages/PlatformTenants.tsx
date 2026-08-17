@@ -84,6 +84,7 @@ export default function PlatformTenants() {
   const [filter, setFilter] = useState('ALL')
   const [showModal, setShowModal] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 })
   const [toast, setToast] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -585,7 +586,13 @@ export default function PlatformTenants() {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation()
-                        setOpenMenu(openMenu === t.tenantId ? null : t.tenantId)
+                        if (openMenu === t.tenantId) {
+                          setOpenMenu(null)
+                          return
+                        }
+                        const rect = e.currentTarget.getBoundingClientRect()
+                        setMenuPosition({ top: rect.bottom + 4, left: rect.right - 176 })
+                        setOpenMenu(t.tenantId)
                       }}
                       className="rounded-lg p-1.5 transition-colors"
                       style={{ color: 'var(--text-muted)' }}
@@ -602,12 +609,13 @@ export default function PlatformTenants() {
                           initial={{ opacity: 0, scale: 0.9, y: -5 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.9 }}
-                          className="absolute right-0 z-50 w-44 rounded-xl py-1 shadow-lg"
-                          style={{
-                            background: 'var(--surface)',
-                            border: '1px solid var(--border)',
-                            top: '100%',
-                          }}
+                           className="fixed z-50 w-44 rounded-xl py-1 shadow-lg"
+                           style={{
+                             background: 'var(--surface)',
+                             border: '1px solid var(--border)',
+                             top: menuPosition.top,
+                             left: menuPosition.left,
+                           }}
                         >
                           {[
                             {
