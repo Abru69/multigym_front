@@ -85,7 +85,7 @@ export default function PlatformMercadoPago() {
         notificationUrl: form.notificationUrl,
         siteId: form.siteId,
         currency: form.currency,
-        processingMode: form.processingMode,
+         processingMode: 'automatic',
         oauthClientId: form.oauthClientId,
         oauthRedirectUrl: form.oauthRedirectUrl,
       }
@@ -235,7 +235,10 @@ export default function PlatformMercadoPago() {
           <TextField label="Webhook URL" value={form.notificationUrl} onChange={(v) => updateField('notificationUrl', v)} />
           <TextField label="Site ID" value={form.siteId} onChange={(v) => updateField('siteId', v)} />
           <TextField label="Moneda" value={form.currency} onChange={(v) => updateField('currency', v)} />
-          <TextField label="Processing mode" value={form.processingMode} onChange={(v) => updateField('processingMode', v)} />
+           <div className="rounded-xl border border-[var(--accent)]/30 bg-[var(--accent)]/5 p-3 text-sm">
+             <p className="font-bold text-[var(--text-primary)]">API de cobro</p>
+             <p className="mt-1 text-xs text-[var(--text-muted)]">Orders API · usado para renovaciones SaaS y pagos de la plataforma.</p>
+           </div>
         </div>
       </section>
 
