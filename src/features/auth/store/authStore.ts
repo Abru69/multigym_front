@@ -26,6 +26,7 @@ interface AuthStore {
   token: string | null
   tenantId: string | null
   isAuthenticated: boolean
+  hasHydrated: boolean
   isLoading: boolean
   login: (email: string, password: string, tenantId: string) => Promise<boolean>
   logout: () => Promise<void>
@@ -41,6 +42,7 @@ export const useAuthStore = create<AuthStore>()(
       token: null,
       tenantId: null,
       isAuthenticated: false,
+      hasHydrated: false,
       isLoading: false,
 
       login: async (email: string, password: string, tenantId: string) => {
@@ -139,6 +141,7 @@ export const useAuthStore = create<AuthStore>()(
           state.tenantId = null
           state.isAuthenticated = false
         }
+        if (state) state.hasHydrated = true
       },
     }
   )

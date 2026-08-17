@@ -5,9 +5,11 @@ import { getTenantFromLocation } from '@/lib/tenant'
 import type { ReactNode } from 'react'
 
 export function AdminGuard({ children }: { children: ReactNode }) {
-  const { user, isAuthenticated } = useAuthStore()
+  const { user, isAuthenticated, hasHydrated } = useAuthStore()
   const tenantId = getTenantFromLocation()
   const location = useLocation()
+
+  if (!hasHydrated) return null
 
   if (!isAuthenticated) {
     const params = new URLSearchParams()

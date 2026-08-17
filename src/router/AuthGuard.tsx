@@ -4,9 +4,11 @@ import { getTenantFromLocation } from '@/lib/tenant'
 import type { ReactNode } from 'react'
 
 export function AuthGuard({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, hasHydrated } = useAuthStore()
   const location = useLocation()
   const tenantId = getTenantFromLocation()
+
+  if (!hasHydrated) return null
 
   if (!isAuthenticated) {
     const params = new URLSearchParams()
