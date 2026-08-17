@@ -192,6 +192,7 @@ export default function Billing() {
   const isStagingHost = window.location.hostname.includes('staging')
   const liveCredentialsOnStaging = Boolean(
     isStagingHost && renewalInfo?.mercadoPagoAccessTokenMode === 'LIVE'
+      && !renewalInfo?.mercadoPagoPublicKey?.startsWith('APP_USR-')
   )
   const canSubmitPayment = canPay && !liveCredentialsOnStaging
 
