@@ -127,7 +127,6 @@ export default function TenantLandingPage() {
       <main className={isAuthenticated && isClient ? 'pb-20 lg:pb-0' : undefined}>
         <TenantHero />
 
-        <TenantAnnouncements position="HERO" />
         <TenantAnnouncements position="POPUP" />
         <TenantAnnouncements position="BANNER" />
         <div id="horarios">

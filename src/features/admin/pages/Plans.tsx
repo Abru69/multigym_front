@@ -21,6 +21,7 @@ import { LoadingState } from '../components/LoadingState'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
+import { featuresToInput, featuresToJson } from '../utils/planFeatures'
 
 export default function PlansPage() {
   const addToast = useToastStore((s) => s.addToast)
@@ -104,7 +105,7 @@ export default function PlansPage() {
       maxWorkoutsPerWeek: plan.maxWorkoutsPerWeek?.toString() || '',
       maxClasses: plan.maxClasses?.toString() || '',
       accessHours: plan.accessHours || '',
-      features: plan.features || '',
+       features: featuresToInput(plan.features),
     })
     setFormErrors({})
     setSelectedPlan(plan)
@@ -125,7 +126,7 @@ export default function PlansPage() {
           : undefined,
         maxClasses: form.maxClasses ? parseInt(form.maxClasses) || undefined : undefined,
         accessHours: form.accessHours || undefined,
-        features: form.features || undefined,
+        features: featuresToJson(form.features),
       }
       if (selectedPlan) {
         await updatePlan(selectedPlan.id, payload)

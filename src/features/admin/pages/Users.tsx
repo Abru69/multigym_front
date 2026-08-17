@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { fetchApi, getResponseItems } from '@/lib/api'
+import { createSubscription, fetchApi, getPlans, getResponseItems } from '@/lib/api'
 import { UserPlus, Dumbbell, Trash2, MoreVertical, Edit2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/ui/Modal'
@@ -14,6 +14,9 @@ import { ConfirmDialog } from '../components/ConfirmDialog'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
 import { DataTable, type DataTableColumn } from '@/components/ui/DataTable'
+import { Select } from '@/components/ui/Select'
+import type { PlanListItemDTO } from '@/types'
+import { getSubscriptionDateRange } from '../utils/planFeatures'
 
 type RoleFilter = 'ALL' | 'ADMIN' | 'CLIENT' | 'NUTRICIONIST' | 'STAFF' | 'RECEPTIONIST' | 'SELLER'
 
@@ -29,6 +32,8 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<UserDTO | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<UserDTO | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isPlansLoading, setIsPlansLoading] = useState(true)
+  const [plans, setPlans] = useState<PlanListItemDTO[]>([])
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -38,6 +43,7 @@ export default function UsersPage() {
     email: '',
     role: 'CLIENT',
     status: false,
+    planId: '',
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
@@ -57,7 +63,13 @@ export default function UsersPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadUsers()
+    getPlans()
+      .then((response) => setPlans(getResponseItems<PlanListItemDTO>(response)))
+      .catch(() => setPlans([]))
+      .finally(() => setIsPlansLoading(false))
   }, [loadUsers])
+
+  const activePlans = useMemo(() => plans.filter((plan) => plan.isActive), [plans])
 
   const filtered = useMemo(() => {
     const term = debouncedSearch.toLowerCase()
@@ -78,6 +90,9 @@ export default function UsersPage() {
     if (!form.phone) errors.phone = 'El teléfono es requerido'
     if (!form.email) errors.email = 'El email es requerido'
     if (!form.email.includes('@')) errors.email = 'Email inválido'
+    if (!selectedUser && form.role === 'CLIENT' && !form.planId) {
+      errors.planId = 'Selecciona un plan para el cliente'
+    }
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -99,7 +114,7 @@ export default function UsersPage() {
         })
         addToast('Usuario actualizado correctamente', 'success')
       } else {
-        await fetchApi(`/api/tenant/users`, {
+        const response = await fetchApi<ResponseDTO<UserDTO>>(`/api/tenant/users`, {
           method: 'POST',
           body: JSON.stringify({
             name: form.name,
@@ -109,6 +124,35 @@ export default function UsersPage() {
             status: false,
           }),
         })
+
+        const createdUser = response.dto || response.lista?.[0]
+        const memberId = createdUser?.memberDTO?.id
+        const selectedPlan = activePlans.find((plan) => plan.id === form.planId)
+
+        if (form.role === 'CLIENT' && (!memberId || !selectedPlan)) {
+          if (createdUser?.id) {
+            await fetchApi(`/api/tenant/users/${createdUser.id}`, { method: 'DELETE' }).catch(() => undefined)
+          }
+          throw new Error('No se pudo crear el cliente con un plan asignado')
+        }
+
+        if (form.role === 'CLIENT' && memberId && selectedPlan) {
+          const startDate = new Date()
+          const subscriptionDates = getSubscriptionDateRange(startDate, selectedPlan.durationMonths)
+
+          try {
+            await createSubscription({
+              memberId,
+              planId: selectedPlan.id,
+              ...subscriptionDates,
+            })
+          } catch (subscriptionError) {
+            if (createdUser?.id) {
+              await fetchApi(`/api/tenant/users/${createdUser.id}`, { method: 'DELETE' }).catch(() => undefined)
+            }
+            throw subscriptionError
+          }
+        }
         addToast('Usuario creado correctamente', 'success')
       }
       setShowModal(false)
@@ -121,7 +165,16 @@ export default function UsersPage() {
   }
 
   const openCreate = () => {
-    setForm({ name: '', phone: '', email: '', role: 'CLIENT', status: false })
+    if (isPlansLoading) {
+      addToast('Espera mientras se cargan los planes', 'warning')
+      return
+    }
+    if (activePlans.length === 0) {
+      addToast('Debes crear al menos un plan activo antes de registrar clientes', 'error')
+      navigate('/admin/planes')
+      return
+    }
+    setForm({ name: '', phone: '', email: '', role: 'CLIENT', status: false, planId: '' })
     setFormErrors({})
     setSelectedUser(null)
     setShowModal(true)
@@ -134,6 +187,7 @@ export default function UsersPage() {
       email: user.email,
       role: user.role,
       status: user.isActive,
+      planId: '',
     })
     setFormErrors({})
     setSelectedUser(user)
@@ -480,7 +534,9 @@ export default function UsersPage() {
               <select
                 id="user-role"
                 value={form.role}
-                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, role: e.target.value, planId: e.target.value === 'CLIENT' ? form.planId : '' })
+                }
                 className="flex h-11 w-full appearance-none rounded-xl px-4 py-2 text-sm transition-all duration-200 hover:border-[var(--border)] focus:ring-2 focus:outline-none"
                 style={
                   {
@@ -499,6 +555,22 @@ export default function UsersPage() {
                 <option value="SELLER">Vendedor</option>
               </select>
             </FormField>
+
+            {!selectedUser && form.role === 'CLIENT' && (
+              <FormField label="Plan de membresía" htmlFor="user-plan" error={formErrors.planId} required>
+                <Select
+                  id="user-plan"
+                  value={form.planId}
+                  onChange={(e) => setForm({ ...form, planId: e.target.value })}
+                  options={activePlans.map((plan) => ({
+                    value: plan.id,
+                    label: `${plan.name} — ${plan.durationMonths} meses`,
+                  }))}
+                  placeholder="Selecciona un plan"
+                  error={!!formErrors.planId}
+                />
+              </FormField>
+            )}
 
             {selectedUser && (
               <div className="flex items-end pb-1">

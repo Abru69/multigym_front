@@ -4,6 +4,8 @@ import { ArrowRight, Play } from 'lucide-react'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { getAllowedPages } from '@/lib/permissions'
+import { TenantLogo } from '@/components/tenant/TenantLogo'
+import { TenantAnnouncements } from './TenantAnnouncements'
 
 export function TenantHero() {
   const { branding, tenantId } = useTenantBranding()
@@ -100,30 +102,30 @@ export function TenantHero() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative"
           >
-              <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-2xl sm:p-2">
-              <div className="flex h-60 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-[var(--accent)]/10 to-[var(--detail)]/10 sm:h-80">
-                {branding.heroImage && (
-                  <img
-                    src={branding.heroImage}
-                    alt={branding.name}
-                    className="absolute inset-2 h-[calc(100%-1rem)] w-[calc(100%-1rem)] rounded-xl object-cover opacity-40"
-                  />
-                )}
-                <div className="relative text-center">
-                  {branding.logoUrl ? (
-                    <img
-                      src={branding.logoUrl}
-                      alt={branding.name}
-                      className="mx-auto mb-4 h-20 w-20 rounded-2xl object-contain"
-                    />
-                  ) : (
-                    <div className="mb-2 text-6xl">💪</div>
-                  )}
-                  <p className="text-lg font-semibold text-[var(--text-primary)]">
-                    {branding.name}
-                  </p>
-                  <p className="text-sm text-[var(--text-muted)]">{branding.tagline}</p>
-                </div>
+            <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-2xl sm:p-2">
+              <div className="h-60 overflow-hidden rounded-xl sm:h-80">
+                <TenantAnnouncements
+                  position="HERO"
+                  embedded
+                  fallback={
+                    <div className="relative flex h-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--accent)]/10 to-[var(--detail)]/10">
+                      {branding.heroImage && (
+                        <img
+                          src={branding.heroImage}
+                          alt={branding.name}
+                          className="absolute inset-2 h-[calc(100%-1rem)] w-[calc(100%-1rem)] rounded-xl object-cover opacity-40"
+                        />
+                      )}
+                      <div className="relative text-center">
+                        <TenantLogo size="lg" className="mx-auto mb-4 h-20 w-20 rounded-2xl" />
+                        <p className="text-lg font-semibold text-[var(--text-primary)]">
+                          {branding.name}
+                        </p>
+                        <p className="text-sm text-[var(--text-muted)]">{branding.tagline}</p>
+                      </div>
+                    </div>
+                  }
+                />
               </div>
             </div>
           </motion.div>

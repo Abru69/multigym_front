@@ -1,8 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Routine, DayOfWeek, Exercise, MuscleGroup } from '@/types'
-import { fetchApi, getResponseItems } from '@/lib/api'
-import type { ResponseDTO, WorkoutDTO, WorkoutExerciseListItemDTO, PaginatedResult } from '@/types'
+import { fetchApi, getExerciseLibrary, getResponseItems } from '@/lib/api'
+import type {
+  ResponseDTO,
+  WorkoutDTO,
+  WorkoutExerciseListItemDTO,
+  ExerciseLibraryItemDTO,
+  PaginatedResult,
+} from '@/types'
 import { useAuthStore } from '@/features/auth/store/authStore'
 
 const DAY_LABELS: Record<DayOfWeek, string> = {
@@ -55,7 +61,11 @@ function getTodayDay(): DayOfWeek {
   return days[new Date().getDay()]
 }
 
-function mapWorkoutToRoutine(w: WorkoutDTO, exercises: WorkoutExerciseListItemDTO[]): Routine {
+function mapWorkoutToRoutine(
+  w: WorkoutDTO,
+  exercises: WorkoutExerciseListItemDTO[],
+  exerciseImages: Map<string, string>
+): Routine {
   const dayMap = new Map<DayOfWeek, Exercise[]>()
 
   for (const d of ALL_DAYS) {
@@ -65,12 +75,17 @@ function mapWorkoutToRoutine(w: WorkoutDTO, exercises: WorkoutExerciseListItemDT
   for (const we of exercises) {
     const day = we.dayOfWeek as DayOfWeek
     if (!dayMap.has(day)) dayMap.set(day, [])
+    const imageUrl =
+      we.exercise.imageUrl ||
+      exerciseImages.get(we.catalogExerciseId || '') ||
+      exerciseImages.get(we.exercise.id) ||
+      exerciseImages.get(we.exercise.name.trim().toLowerCase())
     dayMap.get(day)!.push({
       id: we.exercise.id,
       name: we.exercise.name,
       muscleGroup: (we.exercise.muscleGroup?.toLowerCase() || 'cuerpo-completo') as MuscleGroup,
       description: '',
-      imageUrl: we.exercise.imageUrl,
+      imageUrl,
       videoUrl: we.exercise.videoUrl,
       sets: we.sets,
       reps: we.reps,
@@ -119,18 +134,34 @@ export const useRoutineStore = create<RoutineStore>()(
           const workoutsRes = await fetchApi<ResponseDTO<PaginatedResult<WorkoutDTO>>>(url)
           const workouts = getResponseItems<WorkoutDTO>(workoutsRes)
 
-          const exerciseResults = await Promise.allSettled(
-            workouts.map((w) =>
-              fetchApi<ResponseDTO<PaginatedResult<WorkoutExerciseListItemDTO>>>(
-                `/api/workout-exercises/${w.id}`
-              ).then((res) => ({ workoutId: w.id, exercises: getResponseItems<WorkoutExerciseListItemDTO>(res) }))
-            )
-          )
+          const [exerciseResults, libraryResult] = await Promise.all([
+            Promise.allSettled(
+              workouts.map((w) =>
+                fetchApi<ResponseDTO<PaginatedResult<WorkoutExerciseListItemDTO>>>(
+                  `/api/workout-exercises/${w.id}`
+                ).then((res) => ({
+                  workoutId: w.id,
+                  exercises: getResponseItems<WorkoutExerciseListItemDTO>(res),
+                }))
+              )
+            ),
+            getExerciseLibrary({ size: 500, lang: 'es' }).catch(() => null),
+          ])
+
+          const exerciseImages = new Map<string, string>()
+          const libraryExercises = libraryResult
+            ? getResponseItems<ExerciseLibraryItemDTO>(libraryResult)
+            : []
+          for (const exercise of libraryExercises) {
+            if (!exercise.imageUrl) continue
+            exerciseImages.set(exercise.id, exercise.imageUrl)
+            exerciseImages.set(exercise.name.trim().toLowerCase(), exercise.imageUrl)
+          }
 
           const routines: Routine[] = workouts.map((w, i) => {
             const result = exerciseResults[i]
             const exercises = result.status === 'fulfilled' ? result.value.exercises : []
-            return mapWorkoutToRoutine(w, exercises)
+            return mapWorkoutToRoutine(w, exercises, exerciseImages)
           })
 
           set({ routines, currentRoutine: null, isLoading: false })

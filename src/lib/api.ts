@@ -637,6 +637,15 @@ export const uploadProductImage = (file: File) => {
   })
 }
 
+export const uploadAnnouncementImage = (file: File) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return fetchApi<ResponseDTO<{ url: string }>>('/api/files?subfolder=announcements', {
+    method: 'POST',
+    body: formData,
+  })
+}
+
 export const uploadMyAvatar = (file: File) => {
   const formData = new FormData()
   formData.append('file', file)

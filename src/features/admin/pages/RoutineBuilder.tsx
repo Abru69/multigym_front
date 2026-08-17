@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { DayOfWeek, ExerciseLibraryItemDTO } from '@/types'
+import type { DayOfWeek, ExerciseDTO, ExerciseLibraryItemDTO } from '@/types'
 import {
   Plus,
   Trash2,
@@ -17,10 +17,13 @@ import { useToastStore } from '@/components/ui/Toast'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import {
   getExerciseLibrary,
+  getExercises,
+  getResponseItems,
   createExercise,
   uploadExerciseImage,
   createWorkout,
   createWorkoutExercise,
+  deleteWorkoutExercise,
   updateWorkout,
   fetchApi,
 } from '@/lib/api'
@@ -28,7 +31,7 @@ import { SearchBar } from '../components/SearchBar'
 import { FormField } from '../components/FormField'
 import { useDebounce } from '@/hooks/useDebounce'
 
-interface ExerciseData {
+export interface ExerciseData {
   id: string
   source: 'CATALOG' | 'CUSTOM'
   name: string
@@ -49,7 +52,8 @@ interface DayExercise extends ExerciseData {
   restSeconds: number
 }
 
-interface WorkoutExercise {
+export interface WorkoutExercise {
+  id?: string
   dayOfWeek?: string
   exercise?: ExerciseData
   exerciseId?: string
@@ -61,7 +65,7 @@ interface WorkoutExercise {
   restSeconds?: number
 }
 
-interface EditingRoutine {
+export interface EditingRoutine {
   id?: string
   title?: string
   member?: { id: string } | null
@@ -132,22 +136,36 @@ export default function RoutineBuilder({
     try {
       setIsLibraryLoading(true)
       setLibraryError(null)
-      const res = await getExerciseLibrary({ size: 500 })
-      const apiExercises = res.dto || res.lista || []
-      const mapped: ExerciseData[] = apiExercises.map((e: ExerciseLibraryItemDTO) => ({
+      const [libraryResponse, customResponse] = await Promise.all([
+        getExerciseLibrary({ size: 500 }),
+        getExercises(),
+      ])
+      const libraryExercises = getResponseItems<ExerciseLibraryItemDTO>(libraryResponse)
+      const customExercises = getResponseItems<ExerciseDTO>(customResponse)
+      const mappedLibrary: ExerciseData[] = libraryExercises.map((e) => ({
         id: e.id,
         source: e.source,
         name: e.name,
         displayName: e.displayName || e.name,
         muscleGroup: e.muscleGroup || e.bodyPart || 'General',
-        muscleGroupLabel: e.muscleGroupLabel || e.bodyPartLabel || e.muscleGroup || e.bodyPart || 'General',
+        muscleGroupLabel:
+          e.muscleGroupLabel || e.bodyPartLabel || e.muscleGroup || e.bodyPart || 'General',
         bodyPart: e.bodyPart,
         bodyPartLabel: e.bodyPartLabel,
         equipmentLabel: e.equipmentLabel,
         targetLabel: e.targetLabel,
         imageUrl: e.imageUrl || '',
       }))
-      setDbExercises(mapped)
+      const mappedCustom: ExerciseData[] = customExercises.map((e) => ({
+        id: e.id,
+        source: 'CUSTOM',
+        name: e.name,
+        displayName: e.name,
+        muscleGroup: e.muscleGroup || 'General',
+        muscleGroupLabel: e.muscleGroup || 'General',
+        imageUrl: e.imageUrl || '',
+      }))
+      setDbExercises([...mappedLibrary, ...mappedCustom])
     } catch (e: unknown) {
       console.error(e)
       setLibraryError(e instanceof Error ? e.message : 'No se pudo cargar la biblioteca')
@@ -159,7 +177,18 @@ export default function RoutineBuilder({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadExercises()
-    fetchApi<{ dto?: { data?: Array<{ id: string; email?: string; role?: string; isActive?: boolean; memberDTO?: { id: string } | null; name?: string }> } }>('/api/tenant/users')
+    fetchApi<{
+      dto?: {
+        data?: Array<{
+          id: string
+          email?: string
+          role?: string
+          isActive?: boolean
+          memberDTO?: { id: string } | null
+          name?: string
+        }>
+      }
+    }>('/api/tenant/users')
       .then((res) => {
         const users: UserData[] = (res.dto?.data || []).map((u) => ({
           id: u.id,
@@ -210,7 +239,8 @@ export default function RoutineBuilder({
             id: exerciseId || we.exercise?.id || '',
             source,
             displayName: we.exercise?.displayName || we.exercise?.name || '',
-            muscleGroupLabel: we.exercise?.muscleGroupLabel || we.exercise?.muscleGroup || 'General',
+            muscleGroupLabel:
+              we.exercise?.muscleGroupLabel || we.exercise?.muscleGroup || 'General',
             uniqueId: `init-${uniqueIdCounter++}`,
             sets: we.sets || 4,
             reps: we.reps || '10-12',
@@ -287,7 +317,11 @@ export default function RoutineBuilder({
         imageUrl = uploadResponse.dto?.url
         if (!imageUrl) throw new Error('No se recibió la URL de la imagen')
       }
-      await createExercise({ name: newExerciseForm.name, muscleGroup: newExerciseForm.muscleGroup, imageUrl })
+      await createExercise({
+        name: newExerciseForm.name,
+        muscleGroup: newExerciseForm.muscleGroup,
+        imageUrl,
+      })
       addToast('Ejercicio creado correctamente', 'success')
       loadExercises()
       setNewExerciseForm({ name: '', muscleGroup: '' })
@@ -409,9 +443,38 @@ export default function RoutineBuilder({
           startsAt: new Date().toISOString(),
           endsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         })
+
+        const existingExercises = editingRoutine.exercises || []
+        for (const exercise of existingExercises) {
+          if (exercise.id) await deleteWorkoutExercise(exercise.id)
+        }
+
+        const exercisesPayload = Object.entries(dayExercises).flatMap(
+          ([dayOfWeek, exercises]) =>
+            exercises.map((ex, index) => {
+              const basePayload = {
+                workoutId: editingRoutine.id!,
+                dayOfWeek,
+                sets: parseInt(String(ex.sets)) || 4,
+                reps: ex.reps || '12',
+                restSeconds: ex.restSeconds || 60,
+                orderIndex: index,
+              }
+              return ex.source === 'CATALOG'
+                ? { ...basePayload, catalogExerciseId: ex.id }
+                : { ...basePayload, exerciseId: ex.id }
+            })
+        )
+        for (const exercise of exercisesPayload) {
+          await createWorkoutExercise(exercise)
+        }
+
         addToast(`Plantilla "${routineName}" actualizada exitosamente.`, 'success')
       } else {
-        addToast('Para guardar una plantilla primero asígnala a un cliente con "Asignar"', 'warning')
+        addToast(
+          'Para guardar una plantilla primero asígnala a un cliente con "Asignar"',
+          'warning'
+        )
       }
     } catch (e: unknown) {
       addToast(e instanceof Error ? e.message : 'Error guardando plantilla', 'error')
@@ -424,11 +487,9 @@ export default function RoutineBuilder({
     const filtered = dbExercises.filter((e) => {
       const matchesSource = exerciseSourceFilter === 'ALL' || e.source === exerciseSourceFilter
       const matchesGroup = !selectedGroupForModal || e.muscleGroup === selectedGroupForModal
-      const matchesSearch = e.name
-        .toLowerCase()
-        .includes(debouncedExerciseSearch.toLowerCase()) || e.displayName
-        .toLowerCase()
-        .includes(debouncedExerciseSearch.toLowerCase())
+      const matchesSearch =
+        e.name.toLowerCase().includes(debouncedExerciseSearch.toLowerCase()) ||
+        e.displayName.toLowerCase().includes(debouncedExerciseSearch.toLowerCase())
       return matchesSource && matchesGroup && matchesSearch
     })
     const grouped: Record<string, ExerciseData[]> = {}
@@ -456,7 +517,9 @@ export default function RoutineBuilder({
         groups.add(exercise.muscleGroup || 'General')
       }
     })
-    return Array.from(groups).sort((a, b) => (groupLabels[a] || a).localeCompare(groupLabels[b] || b))
+    return Array.from(groups).sort((a, b) =>
+      (groupLabels[a] || a).localeCompare(groupLabels[b] || b)
+    )
   }, [dbExercises, exerciseSourceFilter, groupLabels])
 
   const clearLibraryFilters = () => {
@@ -630,26 +693,34 @@ export default function RoutineBuilder({
                       <span className="mt-0.5 inline-block rounded-md bg-[var(--accent)]/10 px-1.5 py-0.5 text-[8px] font-bold tracking-wide text-[var(--accent-text)] uppercase sm:mt-1 sm:px-2 sm:text-[10px]">
                         {exercise.muscleGroupLabel || exercise.muscleGroup || 'General'}
                       </span>
-                      <span className="ml-1.5 mt-0.5 inline-block rounded-md bg-[var(--surface)] px-1.5 py-0.5 text-[8px] font-bold tracking-wide text-[var(--text-muted)] uppercase sm:mt-1 sm:px-2 sm:text-[10px]">
+                      <span className="mt-0.5 ml-1.5 inline-block rounded-md bg-[var(--surface)] px-1.5 py-0.5 text-[8px] font-bold tracking-wide text-[var(--text-muted)] uppercase sm:mt-1 sm:px-2 sm:text-[10px]">
                         {exercise.source === 'CATALOG' ? 'Catalogo' : 'Personalizado'}
                       </span>
                     </div>
 
                     <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
                       <div className="flex flex-col items-center rounded-lg bg-[var(--surface)] px-1.5 py-1 sm:px-2">
-                        <span className="text-[8px] font-bold uppercase text-[var(--text-muted)] sm:text-[9px]">Sets</span>
+                        <span className="text-[8px] font-bold text-[var(--text-muted)] uppercase sm:text-[9px]">
+                          Sets
+                        </span>
                         <input
                           type="number"
                           min="1"
                           value={exercise.sets}
                           onChange={(e) =>
-                            updateExerciseDetail(exercise.uniqueId, 'sets', parseInt(e.target.value) || 1)
+                            updateExerciseDetail(
+                              exercise.uniqueId,
+                              'sets',
+                              parseInt(e.target.value) || 1
+                            )
                           }
                           className="w-6 border-none bg-transparent text-center text-[10px] font-bold text-[var(--text-primary)] outline-none sm:w-8 sm:text-xs"
                         />
                       </div>
                       <div className="flex flex-col items-center rounded-lg bg-[var(--surface)] px-1.5 py-1 sm:px-2">
-                        <span className="text-[8px] font-bold uppercase text-[var(--text-muted)] sm:text-[9px]">Reps</span>
+                        <span className="text-[8px] font-bold text-[var(--text-muted)] uppercase sm:text-[9px]">
+                          Reps
+                        </span>
                         <input
                           type="text"
                           value={exercise.reps}
@@ -660,14 +731,20 @@ export default function RoutineBuilder({
                         />
                       </div>
                       <div className="flex flex-col items-center rounded-lg bg-[var(--surface)] px-1.5 py-1 sm:px-2">
-                        <span className="text-[8px] font-bold uppercase text-[var(--text-muted)] sm:text-[9px]">Desc.</span>
+                        <span className="text-[8px] font-bold text-[var(--text-muted)] uppercase sm:text-[9px]">
+                          Desc.
+                        </span>
                         <input
                           type="number"
                           min="0"
                           step="15"
                           value={exercise.restSeconds}
                           onChange={(e) =>
-                            updateExerciseDetail(exercise.uniqueId, 'restSeconds', parseInt(e.target.value) || 0)
+                            updateExerciseDetail(
+                              exercise.uniqueId,
+                              'restSeconds',
+                              parseInt(e.target.value) || 0
+                            )
                           }
                           className="w-8 border-none bg-transparent text-center text-[10px] font-bold text-[var(--text-primary)] outline-none sm:w-10 sm:text-xs"
                         />
@@ -736,21 +813,26 @@ export default function RoutineBuilder({
               Biblioteca de Ejercicios
             </h3>
             <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+              <Search
+                size={14}
+                className="absolute top-1/2 left-3 -translate-y-1/2 text-[var(--text-muted)]"
+              />
               <input
                 type="text"
                 value={exerciseSearch}
                 onChange={(e) => setExerciseSearch(e.target.value)}
                 placeholder="Buscar ejercicio..."
-                className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] py-2 pl-9 pr-3 text-xs text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:bg-[var(--card)] focus:ring-1 focus:ring-[var(--accent)]/20 sm:text-sm"
+                className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] py-2 pr-3 pl-9 text-xs text-[var(--text-primary)] transition-all outline-none placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:bg-[var(--card)] focus:ring-1 focus:ring-[var(--accent)]/20 sm:text-sm"
               />
             </div>
             <div className="mt-2.5 flex flex-wrap gap-1 sm:mt-3">
-              {([
-                ['ALL', 'Todos'],
-                ['CATALOG', 'Catalogo Global'],
-                ['CUSTOM', 'Personalizados'],
-              ] as const).map(([value, label]) => (
+              {(
+                [
+                  ['ALL', 'Todos'],
+                  ['CATALOG', 'Catalogo Global'],
+                  ['CUSTOM', 'Personalizados'],
+                ] as const
+              ).map(([value, label]) => (
                 <button
                   key={value}
                   onClick={() => {
@@ -800,13 +882,19 @@ export default function RoutineBuilder({
             {isLibraryLoading ? (
               <div className="flex flex-col items-center justify-center py-8 text-center sm:py-12">
                 <span className="mb-3 h-6 w-6 animate-spin rounded-full border-2 border-[var(--accent)]/30 border-t-[var(--accent)]" />
-                <p className="text-xs font-medium text-[var(--text-muted)] sm:text-sm">Cargando biblioteca...</p>
+                <p className="text-xs font-medium text-[var(--text-muted)] sm:text-sm">
+                  Cargando biblioteca...
+                </p>
               </div>
             ) : libraryError ? (
               <div className="flex flex-col items-center justify-center py-8 text-center sm:py-12">
                 <Dumbbell size={28} className="mb-2 text-[var(--text-muted)] sm:mb-3 sm:size-8" />
-                <p className="text-xs font-semibold text-[var(--text-primary)] sm:text-sm">No se pudo cargar la biblioteca</p>
-                <p className="mt-1 text-[10px] text-[var(--text-muted)] sm:text-xs">{libraryError}</p>
+                <p className="text-xs font-semibold text-[var(--text-primary)] sm:text-sm">
+                  No se pudo cargar la biblioteca
+                </p>
+                <p className="mt-1 text-[10px] text-[var(--text-muted)] sm:text-xs">
+                  {libraryError}
+                </p>
                 <button
                   onClick={loadExercises}
                   className="mt-3 rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--accent-text)]"
@@ -814,44 +902,53 @@ export default function RoutineBuilder({
                   Reintentar
                 </button>
               </div>
-            ) : Object.entries(sidebarExercises).map(([group, exercises]) => (
-              <div key={group} className="mb-3 sm:mb-4">
-                <h4 className="mb-1.5 px-1 text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)] sm:mb-2 sm:text-[10px]">
-                  {groupLabels[group] || group}
-                </h4>
-                <div className="space-y-1 sm:space-y-1.5">
-                  {exercises.map((exercise) => (
-                    <button
-                      key={exercise.id}
-                      onClick={() => handleAddExercise(exercise)}
-                      className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-left transition-all hover:shadow-sm sm:gap-2.5 sm:p-2.5"
-                    >
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)]/10 sm:h-8 sm:w-8">
-                        <Dumbbell size={12} className="text-[var(--accent-text)] sm:size-[14]" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-[11px] font-semibold text-[var(--text-primary)] sm:text-xs">
-                          {exercise.displayName || exercise.name}
-                        </p>
-                        {exercise.displayName && exercise.displayName !== exercise.name && (
-                          <p className="truncate text-[9px] text-[var(--text-muted)] sm:text-[10px]">
-                            {exercise.name}
+            ) : (
+              Object.entries(sidebarExercises).map(([group, exercises]) => (
+                <div key={group} className="mb-3 sm:mb-4">
+                  <h4 className="mb-1.5 px-1 text-[9px] font-bold tracking-wider text-[var(--text-muted)] uppercase sm:mb-2 sm:text-[10px]">
+                    {groupLabels[group] || group}
+                  </h4>
+                  <div className="space-y-1 sm:space-y-1.5">
+                    {exercises.map((exercise) => (
+                      <button
+                        key={exercise.id}
+                        onClick={() => handleAddExercise(exercise)}
+                        className="flex w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-left transition-all hover:shadow-sm sm:gap-2.5 sm:p-2.5"
+                      >
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)]/10 sm:h-8 sm:w-8">
+                          <Dumbbell size={12} className="text-[var(--accent-text)] sm:size-[14]" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[11px] font-semibold text-[var(--text-primary)] sm:text-xs">
+                            {exercise.displayName || exercise.name}
                           </p>
-                        )}
-                        <p className="truncate text-[9px] font-medium uppercase tracking-wide text-[var(--text-muted)] sm:text-[10px]">
-                          {exercise.source === 'CATALOG' ? 'Catalogo global' : exercise.muscleGroupLabel || 'Personalizado'}
-                        </p>
-                      </div>
-                      <Plus size={12} className="shrink-0 text-[var(--text-muted)] sm:size-[14]" />
-                    </button>
-                  ))}
+                          {exercise.displayName && exercise.displayName !== exercise.name && (
+                            <p className="truncate text-[9px] text-[var(--text-muted)] sm:text-[10px]">
+                              {exercise.name}
+                            </p>
+                          )}
+                          <p className="truncate text-[9px] font-medium tracking-wide text-[var(--text-muted)] uppercase sm:text-[10px]">
+                            {exercise.source === 'CATALOG'
+                              ? 'Catalogo global'
+                              : exercise.muscleGroupLabel || 'Personalizado'}
+                          </p>
+                        </div>
+                        <Plus
+                          size={12}
+                          className="shrink-0 text-[var(--text-muted)] sm:size-[14]"
+                        />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
             {!isLibraryLoading && !libraryError && Object.keys(sidebarExercises).length === 0 && (
               <div className="flex flex-col items-center justify-center py-8 text-center sm:py-12">
                 <Dumbbell size={28} className="mb-2 text-[var(--text-muted)] sm:mb-3 sm:size-8" />
-                <p className="text-xs font-medium text-[var(--text-muted)] sm:text-sm">No hay ejercicios con estos filtros</p>
+                <p className="text-xs font-medium text-[var(--text-muted)] sm:text-sm">
+                  No hay ejercicios con estos filtros
+                </p>
                 <button
                   onClick={clearLibraryFilters}
                   className="mt-3 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
@@ -937,7 +1034,11 @@ export default function RoutineBuilder({
             <div className="flex items-center gap-4">
               <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]">
                 {newExerciseImagePreview ? (
-                  <img src={newExerciseImagePreview} alt="Vista previa" className="h-full w-full object-cover" />
+                  <img
+                    src={newExerciseImagePreview}
+                    alt="Vista previa"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <ImageIcon size={24} className="text-[var(--text-muted)]" />
                 )}
@@ -954,7 +1055,9 @@ export default function RoutineBuilder({
                   }}
                   className="block w-full text-sm text-[var(--text-secondary)] file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--accent)] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-[var(--accent-text)]"
                 />
-                <p className="mt-1 text-xs text-[var(--text-muted)]">JPG, PNG, WEBP o GIF. Máximo 10 MB.</p>
+                <p className="mt-1 text-xs text-[var(--text-muted)]">
+                  JPG, PNG, WEBP o GIF. Máximo 10 MB.
+                </p>
               </div>
             </div>
           </FormField>
@@ -1008,7 +1111,11 @@ export default function RoutineBuilder({
                   key={user.id}
                   onClick={() => {
                     const next = new Set(selectedUsers)
-                    if (isSelected) { next.delete(key) } else { next.add(key) }
+                    if (isSelected) {
+                      next.delete(key)
+                    } else {
+                      next.add(key)
+                    }
                     setSelectedUsers(next)
                   }}
                   className={`flex w-full items-center gap-4 rounded-xl border p-3 text-left transition-all ${
