@@ -92,6 +92,7 @@ export interface TenantRenewalResultDTO {
 export interface TenantRenewalPaymentRequest {
   cardToken: string
   paymentMethodId: string
+  paymentMethodType?: 'credit_card' | 'debit_card'
   issuerId?: string | null
   installments: number
   payerEmail: string
@@ -676,6 +677,7 @@ export interface OrderRequest {
   shippingPostalCode?: string
   cardToken?: string
   paymentMethodId?: string
+  paymentMethodType?: 'credit_card' | 'debit_card'
   issuerId?: string
   installments?: number
   payerLastName?: string

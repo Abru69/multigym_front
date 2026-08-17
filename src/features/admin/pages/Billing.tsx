@@ -154,6 +154,7 @@ export default function Billing() {
         tokenResponse?.paymentMethodId ||
         getPaymentMethodId(cardDigits)
       const issuerId = tokenResponse?.issuer_id || tokenResponse?.issuerId || null
+      const paymentMethodType = tokenResponse?.payment_type_id === 'debit_card' || tokenResponse?.paymentTypeId === 'debit_card' ? 'debit_card' : 'credit_card'
       if (!cardToken) {
         throw new Error('No se pudo tokenizar la tarjeta. Verifica los datos e intenta de nuevo.')
       }
@@ -162,6 +163,7 @@ export default function Billing() {
       const response = await processTenantBillingRenewalMercadoPagoPayment({
         cardToken,
         paymentMethodId,
+        paymentMethodType,
         issuerId,
         installments: 1,
         payerEmail: payerEmail.trim(),

@@ -311,6 +311,7 @@ export default function Checkout() {
         tokenResponse?.paymentMethodId ||
         getPaymentMethodId(cardDigits)
       const issuerId = tokenResponse?.issuer_id || tokenResponse?.issuerId || null
+      const paymentMethodType = tokenResponse?.payment_type_id === 'debit_card' || tokenResponse?.paymentTypeId === 'debit_card' ? 'debit_card' : 'credit_card'
       if (!cardToken) {
         console.error('MercadoPago token response:', tokenResponse)
         throw new Error('No se pudo tokenizar la tarjeta. Verifica los datos e intenta de nuevo.')
@@ -328,6 +329,7 @@ export default function Checkout() {
         deliveryMethod,
         cardToken,
         paymentMethodId,
+        paymentMethodType,
         issuerId,
         installments: 1,
         payerLastName: payerLastName.trim(),
