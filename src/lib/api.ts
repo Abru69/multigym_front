@@ -49,7 +49,22 @@ import type {
   ReadinessDTO,
   UserDTO,
   NutritionPlanDTO,
+  NutritionPlanVersionDTO,
   NutritionPlanRequest,
+  NutritionMealAdherenceDTO,
+  NutritionAdherenceRequest,
+  NutritionAdherenceSummaryDTO,
+  MealOptionDTO,
+  MealOptionRequest,
+  FoodCatalogDTO,
+  FoodCatalogOption,
+  FoodCatalogRequest,
+  FoodEquivalentGroupDTO,
+  FoodEquivalentGroupRequest,
+  FoodEquivalenceDTO,
+  FoodEquivalenceRequest,
+  RecipeDTO,
+  RecipeRequest,
   TenantUserRequest,
   ProductRequest,
   CheckInDTO,
@@ -927,6 +942,12 @@ export const getNutritionPlans = (params?: { search?: string; page?: number; siz
 export const getNutritionPlanByMember = (memberId: string) =>
   fetchApi<ResponseDTO<NutritionPlanDTO>>(`/api/nutrition/member/${memberId}`)
 export const getMyNutritionPlan = () => fetchApi<ResponseDTO<NutritionPlanDTO>>('/api/nutrition/my')
+export const getNutritionPlanVersions = (id: string) =>
+  fetchApi<ResponseDTO<NutritionPlanVersionDTO[]>>(`/api/nutrition/${id}/versions`)
+export const getNutritionPlanVersion = (id: string, version: number) =>
+  fetchApi<ResponseDTO<NutritionPlanVersionDTO>>(`/api/nutrition/${id}/versions/${version}`)
+export const getMyNutritionPlanVersions = () =>
+  fetchApi<ResponseDTO<NutritionPlanVersionDTO[]>>('/api/nutrition/my/versions')
 export const createNutritionPlan = (data: NutritionPlanRequest) =>
   fetchApi<ResponseDTO<NutritionPlanDTO>>('/api/nutrition', {
     method: 'POST',
@@ -937,6 +958,11 @@ export const updateNutritionPlan = (id: string, data: NutritionPlanRequest) =>
     method: 'PUT',
     body: JSON.stringify(data),
   })
+export const updateNutritionPlanStatus = (id: string, data: Pick<NutritionPlanRequest, 'status' | 'startsOn' | 'endsOn'>) =>
+  fetchApi<ResponseDTO<NutritionPlanDTO>>(`/api/nutrition/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
 export const deleteNutritionPlan = (id: string) =>
   fetchApi<ResponseDTO<unknown>>(`/api/nutrition/${id}`, { method: 'DELETE' })
 export const assignNutritionPlan = (planId: string, memberId: string) =>
@@ -944,6 +970,92 @@ export const assignNutritionPlan = (planId: string, memberId: string) =>
     method: 'PATCH',
     body: JSON.stringify({ memberId }),
   })
+export const getMyNutritionAdherence = () =>
+  fetchApi<ResponseDTO<NutritionMealAdherenceDTO[]>>('/api/nutrition/adherence/my')
+export const saveMyNutritionAdherence = (data: NutritionAdherenceRequest) =>
+  fetchApi<ResponseDTO<NutritionMealAdherenceDTO>>('/api/nutrition/adherence/my', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+export const getMealOptions = (planId: string, mealId: string) =>
+  fetchApi<ResponseDTO<MealOptionDTO[]>>(`/api/nutrition/plans/${planId}/meals/${mealId}/options`)
+export const createMealOption = (planId: string, mealId: string, data: MealOptionRequest) =>
+  fetchApi<ResponseDTO<MealOptionDTO>>(`/api/nutrition/plans/${planId}/meals/${mealId}/options`, { method: 'POST', body: JSON.stringify(data) })
+export const updateMealOption = (planId: string, mealId: string, optionId: string, data: MealOptionRequest) =>
+  fetchApi<ResponseDTO<MealOptionDTO>>(`/api/nutrition/plans/${planId}/meals/${mealId}/options/${optionId}`, { method: 'PUT', body: JSON.stringify(data) })
+export const deleteMealOption = (planId: string, mealId: string, optionId: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/nutrition/plans/${planId}/meals/${mealId}/options/${optionId}`, { method: 'DELETE' })
+export const getMemberNutritionAdherenceSummary = (memberId: string) =>
+  fetchApi<ResponseDTO<NutritionAdherenceSummaryDTO>>(`/api/nutrition/adherence/member/${memberId}/summary`)
+export const getMemberNutritionAdherence = (memberId: string) =>
+  fetchApi<ResponseDTO<NutritionMealAdherenceDTO[]>>(`/api/nutrition/adherence/member/${memberId}`)
+
+// --- Food catalog ---
+export const getFoodCatalog = (params?: {
+  search?: string
+  category?: string
+  equivalentGroup?: string
+  active?: boolean
+  page?: number
+  size?: number
+}) => {
+  const q = new URLSearchParams()
+  if (params?.search) q.set('search', params.search)
+  if (params?.category) q.set('category', params.category)
+  if (params?.equivalentGroup) q.set('equivalentGroup', params.equivalentGroup)
+  if (params?.active !== undefined) q.set('active', String(params.active))
+  if (params?.page !== undefined) q.set('page', String(params.page))
+  if (params?.size !== undefined) q.set('size', String(params.size))
+  const qs = q.toString()
+  return fetchApi<ResponseDTO<PaginatedResult<FoodCatalogDTO>>>(
+    `/api/food-catalog${qs ? '?' + qs : ''}`
+  )
+}
+export const getFoodEquivalentGroups = () =>
+  fetchApi<ResponseDTO<FoodEquivalentGroupDTO[]>>('/api/food-catalog/equivalent-groups')
+export const getGlobalFoodCatalog = () =>
+  fetchApi<ResponseDTO<FoodCatalogDTO[]>>('/api/global-food-catalog')
+export const toFoodCatalogOption = (food: FoodCatalogDTO, catalogSource: FoodCatalogOption['catalogSource']): FoodCatalogOption => ({ ...food, catalogSource })
+export const createFoodEquivalentGroup = (data: FoodEquivalentGroupRequest) =>
+  fetchApi<ResponseDTO<FoodEquivalentGroupDTO>>('/api/food-catalog/equivalent-groups', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const getFoodEquivalences = (foodId: string) =>
+  fetchApi<ResponseDTO<FoodEquivalenceDTO[]>>(`/api/food-catalog/${foodId}/equivalences`)
+export const createFoodEquivalence = (foodId: string, data: FoodEquivalenceRequest) =>
+  fetchApi<ResponseDTO<FoodEquivalenceDTO>>(`/api/food-catalog/${foodId}/equivalences`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const createFoodCatalogItem = (data: FoodCatalogRequest) =>
+  fetchApi<ResponseDTO<FoodCatalogDTO>>('/api/food-catalog', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+export const updateFoodCatalogItem = (id: string, data: FoodCatalogRequest) =>
+  fetchApi<ResponseDTO<FoodCatalogDTO>>(`/api/food-catalog/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+export const deleteFoodCatalogItem = (id: string) =>
+  fetchApi<ResponseDTO<unknown>>(`/api/food-catalog/${id}`, { method: 'DELETE' })
+
+export const getRecipes = (params?: { search?: string; active?: boolean; page?: number; size?: number }) => {
+  const q = new URLSearchParams()
+  if (params?.search) q.set('search', params.search)
+  if (params?.active !== undefined) q.set('active', String(params.active))
+  if (params?.page !== undefined) q.set('page', String(params.page))
+  if (params?.size !== undefined) q.set('size', String(params.size))
+  const qs = q.toString()
+  return fetchApi<ResponseDTO<PaginatedResult<RecipeDTO>>>(`/api/recipes${qs ? '?' + qs : ''}`)
+}
+export const getRecipeById = (id: string) =>
+  fetchApi<ResponseDTO<RecipeDTO>>(`/api/recipes/${id}`)
+export const createRecipe = (data: RecipeRequest) =>
+  fetchApi<ResponseDTO<RecipeDTO>>('/api/recipes', { method: 'POST', body: JSON.stringify(data) })
+export const updateRecipe = (id: string, data: RecipeRequest) =>
+  fetchApi<ResponseDTO<RecipeDTO>>(`/api/recipes/${id}`, { method: 'PUT', body: JSON.stringify(data) })
 
 // --- Check-Ins ---
 export const checkIn = (data: CheckInRequest) =>

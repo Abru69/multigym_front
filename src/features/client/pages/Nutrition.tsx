@@ -1,7 +1,34 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { CheckCircle2, Circle, Clock, Utensils, Droplets, Info, Loader2 } from 'lucide-react'
+import {
+  CheckCircle2,
+  Circle,
+  Clock,
+  Utensils,
+  Droplets,
+  Info,
+  Loader2,
+  History,
+  ChevronDown,
+} from 'lucide-react'
 import { useNutritionStore } from '@/features/client/store/nutritionStore'
+import {
+  getMyNutritionPlanVersions,
+  getNutritionPlanVersion,
+  getResponseItems,
+  getMyNutritionAdherence,
+  saveMyNutritionAdherence,
+  getRecipeById,
+  getRecipes,
+} from '@/lib/api'
+import type {
+  NutritionAdherenceStatus,
+  NutritionMealAdherenceDTO,
+  NutritionPlanDTO,
+  NutritionPlanVersionDTO,
+  RecipeDTO,
+} from '@/types'
+import { Modal } from '@/components/ui/Modal'
 
 const macroConfig = [
   { key: 'calories', label: 'Calorías', color: 'var(--accent)', unit: 'kcal' },
@@ -21,16 +48,120 @@ export default function Nutrition() {
     toggleMeal,
     setWaterGlasses,
   } = useNutritionStore()
+  const [versions, setVersions] = useState<NutritionPlanVersionDTO[]>([])
+  const [historicalPlan, setHistoricalPlan] = useState<NutritionPlanDTO | null>(null)
+  const [selectedHistoryVersion, setSelectedHistoryVersion] = useState<number | null>(null)
+  const [historyError, setHistoryError] = useState('')
+  const [showHistory, setShowHistory] = useState(false)
+  const [adherence, setAdherence] = useState<Record<string, NutritionMealAdherenceDTO>>({})
+  const [versionId, setVersionId] = useState('')
+  const [savingMeal, setSavingMeal] = useState<string | null>(null)
+  const [mealNote, setMealNote] = useState<Record<string, string>>({})
+  const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({})
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
+  const [selectedRecipe, setSelectedRecipe] = useState<RecipeDTO | null>(null)
+  const [recipeCatalog, setRecipeCatalog] = useState<RecipeDTO[]>([])
 
   useEffect(() => {
     loadPlan()
+    getMyNutritionPlanVersions()
+      .then((response) => {
+        const items = getResponseItems<NutritionPlanVersionDTO>(response)
+        if (items[0]) setVersionId(items[0].id)
+      })
+      .catch(() => {})
+    getMyNutritionAdherence()
+      .then((response) => {
+        const items = getResponseItems<NutritionMealAdherenceDTO>(response)
+        setAdherence(
+          Object.fromEntries(items.map((item) => [`${item.date}:${item.mealReference}`, item]))
+        )
+      })
+      .catch(() => {})
+    getRecipes({ active: true, size: 9999 }).then((response) => setRecipeCatalog(getResponseItems<RecipeDTO>(response))).catch(() => {})
   }, [loadPlan])
+
+  const openHistory = async () => {
+    setShowHistory(true)
+    setHistoricalPlan(null)
+    setSelectedHistoryVersion(null)
+    setHistoryError('')
+    try {
+      const response = await getMyNutritionPlanVersions()
+      const items = getResponseItems<NutritionPlanVersionDTO>(response)
+      setVersions(items)
+      if (items[0]) {
+        const latest = await getNutritionPlanVersion(items[0].nutritionPlanId, items[0].versionNumber)
+        if (latest.dto) {
+          setHistoricalPlan(JSON.parse(latest.dto.snapshot) as NutritionPlanDTO)
+          setSelectedHistoryVersion(items[0].versionNumber)
+        }
+      }
+    } catch {
+      setHistoricalPlan(plan)
+      setHistoryError('No se pudo cargar el detalle histórico. Puedes consultar las versiones disponibles.')
+    }
+  }
+  const viewVersion = async (version: NutritionPlanVersionDTO) => {
+    const response = await getNutritionPlanVersion(version.nutritionPlanId, version.versionNumber)
+    if (response.dto) {
+      setHistoricalPlan(JSON.parse(response.dto.snapshot) as NutritionPlanDTO)
+      setSelectedHistoryVersion(version.versionNumber)
+    }
+  }
 
   const calcProgress = (current: number, target: number) =>
     target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0
 
   const meals = plan?.meals || []
-  const completedCount = meals.filter((m) => mealCompletion[m.id]).length
+  const today = new Date().toISOString().slice(0, 10)
+  const statusFor = (mealId: string) => adherence[`${today}:${mealId}`]?.status
+  const selectedOptionFor = (mealId: string) => selectedOptions[mealId] || adherence[`${today}:${mealId}`]?.selectedOptionId || meals.find((meal) => meal.id === mealId)?.options?.[0]?.id
+  const openRecipe = async (recipeId?: string, recipeName?: string) => {
+    try {
+      if (recipeId) {
+        const response = await getRecipeById(recipeId)
+        if (response.dto) return setSelectedRecipe(response.dto)
+      }
+      const recipe = recipeCatalog.find((item) => item.name.trim().toLowerCase() === recipeName?.trim().toLowerCase())
+      if (recipe) setSelectedRecipe(recipe)
+    } catch { /* Detail is optional. */ }
+  }
+  const recipeNameForItem = (item: { recipeName?: string; foodName?: string }) => item.recipeName || recipeCatalog.find((recipe) => recipe.name.trim().toLowerCase() === item.foodName?.trim().toLowerCase())?.name
+  const recipeIdForItem = (item: { recipeId?: string; foodName?: string }) => item.recipeId || recipeCatalog.find((recipe) => recipe.name.trim().toLowerCase() === item.foodName?.trim().toLowerCase())?.id
+  const completedCount = meals.filter(
+    (m) => statusFor(m.id) === 'COMPLETED' || (!statusFor(m.id) && mealCompletion[m.id])
+  ).length
+
+  const setMealStatus = async (
+    mealId: string,
+    status: NutritionAdherenceStatus,
+    selectedOptionId?: string
+  ) => {
+    if (selectedOptionId) setSelectedOptions((current) => ({ ...current, [mealId]: selectedOptionId }))
+    if (!versionId) return
+    setSavingMeal(mealId)
+    if (selectedOptionId) {
+      setAdherence((current) => ({
+        ...current,
+        [`${today}:${mealId}`]: { ...(current[`${today}:${mealId}`] || {}), mealReference: mealId, selectedOptionId, status } as NutritionMealAdherenceDTO,
+      }))
+    }
+    try {
+      const response = await saveMyNutritionAdherence({
+        date: today,
+        nutritionPlanVersionId: versionId,
+        mealReference: mealId,
+        status,
+        notes: mealNote[mealId] || undefined,
+        selectedOptionId,
+      })
+      if (response.dto)
+        setAdherence((current) => ({ ...current, [`${today}:${mealId}`]: response.dto! }))
+    } finally {
+      setSavingMeal(null)
+    }
+  }
 
   const dailyMacros = plan
     ? {
@@ -115,6 +246,13 @@ export default function Nutrition() {
             {completedCount}/{meals.length} comidas completadas
           </p>
         </div>
+        <button
+          type="button"
+          onClick={openHistory}
+          className="flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-[var(--text-secondary)]"
+        >
+          <History size={12} /> Historial
+        </button>
         <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-bold text-[var(--text-secondary)]">
           {plan?.name || 'Sin plan asignado'}
         </span>
@@ -213,10 +351,16 @@ export default function Nutrition() {
                 >
                   <div className="relative z-10 mt-4 flex h-10 w-10 shrink-0 items-center justify-center">
                     <button
-                      onClick={() => toggleMeal(meal.id)}
+                      onClick={() =>
+                        setMealStatus(
+                          meal.id,
+                          statusFor(meal.id) === 'COMPLETED' ? 'SKIPPED' : 'COMPLETED'
+                        )
+                      }
                       className="transition-transform hover:scale-110 active:scale-95"
                     >
-                      {mealCompletion[meal.id] ? (
+                      {statusFor(meal.id) === 'COMPLETED' ||
+                      (!statusFor(meal.id) && mealCompletion[meal.id]) ? (
                         <CheckCircle2 size={24} className="text-[var(--accent)]" />
                       ) : (
                         <Circle size={24} className="text-[var(--text-muted)]" />
@@ -231,6 +375,41 @@ export default function Nutrition() {
                         : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)]/30'
                     }`}
                   >
+                    <div className="mb-2 flex flex-wrap gap-1">
+                      {(['COMPLETED', 'PARTIAL', 'SKIPPED'] as NutritionAdherenceStatus[]).map(
+                        (status) => (
+                          <button
+                            key={status}
+                            type="button"
+                            disabled={savingMeal === meal.id || !versionId}
+                            onClick={() => setMealStatus(meal.id, status)}
+                            className={`rounded-full px-2 py-1 text-[10px] font-bold ${statusFor(meal.id) === status ? 'bg-[var(--accent)] text-[var(--accent-text)]' : 'bg-[var(--surface)] text-[var(--text-muted)]'}`}
+                          >
+                            {status === 'COMPLETED'
+                              ? 'Completa'
+                              : status === 'PARTIAL'
+                                ? 'Parcial'
+                                : 'Omitida'}
+                          </button>
+                        )
+                      )}
+                    </div>
+                    <input
+                      aria-label={`Nota para ${meal.name}`}
+                      value={
+                        (mealNote[meal.id] ?? statusFor(meal.id))
+                          ? (adherence[`${today}:${meal.id}`]?.notes ?? '')
+                          : ''
+                      }
+                      onChange={(event) =>
+                        setMealNote((current) => ({ ...current, [meal.id]: event.target.value }))
+                      }
+                      onBlur={() =>
+                        statusFor(meal.id) && setMealStatus(meal.id, statusFor(meal.id)!)
+                      }
+                      placeholder="Nota opcional"
+                      className="mb-2 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs text-[var(--text-primary)]"
+                    />
                     <div className="mb-2 flex items-center justify-between">
                       <h3
                         className={`font-bold ${
@@ -245,19 +424,50 @@ export default function Nutrition() {
                         <Clock size={12} />
                         {meal.time}
                       </span>
+                      {(meal.options ?? []).length > 0 && <button type="button" onClick={() => setExpandedOptions((current) => ({ ...current, [meal.id]: !current[meal.id] }))} className="ml-auto mr-3 text-xs font-bold text-[var(--accent)]">Ver más opciones</button>}
                     </div>
 
-                    <ul className="mb-3 space-y-1">
-                      {meal.foods.map((food, idx) => (
-                        <li
-                          key={idx}
-                          className="flex items-center gap-2 text-sm text-[var(--text-secondary)]"
-                        >
-                          <span className="h-1 w-1 rounded-full bg-[var(--accent)]/40" />
-                          {food.name} — {food.quantity}
-                        </li>
-                      ))}
-                    </ul>
+                     <ul className="mb-3 space-y-1">
+                        {(meal.options ?? []).find((option) => option.id === selectedOptionFor(meal.id))?.items.map((item) => <li key={item.id} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]"><span className="h-1 w-1 rounded-full bg-[var(--accent)]/40" />{recipeNameForItem(item) ? <button type="button" onClick={(event) => { event.stopPropagation(); openRecipe(recipeIdForItem(item), recipeNameForItem(item)) }} className="flex w-full cursor-pointer items-center justify-between rounded-md bg-[var(--accent)]/10 px-2 py-1 text-left text-xs font-bold text-[var(--accent)]"><span>{recipeNameForItem(item)}{item.quantity ? ` · ${item.quantity}` : ''}</span><span className="ml-2 whitespace-nowrap">Ver receta</span></button> : item.foodName || 'Elemento'}{!recipeNameForItem(item) && item.quantity ? ` · ${item.quantity}` : ''}</li>) || meal.foods.map((food, idx) => <li key={idx} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]"><span className="h-1 w-1 rounded-full bg-[var(--accent)]/40" />{food.name} — {food.quantity}</li>)}
+                     </ul>
+                     {(meal.options ?? []).length > 0 && (
+                       <div className="mb-3 px-1">
+                        {expandedOptions[meal.id] && (
+                          <div className="mt-2 space-y-2">
+                            {(meal.options ?? []).map((option) => (
+                              <button
+                                type="button"
+                                key={option.id}
+                                onClick={() =>
+                                  setMealStatus(
+                                    meal.id,
+                                    statusFor(meal.id) || 'COMPLETED',
+                                    option.id
+                                  )
+                                }
+                                aria-pressed={selectedOptionFor(meal.id) === option.id}
+                                className={`w-full rounded-lg border p-3 text-left text-xs ${selectedOptionFor(meal.id) === option.id ? 'border-[var(--accent)] bg-[var(--accent)]/10' : 'border-[var(--border)] bg-[var(--surface)]'}`}
+                              >
+                                <div className="flex items-center gap-2 border-b border-[var(--border)] pb-2">
+                                  <span className={`flex h-4 w-4 items-center justify-center rounded-full border ${selectedOptionFor(meal.id) === option.id ? 'border-[var(--accent)] bg-[var(--accent)]' : 'border-[var(--text-muted)]'}`}>
+                                    {selectedOptionFor(meal.id) === option.id && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                                  </span>
+                                  <strong>{option.name}</strong>
+                                </div>
+                                <div className="mt-2 space-y-1">
+                                  {option.items.map((item) => (
+                                    <div key={item.id} className="text-[var(--text-muted)]">
+                                      {recipeNameForItem(item) ? <button type="button" onClick={(event) => { event.stopPropagation(); openRecipe(recipeIdForItem(item), recipeNameForItem(item)) }} className="flex w-full cursor-pointer items-center justify-between rounded-md bg-[var(--accent)]/10 px-2 py-1 font-bold text-[var(--accent)]"><span>{recipeNameForItem(item)}{item.quantity ? ` · ${item.quantity}` : ''}</span><span className="ml-2 whitespace-nowrap">Ver receta</span></button> : item.foodName || 'Elemento'}
+                                      {item.quantity ? ` · ${item.quantity}` : ''}
+                                    </div>
+                                  ))}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="flex items-center gap-3 text-[10px] font-bold tracking-wider text-[var(--text-muted)] uppercase">
                       <span style={{ color: macroConfig[0].color }}>{meal.calories} kcal</span>
@@ -335,6 +545,40 @@ export default function Nutrition() {
           )}
         </div>
       </div>
+      <Modal
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        title="Historial del plan"
+        size="lg"
+      >
+        <div className="space-y-3">
+          {historicalPlan && (
+            <div className="rounded-xl border border-[var(--accent)]/30 bg-[var(--accent)]/5 p-4">
+              <div className="flex items-start justify-between gap-3"><div><h3 className="font-bold text-[var(--text-primary)]">{historicalPlan.name}</h3><p className="mt-1 text-sm text-[var(--text-secondary)]">{historicalPlan.targetCalories} kcal · P {historicalPlan.targetProtein}g · C {historicalPlan.targetCarbs}g · G {historicalPlan.targetFats}g</p></div><span className="text-xs font-bold text-[var(--accent)]">Versión {selectedHistoryVersion}</span></div>
+              <div className="mt-3 space-y-2">{historicalPlan.meals.map((meal, index) => <div key={meal.id || index} className="rounded-lg bg-[var(--surface)] p-3"><div className="flex items-center justify-between text-sm font-bold text-[var(--text-primary)]"><span>{meal.name}</span><span className="text-xs font-normal text-[var(--text-muted)]">{meal.time}</span></div><div className="mt-1 text-xs text-[var(--text-secondary)]">{meal.foods.map((food, foodIndex) => <span key={food.id || foodIndex}>{food.name}{food.quantity ? ` · ${food.quantity}` : ''}{foodIndex < meal.foods.length - 1 ? ' | ' : ''}</span>)}</div>{meal.options?.map((option) => <div key={option.id || option.name} className="mt-2 rounded-lg border border-[var(--accent)]/20 p-2 text-xs"><p className="font-bold text-[var(--accent)]">Opción: {option.name}</p><p className="text-[var(--text-secondary)]">{option.items.map((item) => item.foodName || item.recipeName || 'Elemento').join(' · ')}</p></div>)}</div>)}</div>
+            </div>
+          )}
+          {historyError && <p className="rounded-lg border border-[var(--warning)]/30 bg-[var(--warning)]/10 p-3 text-xs text-[var(--warning)]">{historyError}</p>}
+          {versions.map((version) => (
+            <button
+              key={version.id}
+              type="button"
+              onClick={() => viewVersion(version)}
+              className={`flex w-full items-center justify-between rounded-xl border p-3 text-left text-sm ${selectedHistoryVersion === version.versionNumber ? 'border-[var(--accent)] bg-[var(--accent)]/10' : 'border-[var(--border)] bg-[var(--surface)]'}`}
+            >
+              <span className="font-bold text-[var(--text-primary)]">
+                Versión {version.versionNumber}
+              </span>
+              <span className="text-xs text-[var(--text-muted)]">
+                {new Date(version.createdAt).toLocaleString()}
+              </span>
+            </button>
+          ))}
+        </div>
+      </Modal>
+      <Modal isOpen={Boolean(selectedRecipe)} onClose={() => setSelectedRecipe(null)} title={selectedRecipe?.name || 'Receta'} size="md">
+        {selectedRecipe && <div className="space-y-4 text-sm text-[var(--text-secondary)]"><div className="grid grid-cols-2 gap-2 text-xs"><span>Porciones: <strong>{selectedRecipe.servings}</strong></span><span>Preparación: <strong>{selectedRecipe.preparationMinutes || '-'} min</strong></span><span>Calorías: <strong>{Math.round(selectedRecipe.caloriesPerServing)} kcal/porción</strong></span><span>Dificultad: <strong>{selectedRecipe.difficulty || '-'}</strong></span></div><div><h4 className="mb-2 font-bold text-[var(--text-primary)]">Ingredientes</h4><ul className="space-y-1">{(selectedRecipe.ingredients || []).map((item) => <li key={item.id || item.foodId}>• {item.foodName || 'Ingrediente'} · {item.grams} g</li>)}</ul></div>{selectedRecipe.instructions && <div><h4 className="mb-2 font-bold text-[var(--text-primary)]">Instrucciones</h4><p className="whitespace-pre-line">{selectedRecipe.instructions}</p></div>}{selectedRecipe.equivalencesPerServing && Object.keys(selectedRecipe.equivalencesPerServing).length > 0 && <div><h4 className="mb-2 font-bold text-[var(--text-primary)]">Equivalencias por porción</h4><p>{Object.entries(selectedRecipe.equivalencesPerServing).map(([group, value]) => `${group}: ${Number(value).toFixed(2)}`).join(' · ')}</p></div>}</div>}
+      </Modal>
     </div>
   )
 }

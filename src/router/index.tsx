@@ -31,6 +31,9 @@ import {
   Sales,
   DeliverySettings,
   NutritionPlans,
+  NutritionFoodCatalog,
+  NutritionRecipes,
+  NutritionEquivalences,
   CheckIns,
   Announcements,
   Reports,
@@ -156,6 +159,18 @@ export const router = createBrowserRouter([
       {
         path: 'nutricion',
         element: <RoleGuard page="nutrition">{withSuspense(NutritionPlans)}</RoleGuard>,
+      },
+      {
+        path: 'nutricion/alimentos',
+        element: <RoleGuard page="nutrition">{withSuspense(NutritionFoodCatalog)}</RoleGuard>,
+      },
+      {
+        path: 'nutricion/recetas',
+        element: <RoleGuard page="nutrition">{withSuspense(NutritionRecipes)}</RoleGuard>,
+      },
+      {
+        path: 'nutricion/equivalencias',
+        element: <RoleGuard page="nutrition">{withSuspense(NutritionEquivalences)}</RoleGuard>,
       },
       {
         path: 'check-ins',
