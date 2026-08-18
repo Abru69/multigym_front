@@ -159,7 +159,7 @@ export async function fetchApi<T>(
     }
   }
 
-  const response = await fetch(url, { ...fetchOptions, headers })
+  const response = await fetch(url, { ...fetchOptions, headers, credentials: 'include' })
 
   if (response.status === 401) {
     if (suppressRedirect) {
