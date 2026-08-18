@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { Eye, EyeOff, Loader2, Building2 } from 'lucide-react'
-import { getTenantFromUrl, getPlatformUrl, getTenantHomeUrl } from '@/lib/tenant'
+import { getTenantFromSubdomain, getTenantFromUrl, getPlatformUrl, getTenantHomeUrl, getTenantUrl } from '@/lib/tenant'
 import { resolveBranding } from '@/lib/tenantConfig'
 import { getDefaultRoute } from '@/router/routes'
 import { Button } from '@/components/ui/Button'
@@ -33,6 +33,12 @@ export default function Login() {
     if (isAuthenticated) {
       const user = useAuthStore.getState().user
       if (!user) return
+      const authenticatedTenant = useAuthStore.getState().tenantId || autoTenant
+      if (authenticatedTenant && !getTenantFromSubdomain()) {
+        const tenantPath = getSafeReturnPath() || getDefaultRoute(user.role)
+        window.location.assign(`${getTenantUrl(authenticatedTenant)}${tenantPath}`)
+        return
+      }
       if (user.role === 'client') {
         // Clients see the tenant landing page first, not the routines portal.
         window.location.href = getTenantHomeUrl(useAuthStore.getState().tenantId || autoTenant)
