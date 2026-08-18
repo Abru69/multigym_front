@@ -19,7 +19,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const formRef = useRef<HTMLFormElement>(null)
-  const { login, isLoading, isAuthenticated } = useAuthStore()
+  const { login, restoreSession, isLoading, isAuthenticated } = useAuthStore()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -28,6 +28,10 @@ export default function Login() {
     if (!returnTo || !returnTo.startsWith('/') || returnTo.startsWith('//')) return null
     return returnTo
   }
+
+  useEffect(() => {
+    if (!isAuthenticated && autoTenant) void restoreSession(autoTenant)
+  }, [autoTenant, isAuthenticated, restoreSession])
 
   useEffect(() => {
     if (isAuthenticated) {

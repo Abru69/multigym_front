@@ -29,6 +29,7 @@ interface AuthStore {
   hasHydrated: boolean
   isLoading: boolean
   login: (email: string, password: string, tenantId: string) => Promise<boolean>
+  restoreSession: (tenantId: string) => Promise<boolean>
   logout: () => Promise<void>
   register: (name: string, email: string, password: string) => Promise<boolean>
   setUserAvatar: (avatar: string) => void
@@ -96,6 +97,19 @@ export const useAuthStore = create<AuthStore>()(
 
         set({ isLoading: false })
         return false
+      },
+
+      restoreSession: async (tenantId: string) => {
+        try {
+          const response = await fetchApi<ResponseDTO<{ email: string; role: string; tenantId: string }>>('/api/auth/session', {
+            headers: { 'X-Tenant-ID': tenantId },
+            skipAuthRedirect: true,
+          })
+          const role = normalizeRole(response.dto?.role)
+          if (!response.dto || !role) return false
+          set({ user: { id: response.dto.email, name: response.dto.email.split('@')[0], email: response.dto.email, role, joinDate: new Date().toISOString(), isActive: true }, tenantId, isAuthenticated: true })
+          return true
+        } catch { return false }
       },
 
       logout: async () => {
