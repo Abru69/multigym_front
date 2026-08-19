@@ -680,6 +680,7 @@ export interface OrderRequest {
   paymentMethodType?: 'credit_card' | 'debit_card'
   issuerId?: string
   installments?: number
+  payerFirstName?: string
   payerLastName?: string
   deviceSessionId?: string
   payerEmail?: string

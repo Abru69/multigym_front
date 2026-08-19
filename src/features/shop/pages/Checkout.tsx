@@ -333,6 +333,7 @@ export default function Checkout() {
         paymentMethodType,
         issuerId,
         installments: 1,
+        payerFirstName: cardholderName.trim().split(/\s+/)[0],
         payerLastName: payerLastName.trim(),
         deviceSessionId: getMercadoPagoDeviceSessionId(),
         payerEmail: cardholderEmail.trim(),
