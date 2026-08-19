@@ -36,6 +36,10 @@ export default function MercadoPagoSettings() {
   const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null)
   const [sandboxPublicKey, setSandboxPublicKey] = useState('')
   const [sandboxAccessToken, setSandboxAccessToken] = useState('')
+  const [manualPublicKey, setManualPublicKey] = useState('')
+  const [manualAccessToken, setManualAccessToken] = useState('')
+  const [manualMpUserId, setManualMpUserId] = useState('')
+  const [isSavingManual, setIsSavingManual] = useState(false)
   const [statementDescriptor, setStatementDescriptor] = useState('')
   const [isSavingDescriptor, setIsSavingDescriptor] = useState(false)
 
@@ -153,6 +157,37 @@ export default function MercadoPagoSettings() {
       addToast('Credenciales TEST guardadas', 'success')
     } catch (err) {
       addToast(err instanceof Error ? err.message : 'Error al guardar credenciales TEST', 'error')
+    }
+  }
+
+  const saveManualCredentials = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!manualPublicKey.startsWith('APP_USR-') || !manualAccessToken.startsWith('APP_USR-')) {
+      addToast('Usa la Public Key y el Access Token APP_USR de la misma app Orders', 'error')
+      return
+    }
+    if (!/^\d+$/.test(manualMpUserId.trim())) {
+      addToast('Ingresa el ID numérico de la cuenta seller', 'error')
+      return
+    }
+    setIsSavingManual(true)
+    try {
+      const response = await saveMercadoPagoConfig({
+        enabled: true,
+        publicKey: manualPublicKey.trim(),
+        accessToken: manualAccessToken.trim(),
+        mpUserId: manualMpUserId.trim(),
+        siteId: 'MLM',
+        currency: 'MXN',
+        processingMode: 'automatic',
+      })
+      setConfig(response.dto || null)
+      setManualAccessToken('')
+      addToast('Credenciales APP_USR guardadas', 'success')
+    } catch (err) {
+      addToast(err instanceof Error ? err.message : 'Error al guardar credenciales APP_USR', 'error')
+    } finally {
+      setIsSavingManual(false)
     }
   }
 
@@ -328,6 +363,20 @@ export default function MercadoPagoSettings() {
           </form>
         </section>
       )}
+
+      <section className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6">
+        <h2 className="text-lg font-black text-[var(--text-primary)]">Configuración manual Orders API</h2>
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
+          Úsala cuando OAuth conecte otra cuenta. La Public Key, el Access Token y el seller ID deben pertenecer a la misma aplicación y cuenta.
+        </p>
+        <form onSubmit={saveManualCredentials} className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_180px_auto]">
+          <input value={manualPublicKey} onChange={(event) => setManualPublicKey(event.target.value)} placeholder="APP_USR-... Public Key" autoComplete="off" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
+          <input value={manualAccessToken} onChange={(event) => setManualAccessToken(event.target.value)} placeholder="APP_USR-... Access Token" type="password" autoComplete="new-password" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
+          <input value={manualMpUserId} onChange={(event) => setManualMpUserId(event.target.value)} placeholder="Seller ID" inputMode="numeric" autoComplete="off" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
+          <Button type="submit" disabled={isSavingManual} className="gap-2"><Save size={16} /> {isSavingManual ? 'Guardando...' : 'Guardar'}</Button>
+        </form>
+        <p className="mt-2 text-xs text-[var(--text-muted)]">El Access Token no se muestra después de guardarlo.</p>
+      </section>
     </div>
   )
 }
