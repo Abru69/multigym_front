@@ -301,6 +301,7 @@ export default function Checkout() {
       const tokenResponse = await mp.createCardToken({
         cardNumber: cardDigits,
         cardholderName: cardholderName.trim(),
+        cardholderEmail: cardholderEmail.trim(),
         cardExpirationMonth: expirationMonth,
         cardExpirationYear: expirationYear,
         securityCode: cardCvc.trim(),
