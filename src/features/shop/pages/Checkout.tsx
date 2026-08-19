@@ -311,7 +311,12 @@ export default function Checkout() {
         tokenResponse?.payment_method_id ||
         tokenResponse?.paymentMethodId ||
         getPaymentMethodId(cardDigits)
-      const issuerId = tokenResponse?.issuer_id || tokenResponse?.issuerId || null
+      let issuerId = tokenResponse?.issuer_id || tokenResponse?.issuerId || null
+      if (!issuerId && paymentMethodId && typeof mp.getIssuers === 'function') {
+        const issuers = await mp.getIssuers({ paymentMethodId })
+        issuerId = issuers?.[0]?.id || issuers?.[0]?.issuer_id || null
+      }
+      if (!issuerId) throw new Error('No se pudo identificar el emisor de la tarjeta')
       const paymentMethodType = tokenResponse?.payment_type_id === 'debit_card' || tokenResponse?.paymentTypeId === 'debit_card' ? 'debit_card' : 'credit_card'
       if (!cardToken) {
         console.error('MercadoPago token response:', tokenResponse)
