@@ -104,6 +104,7 @@ export interface MercadoPagoTenantConfigDTO {
   enabled: boolean
   connectionStatus: string
   mpUserId?: string | null
+  applicationId?: string | null
   publicKey?: string | null
   accessTokenConfigured: boolean
   refreshTokenConfigured: boolean
@@ -125,6 +126,7 @@ export interface MercadoPagoTenantConfigRequest {
   refreshToken?: string | null
   webhookSecret?: string | null
   mpUserId?: string | null
+  applicationId?: string | null
   notificationUrl?: string | null
   siteId?: string | null
   currency?: string | null

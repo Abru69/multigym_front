@@ -39,6 +39,7 @@ export default function MercadoPagoSettings() {
   const [manualPublicKey, setManualPublicKey] = useState('')
   const [manualAccessToken, setManualAccessToken] = useState('')
   const [manualMpUserId, setManualMpUserId] = useState('')
+  const [manualApplicationId, setManualApplicationId] = useState('')
   const [isSavingManual, setIsSavingManual] = useState(false)
   const [statementDescriptor, setStatementDescriptor] = useState('')
   const [isSavingDescriptor, setIsSavingDescriptor] = useState(false)
@@ -170,6 +171,10 @@ export default function MercadoPagoSettings() {
       addToast('Ingresa el ID numérico de la cuenta seller', 'error')
       return
     }
+    if (!/^\d+$/.test(manualApplicationId.trim())) {
+      addToast('Ingresa el application ID numérico de la app', 'error')
+      return
+    }
     setIsSavingManual(true)
     try {
       const response = await saveMercadoPagoConfig({
@@ -177,6 +182,7 @@ export default function MercadoPagoSettings() {
         publicKey: manualPublicKey.trim(),
         accessToken: manualAccessToken.trim(),
         mpUserId: manualMpUserId.trim(),
+        applicationId: manualApplicationId.trim(),
         siteId: 'MLM',
         currency: 'MXN',
         processingMode: 'automatic',
@@ -369,10 +375,11 @@ export default function MercadoPagoSettings() {
         <p className="mt-2 text-sm text-[var(--text-secondary)]">
           Úsala cuando OAuth conecte otra cuenta. La Public Key, el Access Token y el seller ID deben pertenecer a la misma aplicación y cuenta.
         </p>
-        <form onSubmit={saveManualCredentials} className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_180px_auto]">
+        <form onSubmit={saveManualCredentials} className="mt-4 grid gap-3 lg:grid-cols-[1fr_1fr_180px_180px_auto]">
           <input value={manualPublicKey} onChange={(event) => setManualPublicKey(event.target.value)} placeholder="APP_USR-... Public Key" autoComplete="off" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
           <input value={manualAccessToken} onChange={(event) => setManualAccessToken(event.target.value)} placeholder="APP_USR-... Access Token" type="password" autoComplete="new-password" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
           <input value={manualMpUserId} onChange={(event) => setManualMpUserId(event.target.value)} placeholder="Seller ID" inputMode="numeric" autoComplete="off" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
+          <input value={manualApplicationId} onChange={(event) => setManualApplicationId(event.target.value)} placeholder="Application ID" inputMode="numeric" autoComplete="off" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
           <Button type="submit" disabled={isSavingManual} className="gap-2"><Save size={16} /> {isSavingManual ? 'Guardando...' : 'Guardar'}</Button>
         </form>
         <p className="mt-2 text-xs text-[var(--text-muted)]">El Access Token no se muestra después de guardarlo.</p>
