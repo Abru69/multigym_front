@@ -314,7 +314,10 @@ export default function Checkout() {
       let issuerId = tokenResponse?.issuer_id || tokenResponse?.issuerId || null
       if (!issuerId && paymentMethodId && typeof mp.getIssuers === 'function') {
         try {
-          const issuers = await mp.getIssuers({ paymentMethodId })
+          const issuers = await mp.getIssuers({
+            paymentMethodId,
+            bin: cardDigits.slice(0, 6),
+          })
           issuerId = issuers?.[0]?.id || issuers?.[0]?.issuer_id || null
         } catch (error) {
           console.warn('MercadoPago issuer lookup failed; continuing with card token:', error)
