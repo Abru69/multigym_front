@@ -275,9 +275,8 @@ export default function Billing() {
 
               {liveCredentialsOnStaging && (
                 <div className="mt-5 rounded-2xl border border-[var(--danger)]/40 bg-[var(--danger)]/10 p-4 text-sm text-[var(--text-secondary)]">
-                  Staging está usando un access token productivo de Mercado Pago. Para probar pagos
-                  aquí, configura un access token sandbox que empiece con TEST en Mercado Pago SaaS
-                  de platform.
+                  Staging está usando credenciales de Mercado Pago que no pudieron identificarse como
+                  sandbox. Verifica que el access token y la public key pertenezcan al mismo entorno.
                 </div>
               )}
 

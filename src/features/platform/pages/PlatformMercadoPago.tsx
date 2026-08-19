@@ -184,14 +184,14 @@ export default function PlatformMercadoPago() {
         </div>
       )}
 
-      {isStagingHost && isLiveAccessToken && (
+       {isStagingHost && isLiveAccessToken && !config?.publicKey?.startsWith('APP_USR-') && (
         <div className="flex gap-3 rounded-2xl border border-[var(--danger)] bg-[var(--surface)] p-4">
           <AlertCircle size={20} className="mt-0.5 text-[var(--danger)]" />
           <div>
             <p className="font-bold text-[var(--text-primary)]">Access token live en staging</p>
             <p className="text-sm text-[var(--text-muted)]">
-              Para pruebas en staging usa un access token sandbox de Mercado Pago que empiece con TEST.
-              Mercado Pago rechazó el pago porque el backend está usando credenciales live.
+               Verifica que el access token y la public key pertenezcan al mismo entorno de Mercado Pago.
+               Las credenciales Orders API sandbox también pueden usar el prefijo APP_USR.
             </p>
           </div>
         </div>
