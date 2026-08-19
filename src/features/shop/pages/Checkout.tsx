@@ -689,7 +689,12 @@ export default function Checkout() {
                         Tarjeta de Crédito / Débito
                       </p>
                       <p className="text-xs text-[var(--text-muted)]">
-                        Pago procesado por MercadoPago
+                        Pago seguro procesado por
+                        <img
+                          src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/6.6.9/mercadopago/logo__large@2x.png"
+                          alt="Mercado Pago"
+                          className="ml-1 inline-block h-4 w-auto align-middle"
+                        />
                       </p>
                     </div>
                   </div>
