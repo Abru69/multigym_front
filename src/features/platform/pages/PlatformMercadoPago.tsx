@@ -7,6 +7,7 @@ import { useToastStore } from '@/components/ui/Toast'
 type FormState = {
   enabled: boolean
   publicKey: string
+  applicationId: string
   accessToken: string
   webhookSecret: string
   notificationUrl: string
@@ -21,6 +22,7 @@ type FormState = {
 const emptyForm: FormState = {
   enabled: false,
   publicKey: '',
+  applicationId: '',
   accessToken: '',
   webhookSecret: '',
   notificationUrl: '',
@@ -54,6 +56,7 @@ export default function PlatformMercadoPago() {
       setForm({
         enabled: next?.enabled ?? false,
         publicKey: next?.publicKey || '',
+        applicationId: next?.applicationId || '',
         accessToken: '',
         webhookSecret: '',
         notificationUrl: next?.notificationUrl || '',
@@ -82,6 +85,7 @@ export default function PlatformMercadoPago() {
       const payload: PlatformMercadoPagoConfigRequest = {
         enabled: form.enabled,
         publicKey: form.publicKey,
+        applicationId: form.applicationId.trim() || null,
         notificationUrl: form.notificationUrl,
         siteId: form.siteId,
         currency: form.currency,
@@ -100,6 +104,7 @@ export default function PlatformMercadoPago() {
         ...prev,
         enabled: next?.enabled ?? prev.enabled,
         publicKey: next?.publicKey || '',
+        applicationId: next?.applicationId || '',
         accessToken: '',
         webhookSecret: '',
         notificationUrl: next?.notificationUrl || '',
@@ -218,6 +223,12 @@ export default function PlatformMercadoPago() {
             Habilitar cobros SaaS con Mercado Pago
           </label>
           <TextField label="Public key" value={form.publicKey} onChange={(v) => updateField('publicKey', v)} />
+          <TextField
+            label="Application ID"
+            value={form.applicationId}
+            onChange={(v) => updateField('applicationId', v)}
+            placeholder="ID numérico de la aplicación Mercado Pago"
+          />
           <TextField
             label="Access token"
             value={form.accessToken}

@@ -165,6 +165,7 @@ export interface PlatformMercadoPagoConfigDTO {
   publicKeyMode: 'TEST' | 'LIVE' | 'MISSING' | 'UNKNOWN' | string
   accessTokenMode: 'TEST' | 'LIVE' | 'MISSING' | 'UNKNOWN' | string
   publicKey?: string | null
+  applicationId?: string | null
   siteId: string
   currency: string
   processingMode: string
@@ -178,6 +179,7 @@ export interface PlatformMercadoPagoConfigRequest {
   publicKey?: string | null
   accessToken?: string | null
   webhookSecret?: string | null
+  applicationId?: string | null
   notificationUrl?: string | null
   siteId?: string | null
   currency?: string | null
