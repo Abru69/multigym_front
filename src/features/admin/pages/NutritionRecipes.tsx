@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Plus, Search } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
 import { createRecipe, getFoodCatalog, getRecipes, getResponseItems, updateRecipe } from '@/lib/api'
 import type { FoodCatalogDTO, RecipeDTO, RecipeRequest } from '@/types'
 import { AdminHeader } from '../components/AdminHeader'
@@ -8,6 +7,7 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { FormField } from '../components/FormField'
 import { useToastStore } from '@/components/ui/Toast'
+import { NutritionNav } from '../components/NutritionNav'
 
 const EMPTY: RecipeRequest = {
   name: '',
@@ -16,13 +16,6 @@ const EMPTY: RecipeRequest = {
   active: true,
   ingredients: [],
 }
-const tabs = [
-  ['Alimentos', '/admin/nutricion/alimentos'],
-  ['Recetas', '/admin/nutricion/recetas'],
-  ['Equivalencias', '/admin/nutricion/equivalencias'],
-  ['Planes', '/admin/nutricion'],
-] as const
-
 export default function NutritionRecipes() {
   const [recipes, setRecipes] = useState<RecipeDTO[]>([])
   const [foods, setFoods] = useState<FoodCatalogDTO[]>([])
@@ -69,29 +62,7 @@ export default function NutritionRecipes() {
     <div className="min-h-screen bg-[var(--background)]">
       <AdminHeader title="Recetas" subtitle="Recetas nutricionales" />
       <main className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
-        <nav className="flex gap-1 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--card)] p-1">
-          {tabs.map(([label, to]) =>
-            false ? (
-              <span
-                key={label}
-                className="rounded-lg px-4 py-2 text-sm font-bold whitespace-nowrap text-[var(--text-muted)]"
-              >
-                {label} · próximamente
-              </span>
-            ) : (
-              <NavLink
-                key={label}
-                end={to === '/admin/nutricion'}
-                to={to}
-                className={({ isActive }) =>
-                  `rounded-lg px-4 py-2 text-sm font-bold whitespace-nowrap ${isActive ? 'bg-[var(--accent)] text-[var(--accent-text)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'}`
-                }
-              >
-                {label}
-              </NavLink>
-            )
-          )}
-        </nav>
+        <NutritionNav />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search size={16} className="absolute top-3 left-3 text-[var(--text-muted)]" />
@@ -125,7 +96,15 @@ export default function NutritionRecipes() {
                 {recipe.servings} porciones · {Math.round(recipe.caloriesPerServing)} kcal por
                 porción
               </p>
-              {recipe.equivalencesPerServing && Object.keys(recipe.equivalencesPerServing).length > 0 && <p className="mt-2 text-xs text-[var(--text-secondary)]">Equivalencias: {Object.entries(recipe.equivalencesPerServing).map(([group, value]) => `${group} ${Number(value).toFixed(2)}`).join(' · ')}</p>}
+              {recipe.equivalencesPerServing &&
+                Object.keys(recipe.equivalencesPerServing).length > 0 && (
+                  <p className="mt-2 text-xs text-[var(--text-secondary)]">
+                    Equivalencias:{' '}
+                    {Object.entries(recipe.equivalencesPerServing)
+                      .map(([group, value]) => `${group} ${Number(value).toFixed(2)}`)
+                      .join(' · ')}
+                  </p>
+                )}
               <button
                 type="button"
                 onClick={() => {
@@ -178,11 +157,69 @@ export default function NutritionRecipes() {
               onChange={(e) => setForm({ ...form, servings: Number(e.target.value) })}
             />
           </FormField>
-          <FormField label="Descripción"><Input value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} /></FormField>
-          <div className="grid grid-cols-2 gap-3"><FormField label="Preparación (min)"><Input type="number" value={form.preparationMinutes || ''} onChange={(e) => setForm({ ...form, preparationMinutes: Number(e.target.value) })} /></FormField><FormField label="Comensales"><Input type="number" value={form.diners || ''} onChange={(e) => setForm({ ...form, diners: Number(e.target.value) })} /></FormField></div>
-          <div className="grid grid-cols-2 gap-3"><FormField label="Dificultad"><Input value={form.difficulty || ''} onChange={(e) => setForm({ ...form, difficulty: e.target.value })} placeholder="Fácil, media..." /></FormField><FormField label="Categoría"><Input value={form.category || ''} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Desayunos" /></FormField></div>
-          <FormField label="Etiquetas"><Input value={form.tags || ''} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="alto en proteína, sin gluten" /></FormField>
-          <FormField label="Instrucciones"><textarea value={form.instructions || ''} onChange={(e) => setForm({ ...form, instructions: e.target.value })} rows={4} className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-primary)]" /></FormField>
+          <details className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3">
+            <summary className="cursor-pointer list-none text-sm font-bold text-[var(--text-secondary)]">
+              Detalles de la receta{' '}
+              <span className="font-normal text-[var(--text-muted)]">(opcional)</span>
+            </summary>
+            <div className="mt-3 space-y-3">
+              <FormField label="Descripción">
+                <Input
+                  value={form.description || ''}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                />
+              </FormField>
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="Preparación (min)">
+                  <Input
+                    type="number"
+                    value={form.preparationMinutes || ''}
+                    onChange={(e) =>
+                      setForm({ ...form, preparationMinutes: Number(e.target.value) })
+                    }
+                  />
+                </FormField>
+                <FormField label="Comensales">
+                  <Input
+                    type="number"
+                    value={form.diners || ''}
+                    onChange={(e) => setForm({ ...form, diners: Number(e.target.value) })}
+                  />
+                </FormField>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="Dificultad">
+                  <Input
+                    value={form.difficulty || ''}
+                    onChange={(e) => setForm({ ...form, difficulty: e.target.value })}
+                    placeholder="Fácil, media..."
+                  />
+                </FormField>
+                <FormField label="Categoría">
+                  <Input
+                    value={form.category || ''}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    placeholder="Desayunos"
+                  />
+                </FormField>
+              </div>
+              <FormField label="Etiquetas">
+                <Input
+                  value={form.tags || ''}
+                  onChange={(e) => setForm({ ...form, tags: e.target.value })}
+                  placeholder="alto en proteína, sin gluten"
+                />
+              </FormField>
+              <FormField label="Instrucciones">
+                <textarea
+                  value={form.instructions || ''}
+                  onChange={(e) => setForm({ ...form, instructions: e.target.value })}
+                  rows={4}
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-primary)]"
+                />
+              </FormField>
+            </div>
+          </details>
           <FormField label="Ingrediente" required>
             <select
               className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-primary)]"

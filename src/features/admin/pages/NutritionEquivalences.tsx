@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Plus, Search } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
 import { createFoodEquivalentGroup, getFoodEquivalentGroups, getResponseItems } from '@/lib/api'
 import type { FoodEquivalentGroupDTO, FoodEquivalentGroupRequest } from '@/types'
 import { AdminHeader } from '../components/AdminHeader'
@@ -8,13 +7,8 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { FormField } from '../components/FormField'
 import { useToastStore } from '@/components/ui/Toast'
+import { NutritionNav } from '../components/NutritionNav'
 
-const tabs = [
-  ['Alimentos', '/admin/nutricion/alimentos'],
-  ['Recetas', '/admin/nutricion/recetas'],
-  ['Equivalencias', '/admin/nutricion/equivalencias'],
-  ['Planes', '/admin/nutricion'],
-] as const
 export default function NutritionEquivalences() {
   const [groups, setGroups] = useState<FoodEquivalentGroupDTO[]>([])
   const [search, setSearch] = useState('')
@@ -45,20 +39,7 @@ export default function NutritionEquivalences() {
     <div className="min-h-screen bg-[var(--background)]">
       <AdminHeader title="Equivalencias" subtitle="Grupos de equivalencia nutricional" />
       <main className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
-        <nav className="flex gap-1 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--card)] p-1">
-          {tabs.map(([label, to]) => (
-            <NavLink
-              key={label}
-              end={to === '/admin/nutricion'}
-              to={to}
-              className={({ isActive }) =>
-                `rounded-lg px-4 py-2 text-sm font-bold whitespace-nowrap ${isActive ? 'bg-[var(--accent)] text-[var(--accent-text)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface)]'}`
-              }
-            >
-              {label}
-            </NavLink>
-          ))}
-        </nav>
+        <NutritionNav />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <Search size={16} className="absolute top-3 left-3 text-[var(--text-muted)]" />
