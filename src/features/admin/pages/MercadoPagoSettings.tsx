@@ -36,10 +36,11 @@ export default function MercadoPagoSettings() {
   const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null)
   const [sandboxPublicKey, setSandboxPublicKey] = useState('')
   const [sandboxAccessToken, setSandboxAccessToken] = useState('')
+  const [applicationId, setApplicationId] = useState('')
+  const [isSavingApplicationId, setIsSavingApplicationId] = useState(false)
   const [manualPublicKey, setManualPublicKey] = useState('')
   const [manualAccessToken, setManualAccessToken] = useState('')
   const [manualMpUserId, setManualMpUserId] = useState('')
-  const [manualApplicationId, setManualApplicationId] = useState('')
   const [isSavingManual, setIsSavingManual] = useState(false)
   const [statementDescriptor, setStatementDescriptor] = useState('')
   const [isSavingDescriptor, setIsSavingDescriptor] = useState(false)
@@ -49,6 +50,7 @@ export default function MercadoPagoSettings() {
     try {
       const response = await getMercadoPagoConfig()
       setConfig(response.dto || null)
+      setApplicationId(response.dto?.applicationId || '')
       const settings = await getTenantSettings()
       setStatementDescriptor(settings.lista?.find((setting) => setting.key === 'payment_statement_descriptor')?.value || '')
     } catch (err) {
@@ -138,6 +140,30 @@ export default function MercadoPagoSettings() {
     }
   }
 
+  const saveApplicationId = async (event: FormEvent) => {
+    event.preventDefault()
+    const value = applicationId.trim()
+    if (!/^\d+$/.test(value)) {
+      addToast('Ingresa un application ID numérico', 'error')
+      return
+    }
+
+    setIsSavingApplicationId(true)
+    try {
+      const response = await saveMercadoPagoConfig({
+        enabled: config?.enabled ?? true,
+        applicationId: value,
+      })
+      setConfig(response.dto || null)
+      setApplicationId(response.dto?.applicationId || value)
+      addToast('Application ID guardado', 'success')
+    } catch (err) {
+      addToast(err instanceof Error ? err.message : 'Error al guardar application ID', 'error')
+    } finally {
+      setIsSavingApplicationId(false)
+    }
+  }
+
   const saveSandboxCredentials = async (event: FormEvent) => {
     event.preventDefault()
     if (!sandboxPublicKey.startsWith('TEST-') || !sandboxAccessToken.startsWith('TEST-')) {
@@ -171,10 +197,6 @@ export default function MercadoPagoSettings() {
       addToast('Ingresa el ID numérico de la cuenta seller', 'error')
       return
     }
-    if (!/^\d+$/.test(manualApplicationId.trim())) {
-      addToast('Ingresa el application ID numérico de la app', 'error')
-      return
-    }
     setIsSavingManual(true)
     try {
       const response = await saveMercadoPagoConfig({
@@ -182,7 +204,6 @@ export default function MercadoPagoSettings() {
         publicKey: manualPublicKey.trim(),
         accessToken: manualAccessToken.trim(),
         mpUserId: manualMpUserId.trim(),
-        applicationId: manualApplicationId.trim(),
         siteId: 'MLM',
         currency: 'MXN',
         processingMode: 'automatic',
@@ -263,6 +284,7 @@ export default function MercadoPagoSettings() {
             value={config?.publicKey ? maskValue(config.publicKey) : 'No configurada'}
           />
           <InfoCard label="Cuenta MP" value={config?.mpUserId || 'No conectada'} />
+          <InfoCard label="Application ID" value={config?.applicationId || 'No configurado'} />
           <InfoCard
             label="Access token"
             value={config?.accessTokenConfigured ? 'Guardado' : 'No guardado'}
@@ -272,6 +294,20 @@ export default function MercadoPagoSettings() {
             value={config?.webhookSecretConfigured ? 'Guardado' : 'No guardado'}
           />
         </div>
+
+        <form onSubmit={saveApplicationId} className="mt-6 flex max-w-xl gap-3">
+          <input
+            value={applicationId}
+            onChange={(event) => setApplicationId(event.target.value)}
+            placeholder="Application ID de la app Orders"
+            inputMode="numeric"
+            autoComplete="off"
+            className="min-w-0 flex-1 rounded-xl border border-[var(--border)] bg-[var(--input-bg)] px-3 py-3 text-sm text-[var(--text-primary)]"
+          />
+          <Button type="submit" disabled={isSavingApplicationId}>
+            {isSavingApplicationId ? 'Guardando...' : 'Guardar Application ID'}
+          </Button>
+        </form>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Button onClick={connect} disabled={isConnecting} className="gap-2">
@@ -379,7 +415,6 @@ export default function MercadoPagoSettings() {
           <input value={manualPublicKey} onChange={(event) => setManualPublicKey(event.target.value)} placeholder="APP_USR-... Public Key" autoComplete="off" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
           <input value={manualAccessToken} onChange={(event) => setManualAccessToken(event.target.value)} placeholder="APP_USR-... Access Token" type="password" autoComplete="new-password" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
           <input value={manualMpUserId} onChange={(event) => setManualMpUserId(event.target.value)} placeholder="Seller ID" inputMode="numeric" autoComplete="off" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
-          <input value={manualApplicationId} onChange={(event) => setManualApplicationId(event.target.value)} placeholder="Application ID" inputMode="numeric" autoComplete="off" className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm text-[var(--text-primary)]" />
           <Button type="submit" disabled={isSavingManual} className="gap-2"><Save size={16} /> {isSavingManual ? 'Guardando...' : 'Guardar'}</Button>
         </form>
         <p className="mt-2 text-xs text-[var(--text-muted)]">El Access Token no se muestra después de guardarlo.</p>
