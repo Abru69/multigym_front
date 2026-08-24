@@ -306,6 +306,19 @@ export default function Checkout() {
         cardExpirationYear: expirationYear,
         securityCode: cardCvc.trim(),
       })
+      console.info('[MercadoPago] card tokenization diagnostics', {
+        publicKeyMode: mpPublicKey.startsWith('TEST-') ? 'TEST' : mpPublicKey.startsWith('APP_USR') ? 'APP_USR' : 'UNKNOWN',
+        publicKeySuffix: mpPublicKey.slice(-8),
+        cardBrandFromInput: getPaymentMethodId(cardDigits),
+        cardTokenSuffix: typeof tokenResponse?.id === 'string'
+          ? tokenResponse.id.slice(-4)
+          : typeof tokenResponse?.token === 'string' ? tokenResponse.token.slice(-4) : '<missing>',
+        tokenPaymentMethodId: tokenResponse?.payment_method_id || tokenResponse?.paymentMethodId || '<missing>',
+        tokenIssuerId: tokenResponse?.issuer_id || tokenResponse?.issuerId || '<missing>',
+        tokenPaymentType: tokenResponse?.payment_type_id || tokenResponse?.paymentTypeId || '<missing>',
+        cardholderName: cardholderName.trim(),
+        payerEmail: cardholderEmail.trim(),
+      })
       const cardToken = tokenResponse?.id || tokenResponse?.token
       const paymentMethodId =
         tokenResponse?.payment_method_id ||
@@ -352,6 +365,18 @@ export default function Checkout() {
           ? { branchId: selectedBranch }
           : { shippingAddress, shippingCity, shippingPostalCode }),
       }
+      console.info('[MercadoPago] order diagnostics', {
+        publicKeyMode: mpPublicKey.startsWith('TEST-') ? 'TEST' : mpPublicKey.startsWith('APP_USR') ? 'APP_USR' : 'UNKNOWN',
+        publicKeySuffix: mpPublicKey.slice(-8),
+        payerEmail: orderBody.payerEmail,
+        payerFirstName: orderBody.payerFirstName,
+        payerLastNamePresent: Boolean(orderBody.payerLastName),
+        paymentMethodId: orderBody.paymentMethodId,
+        paymentMethodType: orderBody.paymentMethodType,
+        issuerId: orderBody.issuerId || '<missing>',
+        cardTokenSuffix: cardToken.slice(-4),
+        deviceSessionIdPresent: Boolean(orderBody.deviceSessionId),
+      })
 
       const orderRes = await fetchApi<ResponseDTO<OrderDTO>>('/api/orders', {
         method: 'POST',
