@@ -10,6 +10,7 @@ import {
 } from '@/lib/api'
 import type { OrderDTO, OrderItemDTO, PaginatedResult, ResponseDTO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
+import { ConfirmDialog } from '@/features/admin/components/ConfirmDialog'
 import {
   Store,
   Clock,
@@ -149,6 +150,7 @@ export default function Pickups() {
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [cancelTarget, setCancelTarget] = useState<string | null>(null)
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'READY' | 'COMPLETED' | 'CANCELLED'>(
     'PENDING'
   )
@@ -211,6 +213,7 @@ export default function Pickups() {
       console.error('Failed to cancel order:', err)
     } finally {
       setActionId(null)
+      setCancelTarget(null)
     }
   }
 
@@ -435,7 +438,7 @@ export default function Pickups() {
                     )}
                     {(isPendingStatus(order.status) || orderStatus === 'READY') && (
                       <button
-                        onClick={() => handleCancel(order.id!)}
+                        onClick={() => setCancelTarget(order.id!)}
                         disabled={actionId === order.id}
                         className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
                       >
@@ -590,6 +593,15 @@ export default function Pickups() {
           })
         )}
       </div>
+      <ConfirmDialog
+        isOpen={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={() => cancelTarget && handleCancel(cancelTarget)}
+        title="Cancelar orden"
+        message="¿Cancelar esta orden? Se restaurará el inventario y, si fue pagada, se solicitará el reembolso. Esta acción no se puede deshacer."
+        confirmLabel="Cancelar orden"
+        isLoading={!!cancelTarget && actionId === cancelTarget}
+      />
     </div>
   )
 }
