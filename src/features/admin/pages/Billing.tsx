@@ -51,7 +51,8 @@ export default function Billing() {
       ])
       const nextInfo = infoRes.dto || null
       setRenewalInfo(nextInfo)
-      if (window.location.hostname.includes('staging') && nextInfo?.mercadoPagoPublicKey?.startsWith('TEST-')) {
+      if (window.location.hostname.includes('staging') && nextInfo?.mercadoPagoPublicKey
+        && nextInfo.mercadoPagoAccessTokenMode !== 'LIVE') {
         setCardholderName((value) => value || 'APRO')
         setPayerLastName((value) => value || 'APRO')
         setCardNumber((value) => value || '4075 5957 1648 3764')
@@ -194,7 +195,10 @@ export default function Billing() {
   const canPay = Boolean(renewalInfo?.canRenew && mpReady && !isPaying)
   const isMercadoPagoTestMode = renewalInfo?.mercadoPagoPublicKey?.startsWith('TEST-')
   const isStagingHost = window.location.hostname.includes('staging')
-  const isStagingTestMode = Boolean(isStagingHost && isMercadoPagoTestMode)
+  const isStagingTestMode = Boolean(
+    isStagingHost && renewalInfo?.mercadoPagoPublicKey
+      && renewalInfo.mercadoPagoAccessTokenMode !== 'LIVE'
+  )
   const liveCredentialsOnStaging = Boolean(
     isStagingHost && renewalInfo?.mercadoPagoAccessTokenMode === 'LIVE'
       && !renewalInfo?.mercadoPagoPublicKey?.startsWith('APP_USR-')

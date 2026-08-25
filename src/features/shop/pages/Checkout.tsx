@@ -166,7 +166,8 @@ export default function Checkout() {
   const finalTotal = subtotal + shipping
   const isMercadoPagoTestMode = mpPublicKey?.startsWith('TEST-') ?? false
   const isStagingHost = window.location.hostname.includes('staging')
-  const isStagingTestMode = isStagingHost && isMercadoPagoTestMode
+  // Staging tenant Orders credentials can use APP_USR test public keys.
+  const isStagingTestMode = isStagingHost && Boolean(mpPublicKey)
 
   useEffect(() => {
     if (items.length === 0 && step !== 'success') {
