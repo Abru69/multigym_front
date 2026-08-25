@@ -781,6 +781,18 @@ export const getOrders = (params?: {
 }
 export const getMyOrders = () => fetchApi<ResponseDTO<PaginatedResult<OrderDTO>>>('/api/orders/my')
 export const getOrderById = (id: string) => fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${id}`)
+
+export const getChargeback = (id: string) =>
+  fetchApi<ResponseDTO<import('@/types').ChargebackDTO>>(`/api/chargebacks/${encodeURIComponent(id)}`)
+
+export const uploadChargebackDocumentation = (id: string, files: File[]) => {
+  const formData = new FormData()
+  files.forEach((file) => formData.append('files[]', file))
+  return fetchApi<ResponseDTO<import('@/types').ChargebackDTO>>(
+    `/api/chargebacks/${encodeURIComponent(id)}/documentation`,
+    { method: 'POST', body: formData }
+  )
+}
 export const updateOrder = (id: string, data: OrderRequest) =>
   fetchApi<ResponseDTO<OrderDTO>>(`/api/orders/${id}`, {
     method: 'PUT',

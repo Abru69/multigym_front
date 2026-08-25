@@ -41,6 +41,7 @@ export type {
   WorkoutRequest,
   OrderDTO,
   OrderItemDTO,
+  ChargebackDTO,
   OrderRequest,
   OrderStatusRequest,
   ManualRefundRequest,

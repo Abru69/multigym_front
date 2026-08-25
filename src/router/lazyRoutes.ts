@@ -35,6 +35,7 @@ export const Reports = lazy(() => import('@/features/admin/pages/Reports'))
 export const Branches = lazy(() => import('@/features/admin/pages/Branches'))
 export const BrandingSettings = lazy(() => import('@/features/admin/pages/BrandingSettings'))
 export const Billing = lazy(() => import('@/features/admin/pages/Billing'))
+export const Chargebacks = lazy(() => import('@/features/admin/pages/Chargebacks'))
 export const MercadoPagoSettings = lazy(() => import('@/features/admin/pages/MercadoPagoSettings'))
 
 // Shop Pages

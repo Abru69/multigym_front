@@ -16,6 +16,7 @@ export type AdminPage =
   | 'branding'
   | 'mercadopago'
   | 'billing'
+  | 'chargebacks'
 
 export type UserRole = 'admin' | 'client' | 'nutricionist' | 'staff' | 'receptionist' | 'seller'
 
@@ -38,6 +39,7 @@ const ROLE_PAGES: Record<UserRole, AdminPage[]> = {
     'branding',
     'mercadopago',
     'billing',
+    'chargebacks',
   ],
   nutricionist: ['nutrition'],
   staff: ['dashboard', 'users', 'inventory', 'exercises', 'checkins'],
@@ -94,6 +96,7 @@ const PAGE_ROUTE_MAP: Record<string, AdminPage> = {
   '/admin/branding': 'branding',
   '/admin/mercadopago': 'mercadopago',
   '/admin/billing': 'billing',
+  '/admin/contracargos': 'chargebacks',
 }
 
 export function getPageFromPath(pathname: string): AdminPage | null {

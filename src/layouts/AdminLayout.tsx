@@ -23,6 +23,7 @@ import {
   Building2,
   Palette,
   ReceiptText,
+  AlertTriangle,
 } from 'lucide-react'
 import { canAccessPage, type AdminPage } from '@/lib/permissions'
 import { InstallBanner } from '@/components/ui/InstallBanner'
@@ -45,6 +46,7 @@ const ALL_NAV_ITEMS: (NavItem & { page: AdminPage })[] = [
   { to: '/admin/branding', icon: Palette, label: 'Colores de Marca', page: 'branding' },
   { to: '/admin/mercadopago', icon: CreditCard, label: 'Mercado Pago', page: 'mercadopago' },
   { to: '/admin/billing', icon: ReceiptText, label: 'Facturación SaaS', page: 'billing' },
+  { to: '/admin/contracargos', icon: AlertTriangle, label: 'Contracargos', page: 'chargebacks' },
 ]
 
 const ADMIN_NAV_SECTIONS: { label: string; pages: AdminPage[] }[] = [
@@ -56,7 +58,7 @@ const ADMIN_NAV_SECTIONS: { label: string; pages: AdminPage[] }[] = [
   { label: 'Entrenamiento y Bienestar', pages: ['exercises', 'nutrition'] },
   { label: 'Tienda y Operación', pages: ['inventory', 'sales', 'delivery'] },
   { label: 'Organización', pages: ['branches', 'announcements'] },
-  { label: 'Reportes y Configuración', pages: ['reports', 'branding', 'mercadopago', 'billing'] },
+  { label: 'Reportes y Configuración', pages: ['reports', 'branding', 'mercadopago', 'billing', 'chargebacks'] },
 ]
 
 export function AdminLayout() {

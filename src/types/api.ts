@@ -437,6 +437,17 @@ export interface OrderDTO {
   cancelledAt?: string
 }
 
+export interface ChargebackDTO {
+  id: string
+  payments: string[]
+  orderId?: string
+  status?: string
+  documentationStatus?: string
+  documentationRequired?: boolean
+  coverageApplied?: boolean
+  rawResponse?: string
+}
+
 export interface OrderItemDTO {
   id: string
   productId: string
