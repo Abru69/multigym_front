@@ -58,7 +58,7 @@ export default function Billing() {
         setCardNumber((value) => value || '4075 5957 1648 3764')
         setCardExpiry((value) => value || '11/30')
         setCardCvc((value) => value || '123')
-        setPayerEmail((value) => value || 'test_user_8927780470111032995@testuser.com')
+        setPayerEmail('test_user_8927780470111032995@testuser.com')
       }
       setPayments(paymentsRes.lista || paymentsRes.dto || [])
     } catch (err) {

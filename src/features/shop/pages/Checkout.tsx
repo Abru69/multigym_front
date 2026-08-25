@@ -241,15 +241,15 @@ export default function Checkout() {
     if (!cardNumber) setCardNumber('4075 5957 1648 3764')
     if (!cardExpiry) setCardExpiry('11/30')
     if (!cardCvc) setCardCvc('123')
-    if (!cardholderEmail) setCardholderEmail('test_user_8927780470111032995@testuser.com')
+    setCardholderEmail('test_user_8927780470111032995@testuser.com')
   }, [cardCvc, cardExpiry, cardNumber, cardholderEmail, cardholderName, isStagingTestMode, payerLastName])
 
   useEffect(() => {
-    if (user?.email && !cardholderEmail) {
+    if (!isStagingTestMode && user?.email && !cardholderEmail) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCardholderEmail(user.email)
     }
-  }, [user?.email, cardholderEmail])
+  }, [isStagingTestMode, user?.email, cardholderEmail])
 
   const formatCardNumber = (value: string) =>
     value
