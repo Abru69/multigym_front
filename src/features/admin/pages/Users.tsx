@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { createSubscription, fetchApi, getPlans, getResponseItems } from '@/lib/api'
+import { changeSubscriptionPlan, createSubscription, fetchApi, getPlans, getResponseItems, getSubscriptionsByMember } from '@/lib/api'
 import { UserPlus, Dumbbell, Trash2, MoreVertical, Edit2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/components/ui/Modal'
@@ -46,6 +46,7 @@ export default function UsersPage() {
     planId: '',
   })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [currentSubscription, setCurrentSubscription] = useState<{ id: string; planId: string; status: string } | null>(null)
 
   const loadUsers = useCallback(async () => {
     try {
@@ -112,6 +113,15 @@ export default function UsersPage() {
             status: form.status,
           }),
         })
+        if (form.role === 'CLIENT' && currentSubscription && form.planId !== currentSubscription.planId) {
+          if (currentSubscription.status === 'PENDING_PAYMENT') {
+            await changeSubscriptionPlan(currentSubscription.id, { planId: form.planId })
+          } else {
+            const plan = activePlans.find((item) => item.id === form.planId)
+            if (!plan || !selectedUser.memberDTO?.id) throw new Error('Plan no encontrado')
+            await createSubscription({ memberId: selectedUser.memberDTO.id, planId: plan.id, ...getSubscriptionDateRange(new Date(), plan.durationMonths) })
+          }
+        }
         addToast('Usuario actualizado correctamente', 'success')
       } else {
         const response = await fetchApi<ResponseDTO<UserDTO>>(`/api/tenant/users`, {
@@ -177,10 +187,11 @@ export default function UsersPage() {
     setForm({ name: '', phone: '', email: '', role: 'CLIENT', status: false, planId: '' })
     setFormErrors({})
     setSelectedUser(null)
+    setCurrentSubscription(null)
     setShowModal(true)
   }
 
-  const openEdit = (user: UserDTO) => {
+  const openEdit = async (user: UserDTO) => {
     setForm({
       name: user.memberDTO?.name || '',
       phone: user.memberDTO?.phone || '',
@@ -192,6 +203,15 @@ export default function UsersPage() {
     setFormErrors({})
     setSelectedUser(user)
     setShowModal(true)
+    setCurrentSubscription(null)
+    if (user.role === 'CLIENT' && (user.memberDTO?.id || user.id)) {
+      const response = await getSubscriptionsByMember(user.memberDTO?.id || user.id).catch(() => null)
+      const subscription = (response?.lista ?? response?.dto ?? [])[0]
+      if (subscription) {
+        setCurrentSubscription({ id: subscription.id, planId: subscription.plan?.id || '', status: subscription.status })
+        setForm((value) => ({ ...value, planId: subscription.plan?.id || '' }))
+      }
+    }
   }
 
   const toggleStatus = async (user: UserDTO) => {
@@ -556,7 +576,7 @@ export default function UsersPage() {
               </select>
             </FormField>
 
-            {!selectedUser && form.role === 'CLIENT' && (
+            {form.role === 'CLIENT' && (
               <FormField label="Plan de membresía" htmlFor="user-plan" error={formErrors.planId} required>
                 <Select
                   id="user-plan"
@@ -567,9 +587,12 @@ export default function UsersPage() {
                     label: `${plan.name} — ${plan.durationMonths} meses`,
                   }))}
                   placeholder="Selecciona un plan"
-                  error={!!formErrors.planId}
-                />
-              </FormField>
+                   error={!!formErrors.planId}
+                 />
+                 {selectedUser && currentSubscription?.status === 'ACTIVE' && (
+                   <p className="mt-1 text-xs text-[var(--text-muted)]">El plan actual seguirá activo hasta que el nuevo plan sea pagado.</p>
+                 )}
+               </FormField>
             )}
 
             {selectedUser && (
