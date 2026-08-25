@@ -69,7 +69,8 @@ export default function MemberProfile() {
              getPlans(),
            ])
           const subs = subRes.lista ?? subRes.dto ?? []
-          const active = subs.find((s) => s.status === 'ACTIVE') ?? subs[0] ?? null
+           const payable = subs.find((s) => s.status === 'PENDING_PAYMENT')
+           const active = payable ?? subs.find((s) => s.status === 'ACTIVE') ?? subs[0] ?? null
            setSubscription(active)
            setOrders(ordersRes.dto?.data ?? [])
            setPlans((plansRes.dto?.data ?? []).filter((plan) => plan.isActive))
