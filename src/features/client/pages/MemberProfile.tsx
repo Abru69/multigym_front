@@ -67,8 +67,14 @@ export default function MemberProfile() {
           ])
           const subs = subRes.lista ?? subRes.dto ?? []
           const active = subs.find((s) => s.status === 'ACTIVE') ?? subs[0] ?? null
-          setSubscription(active)
-          setOrders(ordersRes.dto?.data ?? [])
+           setSubscription(active)
+           setOrders(ordersRes.dto?.data ?? [])
+           if (window.location.hostname.includes('staging')) {
+             setCardName('APRO APRO')
+             setCardNumber('4075 5957 1648 3764')
+             setCardExpiry('11/30')
+             setCardCvc('123')
+           }
         }
       } catch {
         // silent
@@ -442,9 +448,9 @@ export default function MemberProfile() {
                  {subscription.status}
                </span>
                </div>
-               {subscription.status === 'ACTIVE' && (
+               {(subscription.status === 'ACTIVE' || subscription.status === 'PENDING_PAYMENT') && (
                  <div className="mt-4 rounded-xl bg-[var(--surface)] p-3">
-                   <p className="text-xs font-bold text-[var(--text-primary)]">Pagar membresía</p>
+                   <p className="text-xs font-bold text-[var(--text-primary)]">{subscription.status === 'PENDING_PAYMENT' ? 'Completa el pago de tu membresía' : 'Pagar renovación'}</p>
                    <p className="mt-1 text-xs text-[var(--text-muted)]">{subscription.plan?.price} por {subscription.plan?.durationMonths} meses</p>
                    <div className="mt-3 flex flex-wrap gap-2">
                      <button type="button" onClick={() => setPaymentMode(paymentMode === 'CARD' ? null : 'CARD')} className="rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)]">Mercado Pago</button>
