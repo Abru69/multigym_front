@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTheme } from '@/hooks/useTheme'
 import { createPayment, getMercadoPagoConfig, getMyOrders, getPlans, getSubscriptionsByMember, requestSubscriptionPlanChange, updateTenantUser, uploadMyAvatar } from '@/lib/api'
-import { getMercadoPago, loadMercadoPagoDeviceFingerprint } from '@/lib/mercadopago'
+import { getMercadoPago, getMercadoPagoDeviceSessionId, loadMercadoPagoDeviceFingerprint } from '@/lib/mercadopago'
 import { useToastStore } from '@/components/ui/Toast'
 import { getTenantUrl } from '@/lib/tenant'
 import type { OrderDTO, PlanListItemDTO, SubscriptionListItemDTO } from '@/types/api'
@@ -151,13 +151,30 @@ export default function MemberProfile() {
       }
       const digits = cardNumber.replace(/\D/g, '')
       const [month, year] = cardExpiry.split('/')
-      if (digits.length < 13 || !month || !year || !cardCvc || !cardName) throw new Error('Completa los datos de la tarjeta')
+      const normalizedMonth = Number(month)
+      const normalizedYear = Number(year?.length === 2 ? `20${year}` : year)
+      const now = new Date()
+      const payerEmail = user?.email?.trim() || ''
+      const nameParts = cardName.trim().split(/\s+/)
+      const payerFirstName = nameParts.shift() || ''
+      const payerLastName = nameParts.join(' ')
+      if (!/^\S+@\S+\.\S+$/.test(payerEmail)) throw new Error('Ingresa un correo válido para el pago')
+      if (digits.length < 13 || digits.length > 19 || !/^(0[1-9]|1[0-2])$/.test(month) || !/^\d{2,4}$/.test(year || '') || !cardCvc || !/^\d{3,4}$/.test(cardCvc) || !payerFirstName || !payerLastName) {
+        throw new Error('Completa nombre, apellido y datos válidos de la tarjeta')
+      }
+      if (normalizedYear < now.getFullYear() || (normalizedYear === now.getFullYear() && normalizedMonth < now.getMonth() + 1)) {
+        throw new Error('La tarjeta está vencida')
+      }
       const config = await getMercadoPagoConfig()
       if (!config.dto?.publicKey) throw new Error('Mercado Pago no está configurado para este gimnasio')
       const mp: any = getMercadoPago(config.dto.publicKey)
       const token = await mp.createCardToken({ cardNumber: digits, cardholderName: cardName, cardExpirationMonth: month, cardExpirationYear: year.length === 2 ? `20${year}` : year, securityCode: cardCvc })
       await loadMercadoPagoDeviceFingerprint()
-      await createPayment({ subscriptionId: subscription.id, amount: Number(subscription.plan?.price || 0), paymentMethod: 'CREDIT_CARD', cardToken: token?.id || token?.token, paymentMethodId: token?.payment_method_id || 'visa', issuerId: token?.issuer_id, installments: 1, payerEmail: user?.email })
+      const cardToken = token?.id || token?.token
+      const paymentMethodId = token?.payment_method_id
+      const deviceSessionId = getMercadoPagoDeviceSessionId()
+      if (!cardToken || !paymentMethodId || !deviceSessionId) throw new Error('No se pudo validar la información de seguridad del pago')
+      await createPayment({ subscriptionId: subscription.id, amount: Number(subscription.plan?.price || 0), paymentMethod: 'CREDIT_CARD', cardToken, paymentMethodId, issuerId: token?.issuer_id, installments: 1, payerEmail, payerFirstName, payerLastName, deviceSessionId })
       addToast('Pago de membresía procesado correctamente', 'success')
       setPaymentMode(null)
     } catch (error) {
@@ -470,7 +487,7 @@ export default function MemberProfile() {
                    <p className="text-xs font-bold text-[var(--text-primary)]">{subscription.status === 'PENDING_PAYMENT' ? 'Completa el pago de tu membresía' : 'Pagar renovación'}</p>
                    <p className="mt-1 text-xs text-[var(--text-muted)]">{subscription.plan?.price} por {subscription.plan?.durationMonths} meses</p>
                    <div className="mt-3 flex flex-wrap gap-2">
-                     <button type="button" onClick={() => setPaymentMode(paymentMode === 'CARD' ? null : 'CARD')} className="rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)]">Mercado Pago</button>
+                      <button type="button" onClick={() => setPaymentMode(paymentMode === 'CARD' ? null : 'CARD')} className="rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)]">Pago en línea</button>
                      <button type="button" onClick={() => setPaymentMode(paymentMode === 'BRANCH' ? null : 'BRANCH')} className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--text-primary)]">Pagar en sucursal</button>
                    </div>
                    {paymentMode === 'CARD' && (

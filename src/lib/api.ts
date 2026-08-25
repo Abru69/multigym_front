@@ -515,6 +515,9 @@ export const createPayment = (data: {
   issuerId?: string | null
   installments?: number
   payerEmail?: string
+  payerFirstName?: string
+  payerLastName?: string
+  deviceSessionId?: string
 }) =>
   fetchApi<ResponseDTO<PaymentListItemDTO>>('/api/payments', {
     method: 'POST',
