@@ -506,6 +506,11 @@ export const createPayment = (data: {
   amount: number
   paymentMethod: string
   reference?: string
+  cardToken?: string
+  paymentMethodId?: string
+  issuerId?: string | null
+  installments?: number
+  payerEmail?: string
 }) =>
   fetchApi<ResponseDTO<PaymentListItemDTO>>('/api/payments', {
     method: 'POST',

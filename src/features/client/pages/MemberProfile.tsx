@@ -2,7 +2,8 @@ import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTheme } from '@/hooks/useTheme'
-import { getMyOrders, getSubscriptionsByMember, updateTenantUser, uploadMyAvatar } from '@/lib/api'
+import { createPayment, getMercadoPagoConfig, getMyOrders, getSubscriptionsByMember, updateTenantUser, uploadMyAvatar } from '@/lib/api'
+import { getMercadoPago, loadMercadoPagoDeviceFingerprint } from '@/lib/mercadopago'
 import { useToastStore } from '@/components/ui/Toast'
 import { getTenantUrl } from '@/lib/tenant'
 import type { OrderDTO, SubscriptionListItemDTO } from '@/types/api'
@@ -49,6 +50,12 @@ export default function MemberProfile() {
   const [subscription, setSubscription] = useState<SubscriptionListItemDTO | null>(null)
   const [orders, setOrders] = useState<OrderDTO[]>([])
   const [loading, setLoading] = useState(true)
+  const [paying, setPaying] = useState(false)
+  const [paymentMode, setPaymentMode] = useState<'CARD' | 'BRANCH' | null>(null)
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardExpiry, setCardExpiry] = useState('')
+  const [cardCvc, setCardCvc] = useState('')
+  const [cardName, setCardName] = useState('')
 
   useEffect(() => {
     async function loadData() {
@@ -119,6 +126,34 @@ export default function MemberProfile() {
       'El cambio de contraseña requiere un endpoint de backend pendiente de integrar.',
       'warning'
     )
+  }
+
+  const submitMembershipPayment = async () => {
+    if (!subscription || paying) return
+    setPaying(true)
+    try {
+      if (paymentMode === 'BRANCH') {
+        await createPayment({ subscriptionId: subscription.id, amount: Number(subscription.plan?.price || 0), paymentMethod: 'CASH', reference: 'PENDING_BRANCH' })
+        addToast('Solicitud registrada. Realiza el pago en sucursal.', 'success')
+        setPaymentMode(null)
+        return
+      }
+      const digits = cardNumber.replace(/\D/g, '')
+      const [month, year] = cardExpiry.split('/')
+      if (digits.length < 13 || !month || !year || !cardCvc || !cardName) throw new Error('Completa los datos de la tarjeta')
+      const config = await getMercadoPagoConfig()
+      if (!config.dto?.publicKey) throw new Error('Mercado Pago no está configurado para este gimnasio')
+      const mp: any = getMercadoPago(config.dto.publicKey)
+      const token = await mp.createCardToken({ cardNumber: digits, cardholderName: cardName, cardExpirationMonth: month, cardExpirationYear: year.length === 2 ? `20${year}` : year, securityCode: cardCvc })
+      await loadMercadoPagoDeviceFingerprint()
+      await createPayment({ subscriptionId: subscription.id, amount: Number(subscription.plan?.price || 0), paymentMethod: 'CREDIT_CARD', cardToken: token?.id || token?.token, paymentMethodId: token?.payment_method_id || 'visa', issuerId: token?.issuer_id, installments: 1, payerEmail: user?.email })
+      addToast('Pago de membresía procesado correctamente', 'success')
+      setPaymentMode(null)
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : 'No se pudo procesar el pago', 'error')
+    } finally {
+      setPaying(false)
+    }
   }
 
   const totalSpent = orders.reduce((sum, o) => sum + Number(o.total || 0), 0)
@@ -390,8 +425,9 @@ export default function MemberProfile() {
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
             </div>
           ) : subscription ? (
-            <div className="flex items-center justify-between">
-              <div>
+             <div>
+               <div className="flex items-center justify-between">
+               <div>
                 <p className="text-lg font-black text-[var(--text-primary)]">
                   {subscription.plan?.name ?? 'Plan'}
                 </p>
@@ -402,10 +438,33 @@ export default function MemberProfile() {
                   Vence: {new Date(subscription.endDate).toLocaleDateString('es-MX')}
                 </p>
               </div>
-              <span className="rounded-full bg-[var(--accent)]/10 px-3 py-1 text-xs font-bold text-[var(--accent)]">
-                {subscription.status}
-              </span>
-            </div>
+               <span className="rounded-full bg-[var(--accent)]/10 px-3 py-1 text-xs font-bold text-[var(--accent)]">
+                 {subscription.status}
+               </span>
+               </div>
+               {subscription.status === 'ACTIVE' && (
+                 <div className="mt-4 rounded-xl bg-[var(--surface)] p-3">
+                   <p className="text-xs font-bold text-[var(--text-primary)]">Pagar membresía</p>
+                   <p className="mt-1 text-xs text-[var(--text-muted)]">{subscription.plan?.price} por {subscription.plan?.durationMonths} meses</p>
+                   <div className="mt-3 flex flex-wrap gap-2">
+                     <button type="button" onClick={() => setPaymentMode(paymentMode === 'CARD' ? null : 'CARD')} className="rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)]">Mercado Pago</button>
+                     <button type="button" onClick={() => setPaymentMode(paymentMode === 'BRANCH' ? null : 'BRANCH')} className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--text-primary)]">Pagar en sucursal</button>
+                   </div>
+                   {paymentMode === 'CARD' && (
+                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                       <input value={cardName} onChange={(event) => setCardName(event.target.value)} placeholder="Nombre del titular" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
+                       <input value={cardNumber} onChange={(event) => setCardNumber(event.target.value)} placeholder="Número de tarjeta" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
+                       <input value={cardExpiry} onChange={(event) => setCardExpiry(event.target.value)} placeholder="MM/YY" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
+                       <input value={cardCvc} onChange={(event) => setCardCvc(event.target.value)} placeholder="CVC" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
+                       <button type="button" onClick={() => void submitMembershipPayment()} disabled={paying} className="rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)] disabled:opacity-50 sm:col-span-2">{paying ? 'Procesando...' : 'Pagar ahora'}</button>
+                     </div>
+                   )}
+                   {paymentMode === 'BRANCH' && (
+                     <button type="button" onClick={() => void submitMembershipPayment()} disabled={paying} className="mt-3 w-full rounded-xl border border-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent)] disabled:opacity-50">{paying ? 'Registrando...' : 'Solicitar pago en sucursal'}</button>
+                   )}
+                 </div>
+               )}
+             </div>
           ) : (
             <div className="py-6 text-center">
               <p className="text-sm text-[var(--text-muted)]">No tienes un plan activo</p>
