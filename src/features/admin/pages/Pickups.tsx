@@ -149,6 +149,9 @@ export default function Pickups() {
   const [orders, setOrders] = useState<OrderDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [actionId, setActionId] = useState<string | null>(null)
+  const [manualRefundId, setManualRefundId] = useState<string | null>(null)
+  const [refundReference, setRefundReference] = useState('')
+  const [refundNote, setRefundNote] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [cancelTarget, setCancelTarget] = useState<string | null>(null)
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'READY' | 'COMPLETED' | 'CANCELLED'>(
@@ -232,11 +235,12 @@ export default function Pickups() {
   }
 
   const handleMarkRefunded = async (orderId: string) => {
-    const refundReference = window.prompt('Referencia de devolución manual (opcional)') || undefined
-    const note = window.prompt('Nota de resolución manual (opcional)') || undefined
     try {
       setActionId(orderId)
-      const res = await markOrderRefunded(orderId, { refundReference, note })
+      const res = await markOrderRefunded(orderId, {
+        refundReference: refundReference.trim() || undefined,
+        note: refundNote.trim() || undefined,
+      })
       setOrders((prev) =>
         prev.map((o) => (o.id === orderId ? mergeUpdatedOrder(o, res, 'CANCELLED') : o))
       )
@@ -244,7 +248,17 @@ export default function Pickups() {
       console.error('Failed to mark refund manually resolved:', err)
     } finally {
       setActionId(null)
+      setManualRefundId(null)
+      setRefundReference('')
+      setRefundNote('')
     }
+  }
+
+  const openManualRefund = (orderId: string) => {
+    setManualRefundId(orderId)
+    setExpandedId(orderId)
+    setRefundReference('')
+    setRefundNote('')
   }
 
   const filtered = orders.filter((o) => {
@@ -464,7 +478,7 @@ export default function Pickups() {
                           Reintentar
                         </button>
                         <button
-                          onClick={() => handleMarkRefunded(order.id!)}
+                          onClick={() => openManualRefund(order.id!)}
                           disabled={actionId === order.id}
                           className="flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50"
                         >
@@ -552,6 +566,18 @@ export default function Pickups() {
                             </span>
                           </div>
                         </div>
+                        {manualRefundId === order.id && orderPaymentStatus === 'REFUND_FAILED' && (
+                           <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                             <p className="text-xs font-bold text-emerald-800">Resolver reembolso manual</p>
+                             <p className="mt-1 text-[11px] text-emerald-700">Registra la referencia y una nota opcional.</p>
+                             <input value={refundReference} onChange={(event) => setRefundReference(event.target.value)} placeholder="Referencia de devolución" className="mt-2 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs outline-none focus:border-emerald-500" />
+                             <textarea value={refundNote} onChange={(event) => setRefundNote(event.target.value)} placeholder="Nota opcional" rows={2} className="mt-2 w-full resize-none rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs outline-none focus:border-emerald-500" />
+                             <div className="mt-2 flex justify-end gap-2">
+                               <button type="button" onClick={() => setManualRefundId(null)} className="rounded-lg px-3 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100">Cancelar</button>
+                               <button type="button" onClick={() => handleMarkRefunded(order.id!)} disabled={actionId === order.id} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50">{actionId === order.id ? 'Guardando...' : 'Confirmar reembolso'}</button>
+                             </div>
+                           </div>
+                         )}
                         {orderPaymentStatus === 'REFUND_FAILED' && (
                           <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5">
                             <p className="text-xs font-bold text-red-700">
