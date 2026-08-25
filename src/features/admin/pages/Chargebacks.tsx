@@ -3,7 +3,7 @@ import { AlertTriangle, FileUp, Search, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useToastStore } from '@/components/ui/Toast'
-import { getChargeback, uploadChargebackDocumentation } from '@/lib/api'
+import { createTestChargeback, getChargeback, uploadChargebackDocumentation } from '@/lib/api'
 import type { ChargebackDTO } from '@/types'
 
 export default function Chargebacks() {
@@ -12,6 +12,7 @@ export default function Chargebacks() {
   const [chargeback, setChargeback] = useState<ChargebackDTO | null>(null)
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
+  const [testOrderId, setTestOrderId] = useState('')
 
   const loadChargeback = async () => {
     if (!chargebackId.trim()) return
@@ -30,6 +31,22 @@ export default function Chargebacks() {
 
   const handleFiles = (event: ChangeEvent<HTMLInputElement>) => {
     setFiles(Array.from(event.target.files || []))
+  }
+
+  const createTest = async () => {
+    if (!testOrderId.trim()) return
+    setLoading(true)
+    try {
+      const response = await createTestChargeback(testOrderId.trim())
+      setChargeback(response.dto || null)
+      setChargebackId(response.dto?.id || '')
+      setFiles([])
+      addToast('Contracargo de prueba creado', 'success')
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : 'No se pudo crear el contracargo de prueba', 'error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const submitEvidence = async () => {
@@ -70,6 +87,19 @@ export default function Chargebacks() {
           <Button onClick={() => void loadChargeback()} disabled={loading || !chargebackId.trim()}>
             {loading ? 'Consultando...' : 'Consultar'}
           </Button>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-dashed border-[var(--warning)]/50 bg-[var(--warning-muted)] p-5">
+        <div className="flex items-center gap-2 text-sm font-bold text-[var(--text-primary)]">
+          <AlertTriangle size={16} className="text-[var(--warning)]" /> Crear prueba de staging
+        </div>
+        <p className="mt-1 text-xs text-[var(--text-secondary)]">
+          Solo funciona en dev/staging. No llama a Mercado Pago ni crea un reclamo real.
+        </p>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <Input value={testOrderId} onChange={(event) => setTestOrderId(event.target.value)} placeholder="ID interno de la orden" />
+          <Button onClick={() => void createTest()} disabled={loading || !testOrderId.trim()}>Crear contracargo de prueba</Button>
         </div>
       </section>
 

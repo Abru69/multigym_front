@@ -785,6 +785,12 @@ export const getOrderById = (id: string) => fetchApi<ResponseDTO<OrderDTO>>(`/ap
 export const getChargeback = (id: string) =>
   fetchApi<ResponseDTO<import('@/types').ChargebackDTO>>(`/api/chargebacks/${encodeURIComponent(id)}`)
 
+export const createTestChargeback = (orderId: string) =>
+  fetchApi<ResponseDTO<import('@/types').ChargebackDTO>>('/api/chargebacks/test', {
+    method: 'POST',
+    body: JSON.stringify({ orderId }),
+  })
+
 export const uploadChargebackDocumentation = (id: string, files: File[]) => {
   const formData = new FormData()
   files.forEach((file) => formData.append('files[]', file))
