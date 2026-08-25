@@ -2,11 +2,11 @@ import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTheme } from '@/hooks/useTheme'
-import { createPayment, getMercadoPagoConfig, getMyOrders, getSubscriptionsByMember, updateTenantUser, uploadMyAvatar } from '@/lib/api'
+import { createPayment, getMercadoPagoConfig, getMyOrders, getPlans, getSubscriptionsByMember, requestSubscriptionPlanChange, updateTenantUser, uploadMyAvatar } from '@/lib/api'
 import { getMercadoPago, loadMercadoPagoDeviceFingerprint } from '@/lib/mercadopago'
 import { useToastStore } from '@/components/ui/Toast'
 import { getTenantUrl } from '@/lib/tenant'
-import type { OrderDTO, SubscriptionListItemDTO } from '@/types/api'
+import type { OrderDTO, PlanListItemDTO, SubscriptionListItemDTO } from '@/types/api'
 import {
   User,
   Mail,
@@ -56,19 +56,23 @@ export default function MemberProfile() {
   const [cardExpiry, setCardExpiry] = useState('')
   const [cardCvc, setCardCvc] = useState('')
   const [cardName, setCardName] = useState('')
+  const [plans, setPlans] = useState<PlanListItemDTO[]>([])
+  const [requestedPlanId, setRequestedPlanId] = useState('')
 
   useEffect(() => {
     async function loadData() {
       try {
         if (user?.id) {
-          const [subRes, ordersRes] = await Promise.all([
-            getSubscriptionsByMember(user.memberId || user.id),
-            getMyOrders(),
-          ])
+           const [subRes, ordersRes, plansRes] = await Promise.all([
+             getSubscriptionsByMember(user.memberId || user.id),
+             getMyOrders(),
+             getPlans(),
+           ])
           const subs = subRes.lista ?? subRes.dto ?? []
           const active = subs.find((s) => s.status === 'ACTIVE') ?? subs[0] ?? null
            setSubscription(active)
            setOrders(ordersRes.dto?.data ?? [])
+           setPlans((plansRes.dto?.data ?? []).filter((plan) => plan.isActive))
            if (window.location.hostname.includes('staging')) {
              setCardName('APRO APRO')
              setCardNumber('4075 5957 1648 3764')
@@ -159,6 +163,18 @@ export default function MemberProfile() {
       addToast(error instanceof Error ? error.message : 'No se pudo procesar el pago', 'error')
     } finally {
       setPaying(false)
+    }
+  }
+
+  const requestPlanChange = async () => {
+    if (!subscription || !requestedPlanId) return
+    try {
+      const response = await requestSubscriptionPlanChange(subscription.id, requestedPlanId)
+      setSubscription(response.dto || subscription)
+      setRequestedPlanId('')
+      addToast('Solicitud creada. Debes pagar el nuevo plan.', 'success')
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : 'No se pudo solicitar el cambio', 'error')
     }
   }
 
@@ -465,9 +481,21 @@ export default function MemberProfile() {
                        <button type="button" onClick={() => void submitMembershipPayment()} disabled={paying} className="rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)] disabled:opacity-50 sm:col-span-2">{paying ? 'Procesando...' : 'Pagar ahora'}</button>
                      </div>
                    )}
-                   {paymentMode === 'BRANCH' && (
+                    {paymentMode === 'BRANCH' && (
                      <button type="button" onClick={() => void submitMembershipPayment()} disabled={paying} className="mt-3 w-full rounded-xl border border-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent)] disabled:opacity-50">{paying ? 'Registrando...' : 'Solicitar pago en sucursal'}</button>
-                   )}
+                    )}
+                    {subscription.status === 'ACTIVE' && plans.some((plan) => plan.id !== subscription.plan?.id) && (
+                      <div className="mt-4 border-t border-[var(--border)] pt-3">
+                        <p className="text-xs font-bold text-[var(--text-primary)]">Solicitar cambio de plan</p>
+                        <div className="mt-2 flex gap-2">
+                          <select value={requestedPlanId} onChange={(event) => setRequestedPlanId(event.target.value)} className="min-w-0 flex-1 rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 py-2 text-xs text-[var(--text-primary)]">
+                            <option value="">Selecciona un plan</option>
+                            {plans.filter((plan) => plan.id !== subscription.plan?.id).map((plan) => <option key={plan.id} value={plan.id}>{plan.name} - ${plan.price}</option>)}
+                          </select>
+                          <button type="button" onClick={() => void requestPlanChange()} disabled={!requestedPlanId} className="rounded-lg bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)] disabled:opacity-50">Solicitar</button>
+                        </div>
+                      </div>
+                    )}
                  </div>
                )}
              </div>

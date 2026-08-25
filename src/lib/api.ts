@@ -497,6 +497,10 @@ export const cancelSubscription = (id: string) =>
   })
 export const getSubscriptionsByMember = (memberId: string) =>
   fetchApi<ResponseDTO<SubscriptionListItemDTO[]>>(`/api/subscriptions/member/${memberId}`)
+export const requestSubscriptionPlanChange = (id: string, planId: string) =>
+  fetchApi<ResponseDTO<SubscriptionListItemDTO>>(`/api/subscriptions/${id}/plan-request`, {
+    method: 'POST', body: JSON.stringify({ planId }),
+  })
 
 // --- Payments ---
 export const getPayments = () =>
