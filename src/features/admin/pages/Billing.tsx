@@ -51,11 +51,13 @@ export default function Billing() {
       ])
       const nextInfo = infoRes.dto || null
       setRenewalInfo(nextInfo)
-      if (nextInfo?.mercadoPagoPublicKey?.startsWith('TEST-')) {
+      if (window.location.hostname.includes('staging') && nextInfo?.mercadoPagoPublicKey?.startsWith('TEST-')) {
         setCardholderName((value) => value || 'APRO')
+        setPayerLastName((value) => value || 'APRO')
         setCardNumber((value) => value || '4075 5957 1648 3764')
         setCardExpiry((value) => value || '11/30')
         setCardCvc((value) => value || '123')
+        setPayerEmail((value) => value || 'test_user_8927780470111032995@testuser.com')
       }
       setPayments(paymentsRes.lista || paymentsRes.dto || [])
     } catch (err) {
@@ -192,6 +194,7 @@ export default function Billing() {
   const canPay = Boolean(renewalInfo?.canRenew && mpReady && !isPaying)
   const isMercadoPagoTestMode = renewalInfo?.mercadoPagoPublicKey?.startsWith('TEST-')
   const isStagingHost = window.location.hostname.includes('staging')
+  const isStagingTestMode = Boolean(isStagingHost && isMercadoPagoTestMode)
   const liveCredentialsOnStaging = Boolean(
     isStagingHost && renewalInfo?.mercadoPagoAccessTokenMode === 'LIVE'
       && !renewalInfo?.mercadoPagoPublicKey?.startsWith('APP_USR-')
@@ -280,9 +283,9 @@ export default function Billing() {
                 </div>
               )}
 
-              {isMercadoPagoTestMode && mpReady && (
+              {isStagingTestMode && mpReady && (
                 <div className="mt-5 rounded-2xl border border-[var(--info)]/40 bg-[var(--info)]/10 p-4 text-sm text-[var(--text-secondary)]">
-                  Modo sandbox: usa APRO, Visa 4075 5957 1648 3764, CVV 123, vencimiento 11/30.
+                  STAGING sandbox: datos precargados para pruebas. Nombre APRO, apellido APRO, Visa 4075 5957 1648 3764, CVV 123, vencimiento 11/30, email test_user_8927780470111032995@testuser.com.
                 </div>
               )}
             </section>

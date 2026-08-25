@@ -165,6 +165,8 @@ export default function Checkout() {
   const shipping = deliveryMethod === 'SHIPPING' ? (subtotal > 1500 ? 0 : 150) : 0
   const finalTotal = subtotal + shipping
   const isMercadoPagoTestMode = mpPublicKey?.startsWith('TEST-') ?? false
+  const isStagingHost = window.location.hostname.includes('staging')
+  const isStagingTestMode = isStagingHost && isMercadoPagoTestMode
 
   useEffect(() => {
     if (items.length === 0 && step !== 'success') {
@@ -232,12 +234,14 @@ export default function Checkout() {
   }, [addToast, mpPublicKey])
 
   useEffect(() => {
-    if (!isMercadoPagoTestMode) return
+    if (!isStagingTestMode) return
     if (!cardholderName) setCardholderName('APRO')
+    if (!payerLastName) setPayerLastName('APRO')
     if (!cardNumber) setCardNumber('4075 5957 1648 3764')
     if (!cardExpiry) setCardExpiry('11/30')
     if (!cardCvc) setCardCvc('123')
-  }, [cardCvc, cardExpiry, cardNumber, cardholderName, isMercadoPagoTestMode])
+    if (!cardholderEmail) setCardholderEmail('test_user_8927780470111032995@testuser.com')
+  }, [cardCvc, cardExpiry, cardNumber, cardholderEmail, cardholderName, isStagingTestMode, payerLastName])
 
   useEffect(() => {
     if (user?.email && !cardholderEmail) {
@@ -737,14 +741,15 @@ export default function Checkout() {
                 </div>
 
                 <div className="p-6">
-                  {isMercadoPagoTestMode && (
+                  {isStagingTestMode && (
                     <div className="mb-4 rounded-xl border border-[var(--accent)]/30 bg-[var(--accent)]/10 p-4 text-xs text-[var(--text-secondary)]">
                       <p className="font-bold text-[var(--text-primary)]">
-                        Modo prueba Mercado Pago México
+                         STAGING: modo prueba Mercado Pago México
                       </p>
                       <p>
-                        Usa titular <span className="font-mono font-bold">APRO</span> para aprobar
-                        el pago.
+                         Datos precargados: nombre <span className="font-mono font-bold">APRO</span>, apellido{' '}
+                         <span className="font-mono font-bold">APRO</span> y email{' '}
+                         <span className="font-mono">test_user_8927780470111032995@testuser.com</span>.
                       </p>
                       <p>
                         Visa: <span className="font-mono">4075 5957 1648 3764</span>, CVV{' '}
