@@ -176,7 +176,7 @@ const [cardName, setCardName] = useState('')
       const cardToken = token?.id || token?.token
       const paymentMethodId = token?.payment_method_id
       const deviceSessionId = getMercadoPagoDeviceSessionId()
-      if (!cardToken || !paymentMethodId) throw new Error('Mercado Pago no pudo tokenizar la tarjeta')
+      if (!cardToken || !paymentMethodId || !deviceSessionId) throw new Error('No se pudo validar la información de seguridad del pago')
       await createPayment({ subscriptionId: subscription.id, amount: Number(subscription.plan?.price || 0), paymentMethod: 'CREDIT_CARD', cardToken, paymentMethodId, issuerId: token?.issuer_id, installments: 1, payerEmail, payerFirstName, payerLastName, deviceSessionId })
       addToast('Pago de membresía procesado correctamente', 'success')
       setPaymentMode(null)
