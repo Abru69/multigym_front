@@ -496,7 +496,7 @@ export const cancelSubscription = (id: string) =>
     method: 'PATCH',
   })
 export const getSubscriptionsByMember = (memberId: string) =>
-  fetchApi<ResponseDTO<SubscriptionListItemDTO[]>>(`/api/subscriptions/member/${memberId}`)
+  fetchApi<ResponseDTO<SubscriptionListItemDTO[]>>(`/api/subscriptions/member/${memberId}?_refresh=${Date.now()}`)
 export const requestSubscriptionPlanChange = (id: string, planId: string) =>
   fetchApi<ResponseDTO<SubscriptionListItemDTO>>(`/api/subscriptions/${id}/plan-request`, {
     method: 'POST', body: JSON.stringify({ planId }),
