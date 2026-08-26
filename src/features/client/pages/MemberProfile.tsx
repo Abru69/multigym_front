@@ -55,7 +55,7 @@ export default function MemberProfile() {
   const [cardNumber, setCardNumber] = useState('')
   const [cardExpiry, setCardExpiry] = useState('')
   const [cardCvc, setCardCvc] = useState('')
-  const [cardName, setCardName] = useState('')
+const [cardName, setCardName] = useState('')
   const [plans, setPlans] = useState<PlanListItemDTO[]>([])
   const [requestedPlanId, setRequestedPlanId] = useState('')
 
@@ -74,7 +74,8 @@ export default function MemberProfile() {
            setSubscription(active)
            setOrders(ordersRes.dto?.data ?? [])
            setPlans((plansRes.dto?.data ?? []).filter((plan) => plan.isActive))
-           if (window.location.hostname.includes('staging')) {
+            if (window.location.hostname.includes('staging')) {
+              // Mercado Pago test buyer required by the staging sandbox.
              setCardName('APRO APRO')
              setCardNumber('4075 5957 1648 3764')
              setCardExpiry('11/30')
@@ -154,7 +155,9 @@ export default function MemberProfile() {
       const normalizedMonth = Number(month)
       const normalizedYear = Number(year?.length === 2 ? `20${year}` : year)
       const now = new Date()
-      const payerEmail = user?.email?.trim() || ''
+      const payerEmail = window.location.hostname.includes('staging')
+        ? 'test_user_8927780470111032995@testuser.com'
+        : user?.email?.trim() || ''
       const nameParts = cardName.trim().split(/\s+/)
       const payerFirstName = nameParts.shift() || ''
       const payerLastName = nameParts.join(' ')
@@ -501,12 +504,12 @@ export default function MemberProfile() {
                         </div>
                         <label className="text-[10px] font-bold text-[var(--text-muted)] sm:col-span-2">
                           Correo del comprador
-                          <input value={user?.email ?? ''} readOnly aria-label="Correo del comprador" className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--text-primary)]" />
+                          <input value={window.location.hostname.includes('staging') ? 'test_user_8927780470111032995@testuser.com' : user?.email ?? ''} readOnly aria-label="Correo del comprador" className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--text-primary)]" />
                         </label>
-                        <input value={cardName} onChange={(event) => setCardName(event.target.value)} placeholder="Nombre del titular" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
-                       <input value={cardNumber} onChange={(event) => setCardNumber(event.target.value)} placeholder="Número de tarjeta" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
-                       <input value={cardExpiry} onChange={(event) => setCardExpiry(event.target.value)} placeholder="MM/YY" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
-                        <input value={cardCvc} onChange={(event) => setCardCvc(event.target.value)} placeholder="CVC" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
+                        <label className="text-[10px] font-bold text-[var(--text-muted)]">Nombre del titular<input value={cardName} onChange={(event) => setCardName(event.target.value)} placeholder="APRO APRO" className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" /></label>
+                        <label className="text-[10px] font-bold text-[var(--text-muted)]">Número de tarjeta<input value={cardNumber} onChange={(event) => setCardNumber(event.target.value)} placeholder="Número de tarjeta" className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" /></label>
+                        <label className="text-[10px] font-bold text-[var(--text-muted)]">Vencimiento<input value={cardExpiry} onChange={(event) => setCardExpiry(event.target.value)} placeholder="MM/YY" className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" /></label>
+                        <label className="text-[10px] font-bold text-[var(--text-muted)]">Código de seguridad (CVC)<input value={cardCvc} onChange={(event) => setCardCvc(event.target.value)} placeholder="CVC" className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" /></label>
                         <p className="text-[10px] text-[var(--text-muted)] sm:col-span-2">Tus datos se tokenizan de forma segura. El correo, nombre, apellido y protección antifraude se envían para cumplir los requisitos de calidad de Mercado Pago.</p>
                        <button type="button" onClick={() => void submitMembershipPayment()} disabled={paying} className="rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)] disabled:opacity-50 sm:col-span-2">{paying ? 'Procesando...' : 'Pagar ahora'}</button>
                      </div>
