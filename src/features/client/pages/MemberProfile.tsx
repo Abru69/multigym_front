@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTheme } from '@/hooks/useTheme'
 import { createPayment, getMercadoPagoConfig, getMyOrders, getPlans, getSubscriptionsByMember, requestSubscriptionPlanChange, requestSubscriptionRenewal, updateTenantUser, uploadMyAvatar } from '@/lib/api'
-import { getMercadoPago, getMercadoPagoDeviceSessionId, loadMercadoPagoDeviceFingerprint } from '@/lib/mercadopago'
+import { getMercadoPago, loadMercadoPagoDeviceFingerprint, waitForMercadoPagoDeviceSessionId } from '@/lib/mercadopago'
 import { useToastStore } from '@/components/ui/Toast'
 import { getTenantUrl } from '@/lib/tenant'
 import type { OrderDTO, PlanListItemDTO, SubscriptionListItemDTO } from '@/types/api'
@@ -173,9 +173,9 @@ const [cardName, setCardName] = useState('')
       const mp: any = getMercadoPago(config.dto.publicKey)
       const token = await mp.createCardToken({ cardNumber: digits, cardholderName: cardName, cardExpirationMonth: month, cardExpirationYear: year.length === 2 ? `20${year}` : year, securityCode: cardCvc })
       await loadMercadoPagoDeviceFingerprint()
+      const deviceSessionId = await waitForMercadoPagoDeviceSessionId()
       const cardToken = token?.id || token?.token
       const paymentMethodId = token?.payment_method_id
-      const deviceSessionId = getMercadoPagoDeviceSessionId()
       if (!cardToken || !paymentMethodId || !deviceSessionId) throw new Error('No se pudo validar la información de seguridad del pago')
       await createPayment({ subscriptionId: subscription.id, amount: Number(subscription.plan?.price || 0), paymentMethod: 'CREDIT_CARD', cardToken, paymentMethodId, issuerId: token?.issuer_id, installments: 1, payerEmail, payerFirstName, payerLastName, deviceSessionId })
       addToast('Pago de membresía procesado correctamente', 'success')

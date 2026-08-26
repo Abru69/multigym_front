@@ -10,6 +10,16 @@ export function getMercadoPagoDeviceSessionId(): string | undefined {
   return window.MP_DEVICE_SESSION_ID
 }
 
+export async function waitForMercadoPagoDeviceSessionId(timeoutMs = 4000): Promise<string | undefined> {
+  const startedAt = Date.now()
+  while (Date.now() - startedAt < timeoutMs) {
+    const sessionId = getMercadoPagoDeviceSessionId()
+    if (sessionId) return sessionId
+    await new Promise((resolve) => window.setTimeout(resolve, 250))
+  }
+  return getMercadoPagoDeviceSessionId()
+}
+
 export function loadMercadoPagoDeviceFingerprint(): Promise<void> {
   if (window.MP_DEVICE_SESSION_ID || document.querySelector('script[data-mp-device]')) return Promise.resolve()
   return new Promise((resolve, reject) => {
