@@ -146,6 +146,9 @@ const [cardName, setCardName] = useState('')
     try {
       if (paymentMode === 'BRANCH') {
         await createPayment({ subscriptionId: subscription.id, amount: Number(subscription.plan?.price || 0), paymentMethod: 'CASH', reference: 'PENDING_BRANCH' })
+        const refreshed = await getSubscriptionsByMember(user?.memberId || user?.id || '')
+        const subscriptions = refreshed.lista ?? refreshed.dto ?? []
+        setSubscription(subscriptions.find((item) => item.status === 'PENDING_PAYMENT') ?? subscriptions.find((item) => item.status === 'ACTIVE') ?? subscriptions[0] ?? subscription)
         addToast('Solicitud registrada. Realiza el pago en sucursal.', 'success')
         setPaymentMode(null)
         return
@@ -178,6 +181,9 @@ const [cardName, setCardName] = useState('')
       const paymentMethodId = token?.payment_method_id || token?.paymentMethodId || 'visa'
       if (!cardToken) throw new Error('Mercado Pago no pudo tokenizar la tarjeta')
       await createPayment({ subscriptionId: subscription.id, amount: Number(subscription.plan?.price || 0), paymentMethod: 'CREDIT_CARD', cardToken, paymentMethodId, issuerId: token?.issuer_id, installments: 1, payerEmail, payerFirstName, payerLastName, deviceSessionId })
+      const refreshed = await getSubscriptionsByMember(user?.memberId || user?.id || '')
+      const subscriptions = refreshed.lista ?? refreshed.dto ?? []
+      setSubscription(subscriptions.find((item) => item.status === 'ACTIVE') ?? subscriptions.find((item) => item.status === 'PENDING_PAYMENT') ?? subscriptions[0] ?? subscription)
       addToast('Pago de membresía procesado correctamente', 'success')
       setPaymentMode(null)
     } catch (error) {
