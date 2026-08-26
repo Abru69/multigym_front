@@ -490,12 +490,24 @@ export default function MemberProfile() {
                       <button type="button" onClick={() => setPaymentMode(paymentMode === 'CARD' ? null : 'CARD')} className="rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)]">Pago en línea</button>
                      <button type="button" onClick={() => setPaymentMode(paymentMode === 'BRANCH' ? null : 'BRANCH')} className="rounded-xl border border-[var(--border)] px-3 py-2 text-xs font-bold text-[var(--text-primary)]">Pagar en sucursal</button>
                    </div>
-                   {paymentMode === 'CARD' && (
-                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                       <input value={cardName} onChange={(event) => setCardName(event.target.value)} placeholder="Nombre del titular" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
+                    {paymentMode === 'CARD' && (
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <div className="flex items-center gap-2 rounded-lg border border-[#009ee3]/30 bg-[#009ee3]/5 px-3 py-2 sm:col-span-2">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#009ee3] text-sm font-black text-white">M</span>
+                          <div>
+                            <p className="text-xs font-black text-[#007eb5]">mercado pago</p>
+                            <p className="text-[10px] text-[var(--text-muted)]">Pago seguro procesado en línea</p>
+                          </div>
+                        </div>
+                        <label className="text-[10px] font-bold text-[var(--text-muted)] sm:col-span-2">
+                          Correo del comprador
+                          <input value={user?.email ?? ''} readOnly aria-label="Correo del comprador" className="mt-1 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--text-primary)]" />
+                        </label>
+                        <input value={cardName} onChange={(event) => setCardName(event.target.value)} placeholder="Nombre del titular" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
                        <input value={cardNumber} onChange={(event) => setCardNumber(event.target.value)} placeholder="Número de tarjeta" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
                        <input value={cardExpiry} onChange={(event) => setCardExpiry(event.target.value)} placeholder="MM/YY" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
-                       <input value={cardCvc} onChange={(event) => setCardCvc(event.target.value)} placeholder="CVC" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
+                        <input value={cardCvc} onChange={(event) => setCardCvc(event.target.value)} placeholder="CVC" className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-xs" />
+                        <p className="text-[10px] text-[var(--text-muted)] sm:col-span-2">Tus datos se tokenizan de forma segura. El correo, nombre, apellido y protección antifraude se envían para cumplir los requisitos de calidad de Mercado Pago.</p>
                        <button type="button" onClick={() => void submitMembershipPayment()} disabled={paying} className="rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)] disabled:opacity-50 sm:col-span-2">{paying ? 'Procesando...' : 'Pagar ahora'}</button>
                      </div>
                    )}
