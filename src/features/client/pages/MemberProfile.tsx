@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTheme } from '@/hooks/useTheme'
-import { createPayment, getMercadoPagoConfig, getMyOrders, getPlans, getSubscriptionsByMember, requestSubscriptionPlanChange, updateTenantUser, uploadMyAvatar } from '@/lib/api'
+import { createPayment, getMercadoPagoConfig, getMyOrders, getPlans, getSubscriptionsByMember, requestSubscriptionPlanChange, requestSubscriptionRenewal, updateTenantUser, uploadMyAvatar } from '@/lib/api'
 import { getMercadoPago, getMercadoPagoDeviceSessionId, loadMercadoPagoDeviceFingerprint } from '@/lib/mercadopago'
 import { useToastStore } from '@/components/ui/Toast'
 import { getTenantUrl } from '@/lib/tenant'
@@ -196,6 +196,17 @@ const [cardName, setCardName] = useState('')
       addToast('Solicitud creada. Debes pagar el nuevo plan.', 'success')
     } catch (error) {
       addToast(error instanceof Error ? error.message : 'No se pudo solicitar el cambio', 'error')
+    }
+  }
+
+  const requestRenewal = async () => {
+    if (!subscription || subscription.status !== 'EXPIRED') return
+    try {
+      const response = await requestSubscriptionRenewal(subscription.id)
+      setSubscription(response.dto || subscription)
+      addToast('Renovación creada. Completa el pago para activarla.', 'success')
+    } catch (error) {
+      addToast(error instanceof Error ? error.message : 'No se pudo solicitar la renovación', 'error')
     }
   }
 
@@ -485,7 +496,14 @@ const [cardName, setCardName] = useState('')
                  {subscription.status}
                </span>
                </div>
-               {(subscription.status === 'ACTIVE' || subscription.status === 'PENDING_PAYMENT') && (
+                {subscription.status === 'EXPIRED' && (
+                  <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
+                    <p className="text-xs font-bold text-amber-500">Tu membresía está vencida</p>
+                    <p className="mt-1 text-xs text-[var(--text-muted)]">Solicita una renovación para continuar usando los beneficios.</p>
+                    <button type="button" onClick={() => void requestRenewal()} className="mt-3 rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)]">Renovar membresía</button>
+                  </div>
+                )}
+                {(subscription.status === 'ACTIVE' || subscription.status === 'PENDING_PAYMENT') && (
                  <div className="mt-4 rounded-xl bg-[var(--surface)] p-3">
                    <p className="text-xs font-bold text-[var(--text-primary)]">{subscription.status === 'PENDING_PAYMENT' ? 'Completa el pago de tu membresía' : 'Pagar renovación'}</p>
                    <p className="mt-1 text-xs text-[var(--text-muted)]">{subscription.plan?.price} por {subscription.plan?.durationMonths} meses</p>
