@@ -886,6 +886,9 @@ export const processTenantRenewalMercadoPagoPayment = (
 export const getTenantBillingRenewalInfo = () =>
   fetchApi<ResponseDTO<TenantRenewalInfoDTO>>('/api/tenant/billing/renewal-info')
 
+export const getTenantBillingPlans = () =>
+  fetchApi<ResponseDTO<SaasPlanDTO[]>>('/api/tenant/billing/plans')
+
 export const getTenantBillingPayments = () =>
   fetchApi<ResponseDTO<TenantPaymentDTO[]>>('/api/tenant/billing/payments')
 

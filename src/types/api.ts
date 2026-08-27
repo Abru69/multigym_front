@@ -98,6 +98,7 @@ export interface TenantRenewalPaymentRequest {
   payerEmail: string
   payerLastName?: string
   deviceSessionId?: string
+  planId?: string
 }
 
 export interface MercadoPagoTenantConfigDTO {

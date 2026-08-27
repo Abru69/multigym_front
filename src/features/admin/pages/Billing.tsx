@@ -14,6 +14,7 @@ import { useToastStore } from '@/components/ui/Toast'
 import {
   getTenantBillingPayments,
   getTenantBillingRenewalInfo,
+  getTenantBillingPlans,
   processTenantBillingRenewalMercadoPagoPayment,
 } from '@/lib/api'
 import {
@@ -22,7 +23,7 @@ import {
   loadMercadoPagoDeviceFingerprint,
 } from '@/lib/mercadopago'
 import { formatCurrency } from '@/lib/utils'
-import type { TenantPaymentDTO, TenantRenewalInfoDTO } from '@/types'
+import type { SaasPlanDTO, TenantPaymentDTO, TenantRenewalInfoDTO } from '@/types'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { LoadingState } from '../components/LoadingState'
 
@@ -31,6 +32,8 @@ export default function Billing() {
   const { user } = useAuthStore()
   const [renewalInfo, setRenewalInfo] = useState<TenantRenewalInfoDTO | null>(null)
   const [payments, setPayments] = useState<TenantPaymentDTO[]>([])
+  const [plans, setPlans] = useState<SaasPlanDTO[]>([])
+  const [selectedPlanId, setSelectedPlanId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isPaying, setIsPaying] = useState(false)
   const [paymentActionUrl, setPaymentActionUrl] = useState<string | null>(null)
@@ -45,12 +48,16 @@ export default function Billing() {
   const loadBilling = useCallback(async () => {
     setIsLoading(true)
     try {
-      const [infoRes, paymentsRes] = await Promise.all([
+      const [infoRes, paymentsRes, plansRes] = await Promise.all([
         getTenantBillingRenewalInfo(),
         getTenantBillingPayments(),
+        getTenantBillingPlans(),
       ])
       const nextInfo = infoRes.dto || null
       setRenewalInfo(nextInfo)
+      const nextPlans = plansRes.lista || plansRes.dto || []
+      setPlans(nextPlans)
+      setSelectedPlanId((value) => value || nextInfo?.planId || nextPlans[0]?.id || '')
       if (window.location.hostname.includes('staging') && nextInfo?.mercadoPagoPublicKey
         && nextInfo.mercadoPagoAccessTokenMode !== 'LIVE') {
         setCardholderName((value) => value || 'APRO')
@@ -172,6 +179,7 @@ export default function Billing() {
         payerEmail: payerEmail.trim(),
         payerLastName: payerLastName.trim(),
         deviceSessionId: getMercadoPagoDeviceSessionId(),
+        planId: selectedPlanId,
       })
 
       const payment = response.dto?.payment
@@ -193,6 +201,7 @@ export default function Billing() {
   if (isLoading) return <LoadingState text="Cargando facturación..." />
 
   const canPay = Boolean(renewalInfo?.canRenew && mpReady && !isPaying)
+  const selectedPlan = plans.find((plan) => plan.id === selectedPlanId) || plans.find((plan) => plan.id === renewalInfo?.planId)
   const isMercadoPagoTestMode = renewalInfo?.mercadoPagoPublicKey?.startsWith('TEST-')
   const isStagingHost = window.location.hostname.includes('staging')
   const isStagingTestMode = Boolean(
@@ -306,6 +315,20 @@ export default function Billing() {
               </div>
 
               <form onSubmit={payRenewal} className="space-y-4">
+                <Field label="Plan de renovación">
+                  <select
+                    className="h-10 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-sm text-[var(--text-primary)]"
+                    value={selectedPlanId}
+                    onChange={(e) => setSelectedPlanId(e.target.value)}
+                    disabled={!renewalInfo.canRenew || isPaying}
+                  >
+                    {plans.map((plan) => (
+                      <option key={plan.id} value={plan.id}>
+                        {plan.name} · {formatCurrency(plan.price)} {renewalInfo.currency}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
                 <Field label="Email pagador">
                   <Input
                     type="email"
@@ -361,7 +384,7 @@ export default function Billing() {
                   ) : (
                     <CreditCard size={18} />
                   )}
-                  {isPaying ? 'Procesando...' : `Renovar por ${formatCurrency(renewalInfo.price)}`}
+                  {isPaying ? 'Procesando...' : `Renovar por ${formatCurrency(selectedPlan?.price || renewalInfo.price)}`}
                 </Button>
               </form>
             </section>
