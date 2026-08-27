@@ -8,6 +8,7 @@ export type {
   TenantStatus,
   TenantDTO,
   TenantPaymentDTO,
+  TenantSaasSubscriptionDTO,
   TenantRenewalInfoDTO,
   TenantRenewalPaymentRequest,
   TenantRenewalResultDTO,

@@ -66,6 +66,20 @@ export interface TenantPaymentDTO {
   updatedAt?: string | null
 }
 
+export interface TenantSaasSubscriptionDTO {
+  id: string
+  tenantId: string
+  planId: string
+  planName: string
+  planPrice: number
+  status: string
+  startedAt?: string | null
+  endsAt?: string | null
+  cancelledAt?: string | null
+  lastTenantPaymentId?: string | null
+  createdAt?: string | null
+}
+
 export interface TenantRenewalInfoDTO {
   tenantId: string
   name: string

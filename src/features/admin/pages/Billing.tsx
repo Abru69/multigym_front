@@ -13,6 +13,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 import { useToastStore } from '@/components/ui/Toast'
 import {
   getTenantBillingPayments,
+  getTenantBillingSubscriptions,
   getTenantBillingRenewalInfo,
   getTenantBillingPlans,
   processTenantBillingRenewalMercadoPagoPayment,
@@ -23,7 +24,7 @@ import {
   loadMercadoPagoDeviceFingerprint,
 } from '@/lib/mercadopago'
 import { formatCurrency } from '@/lib/utils'
-import type { SaasPlanDTO, TenantPaymentDTO, TenantRenewalInfoDTO } from '@/types'
+import type { SaasPlanDTO, TenantPaymentDTO, TenantRenewalInfoDTO, TenantSaasSubscriptionDTO } from '@/types'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { LoadingState } from '../components/LoadingState'
 
@@ -32,6 +33,7 @@ export default function Billing() {
   const { user } = useAuthStore()
   const [renewalInfo, setRenewalInfo] = useState<TenantRenewalInfoDTO | null>(null)
   const [payments, setPayments] = useState<TenantPaymentDTO[]>([])
+  const [subscriptions, setSubscriptions] = useState<TenantSaasSubscriptionDTO[]>([])
   const [plans, setPlans] = useState<SaasPlanDTO[]>([])
   const [selectedPlanId, setSelectedPlanId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -48,10 +50,11 @@ export default function Billing() {
   const loadBilling = useCallback(async () => {
     setIsLoading(true)
     try {
-      const [infoRes, paymentsRes, plansRes] = await Promise.all([
+      const [infoRes, paymentsRes, plansRes, subscriptionsRes] = await Promise.all([
         getTenantBillingRenewalInfo(),
         getTenantBillingPayments(),
         getTenantBillingPlans(),
+        getTenantBillingSubscriptions(),
       ])
       const nextInfo = infoRes.dto || null
       setRenewalInfo(nextInfo)
@@ -67,6 +70,7 @@ export default function Billing() {
         setPayerEmail('test_user_8927780470111032995@testuser.com')
       }
       setPayments(paymentsRes.lista || paymentsRes.dto || [])
+      setSubscriptions(subscriptionsRes.lista || subscriptionsRes.dto || [])
     } catch (err) {
       addToast(err instanceof Error ? err.message : 'Error al cargar facturación', 'error')
     } finally {
@@ -404,6 +408,52 @@ export default function Billing() {
           )}
         </>
       )}
+
+      <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
+        <div className="mb-5 flex items-center gap-3">
+          <ShieldCheck className="text-[var(--accent)]" size={22} />
+          <div>
+            <h3 className="font-black text-[var(--text-primary)]">Historial de planes SaaS</h3>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">Periodos contratados y cambios de plan.</p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[var(--border)] text-left text-xs tracking-wide text-[var(--text-muted)] uppercase">
+                <th className="py-3 pr-4">Plan</th>
+                <th className="py-3 pr-4">Inicio</th>
+                <th className="py-3 pr-4">Fin</th>
+                <th className="py-3 pr-4">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {subscriptions.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-10 text-center text-[var(--text-muted)]">
+                    Sin historial de planes registrado
+                  </td>
+                </tr>
+              ) : (
+                subscriptions.map((subscription) => (
+                  <tr key={subscription.id} className="border-b border-[var(--border)] last:border-0">
+                    <td className="py-3 pr-4 font-semibold text-[var(--text-primary)]">
+                      {subscription.planName}
+                      <span className="ml-2 text-xs font-normal text-[var(--text-muted)]">
+                        {formatCurrency(subscription.planPrice)} {renewalInfo?.currency || 'MXN'}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4 text-[var(--text-secondary)]">{formatDateTime(subscription.startedAt)}</td>
+                    <td className="py-3 pr-4 text-[var(--text-secondary)]">{formatDateTime(subscription.endsAt)}</td>
+                    <td className="py-3 pr-4"><StatusBadge status={subscription.status} /></td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
         <div className="mb-5 flex items-center gap-3">

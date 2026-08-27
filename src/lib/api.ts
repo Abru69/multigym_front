@@ -6,6 +6,7 @@ import type {
   WorkoutDTO,
   TenantDTO,
   TenantPaymentDTO,
+  TenantSaasSubscriptionDTO,
   TenantRenewalInfoDTO,
   TenantRenewalPaymentRequest,
   TenantRenewalResultDTO,
@@ -891,6 +892,9 @@ export const getTenantBillingPlans = () =>
 
 export const getTenantBillingPayments = () =>
   fetchApi<ResponseDTO<TenantPaymentDTO[]>>('/api/tenant/billing/payments')
+
+export const getTenantBillingSubscriptions = () =>
+  fetchApi<ResponseDTO<TenantSaasSubscriptionDTO[]>>('/api/tenant/billing/subscriptions')
 
 export const processTenantBillingRenewalMercadoPagoPayment = (data: TenantRenewalPaymentRequest) =>
   fetchApi<ResponseDTO<TenantRenewalResultDTO>>('/api/tenant/billing/renewal/mercadopago-payment', {
