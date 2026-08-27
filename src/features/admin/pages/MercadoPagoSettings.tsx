@@ -35,6 +35,7 @@ export default function MercadoPagoSettings() {
   const [webhookSecret, setWebhookSecret] = useState('')
   const [authorizationUrl, setAuthorizationUrl] = useState<string | null>(null)
   const [statementDescriptor, setStatementDescriptor] = useState('')
+  const [renewalAdvanceDays, setRenewalAdvanceDays] = useState('7')
   const [isSavingDescriptor, setIsSavingDescriptor] = useState(false)
 
   const loadConfig = useCallback(async () => {
@@ -44,6 +45,7 @@ export default function MercadoPagoSettings() {
       setConfig(response.dto || null)
       const settings = await getTenantSettings()
       setStatementDescriptor(settings.lista?.find((setting) => setting.key === 'payment_statement_descriptor')?.value || '')
+      setRenewalAdvanceDays(settings.lista?.find((setting) => setting.key === 'membership_renewal_advance_days')?.value || '7')
     } catch (err) {
       addToast(err instanceof Error ? err.message : 'Error al cargar Mercado Pago', 'error')
     } finally {
@@ -60,6 +62,19 @@ export default function MercadoPagoSettings() {
     } catch (err) {
       addToast(err instanceof Error ? err.message : 'Error al guardar nombre de pago', 'error')
     } finally { setIsSavingDescriptor(false) }
+  }
+
+  const saveRenewalAdvanceDays = async (event: FormEvent) => {
+    event.preventDefault()
+    const days = Number(renewalAdvanceDays)
+    if (!Number.isInteger(days) || days < 0 || days > 90) {
+      addToast('Indica entre 0 y 90 días', 'error')
+      return
+    }
+    try {
+      await updateTenantSettings({ membership_renewal_advance_days: String(days) })
+      addToast('Anticipación de renovación guardada', 'success')
+    } catch (err) { addToast(err instanceof Error ? err.message : 'Error al guardar la anticipación', 'error') }
   }
 
   useEffect(() => {
@@ -157,6 +172,16 @@ export default function MercadoPagoSettings() {
         <form onSubmit={saveStatementDescriptor} className="mt-4 flex max-w-xl gap-3">
           <input value={statementDescriptor} maxLength={13} onChange={(event) => setStatementDescriptor(event.target.value.toUpperCase())} placeholder="Nombre del gimnasio" className="min-w-0 flex-1 rounded-xl border border-[var(--border)] bg-[var(--input-bg)] px-3 py-3 text-sm text-[var(--text-primary)]" />
           <Button type="submit" disabled={isSavingDescriptor}><Save size={16} /> Guardar</Button>
+        </form>
+      </section>
+
+      <section className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-black text-[var(--text-primary)]">Renovación anticipada</h2>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">Define con cuántos días de anticipación se habilitará la renovación. Usa 0 para permitirla solo cuando esté vencida.</p>
+        <form onSubmit={saveRenewalAdvanceDays} className="mt-4 flex max-w-xl gap-3">
+          <input type="number" min={0} max={90} value={renewalAdvanceDays} onChange={(event) => setRenewalAdvanceDays(event.target.value)} className="w-32 rounded-xl border border-[var(--border)] bg-[var(--input-bg)] px-3 py-3 text-sm text-[var(--text-primary)]" />
+          <span className="self-center text-sm text-[var(--text-muted)]">días antes del vencimiento</span>
+          <Button type="submit"><Save size={16} /> Guardar</Button>
         </form>
       </section>
 

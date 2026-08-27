@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import { useTheme } from '@/hooks/useTheme'
-import { createPayment, getMercadoPagoConfig, getMyOrders, getPlans, getSubscriptionsByMember, requestSubscriptionPlanChange, requestSubscriptionRenewal, updateTenantUser, uploadMyAvatar } from '@/lib/api'
+import { createPayment, getMercadoPagoConfig, getMyOrders, getPlans, getSubscriptionsByMember, getTenantSettings, requestSubscriptionPlanChange, requestSubscriptionRenewal, updateTenantUser, uploadMyAvatar } from '@/lib/api'
 import { getMercadoPago, loadMercadoPagoDeviceFingerprint, waitForMercadoPagoDeviceSessionId } from '@/lib/mercadopago'
 import { useToastStore } from '@/components/ui/Toast'
 import { getTenantUrl } from '@/lib/tenant'
@@ -58,15 +58,17 @@ export default function MemberProfile() {
 const [cardName, setCardName] = useState('')
   const [plans, setPlans] = useState<PlanListItemDTO[]>([])
   const [requestedPlanId, setRequestedPlanId] = useState('')
+  const [renewalAdvanceDays, setRenewalAdvanceDays] = useState(7)
 
   useEffect(() => {
     async function loadData() {
       try {
         if (user?.id) {
-           const [subRes, ordersRes, plansRes] = await Promise.all([
+           const [subRes, ordersRes, plansRes, settingsRes] = await Promise.all([
              getSubscriptionsByMember(user.memberId || user.id),
              getMyOrders(),
              getPlans(),
+             getTenantSettings(),
            ])
           const subs = subRes.lista ?? subRes.dto ?? []
            const payable = subs.find((s) => s.status === 'PENDING_PAYMENT')
@@ -74,6 +76,8 @@ const [cardName, setCardName] = useState('')
            setSubscription(active)
            setOrders(ordersRes.dto?.data ?? [])
            setPlans((plansRes.dto?.data ?? []).filter((plan) => plan.isActive))
+           const configuredDays = Number(settingsRes.lista?.find((setting) => setting.key === 'membership_renewal_advance_days')?.value ?? 7)
+           setRenewalAdvanceDays(Number.isFinite(configuredDays) && configuredDays >= 0 ? configuredDays : 7)
             if (window.location.hostname.includes('staging')) {
               // Mercado Pago test buyer required by the staging sandbox.
              setCardName('APRO APRO')
@@ -217,6 +221,8 @@ const [cardName, setCardName] = useState('')
   }
 
   const totalSpent = orders.reduce((sum, o) => sum + Number(o.total || 0), 0)
+  const daysUntilExpiry = subscription ? Math.ceil((new Date(subscription.endDate).getTime() - Date.now()) / 86400000) : Infinity
+  const canRenew = subscription?.status === 'EXPIRED' || (subscription?.status === 'ACTIVE' && daysUntilExpiry <= renewalAdvanceDays)
   const initials = (user?.name ?? 'U')
     .split(' ')
     .map((w) => w[0])
@@ -509,7 +515,7 @@ const [cardName, setCardName] = useState('')
                     <button type="button" onClick={() => void requestRenewal()} className="mt-3 rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)]">Renovar membresía</button>
                   </div>
                 )}
-                {(subscription.status === 'ACTIVE' || subscription.status === 'PENDING_PAYMENT') && (
+                {(subscription.status === 'PENDING_PAYMENT' || canRenew) && (
                  <div className="mt-4 rounded-xl bg-[var(--surface)] p-3">
                    <p className="text-xs font-bold text-[var(--text-primary)]">{subscription.status === 'PENDING_PAYMENT' ? 'Completa el pago de tu membresía' : 'Pagar renovación'}</p>
                    <p className="mt-1 text-xs text-[var(--text-muted)]">{subscription.plan?.price} por {subscription.plan?.durationMonths} meses</p>
