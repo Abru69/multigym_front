@@ -5,6 +5,7 @@ import { AdminGuard } from './AdminGuard'
 import { PlatformGuard } from './PlatformGuard'
 import { TenantRouter } from './TenantRouter'
 import { RoleGuard } from './RoleGuard'
+import { MembershipGuard } from './MembershipGuard'
 import { ClientGuard } from './ClientGuard'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { ClientLayout } from '@/layouts/ClientLayout'
@@ -211,8 +212,8 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="rutinas" replace /> },
-      { path: 'rutinas', element: withSuspense(MyRoutines) },
-      { path: 'nutricion', element: withSuspense(Nutrition) },
+       { path: 'rutinas', element: <MembershipGuard>{withSuspense(MyRoutines)}</MembershipGuard> },
+       { path: 'nutricion', element: <MembershipGuard>{withSuspense(Nutrition)}</MembershipGuard> },
       { path: 'mis-ordenes', element: withSuspense(MyOrders) },
       { path: 'perfil', element: withSuspense(MemberProfile) },
     ],
