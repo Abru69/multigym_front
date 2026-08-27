@@ -162,6 +162,11 @@ export async function fetchApi<T>(
   const response = await fetch(url, { ...fetchOptions, headers, credentials: 'include' })
 
   if (response.status === 401) {
+    const membershipProtectedRequest = ['/api/workouts', '/api/workout-exercises', '/api/workout-logs', '/api/nutrition/my', '/api/nutrition/adherence/my']
+      .some((path) => url.includes(path))
+    if (membershipProtectedRequest) {
+      throw new Error('Se requiere una membresía activa')
+    }
     if (suppressRedirect) {
       // No destruir la sesión ni redirigir: el llamador maneja el error
       // (p.ej. login con credenciales incorrectas, o fetch de branding sin token).
