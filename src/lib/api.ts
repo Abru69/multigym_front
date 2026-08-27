@@ -161,9 +161,14 @@ export async function fetchApi<T>(
 
   const response = await fetch(url, { ...fetchOptions, headers, credentials: 'include' })
 
+  const membershipProtectedRequest = ['/api/workouts', '/api/workout-exercises', '/api/workout-logs', '/api/nutrition/my', '/api/nutrition/adherence/my']
+    .some((path) => url.includes(path))
+  if (response.status === 403 && membershipProtectedRequest) {
+    window.location.href = '/app/perfil'
+    throw new Error('Se requiere una membresía activa')
+  }
+
   if (response.status === 401) {
-    const membershipProtectedRequest = ['/api/workouts', '/api/workout-exercises', '/api/workout-logs', '/api/nutrition/my', '/api/nutrition/adherence/my']
-      .some((path) => url.includes(path))
     if (membershipProtectedRequest) {
       throw new Error('Se requiere una membresía activa')
     }
