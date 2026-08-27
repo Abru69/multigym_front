@@ -96,6 +96,7 @@ export interface TenantRenewalPaymentRequest {
   issuerId?: string | null
   installments: number
   payerEmail: string
+  payerFirstName?: string
   payerLastName?: string
   deviceSessionId?: string
   planId?: string

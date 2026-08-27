@@ -174,9 +174,10 @@ export default function Billing() {
         paymentMethodId,
         paymentMethodType,
         issuerId,
-        installments: 1,
-        payerEmail: payerEmail.trim(),
-        payerLastName: payerLastName.trim(),
+         installments: 1,
+         payerEmail: payerEmail.trim(),
+         payerFirstName: cardholderName.trim(),
+         payerLastName: payerLastName.trim(),
         deviceSessionId: getMercadoPagoDeviceSessionId(),
         planId: selectedPlanId,
       })
