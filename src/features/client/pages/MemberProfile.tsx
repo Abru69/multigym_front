@@ -515,7 +515,7 @@ const [cardName, setCardName] = useState('')
                     <button type="button" onClick={() => void requestRenewal()} className="mt-3 rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)]">Renovar membresía</button>
                   </div>
                 )}
-                {(subscription.status === 'PENDING_PAYMENT' || canRenew) && (
+                {(subscription.status === 'PENDING_PAYMENT' || (subscription.status === 'ACTIVE' && canRenew)) && (
                  <div className="mt-4 rounded-xl bg-[var(--surface)] p-3">
                    <p className="text-xs font-bold text-[var(--text-primary)]">{subscription.status === 'PENDING_PAYMENT' ? 'Completa el pago de tu membresía' : 'Pagar renovación'}</p>
                    <p className="mt-1 text-xs text-[var(--text-muted)]">{subscription.plan?.price} por {subscription.plan?.durationMonths} meses</p>
