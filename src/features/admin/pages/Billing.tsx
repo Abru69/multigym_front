@@ -58,8 +58,7 @@ export default function Billing() {
       const nextPlans = plansRes.lista || plansRes.dto || []
       setPlans(nextPlans)
       setSelectedPlanId((value) => value || nextInfo?.planId || nextPlans[0]?.id || '')
-      if (window.location.hostname.includes('staging') && nextInfo?.mercadoPagoPublicKey
-        && nextInfo.mercadoPagoAccessTokenMode !== 'LIVE') {
+      if (window.location.hostname.includes('staging') && nextInfo?.mercadoPagoAccessTokenMode !== 'LIVE') {
         setCardholderName((value) => value || 'APRO')
         setPayerLastName((value) => value || 'APRO')
         setCardNumber((value) => value || '4075 5957 1648 3764')
