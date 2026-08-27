@@ -511,9 +511,9 @@ export const requestSubscriptionPlanChange = (id: string, planId: string) =>
   fetchApi<ResponseDTO<SubscriptionListItemDTO>>(`/api/subscriptions/${id}/plan-request`, {
     method: 'POST', body: JSON.stringify({ planId }),
   })
-export const requestSubscriptionRenewal = (id: string) =>
+export const requestSubscriptionRenewal = (id: string, planId?: string) =>
   fetchApi<ResponseDTO<SubscriptionListItemDTO>>(`/api/subscriptions/${id}/renewal-request`, {
-    method: 'POST', body: JSON.stringify({}),
+    method: 'POST', body: JSON.stringify(planId ? { planId } : {}),
   })
 
 // --- Payments ---

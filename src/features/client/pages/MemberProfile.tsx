@@ -212,7 +212,7 @@ const [cardName, setCardName] = useState('')
   const requestRenewal = async () => {
     if (!subscription || subscription.status !== 'EXPIRED') return
     try {
-      const response = await requestSubscriptionRenewal(subscription.id)
+      const response = await requestSubscriptionRenewal(subscription.id, requestedPlanId || subscription.plan?.id)
       setSubscription(response.dto || subscription)
       addToast('Renovación creada. Completa el pago para activarla.', 'success')
     } catch (error) {
@@ -512,7 +512,12 @@ const [cardName, setCardName] = useState('')
                   <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3">
                     <p className="text-xs font-bold text-amber-500">Tu membresía está vencida</p>
                     <p className="mt-1 text-xs text-[var(--text-muted)]">Solicita una renovación para continuar usando los beneficios.</p>
-                    <button type="button" onClick={() => void requestRenewal()} className="mt-3 rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)]">Renovar membresía</button>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <select value={requestedPlanId || subscription.plan?.id || ''} onChange={(event) => setRequestedPlanId(event.target.value)} className="rounded-lg border border-[var(--border)] bg-[var(--card)] px-2 py-2 text-xs text-[var(--text-primary)]">
+                        {plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.name} - ${plan.price}</option>)}
+                      </select>
+                      <button type="button" onClick={() => void requestRenewal()} className="rounded-xl bg-[var(--accent)] px-3 py-2 text-xs font-bold text-[var(--accent-text)]">Renovar con este plan</button>
+                    </div>
                   </div>
                 )}
                 {(subscription.status === 'PENDING_PAYMENT' || (subscription.status === 'ACTIVE' && canRenew)) && (
