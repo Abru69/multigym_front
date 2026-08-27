@@ -201,11 +201,11 @@ export default function Billing() {
 
   const canPay = Boolean(renewalInfo?.canRenew && mpReady && !isPaying)
   const selectedPlan = plans.find((plan) => plan.id === selectedPlanId) || plans.find((plan) => plan.id === renewalInfo?.planId)
-  const isMercadoPagoTestMode = renewalInfo?.mercadoPagoPublicKey?.startsWith('TEST-')
   const isStagingHost = window.location.hostname.includes('staging')
   const isStagingTestMode = Boolean(
-    isStagingHost && renewalInfo?.mercadoPagoPublicKey
-      && renewalInfo.mercadoPagoAccessTokenMode !== 'LIVE'
+    renewalInfo?.mercadoPagoPublicKey
+      && (renewalInfo.mercadoPagoAccessTokenMode === 'TEST'
+        || (isStagingHost && renewalInfo.mercadoPagoAccessTokenMode !== 'LIVE'))
   )
   const liveCredentialsOnStaging = Boolean(
     isStagingHost && renewalInfo?.mercadoPagoAccessTokenMode === 'LIVE'
