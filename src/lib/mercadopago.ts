@@ -1,3 +1,5 @@
+import { loadMercadoPago as loadMercadoPagoSdk } from '@mercadopago/sdk-js'
+
 declare global {
   interface Window {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,12 +36,33 @@ export function loadMercadoPagoDeviceFingerprint(): Promise<void> {
 }
 
 const mpInstances = new Map<string, unknown>()
+let sdkLoadPromise: Promise<void> | null = null
 
-export function getMercadoPago(publicKeyOverride?: string | null) {
+async function ensureMercadoPagoSdk() {
+  if (window.MercadoPago) return
+  if (!sdkLoadPromise) {
+    sdkLoadPromise = loadMercadoPagoSdk().then(
+      () => {
+        if (!window.MercadoPago) {
+          throw new Error('Mercado Pago SDK no está disponible después de cargarlo')
+        }
+      },
+      (error) => {
+        sdkLoadPromise = null
+        throw error
+      }
+    )
+  }
+  await sdkLoadPromise
+}
+
+export async function getMercadoPago(publicKeyOverride?: string | null) {
   const publicKey = publicKeyOverride || import.meta.env.VITE_MP_PUBLIC_KEY
   if (!publicKey) {
     throw new Error('Mercado Pago public key no está configurada')
   }
+
+  await ensureMercadoPagoSdk()
 
   const cached = mpInstances.get(publicKey)
   if (cached) return cached

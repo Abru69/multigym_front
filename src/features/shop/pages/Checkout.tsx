@@ -219,19 +219,21 @@ export default function Checkout() {
   }, [branches, selectedBranch])
 
   useEffect(() => {
-    let timer = 0
+    let cancelled = false
     if (!mpPublicKey) {
       setMpReady(false)
-      return () => window.clearTimeout(timer)
+      return () => { cancelled = true }
     }
-    try {
-      getMercadoPago(mpPublicKey)
-      timer = window.setTimeout(() => setMpReady(true), 0)
-    } catch (err) {
-      console.error('Failed to init MercadoPago:', err)
-      addToast('Error al inicializar MercadoPago', 'error')
-    }
-    return () => window.clearTimeout(timer)
+    void getMercadoPago(mpPublicKey)
+      .then(() => {
+        if (!cancelled) setMpReady(true)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        console.error('Failed to init MercadoPago:', err)
+        addToast('Error al inicializar MercadoPago', 'error')
+      })
+    return () => { cancelled = true }
   }, [addToast, mpPublicKey])
 
   useEffect(() => {
@@ -302,7 +304,7 @@ export default function Checkout() {
       const expirationYear =
         expirationYearShort.length === 2 ? `20${expirationYearShort}` : expirationYearShort
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mp: any = getMercadoPago(mpPublicKey)
+      const mp: any = await getMercadoPago(mpPublicKey)
       const tokenResponse = await mp.createCardToken({
         cardNumber: cardDigits,
         cardholderName: cardholderName.trim(),

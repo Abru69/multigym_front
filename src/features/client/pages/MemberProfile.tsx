@@ -177,7 +177,7 @@ const [cardName, setCardName] = useState('')
       }
       const config = await getMercadoPagoConfig()
       if (!config.dto?.publicKey) throw new Error('Mercado Pago no está configurado para este gimnasio')
-      const mp: any = getMercadoPago(config.dto.publicKey)
+      const mp: any = await getMercadoPago(config.dto.publicKey)
       const token = await mp.createCardToken({ cardNumber: digits, cardholderName: cardName, cardExpirationMonth: month, cardExpirationYear: year.length === 2 ? `20${year}` : year, securityCode: cardCvc })
       await loadMercadoPagoDeviceFingerprint()
       const deviceSessionId = await waitForMercadoPagoDeviceSessionId()

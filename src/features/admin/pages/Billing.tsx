@@ -86,33 +86,22 @@ export default function Billing() {
 
   useEffect(() => {
     if (isLoading) return
-    const initMp = (retries = 0) => {
-      try {
-        if (!renewalInfo?.mercadoPagoPublicKey) {
-          setMpReady(false)
-          addToast('Mercado Pago SaaS no tiene public key configurada', 'warning')
-          return
-        }
-        if (typeof window.MercadoPago === 'undefined') {
-          if (retries < 5) {
-            setTimeout(() => initMp(retries + 1), 1000)
-            return
-          }
-          setMpReady(false)
-          addToast(
-            'SDK de Mercado Pago no se pudo cargar. Verifica tu conexión a internet.',
-            'warning'
-          )
-          return
-        }
-        getMercadoPago(renewalInfo?.mercadoPagoPublicKey)
-        setMpReady(true)
-      } catch (err) {
+    let cancelled = false
+    if (!renewalInfo?.mercadoPagoPublicKey) {
+      setMpReady(false)
+      addToast('Mercado Pago SaaS no tiene public key configurada', 'warning')
+      return () => { cancelled = true }
+    }
+    void getMercadoPago(renewalInfo.mercadoPagoPublicKey)
+      .then(() => {
+        if (!cancelled) setMpReady(true)
+      })
+      .catch((err) => {
+        if (cancelled) return
         setMpReady(false)
         addToast(err instanceof Error ? err.message : 'Mercado Pago no está configurado', 'warning')
-      }
-    }
-    initMp()
+      })
+    return () => { cancelled = true }
   }, [addToast, isLoading, renewalInfo?.mercadoPagoPublicKey])
 
   const formatCardNumber = (value: string) =>
@@ -153,7 +142,7 @@ export default function Billing() {
       const expirationYear =
         expirationYearShort.length === 2 ? `20${expirationYearShort}` : expirationYearShort
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mp: any = getMercadoPago(renewalInfo?.mercadoPagoPublicKey)
+      const mp: any = await getMercadoPago(renewalInfo?.mercadoPagoPublicKey)
       const tokenResponse = await mp.createCardToken({
         cardNumber: cardDigits,
         cardholderName: cardholderName.trim(),

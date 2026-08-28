@@ -81,6 +81,19 @@ export default function MercadoPagoSettings() {
     loadConfig()
   }, [loadConfig])
 
+  useEffect(() => {
+    const status = new URLSearchParams(window.location.search).get('mp_oauth')
+    if (status !== 'connected' && status !== 'error') return
+
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.hash)
+    addToast(
+      status === 'connected'
+        ? 'Cuenta de Mercado Pago conectada correctamente'
+        : 'No se pudo conectar la cuenta de Mercado Pago',
+      status === 'connected' ? 'success' : 'error'
+    )
+  }, [addToast])
+
   const connect = async () => {
     setIsConnecting(true)
     try {
