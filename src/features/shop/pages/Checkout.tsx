@@ -743,8 +743,8 @@ export default function Checkout() {
                       </p>
                       <p>
                          Datos precargados: nombre <span className="font-mono font-bold">APRO</span>, apellido{' '}
-                         <span className="font-mono font-bold">APRO</span> y email{' '}
-                         <span className="font-mono">test_user_8927780470111032995@testuser.com</span>.
+                         <span className="font-mono font-bold">APRO</span> y email exacto{' '}
+                         <span className="font-mono">test@testuser.com</span>.
                       </p>
                       <p>
                         Visa: <span className="font-mono">4075 5957 1648 3764</span>, CVV{' '}
