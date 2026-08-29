@@ -132,6 +132,7 @@ export default function Checkout() {
   const { user } = useAuthStore()
   const addToast = useToastStore((s) => s.addToast)
   const navigate = useNavigate()
+  const isStagingHost = window.location.hostname.includes('staging')
 
   const [step, setStep] = useState<'method' | 'details' | 'payment' | 'success'>('method')
   const [loading, setLoading] = useState(false)
@@ -154,18 +155,19 @@ export default function Checkout() {
   const [shippingAddress, setShippingAddress] = useState('')
   const [shippingCity, setShippingCity] = useState('')
   const [shippingPostalCode, setShippingPostalCode] = useState('')
-  const [cardholderName, setCardholderName] = useState('')
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardExpiry, setCardExpiry] = useState('')
-  const [cardCvc, setCardCvc] = useState('')
-  const [cardholderEmail, setCardholderEmail] = useState(user?.email || '')
-  const [payerLastName, setPayerLastName] = useState('')
+  const [cardholderName, setCardholderName] = useState(isStagingHost ? 'APRO' : '')
+  const [cardNumber, setCardNumber] = useState(isStagingHost ? '4075 5957 1648 3764' : '')
+  const [cardExpiry, setCardExpiry] = useState(isStagingHost ? '11/30' : '')
+  const [cardCvc, setCardCvc] = useState(isStagingHost ? '123' : '')
+  const [cardholderEmail, setCardholderEmail] = useState(
+    isStagingHost ? 'test@testuser.com' : user?.email || '',
+  )
+  const [payerLastName, setPayerLastName] = useState(isStagingHost ? 'APRO' : '')
 
   const subtotal = total()
   const shipping = deliveryMethod === 'SHIPPING' ? (subtotal > 1500 ? 0 : 150) : 0
   const finalTotal = subtotal + shipping
   const isMercadoPagoTestMode = mpPublicKey?.startsWith('TEST-') ?? false
-  const isStagingHost = window.location.hostname.includes('staging')
   // Staging tenant Orders credentials can use APP_USR test public keys.
   const isStagingTestMode = isStagingHost && Boolean(mpPublicKey)
 
@@ -235,16 +237,6 @@ export default function Checkout() {
       })
     return () => { cancelled = true }
   }, [addToast, mpPublicKey])
-
-  useEffect(() => {
-    if (!isStagingTestMode) return
-    if (!cardholderName) setCardholderName('APRO')
-    if (!payerLastName) setPayerLastName('APRO')
-    if (!cardNumber) setCardNumber('4075 5957 1648 3764')
-    if (!cardExpiry) setCardExpiry('11/30')
-    if (!cardCvc) setCardCvc('123')
-    setCardholderEmail('test_user_8927780470111032995@testuser.com')
-  }, [cardCvc, cardExpiry, cardNumber, cardholderEmail, cardholderName, isStagingTestMode, payerLastName])
 
   useEffect(() => {
     if (!isStagingTestMode && user?.email && !cardholderEmail) {
