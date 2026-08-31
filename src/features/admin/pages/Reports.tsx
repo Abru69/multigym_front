@@ -39,6 +39,7 @@ import type {
 } from '@/types'
 import { formatCurrency } from '@/lib/utils'
 import { LoadingState } from '../components/LoadingState'
+import { useToastStore } from '@/components/ui/Toast'
 
 type Tab = 'overview' | 'members' | 'subscriptions' | 'checkins' | 'products' | 'workouts'
 
@@ -60,6 +61,7 @@ export default function ReportsPage() {
   const [productReport, setProductReport] = useState<ProductReportDTO | null>(null)
   const [workoutReport, setWorkoutReport] = useState<WorkoutReportDTO | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const addToast = useToastStore((s) => s.addToast)
 
   useEffect(() => {
     const loadAll = async () => {
@@ -79,14 +81,14 @@ export default function ReportsPage() {
         setCheckinReport(ci.dto || null)
         setProductReport(prod.dto || null)
         setWorkoutReport(wo.dto || null)
-      } catch {
-        // Errors will show empty states
+      } catch (err) {
+        addToast(err instanceof Error ? err.message : 'No se pudieron cargar los reportes', 'error')
       } finally {
         setIsLoading(false)
       }
     }
     loadAll()
-  }, [])
+  }, [addToast])
 
   if (isLoading) return <LoadingState text="Cargando reportes..." />
 

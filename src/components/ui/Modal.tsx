@@ -33,6 +33,8 @@ export function Modal({
   size = 'md',
 }: ModalProps) {
   const contentRef = useRef<HTMLDivElement>(null)
+  const titleId = title ? 'modal-title' : undefined
+  const descriptionId = description ? 'modal-description' : undefined
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -70,17 +72,21 @@ export function Modal({
               sizeClasses[size],
               className
             )}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            aria-describedby={descriptionId}
           >
             {(title || showClose) && (
               <div className="flex shrink-0 items-start justify-between p-6 pb-0">
                 <div className="min-w-0 flex-1">
                   {title && (
-                    <h2 className="font-heading text-lg font-black tracking-tight text-[var(--text-primary)]">
+                     <h2 id={titleId} className="font-heading text-lg font-black tracking-tight text-[var(--text-primary)]">
                       {title}
                     </h2>
                   )}
                   {description && (
-                    <p className="mt-1 text-sm text-[var(--text-secondary)]">{description}</p>
+                     <p id={descriptionId} className="mt-1 text-sm text-[var(--text-secondary)]">{description}</p>
                   )}
                 </div>
                 {showClose && (

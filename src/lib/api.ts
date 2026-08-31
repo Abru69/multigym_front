@@ -234,6 +234,19 @@ export function getResponseItems<T>(response: ResponseDTO<unknown> | null | unde
 }
 
 async function tryRefreshToken(token: string): Promise<string | null> {
+  if (refreshPromise) return refreshPromise
+
+  refreshPromise = refreshTokenRequest(token)
+  try {
+    return await refreshPromise
+  } finally {
+    refreshPromise = null
+  }
+}
+
+let refreshPromise: Promise<string | null> | null = null
+
+async function refreshTokenRequest(token: string): Promise<string | null> {
   try {
     const headers = new Headers({ Authorization: `Bearer ${token}` })
     const tenantId = getTenantFromLocation()
@@ -1237,7 +1250,7 @@ export const getPlanAnalytics = () =>
 export const getFailedPayments = () =>
   fetchApi<ResponseDTO<FailedPaymentReportDTO>>('/api/platform/reports/failed-payments')
 export const exportPlatformDashboard = async (format: string): Promise<Blob> => {
-  const url = `/api/platform/reports/dashboard/export?format=${format}`
+  const url = `/api/platform/reports/dashboard/export?format=${encodeURIComponent(format)}`
   const platformData = localStorage.getItem('platform-auth')
   let token = ''
   if (platformData) {
@@ -1252,7 +1265,7 @@ export const exportPlatformDashboard = async (format: string): Promise<Blob> => 
   return response.blob()
 }
 export const exportPlatformAnalytics = async (format: string): Promise<Blob> => {
-  const url = `/api/platform/reports/analytics/export?format=${format}`
+  const url = `/api/platform/reports/analytics/export?format=${encodeURIComponent(format)}`
   const platformData = localStorage.getItem('platform-auth')
   let token = ''
   if (platformData) {

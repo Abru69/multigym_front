@@ -58,6 +58,7 @@ export default function MemberProfile() {
 const [cardName, setCardName] = useState('')
   const [plans, setPlans] = useState<PlanListItemDTO[]>([])
   const [requestedPlanId, setRequestedPlanId] = useState('')
+  const [today] = useState(() => Date.now())
   const [renewalAdvanceDays, setRenewalAdvanceDays] = useState(7)
 
   useEffect(() => {
@@ -221,7 +222,7 @@ const [cardName, setCardName] = useState('')
   }
 
   const totalSpent = orders.reduce((sum, o) => sum + Number(o.total || 0), 0)
-  const daysUntilExpiry = subscription ? Math.ceil((new Date(subscription.endDate).getTime() - Date.now()) / 86400000) : Infinity
+  const daysUntilExpiry = subscription ? Math.ceil((new Date(subscription.endDate).getTime() - today) / 86400000) : Infinity
   const canRenew = subscription?.status === 'EXPIRED' || (subscription?.status === 'ACTIVE' && daysUntilExpiry <= renewalAdvanceDays)
   const initials = (user?.name ?? 'U')
     .split(' ')

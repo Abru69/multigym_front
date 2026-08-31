@@ -149,6 +149,7 @@ export default function Checkout() {
   )
 
   const [branches, setBranches] = useState<BranchDTO[]>([])
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [deliveryMethods, setDeliveryMethods] = useState({ pickup: true, shipping: true })
   const [deliveryMethod, setDeliveryMethod] = useState<'PICKUP' | 'SHIPPING'>('PICKUP')
   const [selectedBranch, setSelectedBranch] = useState<string>('')
@@ -180,6 +181,7 @@ export default function Checkout() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        setLoadError(null)
         const [branchesRes, settingsRes, mercadoPagoRes] = await Promise.all([
           fetchApi<ResponseDTO<BranchDTO[]>>('/api/branches'),
           fetchApi<ResponseDTO<TenantSettingDTO[]>>('/api/tenant-settings'),
@@ -208,6 +210,7 @@ export default function Checkout() {
         else setDeliveryMethod('SHIPPING')
       } catch (err) {
         console.error('Failed to load delivery options:', err)
+        setLoadError('No se pudo cargar la configuración de entrega. Intenta de nuevo.')
       }
     }
     loadData()
@@ -223,6 +226,7 @@ export default function Checkout() {
   useEffect(() => {
     let cancelled = false
     if (!mpPublicKey) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMpReady(false)
       return () => { cancelled = true }
     }
@@ -383,7 +387,7 @@ export default function Checkout() {
       })
       const orderId = orderRes.dto?.id || ''
       setOrderNumber(orderId.slice(0, 8).toUpperCase())
-      setOrderPaymentStatus((orderRes.dto?.paymentStatus || 'COMPLETED').toUpperCase())
+      setOrderPaymentStatus((orderRes.dto?.paymentStatus || 'PENDING').toUpperCase())
 
       setStep('success')
       clearCart()
@@ -403,6 +407,8 @@ export default function Checkout() {
     return shippingAddress !== '' && shippingCity !== '' && shippingPostalCode !== ''
   }
 
+  const noDeliveryMethod = !deliveryMethods.pickup && !deliveryMethods.shipping
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
       {step !== 'success' && <StepIndicator currentStep={step} />}
@@ -421,6 +427,17 @@ export default function Checkout() {
             <h2 className="font-heading text-xl font-black text-[var(--text-primary)]">
               Método de Entrega
             </h2>
+
+            {loadError && (
+              <div role="alert" className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                {loadError}
+              </div>
+            )}
+            {noDeliveryMethod && !loadError && (
+              <div role="alert" className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-600">
+                Este gimnasio no tiene métodos de entrega disponibles.
+              </div>
+            )}
 
             <div className="space-y-4">
               {deliveryMethods.pickup && (
@@ -502,7 +519,8 @@ export default function Checkout() {
 
             <button
               onClick={() => setStep('details')}
-              className="mt-6 h-12 w-full rounded-full bg-[var(--accent)] text-sm font-bold tracking-wide text-[var(--accent-text)] uppercase shadow-md transition-all hover:shadow-lg"
+              disabled={noDeliveryMethod || Boolean(loadError)}
+              className="mt-6 h-12 w-full rounded-full bg-[var(--accent)] text-sm font-bold tracking-wide text-[var(--accent-text)] uppercase shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
             >
               Continuar
             </button>

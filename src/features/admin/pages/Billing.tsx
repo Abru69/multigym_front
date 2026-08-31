@@ -88,6 +88,7 @@ export default function Billing() {
     if (isLoading) return
     let cancelled = false
     if (!renewalInfo?.mercadoPagoPublicKey) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMpReady(false)
       addToast('Mercado Pago SaaS no tiene public key configurada', 'warning')
       return () => { cancelled = true }

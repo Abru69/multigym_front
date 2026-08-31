@@ -11,10 +11,12 @@ export default function Catalog() {
   const [category, setCategory] = useState('all')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
+    setError(null)
     getProducts()
       .then((response) => {
         const apiProducts = getResponseItems<ProductDTO>(response)
@@ -23,7 +25,7 @@ export default function Catalog() {
           name: p.name,
           price: p.price,
           stock: p.stock,
-          slug: p.name.toLowerCase().replace(/ /g, '-'),
+          slug: p.name.toLowerCase().trim().replace(/\s+/g, '-'),
           brand: p.brand || 'MultiGym',
           category: (p.category || 'proteinas') as Product['category'],
           image: p.imageUrl || p.image || 'https://images.unsplash.com/photo-1593095948071-474c5cc2c2b0?w=400&h=400&fit=crop',
@@ -37,7 +39,10 @@ export default function Catalog() {
         }))
         setProducts(mapped)
       })
-      .catch((e) => console.error('Error fetching products', e))
+      .catch((e) => {
+        console.error('Error fetching products', e)
+        setError(e instanceof Error ? e.message : 'No se pudo cargar el catálogo.')
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -126,7 +131,14 @@ export default function Catalog() {
       )}
 
       {/* Empty State */}
-      {!loading && filtered.length === 0 && (
+      {!loading && error && (
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-6 py-12 text-center">
+          <h3 className="mb-2 text-base font-black text-[var(--text-primary)]">No se pudo cargar la tienda</h3>
+          <p className="text-sm text-[var(--text-secondary)]">{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card)] px-6 py-20 text-center">
           <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--surface)]">
             <PackageX size={28} className="text-[var(--text-muted)]" />

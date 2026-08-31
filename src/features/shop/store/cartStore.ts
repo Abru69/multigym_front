@@ -1,6 +1,7 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import type { Product, CartItem } from '@/types'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
 interface CartStore {
   items: CartItem[]
@@ -29,7 +30,7 @@ export const useCartStore = create<CartStore>()(
             })
           }
           // If already at stock limit, do nothing
-        } else {
+        } else if (product.stock > 0) {
           set({ items: [...items, { product, quantity: 1 }] })
         }
       },
@@ -63,17 +64,24 @@ export const useCartStore = create<CartStore>()(
       total: () => get().items.reduce((sum, i) => sum + i.product.price * i.quantity, 0),
     }),
     {
-      name: (() => {
-        try {
-          const data = localStorage.getItem('auth-storage')
-          const parsed = data ? JSON.parse(data) : null
-          const tenantId = parsed?.state?.tenantId || 'default'
-          const userId = parsed?.state?.user?.id || 'guest'
-          return `multigym-cart-${tenantId}-${userId}`
-        } catch {
-          return 'multigym-cart-default-guest'
-        }
-      })(),
+      name: 'multigym-cart',
+      storage: createJSONStorage(() => ({
+        getItem: () => {
+          const { tenantId, user } = useAuthStore.getState()
+          const key = `multigym-cart-${tenantId || 'default'}-${user?.id || 'guest'}`
+          return localStorage.getItem(key)
+        },
+        setItem: (_name, value) => {
+          const { tenantId, user } = useAuthStore.getState()
+          const key = `multigym-cart-${tenantId || 'default'}-${user?.id || 'guest'}`
+          localStorage.setItem(key, value)
+        },
+        removeItem: () => {
+          const { tenantId, user } = useAuthStore.getState()
+          const key = `multigym-cart-${tenantId || 'default'}-${user?.id || 'guest'}`
+          localStorage.removeItem(key)
+        },
+      })),
     }
   )
 )

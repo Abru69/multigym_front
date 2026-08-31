@@ -129,6 +129,7 @@ export default function Cart() {
                     <div className="flex items-center overflow-hidden rounded-lg border border-[var(--border)]">
                       <button
                         onClick={() => updateQuantity(product.id, quantity - 1)}
+                        aria-label={`Reducir cantidad de ${product.name}`}
                         className="flex h-8 w-8 items-center justify-center text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                       >
                         <Minus size={12} />
@@ -139,6 +140,7 @@ export default function Cart() {
                       <button
                         onClick={() => updateQuantity(product.id, quantity + 1)}
                         disabled={quantity >= product.stock}
+                        aria-label={`Aumentar cantidad de ${product.name}`}
                         className="flex h-8 w-8 items-center justify-center text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)] disabled:cursor-not-allowed disabled:opacity-30"
                       >
                         <Plus size={12} />
@@ -147,6 +149,7 @@ export default function Cart() {
 
                     <button
                       onClick={() => removeItem(product.id)}
+                      aria-label={`Eliminar ${product.name} del carrito`}
                       className="rounded-lg p-1.5 text-[var(--text-muted)] transition-colors hover:bg-[var(--error, #ef4444)]/10 hover:text-[var(--error, #ef4444)]"
                     >
                       <Trash2 size={14} />

@@ -115,12 +115,15 @@ export const useAuthStore = create<AuthStore>()(
       logout: async () => {
         const { token, tenantId } = get()
 
-        // Clear local auth before navigation so a slow API request cannot
-        // remount the tenant landing page with the old session.
-        set({ user: null, token: null, tenantId: null, isAuthenticated: false })
-
-        // Invalidate the server session without blocking the UI logout.
-        void apiLogout(token || undefined, tenantId).catch(() => undefined)
+        // Invalidate the server session before clearing state. This prevents
+        // a navigation race from leaving the old session active remotely.
+        try {
+          await apiLogout(token || undefined, tenantId)
+        } catch {
+          // Local logout must still succeed if the server is unavailable.
+        } finally {
+          set({ user: null, token: null, tenantId: null, isAuthenticated: false })
+        }
       },
 
       register: async (_name: string, _email: string, _password: string) => {

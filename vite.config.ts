@@ -113,6 +113,10 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+      '/platform/users': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
       '/platform-api': {
         target: 'http://localhost:8080',
         changeOrigin: true,

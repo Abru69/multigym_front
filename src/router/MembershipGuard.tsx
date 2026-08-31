@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/features/auth/store/authStore'
-import { getSubscriptionsByMember } from '@/lib/api'
+import { getResponseItems, getSubscriptionsByMember } from '@/lib/api'
 
 export function MembershipGuard({ children }: { children: ReactNode }) {
   const { user } = useAuthStore()
@@ -11,7 +11,7 @@ export function MembershipGuard({ children }: { children: ReactNode }) {
     let mounted = true
     getSubscriptionsByMember(user?.memberId || user?.id || '')
       .then((response) => {
-        const subscriptions = response.lista ?? response.dto ?? []
+        const subscriptions = getResponseItems<{ status?: string }>(response)
         if (mounted) setAllowed(subscriptions.some((subscription) => subscription.status === 'ACTIVE'))
       })
       .catch(() => { if (mounted) setAllowed(false) })

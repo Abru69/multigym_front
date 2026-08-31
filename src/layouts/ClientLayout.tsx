@@ -88,6 +88,7 @@ export function ClientLayout() {
             {isAuthenticated && (
               <Link
                 to="/tienda/carrito"
+                aria-label={`Carrito${cartCount > 0 ? `, ${cartCount} productos` : ''}`}
                 className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--card)] text-[var(--text-secondary)] transition-all hover:bg-[var(--surface-hover)] active:scale-95"
               >
                 <ShoppingCart size={20} />
@@ -103,6 +104,8 @@ export function ClientLayout() {
               <div className="relative">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
+                  aria-label="Abrir menú de usuario"
+                  aria-expanded={showMenu}
                   className="flex h-10 items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] pl-1.5 pr-3 text-xs font-bold text-[var(--text-primary)] transition-all hover:bg-[var(--surface-hover)] active:scale-95"
                 >
                   <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-[var(--accent)] text-[var(--accent-text)]">

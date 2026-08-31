@@ -6,6 +6,7 @@ import {
   updatePayment,
   deletePayment,
   getSubscriptions,
+  getResponseItems,
 } from '@/lib/api'
 import { Plus, DollarSign, Edit2, Trash2, ReceiptText } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
@@ -47,9 +48,7 @@ export default function PaymentsPage() {
       setIsLoading(true)
       setError('')
       const response = await getPayments()
-      if (response?.dto?.data) {
-        setPayments(response.dto.data)
-      }
+        setPayments(getResponseItems<PaymentListItemDTO>(response))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al cargar pagos')
     } finally {
@@ -62,7 +61,7 @@ export default function PaymentsPage() {
     loadPayments()
     getSubscriptions()
       .then((res) => {
-        if (res?.dto?.data) setSubscriptionsList(res.dto.data)
+        setSubscriptionsList(getResponseItems<SubscriptionListItemDTO>(res))
       })
       .catch(() => {})
   }, [loadPayments])

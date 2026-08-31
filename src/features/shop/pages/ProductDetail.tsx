@@ -44,7 +44,8 @@ export default function ProductDetail() {
         const products: ProductDTO[] =
           response.dto?.data ??
           (Array.isArray(response.lista) ? (response.lista as unknown as ProductDTO[]) : [])
-        const found = products.find((p) => p.name.toLowerCase().replace(/\s+/g, '-') === slug)
+        const normalizedSlug = slug.trim().toLowerCase().replace(/\s+/g, '-')
+        const found = products.find((p) => p.name.toLowerCase().trim().replace(/\s+/g, '-') === normalizedSlug)
         if (found) {
           const validCategories: ProductCategory[] = [
             'proteinas',
@@ -61,7 +62,7 @@ export default function ProductDetail() {
 
           setProduct({
             ...found,
-            slug: found.name.toLowerCase().replace(/\s+/g, '-'),
+            slug: found.name.toLowerCase().trim().replace(/\s+/g, '-'),
             brand: found.brand || 'MultiGym',
             image:
               found.imageUrl ||
@@ -210,7 +211,8 @@ export default function ProductDetail() {
                   {quantity}
                 </span>
                 <button
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                   onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                   disabled={product.stock === 0}
                   className="flex h-14 w-14 items-center justify-center text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]"
                 >
                   <Plus size={18} />

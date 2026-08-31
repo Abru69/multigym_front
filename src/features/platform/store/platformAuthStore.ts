@@ -14,6 +14,7 @@ interface PlatformAuthStore {
   token: string | null
   isAuthenticated: boolean
   mustChangePassword: boolean
+  hasHydrated: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<boolean>
   logout: () => Promise<void>
@@ -26,6 +27,7 @@ export const usePlatformAuthStore = create<PlatformAuthStore>()(
       token: null,
       isAuthenticated: false,
       mustChangePassword: false,
+      hasHydrated: false,
       isLoading: false,
 
       login: async (email: string, password: string) => {
@@ -65,6 +67,11 @@ export const usePlatformAuthStore = create<PlatformAuthStore>()(
        set({ admin: null, token: null, isAuthenticated: false, mustChangePassword: false })
       },
     }),
-    { name: 'platform-auth' }
+    {
+      name: 'platform-auth',
+      onRehydrateStorage: () => (state) => {
+        if (state) state.hasHydrated = true
+      },
+    }
   )
 )

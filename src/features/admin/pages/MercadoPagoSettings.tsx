@@ -78,6 +78,8 @@ export default function MercadoPagoSettings() {
   }
 
   useEffect(() => {
+    // Initial data loading updates the view asynchronously.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadConfig()
   }, [loadConfig])
 

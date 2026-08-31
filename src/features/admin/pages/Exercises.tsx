@@ -130,6 +130,7 @@ export default function Exercises() {
 
   useEffect(() => {
     if (activeTab === 'catalog') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadCatalog()
     }
   }, [activeTab, loadCatalog])

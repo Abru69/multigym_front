@@ -42,10 +42,6 @@ export default function PlatformMercadoPago() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    void loadConfig()
-  }, [])
-
   const loadConfig = async () => {
     setIsLoading(true)
     setError(null)
@@ -73,6 +69,12 @@ export default function PlatformMercadoPago() {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    // Initial data loading updates the view asynchronously.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadConfig()
+  }, [])
 
   const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }))

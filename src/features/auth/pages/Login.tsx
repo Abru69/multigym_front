@@ -100,13 +100,14 @@ export default function Login() {
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
         {!autoTenant && (
           <div>
-            <Label>Código de Gimnasio</Label>
+            <Label htmlFor="tenant-id">Código de Gimnasio</Label>
             <div className="relative">
               <Building2
                 size={16}
                 className="absolute top-1/2 left-3.5 -translate-y-1/2 text-[var(--text-muted)]"
               />
               <Input
+                id="tenant-id"
                 type="text"
                 value={tenantId}
                 onChange={(e) => setTenantId(e.target.value)}
@@ -123,8 +124,9 @@ export default function Login() {
         )}
 
         <div>
-          <Label>Correo electrónico</Label>
+          <Label htmlFor="login-email">Correo electrónico</Label>
           <Input
+            id="login-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -133,9 +135,10 @@ export default function Login() {
           />
         </div>
         <div>
-          <Label>Contraseña</Label>
+          <Label htmlFor="login-password">Contraseña</Label>
           <div className="relative">
             <Input
+              id="login-password"
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -148,6 +151,7 @@ export default function Login() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute top-1/2 right-3 -translate-y-1/2 text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
+              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>

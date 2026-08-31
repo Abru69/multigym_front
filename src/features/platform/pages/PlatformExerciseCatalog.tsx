@@ -33,7 +33,10 @@ export default function PlatformExerciseCatalog() {
     }
   }
 
-  useEffect(() => { void loadCatalog(0, '') }, [])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadCatalog(0, '')
+  }, [loadCatalog])
 
   const handleFileChange = (selectedFile: File | null) => {
     setResult(null)

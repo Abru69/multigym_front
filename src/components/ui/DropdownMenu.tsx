@@ -35,6 +35,8 @@ function DropdownMenu({ trigger, children, align = 'right', className }: Dropdow
         }}
         role="button"
         tabIndex={0}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
       >
         {trigger}
       </div>
@@ -50,6 +52,7 @@ function DropdownMenu({ trigger, children, align = 'right', className }: Dropdow
               align === 'right' ? 'right-0' : 'left-0',
               className
             )}
+            role="menu"
           >
             {children}
           </motion.div>

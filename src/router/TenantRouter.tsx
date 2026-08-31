@@ -2,7 +2,6 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { useTenantBranding } from '@/hooks/useTenantBranding'
 import { Spinner } from '@/components/ui/Spinner'
 import { getPlatformUrl, getTenantFromLocation } from '@/lib/tenant'
-import { Link } from 'react-router-dom'
 
 const TenantLandingPage = lazy(() => import('@/features/tenant-landing/pages/TenantLandingPage'))
 const Landing = lazy(() => import('@/features/landing/pages/LandingPage'))
@@ -44,6 +43,7 @@ export function TenantRouter() {
 
   useEffect(() => {
     if (!isTenantContext || !tenantId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTenantState('valid')
       return
     }

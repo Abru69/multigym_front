@@ -4,7 +4,9 @@ import { getDefaultRoute } from './routes'
 import type { ReactNode } from 'react'
 
 export function ClientGuard({ children }: { children: ReactNode }) {
-  const { user, isAuthenticated } = useAuthStore()
+  const { user, isAuthenticated, hasHydrated } = useAuthStore()
+
+  if (!hasHydrated) return null
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />

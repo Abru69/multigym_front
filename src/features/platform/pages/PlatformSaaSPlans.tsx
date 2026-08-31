@@ -5,6 +5,7 @@ import {
   updateSaasPlan,
   deleteSaasPlan,
   toggleSaasPlanStatus,
+  getResponseItems,
 } from '@/lib/api'
 import {
   Plus,
@@ -53,9 +54,7 @@ export default function PlatformSaaSPlansPage() {
       setIsLoading(true)
       setError('')
       const response = await getSaasPlans()
-      if (response?.dto?.data) {
-        setPlans(response.dto.data)
-      }
+      setPlans(getResponseItems<SaasPlanDTO>(response))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al cargar planes SaaS')
     } finally {
